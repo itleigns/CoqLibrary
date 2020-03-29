@@ -5,6 +5,9 @@ Require Import Coq.Sets.Ensembles.
 Local Open Scope R_scope.
 Require Export Rdefinitions.
 Require Import Classical.
+Require Import Coq.Sets.Finite_sets.
+Require Import Coq.Sets.Finite_sets_facts.
+Require Import Coq.Sets.Image.
 
 Section Kaisekinyuumonn.
 
@@ -613,6 +616,79 @@ fun x => (Inhabited R (my_upper_bound x)).
 Definition my_bounded : Ensemble R -> Prop :=
 fun x => (Inhabited R (my_upper_bound x)) /\ (Inhabited R (my_lower_bound x)).
 
+Lemma bounded_abs : forall A : Ensemble R , (my_bounded A) <-> (my_upper_bounded (Image.Im R R A Rabs)).
+move=> A.
+apply conj.
+move=> H1.
+elim (proj1 H1).
+move=> ma H2.
+elim (proj2 H1).
+move=> mi H3.
+exists (Rmax (Rabs ma) (Rabs mi)).
+move=> y H4.
+elim H4.
+move=> z.
+rewrite {1}/Rabs.
+elim (Rcase_abs z).
+move=> H5 H6.
+move=> y0 H7.
+apply (Rle_trans y0 (Rabs mi) (Rmax (Rabs ma) (Rabs mi))).
+rewrite /Rabs.
+elim (Rcase_abs mi).
+move=> H8.
+rewrite H7.
+apply (Ropp_ge_le_contravar z mi).
+apply (H3 z H6).
+move=> H8.
+apply False_ind.
+apply (Rge_not_lt mi 0 H8).
+apply (Rle_lt_trans mi z 0).
+apply (Rge_le z mi).
+apply (H3 z H6).
+apply H5.
+apply (Rmax_r (Rabs ma) (Rabs mi)).
+move=> H5 H6.
+move=> y0 H7.
+apply (Rle_trans y0 (Rabs ma) (Rmax (Rabs ma) (Rabs mi))).
+rewrite /Rabs.
+elim (Rcase_abs ma).
+move=> H8.
+apply False_ind.
+apply (Rlt_not_ge ma 0 H8).
+apply (Rge_trans ma z 0).
+apply (Rle_ge z ma).
+apply (H2 z H6).
+apply H5.
+move=> H8.
+rewrite H7.
+apply (H2 z H6).
+apply (Rmax_l (Rabs ma) (Rabs mi)).
+move=> H1.
+elim H1.
+move=> ma H2.
+apply conj.
+exists ma.
+move=> z H4.
+apply (Rle_trans z (Rabs z) ma).
+apply (Rle_abs z).
+apply (H2 (Rabs z)).
+exists z.
+apply H4.
+by [].
+exists (- ma).
+move=> z H4.
+apply (Rge_trans z (- (Rabs z)) (- ma)).
+rewrite - {1}(Ropp_involutive z).
+apply (Ropp_le_ge_contravar (- z) (Rabs z)).
+rewrite - (Rabs_Ropp z).
+apply (Rle_abs (- z)).
+apply (Ropp_le_ge_contravar (Rabs z) ma).
+apply (H2 (Rabs z)).
+exists z.
+apply H4.
+by [].
+Qed.
+
 Lemma Formula_1_6 : (~(exists x : R , is_max (Full_set R) x)) /\ (~(exists x : R , is_min (Full_set R) x)).
 Proof.
 apply conj.
@@ -677,6 +753,30 @@ move=> x.
 move=> H2.
 elim H2.
 apply (Rle_refl r1).
+apply H1.
+Qed.
+
+Lemma R_R_exist_min : forall r1 r2 : R, {x : R | is_min (Couple R r1 r2) x}.
+Proof.
+move=> r1 r2.
+elim (Rgt_ge_dec r1 r2).
+move=> H1.
+exists r2.
+apply conj.
+apply (Couple_r R r1 r2).
+move=> x.
+move=> H2.
+elim H2.
+apply (Rgt_ge r1 r2 H1).
+apply (Rge_refl r2).
+move=> H1.
+exists r1.
+apply conj.
+apply (Couple_l R r1 r2).
+move=> x.
+move=> H2.
+elim H2.
+apply (Rge_refl r1).
 apply H1.
 Qed.
 
@@ -2043,3 +2143,1864 @@ apply (Rplus_gt_compat_l a 1 0).
 apply (Rlt_0_1).
 Qed.
 
+Definition RN : (Ensemble R) := 
+  (fun x:R => exists n:nat, INR n = x).
+
+Fixpoint conv (n k:nat) : nat :=
+  match k with
+    | O => 1%nat
+    | S k => (match n with
+               | O => 0%nat
+               | S n => (conv n k) + (conv n (S k))%nat
+              end)
+  end.
+
+Lemma conv_fact : forall (n:nat), (forall (k:nat),(n >= k)%nat -> ((conv n k) * (fact k) * (fact (n - k)) = (fact n))%nat) /\ forall (k:nat),(n < k)%nat -> ((conv n k) = 0%nat).
+Proof.
+move=> n.
+elim: n.
+apply conj.
+move=> k H1.
+suff: 0%nat = k.
+move=> H2.
+rewrite - H2.
+simpl.
+by [].
+apply (le_n_0_eq k H1).
+move=> k.
+case k.
+move=> H1.
+apply False_ind.
+apply (lt_0_neq 0 H1).
+by [].
+move=> n0 H1.
+simpl.
+by [].
+move=> n.
+move=> H1.
+apply conj.
+move=> k.
+case k.
+move=> H2.
+simpl conv.
+simpl fact.
+rewrite (mult_1_l 1).
+rewrite (mult_1_l (fact n + n * fact n)).
+by [].
+move=> k0.
+move=> H2.
+simpl.
+rewrite - {1}(mult_1_l (fact k0)).
+rewrite - (mult_plus_distr_r 1 k0 (fact k0)).
+rewrite (mult_assoc_reverse (conv n k0 + conv n (S k0)) ((1 + k0) * fact k0) (fact (n - k0)))%nat.
+rewrite (mult_plus_distr_r (conv n k0) (conv n (S k0)) ((1 + k0) * fact k0 * fact (n - k0))).
+rewrite - (mult_assoc_reverse (conv n k0) ((1 + k0) * fact k0) (fact (n - k0)))%nat.
+rewrite - (mult_assoc_reverse (conv n k0) (1 + k0) (fact k0))%nat.
+rewrite (mult_comm (conv n k0) (1 + k0)).
+rewrite (mult_assoc_reverse ((1 + k0) * conv n k0) (fact k0) (fact (n - k0)))%nat.
+rewrite (mult_assoc_reverse (1 + k0) (conv n k0) (fact k0 * fact (n - k0)))%nat.
+rewrite - (mult_assoc_reverse (conv n k0) (fact k0) (fact (n - k0)))%nat.
+rewrite (proj1 H1 k0 (le_S_n k0 n H2)).
+move: H1.
+case (le_S_n k0 n H2).
+move=> H1.
+rewrite (proj2 H1 (S k0)).
+simpl.
+by [].
+by [].
+move=> m H3 H4.
+suff: fact (S k0) = ((1 + k0)%nat * (fact k0))%nat.
+move=> H5.
+rewrite - H5.
+rewrite - (minus_Sn_m m k0 H3).
+suff: fact (S (m - k0)) = ((S (m - k0)%nat) * fact (S m - S k0))%nat.
+move=> H6.
+rewrite H6.
+rewrite (mult_comm (S (m - k0)) (fact (S m - S k0))).
+rewrite - (mult_assoc_reverse (fact (S k0)) (fact (S m - S k0)) (S (m - k0))).
+rewrite - (mult_assoc_reverse  (conv (S m) (S k0)) (fact (S k0) * fact (S m - S k0)) (S (m - k0))).
+rewrite - (mult_assoc_reverse  (conv (S m) (S k0)) (fact (S k0)) (fact (S m - S k0))).
+rewrite (proj1 H4 (S k0)).
+suff: (S (m - k0) = m - k0 + 1)%nat.
+move=> H7.
+rewrite H7.
+simpl.
+rewrite (mult_comm (fact m + m * fact m) (m - k0 + 1)).
+rewrite - (plus_assoc (fact m + m * fact m) (k0 * (fact m + m * fact m)) ((m - k0 + 1) * (fact m + m * fact m))).
+rewrite - (mult_plus_distr_r k0 (m - k0 + 1) (fact m + m * fact m)).
+suff: (k0 + (m - k0 + 1))%nat = (1 + m)%nat.
+move=> H8.
+rewrite H8.
+rewrite (mult_plus_distr_r 1 m (fact m + m * fact m)).
+rewrite (mult_1_l (fact m + m * fact m)).
+by [].
+rewrite (plus_assoc k0 (m - k0) 1).
+rewrite (le_plus_minus_r k0 m H3).
+apply (plus_comm m 1).
+elim (m - k0)%nat.
+by [].
+move=> n0 H7.
+rewrite {1}H7.
+by [].
+apply (le_n_S k0 m H3).
+by [].
+by [].
+move=> k.
+elim k.
+move=> H2.
+apply False_ind.
+apply (lt_not_le (S n) 0 H2).
+elim n.
+apply (le_Sn_le 0 1).
+by [].
+move=> n0.
+move=> H3.
+apply (le_Sn_le 0 (S (S n0))).
+apply (le_n_S 0 (S n0) H3).
+move=> n0 H2 H3.
+simpl.
+rewrite (proj2 H1 n0).
+rewrite (proj2 H1 (S n0)).
+by [].
+apply (le_Sn_le (S n) (S n0) H3).
+apply (le_S_n (S n) n0 H3).
+Qed.
+
+Lemma sigma_translation : forall (f : nat-> R) (n low high : nat),(high >= low /\ low >= n)%nat -> (sigma f low high) = (sigma (fun k:nat => f (k+n))%nat (low-n) (high-n)).
+Proof.
+move=> f.
+suff: forall n low high : nat,
+(high >= low)%nat /\ (low >= n)%nat -> (high - n - (low - n) = high - low)%nat.
+move=> H2.
+move=> n low high H1.
+rewrite /sigma.
+rewrite (H2 n low high H1).
+elim (high-low)%nat.
+rewrite /sum_f_R0.
+rewrite (plus_0_r (low - n)).
+rewrite (plus_0_r low).
+rewrite (plus_comm (low - n) n).
+rewrite - (le_plus_minus n low (proj2 H1)).
+by [].
+move=> n0 H3.
+simpl.
+rewrite H3.
+rewrite (plus_comm (low - n) (S n0)).
+rewrite - (plus_assoc (S n0) (low - n) n).
+rewrite (plus_comm (low - n) n).
+rewrite - (le_plus_minus n low (proj2 H1)).
+rewrite (plus_comm (S n0) low).
+by [].
+move=> n.
+elim n.
+move=> low high H1.
+simpl.
+rewrite - (minus_n_O low).
+rewrite - (minus_n_O high).
+by [].
+move=> n0.
+move=> H1.
+move=> low high.
+elim low.
+case.
+move=> H2 H3.
+apply False_ind.
+apply (le_not_gt (S n0) 0 H3).
+apply (gt_Sn_O n0).
+move=> low0.
+elim high.
+move=> H2.
+case.
+move=> H3 H4.
+apply False_ind.
+apply (le_not_gt (S low0) 0 H3).
+apply (gt_Sn_O low0).
+move=> high0.
+move=> H2 H3 H4.
+simpl.
+apply (H1 low0 high0).
+apply conj.
+apply (le_S_n low0 high0 (proj1 H4)).
+apply (le_S_n n0 low0 (proj2 H4)).
+Qed.
+
+Definition Rsequence := nat -> R.
+
+Definition RSequencePlus (f g : Rsequence) : Rsequence := (fun n => (f n) + (g n)).
+
+Definition RSequenceMultR (r : R) (f : Rsequence) : Rsequence := (fun n => r * (f n)).
+
+Definition RSequenceOpp (f : Rsequence) : Rsequence := (fun n => - (f n)).
+
+Definition RSequenceMinus (f g : Rsequence) : Rsequence := (fun n => (f n) - (g n)).
+
+Definition RSequenceMult (f g : Rsequence) : Rsequence := (fun n => (f n) * (g n)).
+
+Definition RSequenceInv (f : Rsequence) : Rsequence := (fun n => 1 / (f n)).
+
+Definition RSequenceDiv (f g : Rsequence) : Rsequence := (fun n => (f n) / (g n)).
+
+Lemma Sigma_Same : forall (f g : Rsequence) (low high : nat), (low <= high)%nat -> (forall k:nat, (low <= k <= high)%nat -> (f k) = (g k)) -> (sigma f low high) = (sigma g low high).
+
+Proof.
+move=> f g low high.
+elim high.
+move=> H1 H2.
+rewrite /sigma.
+simpl.
+rewrite - (plus_n_O low).
+apply (H2 low).
+by [].
+move=> high0 H1 H2 H3.
+elim (le_lt_or_eq low (S high0) H2).
+move=> H4.
+rewrite ((sigma_last f) low (S high0)).
+rewrite ((sigma_last g) low (S high0)).
+simpl.
+rewrite H1.
+rewrite (H3 (S high0)).
+by [].
+by [].
+apply (le_S_n low high0 H4).
+move=> k H5.
+apply H3.
+apply conj.
+apply (proj1 H5).
+apply le_S.
+apply (proj2 H5).
+apply H4.
+apply H4.
+move=> H4.
+rewrite - H4.
+rewrite (sigma_eq_arg f low).
+rewrite (sigma_eq_arg g low).
+apply (H3 low).
+by [].
+Qed.
+
+Lemma Sigma_Plus : forall (f g : Rsequence) (low high : nat),(sigma (RSequencePlus f g) low high) = (sigma f low high) + (sigma g low high).
+Proof.
+move=> f g low high.
+rewrite /sigma.
+elim (high-low)%nat.
+rewrite /RSequencePlus.
+simpl.
+by [].
+move=> n H1.
+simpl.
+rewrite H1.
+rewrite /RSequencePlus.
+rewrite - (Rplus_assoc (sum_f_R0 (fun k : nat => f (low + k)%nat) n + f (low + S n)%nat) (sum_f_R0 (fun k : nat => g (low + k)%nat) n) (g (low + S n)%nat)).
+rewrite (Rplus_assoc (sum_f_R0 (fun k : nat => f (low + k)%nat) n) (f (low + S n)%nat) (sum_f_R0 (fun k : nat => g (low + k)%nat) n)).
+rewrite (Rplus_comm (f (low + S n)%nat) (sum_f_R0 (fun k : nat => g (low + k)%nat) n)).
+rewrite - (Rplus_assoc (sum_f_R0 (fun k : nat => f (low + k)%nat) n) (sum_f_R0 (fun k : nat => g (low + k)%nat) n) (f (low + S n)%nat)).
+rewrite (Rplus_assoc (sum_f_R0 (fun k : nat => f (low + k)%nat) n + sum_f_R0 (fun k : nat => g (low + k)%nat) n) (f (low + S n)%nat) (g (low + S n)%nat)).
+by [].
+Qed.
+
+Lemma Sigma_Mult : forall (r : R) (f : Rsequence) (low high : nat),(sigma (RSequenceMultR r f) low high) = r * (sigma f low high).
+Proof.
+move=> r f low high.
+rewrite /sigma.
+elim (high-low)%nat.
+rewrite /RSequenceMultR.
+simpl.
+by [].
+move=> n H1.
+simpl.
+rewrite H1.
+rewrite /RSequenceMultR.
+rewrite (Rmult_plus_distr_l r (sum_f_R0 (fun k : nat => f (low + k)%nat) n) (f (low + S n)%nat)).
+by [].
+Qed.
+
+Theorem Binomial_Theorem : forall (n : nat) (x y : R), (pow (x + y) n) = (sigma (fun k => (INR (conv n k)) * (pow x k) * (pow y (n - k))) 0 n).
+Proof.
+move=> n x y.
+elim n.
+rewrite /sigma.
+rewrite /sum_f_R0.
+simpl.
+rewrite (Rmult_1_l 1).
+rewrite (Rmult_1_l 1).
+by [].
+move=> n0 H1.
+suff: ((x + y) ^ S n0) = ((x + y) * (x + y) ^ n0).
+move=> H2.
+rewrite H2.
+rewrite H1.
+rewrite - (Sigma_Mult (x + y) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ (n0 - k)) 0 n0).
+rewrite /RSequenceMultR.
+suff: (sigma
+  (fun k : nat => (x + y) * (INR (conv n0 k) * x ^ k * y ^ (n0 - k)))
+  0 n0) = (sigma
+  (fun k : nat => (INR (conv n0 k) * x ^ (S k) * y ^ (n0 - k)))
+  0 n0) + (sigma
+  (fun k : nat => (INR (conv n0 k) * x ^ k * y ^ (S n0 - k)))
+  0 n0).
+move=> H3.
+rewrite H3.
+suff: sigma (fun k : nat => INR (conv n0 k) * x ^ S k * y ^ (n0 - k)) 0 n0 = sigma (fun k : nat => INR (conv n0 (k - 1)) * x ^ k * y ^ ((S n0 - k))) (S 0) (S n0).
+move=> H4.
+rewrite H4.
+suff: sigma (fun k : nat => INR (conv n0 (k - 1)) * x ^ k * y ^ (S n0 - k)) 1 (S n0) = 
+sigma (fun k : nat => match k with | O => 0
+| S k => INR (conv n0 k) * x ^ (S k) * y ^ (n0 - k) end) 0
+  (S n0).
+move=> H5.
+rewrite H5.
+suff: sigma (fun k : nat => INR (conv n0 k) * x ^ k * y ^ (S n0 - k)) 0 n0 = sigma (fun k : nat => INR (conv n0 k) * x ^ k * y ^ S (n0 - k)) 0 (S n0).
+move=> H6.
+rewrite H6.
+rewrite - (Sigma_Plus (fun k : nat =>
+   match k with
+   | 0%nat => 0
+   | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
+   end) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ S (n0 - k)) 0 (S n0)).
+suff: forall k:nat, (k <= (S n0))%nat -> ((RSequencePlus
+     (fun k : nat =>
+      match k with
+      | 0%nat => 0
+      | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
+      end) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ S (n0 - k))) k) = ((fun k : nat => INR (conv (S n0) k) * x ^ k * y ^ (S n0 - k)) k).
+move=> H7.
+apply (Sigma_Same (RSequencePlus
+     (fun k : nat =>
+      match k with
+      | 0%nat => 0
+      | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
+      end) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ S (n0 - k))) (fun k : nat => INR (conv (S n0) k) * x ^ k * y ^ (S n0 - k))
+0 (S n0)
+).
+apply (le_0_n (S n0)).
+rewrite /RSequencePlus.
+move=> k H8.
+elim k.
+elim n0.
+simpl.
+apply (Rplus_0_l (1 * 1 * (y * 1))).
+move=> n1 H9.
+simpl.
+apply (Rplus_0_l (1 * 1 * (y * (y * y ^ n1)))).
+move=> k0 H9.
+elim (le_or_lt (S k0) n0).
+move=> H10.
+rewrite (minus_Sn_m n0 (S k0) H10).
+simpl.
+rewrite (plus_INR (conv n0 k0) (conv n0 (S k0))).
+rewrite (Rmult_plus_distr_r (INR (conv n0 k0)) (INR (conv n0 (S k0))) (x * x ^ k0)).
+rewrite (Rmult_plus_distr_r (INR (conv n0 k0) * (x * x ^ k0)) (INR (conv n0 (S k0)) * (x * x ^ k0)) (y ^ (n0 - k0))).
+by [].
+move=> H10.
+simpl.
+rewrite (proj2 (conv_fact n0) (S k0) H10).
+simpl.
+rewrite (Rmult_0_l (x * x ^ k0)).
+rewrite (Rmult_0_l (y * y ^ (n0 - S k0))).
+rewrite (Rplus_0_r (INR (conv n0 k0) * (x * x ^ k0) * y ^ (n0 - k0))).
+rewrite - (plus_n_O (conv n0 k0)).
+by [].
+move=> k H7.
+rewrite /RSequencePlus.
+elim k.
+elim n0.
+simpl.
+apply (Rplus_0_l (1 * 1 * (y * 1))).
+move=> n1 H8.
+simpl.
+apply (Rplus_0_l (1 * 1 * (y * (y * y ^ n1)))).
+move=> k0 H8.
+elim (le_or_lt (S k0) n0).
+move=> H9.
+rewrite (minus_Sn_m n0 (S k0) H9).
+simpl.
+rewrite (plus_INR (conv n0 k0) (conv n0 (S k0))).
+rewrite (Rmult_plus_distr_r (INR (conv n0 k0)) (INR (conv n0 (S k0))) (x * x ^ k0)).
+rewrite (Rmult_plus_distr_r (INR (conv n0 k0) * (x * x ^ k0)) (INR (conv n0 (S k0)) * (x * x ^ k0)) (y ^ (n0 - k0))).
+by [].
+move=> H10.
+simpl.
+rewrite (proj2 (conv_fact n0) (S k0) H10).
+simpl.
+rewrite (Rmult_0_l (x * x ^ k0)).
+rewrite (Rmult_0_l (y * y ^ (n0 - S k0))).
+rewrite (Rplus_0_r (INR (conv n0 k0) * (x * x ^ k0) * y ^ (n0 - k0))).
+rewrite - (plus_n_O (conv n0 k0)).
+by [].
+rewrite ((sigma_last (fun k : nat => INR (conv n0 k) * x ^ k * y ^ S (n0 - k))) 0%nat (S n0)).
+rewrite (proj2 (conv_fact n0) (S n0)).
+simpl.
+rewrite (Rmult_0_l (x * x ^ n0)).
+rewrite (Rmult_0_l (y * y ^ (n0 - S n0))).
+rewrite (Rplus_0_l (sigma (fun k : nat => INR (conv n0 k) * x ^ k * (y * y ^ (n0 - k))) 0
+  n0)).
+rewrite (Sigma_Same (fun k : nat =>
+   INR (conv n0 k) * x ^ k * y ^ match k with
+                                 | 0 => S n0
+                                 | S l => n0 - l
+                                 end) (fun k : nat => INR (conv n0 k) * x ^ k * (y * y ^ (n0 - k))) 0 n0).
+by [].
+apply (le_O_n n0).
+move=> k.
+elim k.
+move=> H6.
+simpl.
+rewrite - (minus_n_O n0).
+by [].
+move=> n1 H6 H7.
+suff: y ^ S (n0 - S n1) = y * y ^ (n0 - S n1).
+move=> H8.
+rewrite - H8.
+rewrite (minus_Sn_m n0 (S n1)).
+simpl.
+by [].
+apply (proj2 H7).
+by []. 
+by [].
+apply (le_n_S 0 n0).
+apply (le_O_n n0).
+rewrite ((sigma_first (fun k : nat =>
+   match k with
+   | 0%nat => 0
+   | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
+   end)) 0%nat (S n0)).
+rewrite (Rplus_0_l (sigma
+  (fun k : nat =>
+   match k with
+   | 0%nat => 0
+   | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
+   end) 1 (S n0))).
+by [].
+apply (le_n_S 0 n0).
+apply (le_O_n n0).
+rewrite (sigma_translation (fun k : nat => INR (conv n0 (k - 1)) * x ^ k * y ^ (S n0 - k)) 1 1 (S n0)).
+simpl Nat.sub.
+rewrite - (minus_n_O n0).
+apply (Sigma_Same (fun k : nat => INR (conv n0 k) * x ^ S k * y ^ (n0 - k)) (fun k : nat =>
+   INR (conv n0 (k + 1 - 1)) * x ^ (k + 1) *
+   y ^ match (k + 1)%nat with
+       | 0 => S n0
+       | S l => n0 - l
+       end) 0 n0).
+apply (le_O_n n0).
+move=> k H4.
+rewrite - (plus_Snm_nSm k 0).
+rewrite - (plus_n_O (S k)).
+simpl Nat.sub.
+rewrite - (minus_n_O k).
+by [].
+apply conj.
+apply (le_n_S 0 n0).
+apply (le_0_n n0).
+by [].
+rewrite - (Sigma_Plus (fun k : nat => INR (conv n0 k) * x ^ S k * y ^ (n0 - k)) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ (S n0 - k)) 0 n0).
+apply (Sigma_Same (fun k : nat => (x + y) * (INR (conv n0 k) * x ^ k * y ^ (n0 - k))) (RSequencePlus (fun k : nat => INR (conv n0 k) * x ^ S k * y ^ (n0 - k))
+     (fun k : nat => INR (conv n0 k) * x ^ k * y ^ (S n0 - k))) 0 n0).
+apply (le_0_n n0).
+move=> k H3.
+rewrite /RSequencePlus.
+rewrite (Rmult_plus_distr_r x y (INR (conv n0 k) * x ^ k * y ^ (n0 - k))).
+rewrite - (Rmult_assoc x (INR (conv n0 k) * x ^ k) (y ^ (n0 - k))).
+rewrite - (Rmult_assoc x (INR (conv n0 k)) (x ^ k)).
+rewrite (Rmult_comm x (INR (conv n0 k))).
+rewrite - (Rmult_assoc y (INR (conv n0 k) * x ^ k) (y ^ (n0 - k))).
+rewrite - (Rmult_assoc y (INR (conv n0 k)) (x ^ k)).
+rewrite (Rmult_comm y (INR (conv n0 k))).
+rewrite (Rmult_assoc (INR (conv n0 k)) y (x ^ k)).
+rewrite (Rmult_comm y (x ^ k)).
+rewrite - (Rmult_assoc (INR (conv n0 k)) (x ^ k) y).
+rewrite (Rmult_assoc (INR (conv n0 k) * x ^ k) y (y ^ (n0 - k))).
+rewrite - (minus_Sn_m n0 k).
+simpl.
+rewrite (Rmult_assoc (INR (conv n0 k)) x (x ^ k)).
+by [].
+apply (proj2 H3).
+by [].
+Qed.
+
+Definition is_max_N :=
+fun (E : (Ensemble nat)) (m : nat) => (In nat E m) /\ forall x : nat, (In nat E x) -> (x <= m)%nat.
+
+Definition is_min_N :=
+fun (E : (Ensemble nat)) (m : nat) => (In nat E m) /\ forall x : nat, (In nat E x) -> (x >= m)%nat.
+
+Lemma Finite_max_R : forall (U : Ensemble R), (Finite R U) -> (Inhabited R U) -> exists m : R, (is_max U m).
+Proof. 
+move=> U H1.
+elim H1.
+move=> H2.
+apply False_ind.
+elim H2.
+move=> x H3.
+elim H3.
+move=> A H2 H3 x H4 H5.
+move: H3.
+elim H2.
+exists x.
+apply conj.
+apply (Union_intror R (Empty_set R) (Singleton R x) x).
+apply (In_singleton R x).
+move=> x0.
+elim.
+move=> x1.
+elim.
+move=> x1.
+elim.
+apply (Req_le x x).
+by [].
+move=> A0 H6 H7 x0 H8.
+elim.
+move=> x1.
+move=> H9.
+elim (R_R_exist_max x x1).
+move=> m H10.
+exists m.
+apply conj.
+elim (proj1 H10).
+apply (Union_intror R (Add R A0 x0) (Singleton R x) x).
+apply (In_singleton R x).
+apply (Union_introl R (Add R A0 x0) (Singleton R x) x1).
+apply H9.
+move=> x2.
+elim.
+move=> x3 H11.
+apply (Rle_trans x3 x1 m).
+apply (proj2 H9 x3 H11).
+apply (proj2 H10 x1).
+apply (Couple_r R x x1).
+move=> x3.
+elim.
+apply (proj2 H10 x).
+apply (Couple_l R x x1).
+exists x0.
+apply (Union_intror R A0 (Singleton R x0) x0).
+apply (In_singleton R x0).
+Qed.
+
+Lemma Finite_min_R : forall (U : Ensemble R), (Finite R U) -> (Inhabited R U) -> exists m : R, (is_min U m).
+Proof. 
+move=> U H1.
+elim H1.
+move=> H2.
+apply False_ind.
+elim H2.
+move=> x H3.
+elim H3.
+move=> A H2 H3 x H4 H5.
+move: H3.
+elim H2.
+exists x.
+apply conj.
+apply (Union_intror R (Empty_set R) (Singleton R x) x).
+apply (In_singleton R x).
+move=> x0.
+elim.
+move=> x1.
+elim.
+move=> x1.
+elim.
+apply (Req_ge x x).
+by [].
+move=> A0 H6 H7 x0 H8.
+elim.
+move=> x1.
+move=> H9.
+elim (R_R_exist_min x x1).
+move=> m H10.
+exists m.
+apply conj.
+elim (proj1 H10).
+apply (Union_intror R (Add R A0 x0) (Singleton R x) x).
+apply (In_singleton R x).
+apply (Union_introl R (Add R A0 x0) (Singleton R x) x1).
+apply H9.
+move=> x2.
+elim.
+move=> x3 H11.
+apply (Rge_trans x3 x1 m).
+apply (proj2 H9 x3 H11).
+apply (proj2 H10 x1).
+apply (Couple_r R x x1).
+move=> x3.
+elim.
+apply (proj2 H10 x).
+apply (Couple_l R x x1).
+exists x0.
+apply (Union_intror R A0 (Singleton R x0) x0).
+apply (In_singleton R x0).
+Qed.
+
+Lemma Finite_max_nat : forall (U : Ensemble nat), (Finite nat U) -> (Inhabited nat U) -> exists m : nat, (is_max_N U m).
+Proof. 
+move=> U H1.
+elim H1.
+move=> H2.
+apply False_ind.
+elim H2.
+move=> x H3.
+elim H3.
+move=> A H2 H3 x H4 H5.
+move: H3.
+elim H2.
+exists x.
+apply conj.
+apply (Union_intror nat (Empty_set nat) (Singleton nat x) x).
+apply (In_singleton nat x).
+move=> x0.
+elim.
+move=> x1.
+elim.
+move=> x1.
+elim.
+by [].
+move=> A0 H6 H7 x0 H8.
+elim.
+move=> x1.
+move=> H9.
+exists (max x x1).
+apply conj.
+apply (Nat.max_case_strong x x1).
+move=> H10.
+apply (Union_intror nat (Add nat A0 x0) (Singleton nat x) x).
+apply (In_singleton nat x).
+move=> H10.
+apply (Union_introl nat (Add nat A0 x0) (Singleton nat x) x1).
+apply (proj1 H9).
+move=> x2.
+elim.
+move=> x3 H10.
+apply (le_trans x3 x1 (Init.Nat.max x x1)).
+apply (proj2 H9 x3 H10).
+apply (Nat.le_max_r x x1).
+move=> x3.
+elim.
+apply (Nat.le_max_l x x1).
+exists x0.
+apply (Union_intror nat A0 (Singleton nat x0) x0).
+apply (In_singleton nat x0).
+Qed.
+
+Lemma Finite_min_nat : forall (U : Ensemble nat), (Finite nat U) -> (Inhabited nat U) -> exists m : nat, (is_min_N U m).
+Proof.
+move=> U H1.
+elim H1.
+move=> H2.
+apply False_ind.
+elim H2.
+move=> x H3.
+elim H3.
+move=> A H2 H3 x H4 H5.
+move: H3.
+elim H2.
+exists x.
+apply conj.
+apply (Union_intror nat (Empty_set nat) (Singleton nat x) x).
+apply (In_singleton nat x).
+move=> x0.
+elim.
+move=> x1.
+elim.
+move=> x1.
+elim.
+by [].
+move=> A0 H6 H7 x0 H8.
+elim.
+move=> x1.
+move=> H9.
+exists (min x x1).
+apply conj.
+apply (Nat.min_case_strong x x1).
+move=> H10.
+apply (Union_intror nat (Add nat A0 x0) (Singleton nat x) x).
+apply (In_singleton nat x).
+move=> H10.
+apply (Union_introl nat (Add nat A0 x0) (Singleton nat x) x1).
+apply (proj1 H9).
+move=> x2.
+elim.
+move=> x3 H10.
+apply (le_trans (Init.Nat.min x x1) x1 x3).
+apply (Nat.le_min_r x x1).
+apply (proj2 H9 x3 H10).
+move=> x3.
+elim.
+apply (Nat.le_min_l x x1).
+exists x0.
+apply (Union_intror nat A0 (Singleton nat x0) x0).
+apply (In_singleton nat x0).
+Qed.
+
+Lemma Finite_Set_Included : forall (U : Type) (A B : Ensemble U), (Finite U B) -> (Included U A B) -> (Finite U A).
+Proof.
+suff: forall (U : Type) (B : Ensemble U), (Finite U B) -> forall (A : Ensemble U), (Included U A B) -> (Finite U A).
+move=> H1 U A B H2 H3.
+apply (H1 U B H2 A H3).
+move=> U B.
+elim.
+move=> A H1.
+suff: A = (Empty_set U).
+move=> H2.
+rewrite H2.
+apply (Empty_is_finite U).
+apply (Extensionality_Ensembles U A (Empty_set U)).
+apply conj.
+move=> x H2.
+elim (H1 x H2).
+move=> x H2.
+elim H2.
+move=> B0 H1 H2.
+move=> x H3 A H4.
+elim (classic (In U A x)).
+move=> H5.
+suff: Included U (Subtract U A x) B0.
+move=> H6.
+suff: A = (Add U (Subtract U A x) x).
+move=> H7.
+rewrite H7.
+apply (Union_is_finite U (Subtract U A x) (H2 (Subtract U A x) H6) x).
+move=> H8.
+apply (proj2 H8).
+by [].
+apply (Extensionality_Ensembles U A (Add U (Subtract U A x) x)).
+apply conj.
+move=> y H7.
+elim (classic (x = y)).
+move=> H8.
+apply (Union_intror U (Subtract U A x) (Singleton U x)).
+rewrite H8.
+by [].
+move=> H8.
+apply (Union_introl U (Subtract U A x) (Singleton U x)).
+apply conj.
+apply H7.
+move=> H9.
+apply H8.
+elim H9.
+by [].
+move=> y.
+elim.
+move=> y0 H7.
+apply (proj1 H7).
+move=> y0 H7.
+elim H7.
+apply H5.
+move=> y H6.
+move : (proj2 H6).
+elim (H4 y (proj1 H6)).
+move=> y0.
+move=> H7 H8.
+apply H7.
+move=> y0 H7 H8.
+apply False_ind.
+apply (H8 H7).
+move=> H5.
+apply (H2 A).
+move=> y H6.
+suff: In U A y.
+elim (H4 y).
+move=> y0.
+move=> H7 H8.
+apply H7.
+move=> y0 H7 H8.
+apply False_ind.
+apply H5.
+rewrite H7.
+apply H8.
+apply H6.
+apply H6.
+Qed.
+
+Lemma Finite_Set_And_l : forall (U : Type) (A B : Ensemble U), (Finite U A) -> (Finite U (Intersection U A B)).
+Proof.
+move=> U A B H1.
+apply (Finite_Set_Included U (Intersection U A B) A).
+apply H1.
+move=> x H2.
+elim H2.
+move=> y H3 H4.
+apply H3.
+Qed.
+
+Lemma Finite_Set_And_r : forall (U : Type) (A B : Ensemble U), (Finite U B) -> (Finite U (Intersection U A B)).
+Proof.
+move=> U A B H1.
+apply (Finite_Set_Included U (Intersection U A B) B).
+apply H1.
+move=> x H2.
+elim H2.
+move=> y H3.
+apply.
+Qed.
+
+Lemma Finite_Set_Or : forall (U : Type) (A B : Ensemble U), (Finite U A) -> (Finite U B) -> (Finite U (Union U A B)).
+Proof.
+move=> U A B H1.
+elim.
+suff: A = (Union U A (Empty_set U)).
+move=> H2.
+rewrite - H2.
+apply H1.
+apply (Extensionality_Ensembles U A (Union U A (Empty_set U))).
+apply conj.
+move=> x H2.
+apply (Union_introl U A (Empty_set U) x H2).
+move=> x.
+elim.
+move=> x0.
+apply.
+move=> x0.
+elim.
+move=> B0 H2 H3.
+move=> x H4.
+elim (classic (In U A x)).
+move=> H5.
+suff: (Union U A B0) = (Union U A (Add U B0 x)).
+move=> H6.
+rewrite - H6.
+apply H3.
+apply (Extensionality_Ensembles U (Union U A B0) (Union U A (Add U B0 x))).
+apply conj.
+move=> y.
+elim.
+move=> y0 H6.
+apply (Union_introl U A (Add U B0 x) y0 H6).
+move=> y0 H6.
+apply (Union_intror U A (Add U B0 x) y0).
+apply (Union_introl U B0 (Singleton U x) y0 H6).
+move=> y.
+elim.
+move=> y0 H6.
+apply (Union_introl U A B0 y0 H6).
+move=> y0.
+elim.
+move=> y1 H6.
+apply (Union_intror U A B0 y1 H6).
+move=> y1 H6.
+apply (Union_introl U A B0 y1).
+rewrite - H6.
+apply H5.
+move=> H5.
+suff: (Union U A (Add U B0 x)) = (Add U (Union U A B0) x).
+move=> H6.
+rewrite H6.
+apply (Union_is_finite U (Union U A B0) H3 x).
+move=> H7.
+move: H7 H4 H5.
+elim.
+move=> x0 H7 H8 H9.
+apply (H9 H7).
+move=> x0 H7 H8 H9.
+apply (H8 H7).
+apply (Extensionality_Ensembles U (Union U A (Add U B0 x)) (Add U (Union U A B0) x)).
+apply conj.
+move=> y.
+elim.
+move=> y0 H6.
+apply (Union_introl U (Union U A B0) (Singleton U x) y0).
+apply (Union_introl U A B0 y0 H6).
+move=> y0.
+elim.
+move=> y1 H6.
+apply (Union_introl U (Union U A B0) (Singleton U x) y1).
+apply (Union_intror U A B0 y1 H6).
+move=> y1 H6.
+apply (Union_intror U (Union U A B0) (Singleton U x) y1 H6).
+move=> y0.
+elim.
+move=> y1.
+elim.
+move=> y2 H6.
+apply (Union_introl U A (Add U B0 x) y2 H6).
+move=> y2 H6.
+apply (Union_intror U A (Add U B0 x) y2).
+apply (Union_introl U B0 (Singleton U x) y2 H6).
+move=> y2 H6.
+apply (Union_intror U A (Add U B0 x) y2).
+apply (Union_intror U B0 (Singleton U x) y2 H6).
+Qed.
+
+Lemma nat_cardinal : forall (n : nat) , cardinal nat (fun x : nat => (x < n)%nat) n.
+Proof.
+move=> n.
+elim n.
+suff: (fun x : nat => (x < 0)%nat) = (Empty_set nat).
+move=> H1.
+rewrite H1.
+apply (card_empty nat).
+apply (Extensionality_Ensembles nat (fun x : nat => (x < 0)%nat) (Empty_set nat)).
+apply conj.
+move=> m H1.
+apply False_ind.
+apply (le_not_lt 0 m).
+apply (le_O_n m).
+apply H1.
+move=> m.
+elim.
+move=> n0 H1.
+suff: (Add nat (fun x : nat => (x < n0)%nat) n0) = (fun x : nat => (x < S n0)%nat).
+move=> H2.
+rewrite - H2.
+apply (card_add nat (fun x : nat => (x < n0)%nat) n0 H1 n0).
+move=> H3.
+apply (le_Sn_n n0 H3).
+apply (Extensionality_Ensembles nat (Add nat (fun x : nat => (x < n0)%nat) n0) (fun x : nat => (x < S n0)%nat)).
+apply conj.
+move=> x.
+elim.
+move=> x0 H2.
+apply (lt_trans x0 n0 (S n0)).
+apply H2.
+by [].
+move=> x0 H2.
+rewrite H2.
+by [].
+move=> x H2.
+elim (le_lt_or_eq (S x) (S n0)).
+move=> H3.
+apply (Union_introl nat (fun x0 : nat => (x0 < n0)%nat) (Singleton nat n0) x).
+apply (lt_S_n x n0 H3).
+move=> H3.
+apply (Union_intror nat (fun x0 : nat => (x0 < n0)%nat) (Singleton nat n0) x).
+rewrite - (Nat.pred_succ n0).
+rewrite - (Nat.pred_succ x).
+rewrite H3.
+by [].
+apply H2.
+Qed.
+
+Lemma Exist_min_nat : forall (U : Ensemble nat), (Inhabited nat U) -> exists m : nat, (is_min_N U m).
+Proof.
+move=> U.
+elim.
+move=> n H1.
+elim (classic (Inhabited nat (Intersection nat U (fun x:nat => (x < n)%nat)))).
+move=> H2.
+elim (Finite_min_nat (Intersection nat U (fun x : nat => (x < n)%nat))).
+move=> x H3.
+exists x.
+apply conj.
+elim (proj1 H3).
+move=> y H4 H5.
+apply H4.
+move=> y.
+elim (le_or_lt n y).
+move=> H4 H5.
+apply (le_trans x n y).
+apply (le_trans x (S x) n).
+apply (le_S x).
+apply (le_n x).
+elim (proj1 H3).
+move=> y0 H6.
+apply.
+apply H4.
+move=> H4 H5.
+apply ((proj2 H3) y).
+apply (Intersection_intro nat U (fun x0 : nat => (x0 < n)%nat) y H5).
+apply H4.
+apply (Finite_Set_And_r nat U (fun x : nat => (x < n)%nat)).
+apply (cardinal_finite nat (fun x : nat => (x < n)%nat) n (nat_cardinal n)).
+apply H2.
+move=> H2.
+exists n.
+apply conj.
+apply H1.
+move=> x.
+move=> H3.
+elim (le_or_lt n x).
+apply.
+move=> H4.
+apply False_ind.
+apply H2.
+apply (Inhabited_intro nat (Intersection nat U (fun x0 : nat => (x0 < n)%nat)) x).
+apply (Intersection_intro nat U (fun x0 : nat => (x0 < n)%nat) x H3 H4).
+Qed.
+
+Definition UR := fun (a eps : R) => (fun (x : R) => R_dist x a < eps).
+
+Lemma Formula_2_5 : forall (An : nat -> R) (x : R), (Un_cv An x) <-> forall (eps : R), (eps > 0) -> (Finite nat (fun (n : nat) => ~(In R (UR x eps) (An n)))).
+Proof.
+move=> An x.
+apply conj.
+move=> H1 eps H2.
+elim (H1 eps H2).
+move=> n H3.
+apply (Finite_Set_Included nat (fun n0 : nat => ~ In R (UR x eps) (An n0)) (fun x : nat => (x < n)%nat)).
+apply (cardinal_finite nat (fun x : nat => (x < n)%nat) n (nat_cardinal n)).
+move=> n0 H4.
+elim (le_or_lt n n0).
+move=> H5.
+apply False_ind.
+apply H4.
+apply (H3 n0 H5).
+apply.
+move=> H1 eps H2.
+elim (classic (Inhabited nat (fun n : nat => ~ In R (UR x eps) (An n)))).
+move=> H8.
+elim (Finite_max_nat (fun n : nat => ~ In R (UR x eps) (An n)) (H1 eps H2)).
+move=> n.
+move=> H3.
+exists (S n).
+move=> n0 H5.
+apply (Rnot_ge_lt (R_dist (An n0) x) eps).
+move=> H6.
+apply (le_not_gt (S n) n0 H5).
+apply (le_n_S n0 n).
+apply (proj2 H3 n0).
+move=> H7.
+apply (Rlt_not_ge (R_dist (An n0) x) eps H7 H6).
+apply H8.
+move=> H3.
+exists O.
+move=> n H4.
+apply (Rnot_ge_lt (R_dist (An n) x) eps).
+move=> H5.
+apply H3.
+apply (Inhabited_intro nat (fun n0 : nat => ~ In R (UR x eps) (An n0)) n).
+apply (Rge_not_lt (R_dist (An n) x) eps H5).
+Qed.
+
+Lemma Formula_2_6 : forall (An Bn : nat -> R), (Finite nat (fun n : nat => (An n) <> (Bn n))) -> forall (x : R), (Un_cv An x) <-> (Un_cv Bn x).
+Proof.
+suff: forall (An Bn : nat -> R), (Finite nat (fun n : nat => (An n) <> (Bn n))) -> forall (x : R), (Un_cv An x) -> (Un_cv Bn x).
+move=> H1.
+move=> An Bn H2 x.
+apply conj.
+apply (H1 An Bn H2 x).
+suff: (fun n : nat => An n <> Bn n) = (fun n : nat => Bn n <> An n).
+move=> H3.
+rewrite H3 in H2.
+apply (H1 Bn An H2 x).
+apply (Extensionality_Ensembles nat (fun n : nat => An n <> Bn n) (fun n : nat => Bn n <> An n)).
+apply conj.
+move=> n H3.
+move=> H4.
+apply H3.
+rewrite H4.
+by [].
+move=> n H3.
+move=> H4.
+apply H3.
+rewrite H4.
+by [].
+move=> An Bn H1.
+elim (classic (Inhabited nat (fun n : nat => An n <> Bn n))).
+move=> H2.
+elim (Finite_max_nat (fun n : nat => An n <> Bn n) H1).
+move=> n.
+move=> H3 x H4.
+move=> eps H5.
+elim (H4 eps).
+move=> m H6.
+exists (max (S n) m).
+move=> k H7.
+elim (classic ((An k) = (Bn k))).
+move=> H8.
+rewrite - H8.
+apply (H6 k).
+apply (le_trans m (Init.Nat.max (S n) m) k).
+apply (Nat.le_max_r (S n) m).
+apply H7.
+move=> H8.
+apply False_ind.
+apply (le_not_gt (Init.Nat.max (S n) m) k H7).
+apply (le_trans (S k) (S n) (Init.Nat.max (S n) m)).
+apply (le_n_S k n).
+apply (proj2 H3 k).
+apply H8.
+apply (Nat.le_max_l (S n) m).
+apply H5.
+apply H2.
+move=> H2 x H3.
+move=> eps H4.
+elim (H3 eps).
+move=> n H5.
+exists n.
+move=> n0 H6.
+suff: (An n0) = (Bn n0).
+move=> H7.
+rewrite - H7.
+apply (H5 n0 H6).
+apply (NNPP (An n0 = Bn n0)).
+move=> H7.
+apply H2.
+apply (Inhabited_intro nat (fun n1 : nat => An n1 <> Bn n1) n0 H7).
+apply H4.
+Qed.
+
+Lemma Archimedes_Principle : forall (a b : R), (a > 0) -> (b > 0) -> exists (n : nat), (INR n) * a > b.
+move=> a b H1 H2.
+apply (NNPP (exists n : nat, INR n * a > b)).
+move=> H3.
+elim (My_completeness_of_upper (fun x : R => (exists n : nat, INR n = x))).
+move=> M H4.
+elim ((proj2 (proj1 Proposition_1_3 (fun x : R => exists n : nat, INR n = x) M) H4)).
+move=> H5 H6.
+elim (H6 (M-1)).
+move=> x.
+case.
+move=> H7 H8.
+elim H7.
+move=> n H9.
+apply (Rlt_not_le (x+1) M).
+rewrite - (Rplus_0_r M).
+rewrite - (Rplus_opp_l 1).
+rewrite - (Rplus_assoc M (- 1) 1).
+apply (Rplus_lt_compat_r 1 (M-1) x H8).
+apply (H5 (x+1)).
+exists (1 + n)%nat.
+rewrite (S_O_plus_INR n).
+rewrite H9.
+rewrite (Rplus_comm x 1).
+by [].
+rewrite - {2}(Rplus_0_r M).
+apply (Rplus_lt_compat_l M (- 1) 0).
+rewrite - Ropp_0.
+apply (Ropp_gt_lt_contravar 1 0).
+apply (Rlt_0_1).
+apply conj.
+apply (Inhabited_intro R (fun x : R => exists n : nat, INR n = x) 0).
+exists O.
+by [].
+exists (b/a).
+move=> x H4.
+elim H4.
+move=> n H5.
+apply (Rnot_lt_le (b / a) x).
+move=> H6.
+apply H3.
+exists n.
+rewrite H5.
+rewrite - (Rmult_1_r b).
+rewrite - (Rinv_l a).
+rewrite - (Rmult_assoc b (/ a) a).
+apply (Rmult_lt_compat_r a (b * /a) x).
+apply H1.
+apply H6.
+apply (Rgt_not_eq a 0).
+apply H1.
+Qed.
+
+Lemma Example_2_5 : (Un_cv (fun n : nat => 1 / (INR n)) 0).
+Proof.
+move=> eps H1.
+elim (Archimedes_Principle eps 1).
+move=> n H2.
+exists (max n 1).
+move=> n0 H3.
+rewrite /R_dist.
+rewrite /Rabs.
+elim (Rcase_abs (1 / INR n0 - 0)).
+move=> H4.
+apply False_ind.
+apply (Rlt_not_le 0 (1 / INR n0 - 0) H4).
+rewrite /Rminus.
+rewrite (Ropp_0).
+rewrite (Rplus_0_r (1 / INR n0)).
+apply (Rlt_le 0 (1 / INR n0)).
+apply (Rmult_lt_0_compat 1 (/ INR n0)).
+apply Rlt_0_1.
+apply (Rinv_0_lt_compat (INR n0)).
+apply (lt_0_INR n0).
+apply (le_trans 1 (Init.Nat.max n 1) n0).
+apply (Nat.le_max_r n 1).
+apply H3.
+move=> H4.
+rewrite /Rminus.
+rewrite (Ropp_0).
+rewrite (Rplus_0_r (1 / INR n0)).
+apply (Rmult_lt_reg_r (INR n0) (1 / INR n0) eps).
+apply (lt_0_INR n0).
+apply (le_trans 1 (Init.Nat.max n 1) n0).
+apply (Nat.le_max_r n 1).
+apply H3.
+rewrite (Rmult_assoc 1 (/ INR n0) (INR n0)).
+rewrite (Rinv_l (INR n0)).
+rewrite (Rmult_1_r 1).
+apply (Rlt_le_trans 1 (INR n * eps) (eps * INR n0)).
+apply H2.
+rewrite (Rmult_comm (INR n) eps).
+apply (Rmult_le_compat_l eps (INR n) (INR n0)).
+apply (Rlt_le 0 eps).
+apply H1.
+apply (le_INR n n0).
+apply (le_trans n (Init.Nat.max n 1) n0).
+apply (Nat.le_max_l n 1).
+apply H3.
+apply (Rgt_not_eq (INR n0) 0).
+apply (lt_0_INR n0).
+apply (le_trans 1 (Init.Nat.max n 1) n0).
+apply (Nat.le_max_r n 1).
+apply H3.
+apply H1.
+apply (Rlt_0_1).
+Qed.
+
+Lemma Proposition_2_3 : forall (An : nat -> R),forall (x y: R), (Un_cv An x) -> (Un_cv An y) -> x = y.
+Proof.
+move=> An x y H1 H2.
+elim (total_order_T (R_dist x y) 0).
+elim.
+move=> H3.
+apply False_ind.
+apply (Rlt_not_ge (R_dist x y) 0).
+apply H3.
+apply (R_dist_pos x y).
+apply (proj1 (R_dist_refl x y)).
+move=> H3.
+apply False_ind.
+elim (H1 ((R_dist x y) * / 2)).
+move=> n1 H4.
+elim (H2 ((R_dist x y) * / 2)).
+move=> n2 H5.
+apply (Rlt_irrefl (R_dist x y)).
+rewrite - {2}(eps2 (R_dist x y)).
+apply (Rle_lt_trans (R_dist x y) ((R_dist (An (Init.Nat.max n1 n2)) x) + (R_dist (An (Init.Nat.max n1 n2)) y)) (R_dist x y * / 2 + R_dist x y * / 2)).
+rewrite (R_dist_sym (An (Init.Nat.max n1 n2)) x).
+apply (R_dist_tri x y (An (Init.Nat.max n1 n2))).
+apply (Rplus_lt_compat (R_dist (An (Init.Nat.max n1 n2)) x)
+(R_dist x y * / 2)
+(R_dist (An (Init.Nat.max n1 n2)) y)
+(R_dist x y * / 2)).
+apply H4.
+apply (Nat.le_max_l n1 n2).
+apply H5.
+apply (Nat.le_max_r n1 n2).
+apply (eps2_Rgt_R0 (R_dist x y) H3).
+apply (eps2_Rgt_R0 (R_dist x y) H3).
+Qed.
+
+Lemma Proposition_2_4 : forall (An : nat -> R), (exists (x : R), (Un_cv An x)) -> (my_bounded (fun x => exists (n : nat), (An n) = x)).
+Proof.
+move=> An H1.
+elim H1.
+move=> a H2.
+elim (H2 1).
+move=> n H3.
+suff: (Finite R (fun x => exists (n0 : nat), (An n0) = x /\ (n0 <= n)%nat)).
+move=> H4.
+apply conj.
+elim (Finite_max_R (fun x : R =>
+        exists n0 : nat, An n0 = x /\ (n0 <= n)%nat) H4).
+move=> ma H5.
+exists (Rmax ma (a + 1)).
+move=> x H6.
+elim H6.
+move=> nx H7.
+elim (le_or_lt n nx).
+move=> H8.
+apply (Rle_trans x (a + 1) (Rmax ma (a + 1))).
+rewrite (Rplus_comm a 1).
+rewrite - (Rplus_0_r x).
+rewrite - (Rplus_opp_l a).
+rewrite - (Rplus_assoc x (- a) a).
+apply (Rplus_le_compat_r a (x + - a) 1).
+rewrite - H7.
+apply (Rlt_le (An nx + - a) 1).
+apply (Rle_lt_trans (An nx + - a) (Rabs (An nx + - a)) 1).
+apply (Rle_abs (An nx + - a)).
+apply (H3 nx).
+apply H8.
+apply (Rmax_r ma (a + 1)).
+move=> H8.
+apply (Rle_trans x ma (Rmax ma (a + 1))).
+apply ((proj2 H5) x).
+exists nx.
+apply conj.
+apply H7.
+apply (le_Sn_le nx n H8).
+apply (Rmax_l ma (a + 1)).
+exists (An n).
+exists n.
+apply conj.
+by [].
+by [].
+elim (Finite_min_R (fun x : R =>
+        exists n0 : nat, An n0 = x /\ (n0 <= n)%nat) H4).
+move=> mi H5.
+exists (Rmin mi (a - 1)).
+move=> x H6.
+elim H6.
+move=> nx H7.
+elim (le_or_lt n nx).
+move=> H8.
+apply (Rge_trans x (a - 1) (Rmin mi (a - 1))).
+rewrite /Rminus.
+rewrite (Rplus_comm a (- 1)).
+rewrite - (Rplus_0_r x).
+rewrite - (Rplus_opp_l a).
+rewrite - (Rplus_assoc x (- a) a).
+apply (Rplus_ge_compat_r a (x + - a) (- 1)).
+rewrite - H7.
+apply (Rgt_ge (An nx + - a) (- 1)).
+apply (Ropp_gt_cancel (An nx + - a) (- 1)).
+rewrite (Ropp_involutive 1).
+apply (Rgt_ge_trans 1 (Rabs (- (An nx + - a))) (- (An nx + - a))).
+rewrite (Rabs_Ropp (An nx + - a)).
+apply (H3 nx H8).
+apply (Rle_ge (- (An nx + - a)) (Rabs (- (An nx + - a)))).
+apply (Rle_abs (-(An nx + - a))).
+apply (Rle_ge (Rmin mi (a - 1)) (a - 1)).
+apply (Rmin_r mi (a - 1)).
+move=> H8.
+apply (Rge_trans x mi (Rmin mi (a - 1))).
+apply ((proj2 H5) x).
+exists nx.
+apply conj.
+apply H7.
+apply (le_Sn_le nx n H8).
+apply (Rle_ge (Rmin mi (a - 1)) mi).
+apply (Rmin_l mi (a - 1)).
+exists (An n).
+exists n.
+apply conj.
+by [].
+by [].
+suff: (fun x : R => exists n0 : nat, An n0 = x /\ (n0 <= n)%nat) = (Image.Im nat R (fun x : nat => (x <= n)%nat) An).
+move=> H4.
+rewrite H4.
+apply (finite_image nat R (fun x : nat => (x <= n)%nat) An).
+suff: (fun x : nat => (x <= n)%nat) = (fun x : nat => (x < (S n))%nat).
+move=> H5.
+rewrite H5.
+apply (cardinal_finite nat (fun x : nat => (x < S n)%nat) (S n)).
+apply (nat_cardinal (S n)).
+apply (Extensionality_Ensembles nat (fun x : nat => (x <= n)%nat) (fun x : nat => (x < S n)%nat)).
+apply conj.
+move=> m.
+apply (le_n_S m n).
+move=> m.
+apply (le_S_n m n).
+apply (Extensionality_Ensembles R (fun x : R => exists n0 : nat, An n0 = x /\ (n0 <= n)%nat) (Im nat R (fun x : nat => (x <= n)%nat) An)).
+apply conj.
+move=> x.
+elim.
+move=> n0 H4.
+apply (Im_intro nat R (fun x : nat => (x <= n)%nat) An n0).
+apply (proj2 H4).
+rewrite (proj1 H4).
+by [].
+move=> n0.
+elim.
+move=> n1 H4.
+move=> x H5.
+exists n1.
+apply conj.
+rewrite H5.
+by [].
+apply H4.
+apply (Rlt_0_1).
+Qed.
+
+Lemma Same_Sequence_cv : forall (An Bn : nat -> R), (forall (n : nat), (An n) = (Bn n)) -> forall (x : R), (Un_cv An x) <-> (Un_cv Bn x).
+Proof.
+move=> An Bn H1 x.
+apply conj.
+move=> H2.
+move=> eps H3.
+elim (H2 eps).
+move=> n H4.
+exists n.
+move=> n0 H5.
+rewrite - (H1 n0).
+apply (H4 n0 H5).
+apply H3.
+move=> H2.
+move=> eps H3.
+elim (H2 eps).
+move=> n H4.
+exists n.
+move=> n0 H5.
+rewrite (H1 n0).
+apply (H4 n0 H5).
+apply H3.
+Qed.
+
+Lemma Theorem_2_5_1_plus : forall (An Bn : nat -> R) (x y : R), (Un_cv An x) -> (Un_cv Bn y) -> (Un_cv (RSequencePlus An Bn) (x + y)).
+Proof.
+move=> An Bn x y H1 H2.
+move=> eps H3.
+elim (H1 (eps * / 2)).
+move=> n1 H4.
+elim (H2 (eps * / 2)).
+move=> n2 H5.
+exists (Nat.max n1 n2).
+move=> n H6.
+rewrite /RSequencePlus.
+rewrite /R_dist.
+rewrite /Rminus.
+rewrite (Ropp_plus_distr x y).
+rewrite - (Rplus_assoc (An n + Bn n) (- x) (- y)).
+rewrite (Rplus_assoc (An n) (Bn n) (- x)).
+rewrite (Rplus_comm (Bn n) (- x)).
+rewrite - (Rplus_assoc (An n) (- x) (Bn n)).
+rewrite (Rplus_assoc (An n + - x) (Bn n) (- y)).
+apply (Rle_lt_trans (Rabs (An n + - x + (Bn n + - y))) (Rabs (An n + - x) + Rabs (Bn n + - y)) eps).
+apply (Rabs_triang (An n + - x) (Bn n + - y)).
+rewrite - (eps2 eps).
+apply (Rplus_lt_compat (Rabs (An n + - x)) (eps * / 2) (Rabs (Bn n + - y)) (eps * / 2)).
+apply (H4 n).
+apply (le_trans n1 (Nat.max n1 n2) n).
+apply (Nat.le_max_l n1 n2).
+apply H6.
+apply (H5 n).
+apply (le_trans n2 (Nat.max n1 n2) n).
+apply (Nat.le_max_r n1 n2).
+apply H6.
+apply (eps2_Rgt_R0 eps H3).
+apply (eps2_Rgt_R0 eps H3).
+Qed.
+
+Lemma Theorem_2_5_1_opp : forall (An : nat -> R) (x : R), (Un_cv An x) -> (Un_cv (RSequenceOpp An) (- x)).
+Proof.
+move=> An x H1.
+move=> eps H3.
+elim (H1 eps).
+move=> n H4.
+exists n.
+move=> n0 H5.
+rewrite /RSequenceOpp.
+rewrite /R_dist.
+rewrite /Rminus.
+rewrite - (Ropp_plus_distr (An n0) (- x)).
+rewrite (Rabs_Ropp (An n0 + - x)).
+apply (H4 n0).
+apply H5.
+apply H3.
+Qed.
+
+Lemma Theorem_2_5_1_minus : forall (An Bn : nat -> R) (x y : R), (Un_cv An x) -> (Un_cv Bn y) -> (Un_cv (RSequenceMinus An Bn) (x - y)).
+Proof.
+move=> An Bn x y H1 H2.
+suff: forall n : nat, ((RSequenceMinus An Bn) n) = ((RSequencePlus An (RSequenceOpp Bn)) n).
+move=> H3.
+suff: Un_cv ((RSequencePlus An (RSequenceOpp Bn))) (x - y).
+apply (proj2 (Same_Sequence_cv (RSequenceMinus An Bn) (RSequencePlus An (RSequenceOpp Bn)) H3 (x - y))).
+suff: Un_cv (RSequenceOpp Bn) (- y).
+apply (Theorem_2_5_1_plus An (RSequenceOpp Bn) x (- y) H1).
+apply (Theorem_2_5_1_opp Bn y H2).
+move=> n0.
+by [].
+Qed.
+
+Lemma Theorem_2_5_1_mult : forall (An Bn : nat -> R) (x y : R), (Un_cv An x) -> (Un_cv Bn y) -> (Un_cv (RSequenceMult An Bn) (x * y)).
+Proof.
+move=> An Bn a b H1 H2.
+elim ((proj1 (bounded_abs (fun x => exists (n : nat), (Bn n) = x)))).
+move=> ma H3.
+move=> eps H4.
+elim (H1 (eps * / 2 * / (ma + 1))).
+move=> n1 H5.
+elim (H2 (eps * / 2 * / ((Rabs a)  + 1))).
+move=> n2 H6.
+exists (Nat.max n1 n2).
+move=> n H7.
+rewrite /RSequenceMult.
+rewrite /R_dist.
+rewrite - (Rplus_0_r (An n * Bn n - a * b)).
+rewrite - (Rplus_opp_l (a * (Bn n))).
+rewrite - (Rplus_assoc (An n * Bn n - a * b) (- (a * Bn n)) (a * Bn n)).
+rewrite (Rplus_assoc (An n * Bn n) (- (a * b)) (- (a * Bn n))).
+rewrite (Rplus_comm (- (a * b)) (- (a * Bn n))).
+rewrite - (Rplus_assoc (An n * Bn n) (- (a * Bn n)) (- (a * b))).
+rewrite (Rplus_assoc (An n * Bn n + - (a * Bn n)) (- (a * b)) (a * Bn n)).
+apply (Rle_lt_trans (Rabs (An n * Bn n + - (a * Bn n) + (- (a * b) + a * Bn n))) (Rabs (An n * Bn n + - (a * Bn n)) + Rabs (- (a * b) + a * Bn n)) eps).
+apply (Rabs_triang (An n * Bn n + - (a * Bn n)) (- (a * b) + a * Bn n)).
+rewrite - (eps2 eps).
+apply (Rplus_lt_compat (Rabs (An n * Bn n + - (a * Bn n))) (eps * / 2) (Rabs (- (a * b) + a * Bn n)) (eps * / 2)).
+rewrite (Ropp_mult_distr_l a (Bn n)).
+rewrite - (Rmult_plus_distr_r (An n) (- a) (Bn n)).
+rewrite (Rabs_mult (An n + - a) (Bn n)).
+apply (Rle_lt_trans (Rabs (An n + - a) * Rabs (Bn n)) (Rabs (An n + - a) * (ma + 1)) (eps * / 2)).
+apply (Rmult_le_compat_l (Rabs (An n + - a)) (Rabs (Bn n)) (ma + 1)).
+apply (Rabs_pos (An n + - a)).
+apply (Rle_trans (Rabs (Bn n)) ma (ma + 1)).
+apply (H3 (Rabs (Bn n))).
+exists (Bn n).
+exists n.
+by [].
+by [].
+apply (Rlt_le ma (ma + 1)).
+apply (Rlt_plus_1 ma).
+apply (Rmult_lt_reg_r (/ (ma + 1)) (Rabs (An n + - a) * (ma + 1)) (eps * / 2)).
+apply (Rinv_0_lt_compat (ma + 1)).
+apply (Rle_lt_trans 0 ma (ma + 1)).
+apply (Rle_trans 0 (Rabs (Bn O)) ma).
+apply (Rabs_pos (Bn O)).
+apply (H3 (Rabs (Bn O))).
+exists (Bn O).
+exists O.
+by [].
+by [].
+apply (Rlt_plus_1 ma).
+rewrite (Rmult_assoc (Rabs (An n + - a)) (ma + 1) (/ (ma + 1))).
+rewrite (Rinv_r (ma + 1)).
+rewrite (Rmult_1_r (Rabs (An n + - a))).
+apply (H5 n).
+apply (le_trans n1 (Nat.max n1 n2) n).
+apply (Nat.le_max_l n1 n2).
+apply H7.
+apply (Rgt_not_eq (ma + 1) 0).
+apply (Rle_lt_trans 0 ma (ma + 1)).
+apply (Rle_trans 0 (Rabs (Bn O)) ma).
+apply (Rabs_pos (Bn O)).
+apply (H3 (Rabs (Bn O))).
+exists (Bn O).
+exists O.
+by [].
+by [].
+apply (Rlt_plus_1 ma).
+rewrite (Ropp_mult_distr_r a b).
+rewrite - (Rmult_plus_distr_l a (- b) (Bn n)).
+rewrite (Rmult_comm a (- b + Bn n)).
+rewrite (Rabs_mult (- b + Bn n) a).
+apply (Rle_lt_trans (Rabs (- b + Bn n) * Rabs a) (Rabs (- b + Bn n) * (Rabs a + 1)) (eps * / 2)).
+apply (Rmult_le_compat_l (Rabs (- b + Bn n)) (Rabs a) (Rabs a + 1)).
+apply (Rabs_pos (- b + Bn n)).
+apply (Rlt_le (Rabs a) (Rabs a + 1)).
+apply (Rlt_plus_1 (Rabs a)).
+rewrite (Rplus_comm (- b) (Bn n)).
+apply (Rmult_lt_reg_r (/ (Rabs a + 1)) (Rabs (Bn n + - b) * (Rabs a + 1)) (eps * / 2)).
+apply (Rinv_0_lt_compat (Rabs a + 1)).
+apply (Rle_lt_trans 0 (Rabs a) (Rabs a + 1)).
+apply (Rabs_pos a).
+apply (Rlt_plus_1 (Rabs a)).
+rewrite (Rmult_assoc (Rabs (Bn n + - b)) (Rabs a + 1) (/ (Rabs a + 1))).
+rewrite (Rinv_r (Rabs a + 1)).
+rewrite (Rmult_1_r (Rabs (Bn n + - b))).
+apply (H6 n).
+apply (le_trans n2 (Nat.max n1 n2) n).
+apply (Nat.le_max_r n1 n2).
+apply H7.
+apply (Rgt_not_eq (Rabs a + 1) 0).
+apply (Rle_lt_trans 0 (Rabs a) (Rabs a + 1)).
+apply (Rabs_pos a).
+apply (Rlt_plus_1 (Rabs a)).
+apply (Rmult_gt_0_compat (eps * / 2) (/ (Rabs a + 1))).
+apply (eps2_Rgt_R0 eps H4).
+apply (Rinv_0_lt_compat (Rabs a + 1)).
+apply (Rle_lt_trans 0 (Rabs a) (Rabs a + 1)).
+apply (Rabs_pos a).
+apply (Rlt_plus_1 (Rabs a)).
+apply (Rmult_gt_0_compat (eps * / 2) (/ (ma + 1))).
+apply (eps2_Rgt_R0 eps H4).
+apply (Rinv_0_lt_compat (ma + 1)).
+apply (Rle_lt_trans 0 ma (ma + 1)).
+apply (Rle_trans 0 (Rabs (Bn O)) ma).
+apply (Rabs_pos (Bn O)).
+apply (H3 (Rabs (Bn O))).
+exists (Bn O).
+exists O.
+by [].
+by [].
+apply (Rlt_plus_1 ma).
+apply (Proposition_2_4 Bn).
+exists b.
+apply H2.
+Qed.
+
+Lemma Theorem_2_5_1_inv : forall (An : nat -> R) (x : R), (Un_cv An x) -> (x <> 0) -> (Un_cv (RSequenceInv An) (1 / x)).
+Proof.
+move=> An a H1 H2.
+elim (H1 ((Rabs a) * / 2)).
+move=> n1 H3.
+suff: forall (n : nat), (n >= n1)%nat -> Rabs (An n) > (Rabs a) * / 2.
+move=> H4.
+move=> eps H5.
+elim (H1 ((Rabs a) * (Rabs a) * eps * / 2)).
+move=> n2 H6.
+exists (Nat.max n1 n2).
+move=> n H7.
+apply (Rle_lt_trans (R_dist (RSequenceInv An n) (1 / a)) (2 * (R_dist (An n) a) * / (Rabs a) * / (Rabs a)) eps).
+rewrite {1}/R_dist.
+rewrite /RSequenceInv.
+rewrite /Rdiv.
+rewrite (Rmult_1_l (/ An n)).
+rewrite (Rmult_1_l (/ a)).
+rewrite - (Rinv_r_simpl_m a (/ An n)).
+rewrite - {2}(Rinv_r_simpl_r (An n) (/ a)).
+rewrite (Rmult_assoc a (/ An n) (/ a)).
+rewrite (Rmult_assoc (An n) (/ An n) (/ a)).
+rewrite /Rminus.
+rewrite (Ropp_mult_distr_l (An n) (/ An n * / a)).
+rewrite - (Rmult_plus_distr_r a (- (An n)) (/ An n * / a)).
+rewrite (Rabs_mult (a + - An n) (/ An n * / a)).
+rewrite /R_dist.
+rewrite (Rabs_minus_sym (An n) a).
+rewrite /Rminus.
+rewrite (Rmult_comm 2 (Rabs (a + - An n))).
+rewrite (Rmult_assoc (Rabs (a + - An n)) 2 (/ Rabs a)).
+rewrite (Rmult_assoc (Rabs (a + - An n)) (2 * / Rabs a) (/ Rabs a)).
+apply (Rmult_le_compat_l (Rabs (a + - An n)) (Rabs (/ An n * / a)) (2 * / Rabs a * / Rabs a)).
+apply (Rabs_pos (a + - An n)).
+rewrite (Rabs_mult (/ An n) (/ a)).
+rewrite (Rabs_Rinv a).
+apply (Rmult_le_compat_r (/ Rabs a) (Rabs (/ An n)) (2 * / Rabs a)).
+apply (Rlt_le 0 (/ Rabs a)).
+apply (Rinv_0_lt_compat (Rabs a)).
+apply (Rabs_pos_lt a H2).
+rewrite (Rabs_Rinv (An n)).
+apply (Rlt_le (/ Rabs (An n)) (2 * / Rabs a)).
+rewrite - (Rinv_involutive 2).
+rewrite - (Rinv_mult_distr (/ 2) (Rabs a)).
+apply (Rinv_lt_contravar (/ 2 * Rabs a) (Rabs (An n))).
+apply (Rmult_lt_0_compat (/ 2 * Rabs a) (Rabs (An n))).
+apply (Rmult_lt_0_compat (/ 2) (Rabs a)).
+apply (Rinv_0_lt_compat 2).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rlt_trans 0 1 (1 + 1)).
+apply (Rlt_0_1).
+apply (Rlt_plus_1 1).
+apply (Rabs_pos_lt a H2).
+apply (Rlt_trans 0 (Rabs a * / 2) (Rabs (An n))).
+apply (eps2_Rgt_R0 (Rabs a)).
+apply (Rabs_pos_lt a H2).
+apply (H4 n).
+apply (le_trans n1 (Nat.max n1 n2) n).
+apply (Nat.le_max_l n1 n2).
+apply H7.
+rewrite (Rmult_comm (/ 2) (Rabs a)).
+apply (H4 n).
+apply (le_trans n1 (Nat.max n1 n2) n).
+apply (Nat.le_max_l n1 n2).
+apply H7.
+apply (Rgt_not_eq (/ 2) 0).
+apply (Rinv_0_lt_compat 2).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rlt_trans 0 1 (1 + 1)).
+apply (Rlt_0_1).
+apply (Rlt_plus_1 1).
+apply (Rgt_not_eq (Rabs a) 0).
+apply (Rabs_pos_lt a H2).
+apply (Rgt_not_eq 2 0).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rlt_trans 0 1 (1 + 1)).
+apply (Rlt_0_1).
+apply (Rlt_plus_1 1).
+move=> H8.
+apply (Rgt_not_le (Rabs (An n)) (Rabs a * / 2)).
+apply (H4 n).
+apply (le_trans n1 (Nat.max n1 n2) n).
+apply (Nat.le_max_l n1 n2).
+apply H7.
+rewrite H8.
+rewrite Rabs_R0.
+apply (Rlt_le 0 (Rabs a * / 2)).
+apply (eps2_Rgt_R0 (Rabs a)).
+apply (Rabs_pos_lt a H2).
+apply H2.
+move=> H8.
+apply (Rgt_not_le (Rabs (An n)) (Rabs a * / 2)).
+apply (H4 n).
+apply (le_trans n1 (Nat.max n1 n2) n).
+apply (Nat.le_max_l n1 n2).
+apply H7.
+rewrite H8.
+rewrite Rabs_R0.
+apply (Rlt_le 0 (Rabs a * / 2)).
+apply (eps2_Rgt_R0 (Rabs a)).
+apply (Rabs_pos_lt a H2).
+apply H2.
+rewrite - (Rmult_1_r eps).
+rewrite - (Rinv_r (Rabs a)).
+rewrite - (Rmult_assoc eps (Rabs a) (/ Rabs a)).
+apply (Rmult_lt_compat_r (/ Rabs a) (2 * R_dist (An n) a * / Rabs a) (eps * Rabs a)).
+apply (Rinv_0_lt_compat (Rabs a)).
+apply (Rabs_pos_lt a H2).
+rewrite - (Rmult_1_r (eps * Rabs a)).
+rewrite - (Rinv_r (Rabs a)).
+rewrite - (Rmult_assoc (eps * Rabs a) (Rabs a) (/ Rabs a)).
+apply (Rmult_lt_compat_r (/ Rabs a) (2 * R_dist (An n) a) (eps * Rabs a * Rabs a)).
+apply (Rinv_0_lt_compat (Rabs a)).
+apply (Rabs_pos_lt a H2).
+rewrite - (Rmult_1_l eps).
+rewrite - (Rinv_r 2).
+rewrite (Rmult_assoc (2 * / 2 * eps) (Rabs a) (Rabs a)).
+rewrite (Rmult_assoc (2 * / 2) (eps) (Rabs a * Rabs a)).
+rewrite (Rmult_assoc 2 (/ 2) (eps * (Rabs a * Rabs a))).
+apply (Rmult_lt_compat_l 2 (R_dist (An n) a) (/ 2 * (eps * (Rabs a * Rabs a)))).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rlt_trans 0 1 (1 + 1)).
+apply (Rlt_0_1).
+apply (Rlt_plus_1 1).
+rewrite (Rmult_comm (/ 2) (eps * (Rabs a * Rabs a))).
+rewrite (Rmult_comm eps (Rabs a * Rabs a)).
+apply (H6 n).
+apply (le_trans n2 (Nat.max n1 n2) n).
+apply (Nat.le_max_r n1 n2).
+apply H7.
+apply (Rgt_not_eq 2 0).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rlt_trans 0 1 (1 + 1)).
+apply (Rlt_0_1).
+apply (Rlt_plus_1 1).
+apply (Rgt_not_eq (Rabs a) 0).
+apply (Rabs_pos_lt a H2).
+apply (Rgt_not_eq (Rabs a) 0).
+apply (Rabs_pos_lt a H2).
+apply (Rmult_gt_0_compat (Rabs a * Rabs a * eps) (/ 2)).
+apply (Rmult_gt_0_compat (Rabs a * Rabs a) eps).
+apply (Rmult_gt_0_compat (Rabs a) (Rabs a)).
+apply (Rabs_pos_lt a H2).
+apply (Rabs_pos_lt a H2).
+apply H5.
+apply (Rinv_0_lt_compat 2).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rlt_trans 0 1 (1 + 1)).
+apply (Rlt_0_1).
+apply (Rlt_plus_1 1).
+move=> n H4.
+apply (Rplus_gt_reg_l (Rabs a * / 2) (Rabs (An n)) (Rabs a * / 2)).
+rewrite (eps2 (Rabs a)).
+apply (Rplus_lt_reg_r (- Rabs (An n)) (Rabs a) (Rabs a * / 2 + Rabs (An n))).
+rewrite (Rplus_assoc (Rabs a * / 2) (Rabs (An n)) (- Rabs (An n))).
+rewrite (Rplus_opp_r (Rabs (An n))).
+rewrite (Rplus_0_r (Rabs a * / 2)).
+apply (Rle_lt_trans (Rabs a + - Rabs (An n)) (Rabs (a + - (An n))) (Rabs a * / 2)).
+apply (Rabs_triang_inv a (An n)).
+rewrite (Rabs_minus_sym a (An n)).
+apply (H3 n).
+apply H4.
+apply (eps2_Rgt_R0 (Rabs a)).
+apply (Rabs_pos_lt a H2).
+Qed.
+
+Lemma Theorem_2_5_1_div : forall (An Bn : nat -> R) (x y : R), (Un_cv An x) -> (Un_cv Bn y) -> (y <> 0) -> (Un_cv (RSequenceDiv An Bn) (x / y)).
+move=> An Bn x y H1 H2 H3.
+suff: Un_cv (RSequenceMult An (RSequenceInv Bn)) (x / y).
+apply (Same_Sequence_cv (RSequenceMult An (RSequenceInv Bn)) (RSequenceDiv An Bn)).
+move=> n.
+rewrite /RSequenceInv.
+rewrite /RSequenceMult.
+rewrite /RSequenceDiv.
+rewrite /Rdiv.
+rewrite (Rmult_1_l (/ Bn n)).
+by [].
+rewrite /Rdiv.
+rewrite - (Rmult_1_l (/ y)).
+suff: Un_cv (RSequenceInv Bn) (1 * / y).
+apply (Theorem_2_5_1_mult An (RSequenceInv Bn) x (1 * / y) H1).
+apply (Theorem_2_5_1_inv Bn y H2 H3).
+Qed.
+
+Lemma Theorem_2_6 : forall (An Bn : nat -> R) (x y : R), (Un_cv An x) -> (Un_cv Bn y) -> (forall n : nat, (An n) <= (Bn n)) -> x <= y.
+move=> An Bn a b H1 H2 H3.
+apply (Rnot_gt_le a b).
+move=> H4.
+elim (H1 ((a-b) * / 2)).
+move=> n1 H5.
+elim (H2 ((a-b) * / 2)).
+move=> n2 H6.
+apply (Rle_not_lt (Bn (Nat.max n1 n2)) (An (Nat.max n1 n2)) (H3 (Nat.max n1 n2))).
+apply (Rlt_trans (Bn (Nat.max n1 n2)) ((a + b) * / 2) (An (Nat.max n1 n2))).
+apply (Rplus_lt_reg_r (- b) (Bn (Nat.max n1 n2)) ((a + b) * / 2)).
+rewrite - {2}(eps2 (- b)).
+rewrite - (Rdiv_plus_distr (- b) (- b) 2).
+rewrite - (Rdiv_plus_distr (a + b) (- b + - b) 2).
+rewrite (Rplus_assoc a b (- b + - b)).
+rewrite - (Rplus_assoc b (- b) (- b)).
+rewrite (Rplus_opp_r b).
+rewrite (Rplus_0_l (- b)).
+apply (Rle_lt_trans (Bn (Nat.max n1 n2) + - b) (Rabs (Bn (Nat.max n1 n2) + - b)) ((a + - b) / 2)).
+apply (Rle_abs (Bn (Nat.max n1 n2) + - b)).
+apply (H6 (Nat.max n1 n2)).
+apply (Nat.le_max_r n1 n2).
+apply (Rplus_lt_reg_l (- a) ((a + b) * / 2) (An (Nat.max n1 n2))).
+rewrite - {1}(eps2 (- a)).
+rewrite - (Rdiv_plus_distr (- a) (- a) 2).
+rewrite - (Rdiv_plus_distr (- a + - a) (a + b) 2).
+rewrite (Rplus_assoc (- a) (- a) (a + b)).
+rewrite - (Rplus_assoc (- a) a b).
+rewrite (Rplus_opp_l a).
+rewrite (Rplus_0_l b).
+apply (Ropp_lt_cancel ((- a + b) / 2) (- a + An (Nat.max n1 n2))).
+apply (Rle_lt_trans (- (- a + An (Nat.max n1 n2))) (Rabs (- (- a + An (Nat.max n1 n2)))) (- ((- a + b) / 2))).
+apply (Rle_abs (- (- a + An (Nat.max n1 n2)))).
+rewrite (Rabs_Ropp (- a + An (Nat.max n1 n2))).
+rewrite (Rplus_comm (- a) (An (Nat.max n1 n2))).
+rewrite (Ropp_mult_distr_l (- a + b) (/ 2)).
+rewrite (Ropp_plus_distr (- a) b).
+rewrite (Ropp_involutive a).
+apply (H5 (Nat.max n1 n2)).
+apply (Nat.le_max_l n1 n2).
+apply (eps2_Rgt_R0 (a - b)).
+apply (Rgt_minus a b H4).
+apply (eps2_Rgt_R0 (a - b)).
+apply (Rgt_minus a b H4).
+Qed.
+
+Lemma ConstSequence_Cv : forall (x : R), (Un_cv (fun n : nat => x) x).
+Proof.
+move=> x.
+move=> eps H1.
+exists O.
+move=> n H2.
+rewrite (proj2 (R_dist_refl x x)).
+apply H1.
+by [].
+Qed.
+
+Lemma Theorem_2_6_Collorary_1 : forall (An : nat -> R) (a b : R), (Un_cv An a) -> (forall n : nat, (An n) <= b) -> a <= b.
+Proof.
+move=> An a b H1 H2.
+apply (Theorem_2_6 An (fun n : nat => b) a b).
+apply H1.
+apply (ConstSequence_Cv b).
+apply H2.
+Qed.
+
+Lemma Theorem_2_6_Collorary_2 : forall (An : nat -> R) (a b : R), (Un_cv An a) -> (forall n : nat, b <= (An n)) -> b <= a.
+Proof.
+move=> An a b H1 H2.
+apply (Theorem_2_6 (fun n : nat => b) An b a).
+apply (ConstSequence_Cv b).
+apply H1.
+apply H2.
+Qed.
+
+Lemma Proposition_2_7 : forall (An Bn: nat -> R) (x : R), (Un_cv An x) -> (Un_cv Bn x) -> (forall (Cn : nat -> R), (forall n : nat, (An n) <= (Cn n) <= (Bn n)) -> (Un_cv Cn x)).
+Proof.
+move=> An Bn x H1 H2 Cn H3.
+move=> eps H4.
+elim (H1 eps).
+move=> n1 H5.
+elim (H2 eps).
+move=> n2 H6.
+exists (Nat.max n1 n2).
+move=> n H7.
+apply (Rabs_def1 ((Cn n) - x) eps).
+apply (Rle_lt_trans (Cn n - x) (Bn n - x) eps).
+apply (Rplus_le_compat_r (- x) (Cn n) (Bn n)).
+apply (proj2 (H3 n)).
+apply (Rle_lt_trans (Bn n - x) (Rabs (Bn n - x)) eps).
+apply (Rle_abs (Bn n - x)).
+apply (H6 n).
+apply (le_trans n2 (Nat.max n1 n2) n).
+apply (Nat.le_max_r n1 n2).
+apply H7.
+apply (Rlt_le_trans (- eps) (An n - x) (Cn n - x)).
+apply (Ropp_lt_cancel (- eps) (An n - x)).
+rewrite (Ropp_involutive eps).
+apply (Rle_lt_trans (- (An n - x)) (Rabs (An n - x)) eps).
+rewrite - (Rabs_Ropp (An n - x)).
+apply (Rle_abs (- (An n - x))).
+apply (H5 n).
+apply (le_trans n1 (Nat.max n1 n2) n).
+apply (Nat.le_max_l n1 n2).
+apply H7.
+apply (Rplus_le_compat_r (- x) (An n) (Cn n)).
+apply (proj1 (H3 n)).
+apply H4.
+apply H4.
+Qed.
