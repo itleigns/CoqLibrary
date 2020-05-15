@@ -8,6 +8,26 @@ Require Import Classical.
 Require Import Coq.Sets.Finite_sets.
 Require Import Coq.Sets.Finite_sets_facts.
 Require Import Coq.Sets.Image.
+Require Import ChoiceFacts.
+Require Import Coq.Logic.Description.
+Require Import Coq.Logic.FunctionalExtensionality.
+Require Import Coq.Logic.IndefiniteDescription.
+Require Import Coq.Logic.ProofIrrelevanceFacts.
+
+Lemma sig_map : forall {T : Type} (P : T -> Prop) (x : {x : T | P x}) (y : {x : T | P x}),
+proj1_sig x = proj1_sig y -> x = y.
+Proof.
+move=> A P x y.
+case x.
+move=> xv xp.
+case y.
+move=> yv yp .
+simpl.
+move=> H1.
+subst xv.
+rewrite (proof_irrelevance (P yv) yp xp).
+by [].
+Qed.
 
 Section Kaisekinyuumonn.
 
@@ -2618,10 +2638,10 @@ apply (proj2 H3).
 by [].
 Qed.
 
-Definition is_max_N :=
+Definition is_max_nat :=
 fun (E : (Ensemble nat)) (m : nat) => (In nat E m) /\ forall x : nat, (In nat E x) -> (x <= m)%nat.
 
-Definition is_min_N :=
+Definition is_min_nat :=
 fun (E : (Ensemble nat)) (m : nat) => (In nat E m) /\ forall x : nat, (In nat E x) -> (x >= m)%nat.
 
 Lemma Finite_max_R : forall (U : Ensemble R), (Finite R U) -> (Inhabited R U) -> exists m : R, (is_max U m).
@@ -2730,7 +2750,7 @@ apply (Union_intror R A0 (Singleton R x0) x0).
 apply (In_singleton R x0).
 Qed.
 
-Lemma Finite_max_nat : forall (U : Ensemble nat), (Finite nat U) -> (Inhabited nat U) -> exists m : nat, (is_max_N U m).
+Lemma Finite_max_nat : forall (U : Ensemble nat), (Finite nat U) -> (Inhabited nat U) -> exists m : nat, (is_max_nat U m).
 Proof. 
 move=> U H1.
 elim H1.
@@ -2780,7 +2800,7 @@ apply (Union_intror nat A0 (Singleton nat x0) x0).
 apply (In_singleton nat x0).
 Qed.
 
-Lemma Finite_min_nat : forall (U : Ensemble nat), (Finite nat U) -> (Inhabited nat U) -> exists m : nat, (is_min_N U m).
+Lemma Finite_min_nat : forall (U : Ensemble nat), (Finite nat U) -> (Inhabited nat U) -> exists m : nat, (is_min_nat U m).
 Proof.
 move=> U H1.
 elim H1.
@@ -3068,7 +3088,7 @@ by [].
 apply H2.
 Qed.
 
-Lemma Exist_min_nat : forall (U : Ensemble nat), (Inhabited nat U) -> exists m : nat, (is_min_N U m).
+Lemma Exist_min_nat : forall (U : Ensemble nat), (Inhabited nat U) -> exists m : nat, (is_min_nat U m).
 Proof.
 move=> U.
 elim.
@@ -3225,114 +3245,6 @@ move=> H7.
 apply H2.
 apply (Inhabited_intro nat (fun n1 : nat => An n1 <> Bn n1) n0 H7).
 apply H4.
-Qed.
-
-Lemma Archimedes_Principle : forall (a b : R), (a > 0) -> (b > 0) -> exists (n : nat), (INR n) * a > b.
-move=> a b H1 H2.
-apply (NNPP (exists n : nat, INR n * a > b)).
-move=> H3.
-elim (My_completeness_of_upper (fun x : R => (exists n : nat, INR n = x))).
-move=> M H4.
-elim ((proj2 (proj1 Proposition_1_3 (fun x : R => exists n : nat, INR n = x) M) H4)).
-move=> H5 H6.
-elim (H6 (M-1)).
-move=> x.
-case.
-move=> H7 H8.
-elim H7.
-move=> n H9.
-apply (Rlt_not_le (x+1) M).
-rewrite - (Rplus_0_r M).
-rewrite - (Rplus_opp_l 1).
-rewrite - (Rplus_assoc M (- 1) 1).
-apply (Rplus_lt_compat_r 1 (M-1) x H8).
-apply (H5 (x+1)).
-exists (1 + n)%nat.
-rewrite (S_O_plus_INR n).
-rewrite H9.
-rewrite (Rplus_comm x 1).
-by [].
-rewrite - {2}(Rplus_0_r M).
-apply (Rplus_lt_compat_l M (- 1) 0).
-rewrite - Ropp_0.
-apply (Ropp_gt_lt_contravar 1 0).
-apply (Rlt_0_1).
-apply conj.
-apply (Inhabited_intro R (fun x : R => exists n : nat, INR n = x) 0).
-exists O.
-by [].
-exists (b/a).
-move=> x H4.
-elim H4.
-move=> n H5.
-apply (Rnot_lt_le (b / a) x).
-move=> H6.
-apply H3.
-exists n.
-rewrite H5.
-rewrite - (Rmult_1_r b).
-rewrite - (Rinv_l a).
-rewrite - (Rmult_assoc b (/ a) a).
-apply (Rmult_lt_compat_r a (b * /a) x).
-apply H1.
-apply H6.
-apply (Rgt_not_eq a 0).
-apply H1.
-Qed.
-
-Lemma Example_2_5 : (Un_cv (fun n : nat => 1 / (INR n)) 0).
-Proof.
-move=> eps H1.
-elim (Archimedes_Principle eps 1).
-move=> n H2.
-exists (max n 1).
-move=> n0 H3.
-rewrite /R_dist.
-rewrite /Rabs.
-elim (Rcase_abs (1 / INR n0 - 0)).
-move=> H4.
-apply False_ind.
-apply (Rlt_not_le 0 (1 / INR n0 - 0) H4).
-rewrite /Rminus.
-rewrite (Ropp_0).
-rewrite (Rplus_0_r (1 / INR n0)).
-apply (Rlt_le 0 (1 / INR n0)).
-apply (Rmult_lt_0_compat 1 (/ INR n0)).
-apply Rlt_0_1.
-apply (Rinv_0_lt_compat (INR n0)).
-apply (lt_0_INR n0).
-apply (le_trans 1 (Init.Nat.max n 1) n0).
-apply (Nat.le_max_r n 1).
-apply H3.
-move=> H4.
-rewrite /Rminus.
-rewrite (Ropp_0).
-rewrite (Rplus_0_r (1 / INR n0)).
-apply (Rmult_lt_reg_r (INR n0) (1 / INR n0) eps).
-apply (lt_0_INR n0).
-apply (le_trans 1 (Init.Nat.max n 1) n0).
-apply (Nat.le_max_r n 1).
-apply H3.
-rewrite (Rmult_assoc 1 (/ INR n0) (INR n0)).
-rewrite (Rinv_l (INR n0)).
-rewrite (Rmult_1_r 1).
-apply (Rlt_le_trans 1 (INR n * eps) (eps * INR n0)).
-apply H2.
-rewrite (Rmult_comm (INR n) eps).
-apply (Rmult_le_compat_l eps (INR n) (INR n0)).
-apply (Rlt_le 0 eps).
-apply H1.
-apply (le_INR n n0).
-apply (le_trans n (Init.Nat.max n 1) n0).
-apply (Nat.le_max_l n 1).
-apply H3.
-apply (Rgt_not_eq (INR n0) 0).
-apply (lt_0_INR n0).
-apply (le_trans 1 (Init.Nat.max n 1) n0).
-apply (Nat.le_max_r n 1).
-apply H3.
-apply H1.
-apply (Rlt_0_1).
 Qed.
 
 Lemma Proposition_2_3 : forall (An : nat -> R),forall (x y: R), (Un_cv An x) -> (Un_cv An y) -> x = y.
@@ -4003,4 +3915,2550 @@ apply (Rplus_le_compat_r (- x) (An n) (Cn n)).
 apply (proj1 (H3 n)).
 apply H4.
 apply H4.
+Qed.
+
+Definition Un_shrinking : ((nat -> R) -> Prop) := fun Un : (nat -> R) => forall n:nat, Un n >= Un (S n).
+
+Lemma shrinking_prop : forall (An : (nat -> R)) (n m:nat), (Un_shrinking An) -> (n >= m)%nat -> An m >= An n.
+Proof.
+move=> An n m H1.
+elim.
+apply (Req_le (An m) (An m)).
+by [].
+move=> n0 H2 H3.
+apply (Rge_trans (An m) (An n0) (An (S n0))).
+apply H3.
+apply (H1 n0).
+Qed.
+
+Lemma Theorem_3_1_1 : forall (An : (nat -> R)), (my_upper_bounded (Image.Im nat R (Full_set nat) An)) -> (Un_growing An) -> exists (s : R), (Un_cv An s) /\ (is_least_upper_bound (Image.Im nat R (Full_set nat) An) s).
+Proof.
+move=> An H1 H2.
+elim (My_completeness_of_upper (Im nat R (Full_set nat) An)).
+move=> s H3.
+exists s.
+apply conj.
+move=> eps H4.
+elim (proj2 (proj2 (proj1 Proposition_1_3 (Im nat R (Full_set nat) An) s) H3) (s - eps)).
+move=> y.
+case.
+elim.
+move=> n0 H5.
+move=> y0 H6 H7.
+exists n0.
+move=> n H8.
+apply (Rabs_def1 ((An n) - s) eps).
+apply (Rle_lt_trans (An n - s) 0 eps).
+apply (Rle_minus (An n) s).
+apply (proj1 H3 (An n)).
+apply (Im_intro nat R (Full_set nat) An n).
+by [].
+by [].
+apply H4.
+apply (Rplus_lt_reg_r s (- eps) (An n - s)).
+rewrite (Rplus_assoc (An n) (- s) s).
+rewrite (Rplus_opp_l s).
+rewrite (Rplus_0_r (An n)).
+rewrite (Rplus_comm (- eps) s).
+apply (Rlt_le_trans (s + - eps) y0 (An n)).
+apply H7.
+rewrite H6.
+apply (Rge_le (An n) (An n0)).
+apply (growing_prop An n n0 H2 H8).
+apply (tech_Rgt_minus s eps H4).
+apply H3.
+apply conj.
+exists (An O).
+apply (Im_intro nat R (Full_set nat) An O).
+by [].
+by [].
+apply H1.
+Qed.
+
+Lemma Theorem_3_1_2 : forall (An : (nat -> R)), (my_lower_bounded (Image.Im nat R (Full_set nat) An)) -> (Un_shrinking An) -> exists (s : R), (Un_cv An s) /\ (is_greatest_lower_bound (Image.Im nat R (Full_set nat) An) s).
+Proof.
+move=> An H1 H2.
+elim (My_completeness_of_lower (Im nat R (Full_set nat) An)).
+move=> s H3.
+exists s.
+apply conj.
+move=> eps H4.
+elim (proj2 (proj2 (proj2 Proposition_1_3 (Im nat R (Full_set nat) An) s) H3) (s + eps)).
+move=> y.
+case.
+elim.
+move=> n0 H5.
+move=> y0 H6 H7.
+exists n0.
+move=> n H8.
+apply (Rabs_def1 ((An n) - s) eps).
+apply (Rplus_lt_reg_r s (An n - s) eps).
+rewrite (Rplus_assoc (An n) (- s) s).
+rewrite (Rplus_opp_l s).
+rewrite (Rplus_0_r (An n)).
+rewrite (Rplus_comm eps s).
+apply (Rle_lt_trans (An n) y0 (s + eps)).
+rewrite H6.
+apply (Rge_le (An n0) (An n)).
+apply (shrinking_prop An n n0 H2 H8).
+apply H7.
+apply (Rlt_le_trans (- eps) 0 (An n - s)).
+apply (Ropp_lt_gt_0_contravar eps H4).
+apply (Rge_le (An n - s) 0).
+apply (Rge_minus (An n) s).
+apply (proj1 H3 (An n)).
+apply (Im_intro nat R (Full_set nat) An n).
+by [].
+by [].
+rewrite - {2}(Rplus_0_r s).
+apply (Rplus_gt_compat_l s eps 0 H4).
+apply H3.
+apply conj.
+exists (An O).
+apply (Im_intro nat R (Full_set nat) An O).
+by [].
+by [].
+apply H1.
+Qed.
+
+Definition Un_inf : ((nat -> R) -> Prop) := fun Un : (nat -> R) => forall M:R,
+      exists N : nat, (forall n:nat, (n >= N)%nat -> (Un n) > M).
+
+Definition Un_minf : ((nat -> R) -> Prop) := fun Un : (nat -> R) => forall M:R,
+      exists N : nat, (forall n:nat, (n >= N)%nat -> (Un n) < M).
+
+Lemma Same_Sequence_inf : forall (An Bn : nat -> R), (forall (n : nat), (An n) = (Bn n)) -> (Un_inf An) <-> (Un_inf Bn).
+Proof.
+move=> An Bn H1.
+apply conj.
+move=> H2.
+move=> M.
+elim (H2 M).
+move=> n0 H3.
+exists n0.
+move=> n H4.
+rewrite - (H1 n).
+apply (H3 n H4).
+move=> H2.
+move=> M.
+elim (H2 M).
+move=> n0 H3.
+exists n0.
+move=> n H4.
+rewrite (H1 n).
+apply (H3 n H4).
+Qed.
+
+Lemma Same_Sequence_minf : forall (An Bn : nat -> R), (forall (n : nat), (An n) = (Bn n)) -> (Un_minf An) <-> (Un_minf Bn).
+Proof.
+move=> An Bn H1.
+apply conj.
+move=> H2.
+move=> M.
+elim (H2 M).
+move=> n0 H3.
+exists n0.
+move=> n H4.
+rewrite - (H1 n).
+apply (H3 n H4).
+move=> H2.
+move=> M.
+elim (H2 M).
+move=> n0 H3.
+exists n0.
+move=> n H4.
+rewrite (H1 n).
+apply (H3 n H4).
+Qed.
+
+Lemma le_Sequence_inf : forall (An Bn : nat -> R), (forall (n : nat), (An n) <= (Bn n)) -> (Un_inf An) -> (Un_inf Bn).
+Proof.
+move=> An Bn H1.
+move=> H2.
+move=> M.
+elim (H2 M).
+move=> n0 H3.
+exists n0.
+move=> n H4.
+apply (Rge_gt_trans (Bn n) (An n) M).
+apply (Rle_ge (An n) (Bn n)).
+apply (H1 n).
+apply (H3 n H4).
+Qed.
+
+Lemma ge_Sequence_minf : forall (An Bn : nat -> R), (forall (n : nat), (An n) >= (Bn n)) -> (Un_minf An) -> (Un_minf Bn).
+Proof.
+move=> An Bn H1.
+move=> H2.
+move=> M.
+elim (H2 M).
+move=> n0 H3.
+exists n0.
+move=> n H4.
+apply (Rle_lt_trans (Bn n) (An n) M).
+apply (Rge_le (An n) (Bn n)).
+apply (H1 n).
+apply (H3 n H4).
+Qed.
+
+Lemma Formula_3_4_1 : forall (An : (nat -> R)), (Un_growing An) -> (~ (my_upper_bounded (Image.Im nat R (Full_set nat) An))) -> (Un_inf An).
+Proof.
+move=> An H1 H2.
+move=> M.
+apply (NNPP (exists N : nat, forall n : nat, (n >= N)%nat -> An n > M)).
+move=> H3.
+apply H2.
+exists M.
+move=> x.
+elim.
+move=> n H4.
+move=> y H5.
+rewrite H5.
+apply (Rnot_gt_le (An n) M).
+move=> H6.
+apply H3.
+exists n.
+move=> n0 H7.
+apply (Rge_gt_trans (An n0) (An n) M).
+apply (growing_prop An n0 n H1 H7).
+apply H6.
+Qed.
+
+Lemma Formula_3_4_2 : forall (An : (nat -> R)), (Un_shrinking An) -> (~ (my_lower_bounded (Image.Im nat R (Full_set nat) An))) -> (Un_minf An).
+Proof.
+move=> An H1 H2.
+move=> M.
+apply (NNPP (exists N : nat, forall n : nat, (n >= N)%nat -> An n < M)).
+move=> H3.
+apply H2.
+exists M.
+move=> x.
+elim.
+move=> n H4.
+move=> y H5.
+rewrite H5.
+apply (Rnot_lt_ge (An n) M).
+move=> H6.
+apply H3.
+exists n.
+move=> n0 H7.
+apply (Rle_lt_trans (An n0) (An n) M).
+apply (Rge_le (An n) (An n0)).
+apply (shrinking_prop An n0 n H1 H7).
+apply H6.
+Qed.
+
+Lemma Theorem_3_2 : forall (a b : R), (a > 0) -> (b > 0) -> exists (n : nat), (INR n) * a > b.
+move=> a b H1 H2.
+apply (NNPP (exists n : nat, INR n * a > b)).
+move=> H3.
+elim (My_completeness_of_upper (fun x : R => (exists n : nat, INR n = x))).
+move=> M H4.
+elim ((proj2 (proj1 Proposition_1_3 (fun x : R => exists n : nat, INR n = x) M) H4)).
+move=> H5 H6.
+elim (H6 (M-1)).
+move=> x.
+case.
+move=> H7 H8.
+elim H7.
+move=> n H9.
+apply (Rlt_not_le (x+1) M).
+rewrite - (Rplus_0_r M).
+rewrite - (Rplus_opp_l 1).
+rewrite - (Rplus_assoc M (- 1) 1).
+apply (Rplus_lt_compat_r 1 (M-1) x H8).
+apply (H5 (x+1)).
+exists (1 + n)%nat.
+rewrite (S_O_plus_INR n).
+rewrite H9.
+rewrite (Rplus_comm x 1).
+by [].
+rewrite - {2}(Rplus_0_r M).
+apply (Rplus_lt_compat_l M (- 1) 0).
+rewrite - Ropp_0.
+apply (Ropp_gt_lt_contravar 1 0).
+apply (Rlt_0_1).
+apply conj.
+apply (Inhabited_intro R (fun x : R => exists n : nat, INR n = x) 0).
+exists O.
+by [].
+exists (b/a).
+move=> x H4.
+elim H4.
+move=> n H5.
+apply (Rnot_lt_le (b / a) x).
+move=> H6.
+apply H3.
+exists n.
+rewrite H5.
+rewrite - (Rmult_1_r b).
+rewrite - (Rinv_l a).
+rewrite - (Rmult_assoc b (/ a) a).
+apply (Rmult_lt_compat_r a (b * /a) x).
+apply H1.
+apply H6.
+apply (Rgt_not_eq a 0).
+apply H1.
+Qed.
+
+Lemma Formula_3_6 : forall (a : R), (a > 0) -> (Un_inf (fun n : nat => a * (INR n))).
+Proof.
+move=> a H1.
+move=> M.
+elim (Rgt_ge_dec M 0).
+move=> H2.
+elim (Theorem_3_2 a M H1 H2).
+move=> n H3.
+exists n.
+move=> n0 H4.
+rewrite (Rmult_comm a (INR n0)).
+apply (Rge_gt_trans (INR n0 * a) (INR n * a) M).
+apply (Rmult_ge_compat_r a (INR n0) (INR n)).
+apply (Rgt_ge a 0 H1).
+apply (Rle_ge (INR n) (INR n0)).
+apply (le_INR n n0 H4).
+apply H3.
+move=> H2.
+exists 1%nat.
+move=> n H3.
+apply (Rgt_ge_trans (a * INR n) 0 M).
+apply (Rmult_gt_0_compat a (INR n)).
+apply H1.
+apply (lt_0_INR n H3).
+apply H2.
+Qed.
+
+Lemma Formula_3_7 : (Un_inf (fun n : nat => (INR n))).
+Proof.
+suff: forall n : nat, 1 * INR n = INR n.
+move=> H1.
+apply (proj1 (Same_Sequence_inf (fun n : nat => 1*(INR n)) (fun n : nat => (INR n)) H1)).
+apply (Formula_3_6 1).
+apply (Rlt_0_1).
+move=> n.
+apply (Rmult_1_l (INR n)).
+Qed.
+
+Lemma Formula_3_8 : (Un_cv (fun n : nat => 1 / (INR n)) 0).
+Proof.
+move=> eps H1.
+elim (Theorem_3_2 eps 1).
+move=> n H2.
+exists (max n 1).
+move=> n0 H3.
+rewrite /R_dist.
+rewrite /Rabs.
+elim (Rcase_abs (1 / INR n0 - 0)).
+move=> H4.
+apply False_ind.
+apply (Rlt_not_le 0 (1 / INR n0 - 0) H4).
+rewrite /Rminus.
+rewrite (Ropp_0).
+rewrite (Rplus_0_r (1 / INR n0)).
+apply (Rlt_le 0 (1 / INR n0)).
+apply (Rmult_lt_0_compat 1 (/ INR n0)).
+apply Rlt_0_1.
+apply (Rinv_0_lt_compat (INR n0)).
+apply (lt_0_INR n0).
+apply (le_trans 1 (Init.Nat.max n 1) n0).
+apply (Nat.le_max_r n 1).
+apply H3.
+move=> H4.
+rewrite /Rminus.
+rewrite (Ropp_0).
+rewrite (Rplus_0_r (1 / INR n0)).
+apply (Rmult_lt_reg_r (INR n0) (1 / INR n0) eps).
+apply (lt_0_INR n0).
+apply (le_trans 1 (Init.Nat.max n 1) n0).
+apply (Nat.le_max_r n 1).
+apply H3.
+rewrite (Rmult_assoc 1 (/ INR n0) (INR n0)).
+rewrite (Rinv_l (INR n0)).
+rewrite (Rmult_1_r 1).
+apply (Rlt_le_trans 1 (INR n * eps) (eps * INR n0)).
+apply H2.
+rewrite (Rmult_comm (INR n) eps).
+apply (Rmult_le_compat_l eps (INR n) (INR n0)).
+apply (Rlt_le 0 eps).
+apply H1.
+apply (le_INR n n0).
+apply (le_trans n (Init.Nat.max n 1) n0).
+apply (Nat.le_max_l n 1).
+apply H3.
+apply (Rgt_not_eq (INR n0) 0).
+apply (lt_0_INR n0).
+apply (le_trans 1 (Init.Nat.max n 1) n0).
+apply (Nat.le_max_r n 1).
+apply H3.
+apply H1.
+apply (Rlt_0_1).
+Qed.
+
+
+Lemma Formula_3_9_1 : (Un_inf (fun n : nat => (pow 2 n))).
+Proof.
+apply (le_Sequence_inf (fun n : nat => INR n) (fun n : nat => 2 ^ n)).
+elim.
+simpl.
+apply (Rlt_le 0 1).
+apply (Rlt_0_1).
+move=> n H1.
+apply (Rle_trans (INR (S n)) (2 ^ n + 1) (2 ^ S n)).
+rewrite (S_INR n).
+apply (Rplus_le_compat_r 1 (INR n) (2 ^ n) H1).
+simpl.
+rewrite {2}/2.
+rewrite - (INR_IPR 2).
+simpl.
+rewrite (Rmult_plus_distr_r 1 1 (2 ^ n)).
+rewrite (Rmult_1_l (2 ^ n)).
+apply (Rplus_le_compat_l (2 ^ n) 1 (2 ^ n)).
+move: H1.
+elim n.
+move=> H1.
+simpl.
+apply (Req_le 1 1).
+by [].
+move=> n0 H2 H3.
+apply (Rle_trans 1 (INR (S n0)) (2 ^ S n0)).
+rewrite (S_INR n0).
+rewrite - {1}(Rplus_0_l 1).
+apply (Rplus_le_compat_r 1 0 (INR n0)).
+apply (pos_INR n0).
+apply H3.
+apply (Formula_3_7).
+Qed.
+
+Lemma Formula_3_9_2 : (Un_cv (fun n : nat => 1 / (pow 2 n)) 0).
+Proof.
+move=> eps H1.
+elim (Formula_3_9_1 (1 / eps)).
+move=> n0 H2.
+exists n0.
+move=> n H3.
+apply (Rabs_def1 (1 / 2 ^ n - 0) eps).
+rewrite (Rminus_0_r (1 / 2 ^ n)).
+apply (Rmult_lt_reg_r (2 ^ n) (1 / 2 ^ n) eps).
+elim n.
+apply (Rlt_0_1).
+move=> n1.
+move=> H4.
+simpl.
+rewrite {1}/2.
+rewrite - (INR_IPR 2).
+simpl.
+rewrite (Rmult_plus_distr_r 1 1 (2 ^ n1)).
+rewrite (Rmult_1_l (2 ^ n1)).
+apply (Rplus_lt_0_compat (2 ^ n1) (2 ^ n1) H4 H4).
+rewrite (Rmult_assoc 1 (/ 2 ^ n) (2 ^ n)).
+rewrite (Rinv_l (2 ^ n)).
+rewrite - {2}(Rinv_l eps).
+rewrite - (Rmult_assoc 1 (/ eps) eps).
+rewrite (Rmult_comm eps (2 ^ n)).
+apply (Rmult_lt_compat_r eps (1 * / eps) (2 ^ n)).
+apply H1.
+apply (H2 n H3).
+apply (Rgt_not_eq eps 0 H1).
+apply (Rgt_not_eq (2 ^ n) 0).
+elim n.
+apply (Rlt_0_1).
+move=> n1.
+move=> H4.
+simpl.
+rewrite {1}/2.
+rewrite - (INR_IPR 2).
+simpl.
+rewrite (Rmult_plus_distr_r 1 1 (2 ^ n1)).
+rewrite (Rmult_1_l (2 ^ n1)).
+apply (Rplus_lt_0_compat (2 ^ n1) (2 ^ n1) H4 H4).
+rewrite (Rminus_0_r (1 / 2 ^ n)).
+apply (Rlt_trans (- eps) 0 (1 / 2 ^ n)).
+apply (Ropp_lt_gt_0_contravar eps H1).
+rewrite /Rdiv.
+rewrite (Rmult_1_l (/ 2 ^ n)).
+apply (Rinv_0_lt_compat (2 ^ n)).
+elim n.
+apply (Rlt_0_1).
+move=> n1.
+move=> H4.
+simpl.
+rewrite {1}/2.
+rewrite - (INR_IPR 2).
+simpl.
+rewrite (Rmult_plus_distr_r 1 1 (2 ^ n1)).
+rewrite (Rmult_1_l (2 ^ n1)).
+apply (Rplus_lt_0_compat (2 ^ n1) (2 ^ n1) H4 H4).
+Qed.
+
+Definition BoundedClosedSection : Ensemble (Ensemble R) := (Image.Im (R * R) (Ensemble R) (fun (x : (R * R)) => (fst x) <= (snd x)) (fun (x : (R * R)) => (fun (y : R) => (fst x) <= y <= (snd x)))).
+
+Lemma shrinking_prop_ER : forall (IN : (nat -> (Ensemble R))) (n m : nat), (forall k : nat, Included R (IN (S k)) (IN k)) -> (n >= m)%nat -> Included R (IN n) (IN m).
+Proof.
+move=> IN n m.
+move=> H1.
+elim.
+by [].
+move=> n0 H2 H3.
+move=> x H4.
+apply (H3 x).
+apply (H1 n0 x).
+apply H4.
+Qed.
+
+Lemma BoundedClosedsectionUniqueRpair : forall (A : Ensemble R), (In (Ensemble R) BoundedClosedSection A) -> (exists! (x : (R * R)) , (fst x) <= (snd x) /\ A = (fun (y : R) => (fst x) <= y <= (snd x))).
+Proof.
+move=> A H1.
+apply (proj1 (unique_existence (fun (x : R * R) => (fst x) <= (snd x) /\ A = (fun y : R => fst x <= y <= snd x)))).
+apply conj.
+elim H1.
+move=> x H2 A0 H3.
+exists x.
+apply conj.
+apply H2.
+apply H3.
+move=> x y H2 H3.
+apply (injective_projections x y).
+apply (Rle_antisym (fst x) (fst y)).
+suff: (In R A (fst y)).
+rewrite (proj2 H2).
+move=> H4.
+apply (proj1 H4).
+rewrite (proj2 H3).
+apply conj.
+apply (Req_le (fst y) (fst y)).
+by [].
+apply (proj1 H3).
+suff: (In R A (fst x)).
+rewrite (proj2 H3).
+move=> H4.
+apply (proj1 H4).
+rewrite (proj2 H2).
+apply conj.
+apply (Req_le (fst x) (fst x)).
+by [].
+apply (proj1 H2).
+apply (Rle_antisym (snd x) (snd y)).
+suff: (In R A (snd x)).
+rewrite (proj2 H3).
+move=> H4.
+apply (proj2 H4).
+rewrite (proj2 H2).
+apply conj.
+apply (proj1 H2).
+apply (Req_le (snd x) (snd x)).
+by [].
+suff: (In R A (snd y)).
+rewrite (proj2 H2).
+move=> H4.
+apply (proj2 H4).
+rewrite (proj2 H3).
+apply conj.
+apply (proj1 H3).
+apply (Req_le (snd y) (snd y)).
+by [].
+Qed.
+
+Definition BoundedClosedsectionToRpair (I : Ensemble R) (H : In (Ensemble R) BoundedClosedSection I) : (R * R) 
+:= proj1_sig (constructive_definite_description (fun (x : R * R) => fst x <= snd x /\ I = (fun y : R => fst x <= y <= snd x)) (BoundedClosedsectionUniqueRpair I H)).
+
+Lemma BoundedClosedsectionIsRpair : forall (I : Ensemble R) (H : In (Ensemble R) BoundedClosedSection I), 
+I = (fun x : R => (fst (BoundedClosedsectionToRpair I H)) <= x <= (snd (BoundedClosedsectionToRpair I H))).
+Proof.
+move=> I H.
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x0 : R * R =>
+          fst x0 <= snd x0 /\
+          I = (fun y : R => fst x0 <= y <= snd x0))
+         (BoundedClosedsectionUniqueRpair I H)).
+simpl.
+move=> x H1.
+apply (proj2 H1).
+Qed.
+
+Definition BoundedClosedsectionL (I : Ensemble R) (H : In (Ensemble R) BoundedClosedSection I) : R 
+:= (fst (BoundedClosedsectionToRpair I H)).
+
+Definition BoundedClosedsectionR (I : Ensemble R) (H : In (Ensemble R) BoundedClosedSection I) : R 
+:= (snd (BoundedClosedsectionToRpair I H)).
+
+Definition BoundedClosedsectionSize (I : Ensemble R) (H : In (Ensemble R) BoundedClosedSection I) : R 
+:= (BoundedClosedsectionR I H) - (BoundedClosedsectionL I H).
+
+Lemma BoundedClosedsectionDef : forall (a b : R), (a <= b) -> (In (Ensemble R) BoundedClosedSection (fun x : R => a <= x <= b)).
+Proof.
+move=> a b H1.
+apply (Im_intro (R * R) (Ensemble R) (fun x : R * R => fst x <= snd x)
+     (fun (x : R * R) (y : R) => fst x <= y <= snd x) (a,b)).
+apply H1.
+by [].
+Qed.
+
+Lemma BoundedClosedsectionLCalc : forall (a b : R) (H : a <= b)  (H1 : In (Ensemble R) BoundedClosedSection (fun x : R => a <= x <= b)), (BoundedClosedsectionL (fun x : R => a <= x <= b) H1) = a.
+Proof.
+move=> a b H1 H2.
+rewrite /BoundedClosedsectionL.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := (constructive_definite_description
+        (fun x : R * R =>
+         fst x <= snd x /\
+         (fun x0 : R => a <= x0 <= b) =
+         (fun y : R => fst x <= y <= snd x))
+        (BoundedClosedsectionUniqueRpair
+           (fun x : R => a <= x <= b) H2)) in fst
+  (proj1_sig y) = a.
+by [].
+case (constructive_definite_description
+    (fun x : R * R =>
+     fst x <= snd x /\
+     (fun x0 : R => a <= x0 <= b) =
+     (fun y : R => fst x <= y <= snd x))
+    (BoundedClosedsectionUniqueRpair
+       (fun x : R => a <= x <= b) H2)).
+simpl.
+move=> x.
+move=> H3.
+apply (Rle_antisym (fst x) a).
+suff: (In R (fun y : R => fst x <= y <= snd x) a).
+move=> H4.
+apply H4.
+rewrite - (proj2 H3).
+apply conj.
+apply (Req_le a a).
+by [].
+apply H1.
+suff: (In R (fun y : R => a <= y <= b) (fst x)).
+move=> H4.
+apply H4.
+rewrite (proj2 H3).
+apply conj.
+apply (Req_le (fst x) (fst x)).
+by [].
+apply (proj1 H3).
+Qed.
+
+Lemma BoundedClosedsectionRCalc : forall (a b : R) (H : a <= b)  (H1 : In (Ensemble R) BoundedClosedSection (fun x : R => a <= x <= b)), (BoundedClosedsectionR (fun x : R => a <= x <= b) H1) = b.
+Proof.
+move=> a b H1 H2.
+rewrite /BoundedClosedsectionR.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := (constructive_definite_description
+        (fun x : R * R =>
+         fst x <= snd x /\
+         (fun x0 : R => a <= x0 <= b) =
+         (fun y : R => fst x <= y <= snd x))
+        (BoundedClosedsectionUniqueRpair
+           (fun x : R => a <= x <= b) H2)) in snd
+  (proj1_sig y) = b.
+by [].
+case (constructive_definite_description
+    (fun x : R * R =>
+     fst x <= snd x /\
+     (fun x0 : R => a <= x0 <= b) =
+     (fun y : R => fst x <= y <= snd x))
+    (BoundedClosedsectionUniqueRpair
+       (fun x : R => a <= x <= b) H2)).
+simpl.
+move=> x.
+move=> H3.
+apply (Rle_antisym (snd x) b).
+suff: (In R (fun y : R => a <= y <= b) (snd x)).
+move=> H4.
+apply H4.
+rewrite (proj2 H3).
+apply conj.
+apply (proj1 H3).
+apply (Req_le (snd x) (snd x)).
+by [].
+suff: (In R (fun y : R => fst x <= y <= snd x) b).
+move=> H4.
+apply H4.
+rewrite - (proj2 H3).
+apply conj.
+apply H1.
+apply (Req_le b b).
+by [].
+Qed.
+
+Lemma Theorem_3_3_1 : forall IN : (nat -> Ensemble R), (forall n : nat, (In (Ensemble R) BoundedClosedSection (IN n))) -> (forall n : nat, Included R (IN (S n)) (IN n)) -> exists x : R, (forall n : nat, In R (IN n) x).
+Proof.
+move=> IN H2 H3.
+suff: Un_growing (fun n : nat => fst (BoundedClosedsectionToRpair (IN n) (H2 n))).
+move=> H4.
+suff: (my_upper_bounded (Image.Im nat R (Full_set nat) (fun n : nat => fst (BoundedClosedsectionToRpair (IN n) (H2 n))))).
+move=> H5.
+elim (Theorem_3_1_1 (fun n : nat => fst (BoundedClosedsectionToRpair (IN n) (H2 n))) H5 H4).
+move=> a.
+case.
+move=> H6 H7.
+suff: Un_shrinking (fun n : nat => snd (BoundedClosedsectionToRpair (IN n) (H2 n))).
+move=> H8.
+suff: (my_lower_bounded (Image.Im nat R (Full_set nat) (fun n : nat => snd (BoundedClosedsectionToRpair (IN n) (H2 n))))).
+move=> H9.
+elim (Theorem_3_1_2 (fun n : nat => snd (BoundedClosedsectionToRpair (IN n) (H2 n))) H9 H8).
+move=> b.
+case.
+move=> H10 H11.
+exists a.
+suff: a <= b.
+move=> H12.
+move=> n.
+suff: (IN n) = (fun y : R => fst (BoundedClosedsectionToRpair (IN n) (H2 n)) <= y <= snd (BoundedClosedsectionToRpair (IN n) (H2 n))).
+move=> H13.
+rewrite H13.
+apply conj.
+apply (proj1 H7 (fst (BoundedClosedsectionToRpair (IN n) (H2 n)))).
+apply (Im_intro nat R (Full_set nat) (fun n0 : nat => fst (BoundedClosedsectionToRpair (IN n0) (H2 n0))) n).
+by [].
+by [].
+apply (Rle_trans a b (snd (BoundedClosedsectionToRpair (IN n) (H2 n)))).
+apply H12.
+apply (Rge_le (snd (BoundedClosedsectionToRpair (IN n) (H2 n))) b).
+apply (proj1 H11 (snd (BoundedClosedsectionToRpair (IN n) (H2 n)))).
+apply (Im_intro nat R (Full_set nat) (fun n0 : nat => snd (BoundedClosedsectionToRpair (IN n0) (H2 n0))) n).
+by [].
+by [].
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n) (H2 n))).
+simpl.
+move=> x H13.
+apply (proj2 H13).
+apply (Theorem_2_6 (fun n : nat => fst (BoundedClosedsectionToRpair (IN n) (H2 n))) (fun n : nat => snd (BoundedClosedsectionToRpair (IN n) (H2 n))) a b).
+apply H6.
+apply H10.
+move=> n.
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n) (H2 n))).
+simpl.
+move=> x H12.
+apply (proj1 H12).
+exists (fst (BoundedClosedsectionToRpair (IN O) (H2 O))).
+move=> x.
+elim.
+move=> n H9 y H10.
+rewrite H10.
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n) (H2 n))).
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN 0%nat = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN 0%nat) (H2 0%nat))).
+simpl.
+move=> i0 H11 iN H12.
+apply (Rle_ge (fst i0) (snd iN)).
+suff: In R (IN O) (snd iN).
+rewrite (proj2 H11).
+move=> H13.
+apply (proj1 H13).
+apply (shrinking_prop_ER IN n 0).
+apply H3.
+apply (le_0_n n).
+rewrite (proj2 H12).
+apply conj.
+apply (proj1 H12).
+apply (Req_le (snd iN) (snd iN)).
+by [].
+move=> n.
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n) (H2 n))).
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN (S n) = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN (S n)) (H2 (S n)))).
+simpl.
+move=> iSN H8 iN H9.
+suff: (In R (IN n) (snd iSN)).
+rewrite (proj2 H9).
+move=> H10.
+apply (Rle_ge (snd iSN) (snd iN)).
+apply (proj2 H10).
+apply (H3 n (snd iSN)).
+rewrite (proj2 H8).
+apply conj.
+apply (proj1 H8).
+apply (Req_le (snd iSN) (snd iSN)).
+by [].
+exists (snd (BoundedClosedsectionToRpair (IN O) (H2 O))).
+move=> x.
+elim.
+move=> n H9 y H10.
+rewrite H10.
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n) (H2 n))).
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN 0%nat = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN 0%nat) (H2 0%nat))).
+simpl.
+move=> i0 H11 iN H12.
+suff: In R (IN O) (fst iN).
+rewrite (proj2 H11).
+move=> H13.
+apply (proj2 H13).
+apply (shrinking_prop_ER IN n 0).
+apply H3.
+apply (le_0_n n).
+rewrite (proj2 H12).
+apply conj.
+apply (Req_le (fst iN) (fst iN)).
+by [].
+apply (proj1 H12).
+move=> n.
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n) (H2 n))).
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN (S n) = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN (S n)) (H2 (S n)))).
+simpl.
+move=> iSN H8 iN H9.
+suff: (In R (IN n) (fst iSN)).
+rewrite (proj2 H9).
+move=> H10.
+apply (proj1 H10).
+apply (H3 n (fst iSN)).
+rewrite (proj2 H8).
+apply conj.
+apply (Req_le (fst iSN) (fst iSN)).
+by [].
+apply (proj1 H8).
+Qed.
+
+Lemma Theorem_3_3_2 : forall (IN : (nat -> Ensemble R)) (H : (forall n : nat, (In (Ensemble R) BoundedClosedSection (IN n)))), (forall n : nat, Included R (IN (S n)) (IN n)) -> (Un_cv (fun m : nat => (snd (BoundedClosedsectionToRpair (IN m) (H m)) - (fst (BoundedClosedsectionToRpair (IN m) (H m))))) 0) -> (exists! x : R, (forall n : nat, In R (IN n) x)) /\ (forall x : R, (forall n : nat, In R (IN n) x) -> (Un_cv (fun m : nat => fst (BoundedClosedsectionToRpair (IN m) (H m))) x) /\ (Un_cv (fun m : nat => snd (BoundedClosedsectionToRpair (IN m) (H m))) x)).
+Proof.
+move=> IN H2 H3 H1.
+suff: Un_growing (fun n : nat => fst (BoundedClosedsectionToRpair (IN n) (H2 n))).
+move=> H4.
+suff: (my_upper_bounded (Image.Im nat R (Full_set nat) (fun n : nat => fst (BoundedClosedsectionToRpair (IN n) (H2 n))))).
+move=> H5.
+elim (Theorem_3_1_1 (fun n : nat => fst (BoundedClosedsectionToRpair (IN n) (H2 n))) H5 H4).
+move=> a.
+case.
+move=> H6 H7.
+suff: Un_shrinking (fun n : nat => snd (BoundedClosedsectionToRpair (IN n) (H2 n))).
+move=> H8.
+suff: (my_lower_bounded (Image.Im nat R (Full_set nat) (fun n : nat => snd (BoundedClosedsectionToRpair (IN n) (H2 n))))).
+move=> H9.
+elim (Theorem_3_1_2 (fun n : nat => snd (BoundedClosedsectionToRpair (IN n) (H2 n))) H9 H8).
+move=> b.
+case.
+move=> H10 H11.
+suff: a = b.
+move=> H12.
+suff: forall (z : R),(forall (n : nat), In R (IN n) z) -> z = a.
+move=> H13.
+apply conj.
+apply (proj1 (unique_existence (fun (x : R) => forall n : nat, In R (IN n) x))).
+apply conj.
+exists a.
+move=> n.
+suff: (IN n) = (fun y : R => fst (BoundedClosedsectionToRpair (IN n) (H2 n)) <= y <= snd (BoundedClosedsectionToRpair (IN n) (H2 n))).
+move=> H14.
+rewrite H14.
+apply conj.
+apply (proj1 H7 (fst (BoundedClosedsectionToRpair (IN n) (H2 n)))).
+apply (Im_intro nat R (Full_set nat) (fun n0 : nat => fst (BoundedClosedsectionToRpair (IN n0) (H2 n0))) n).
+by [].
+by [].
+apply (Rle_trans a b (snd (BoundedClosedsectionToRpair (IN n) (H2 n)))).
+apply (Req_le a b H12).
+apply (Rge_le (snd (BoundedClosedsectionToRpair (IN n) (H2 n))) b).
+apply (proj1 H11 (snd (BoundedClosedsectionToRpair (IN n) (H2 n)))).
+apply (Im_intro nat R (Full_set nat) (fun n0 : nat => snd (BoundedClosedsectionToRpair (IN n0) (H2 n0))) n).
+by [].
+by [].
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n) (H2 n))).
+simpl.
+move=> x H14.
+apply (proj2 H14).
+move=> x y H14 H15.
+rewrite (H13 x H14).
+rewrite (H13 y H15).
+by [].
+move=> x H14.
+apply conj.
+rewrite (H13 x H14).
+apply H6.
+rewrite (H13 x H14).
+rewrite H12.
+apply H10.
+move=> z H13.
+apply (Rle_antisym z a).
+rewrite H12.
+apply (Rnot_gt_le z b).
+move=> H14.
+elim (proj2 (proj2 (proj2 Proposition_1_3 (Im nat R (Full_set nat)
+           (fun n : nat =>
+            snd
+              (BoundedClosedsectionToRpair (IN n) (H2 n))))
+        b) H11) z).
+move => b0.
+case.
+elim.
+move => n0 H15 y H16 H17.
+apply (Rgt_not_le z y H17).
+suff: (IN n0) = (fun w : R => (fst (BoundedClosedsectionToRpair (IN n0) (H2 n0))) <= w <= (snd (BoundedClosedsectionToRpair (IN n0) (H2 n0)))).
+move=> H18.
+suff: In R (fun w : R => (fst (BoundedClosedsectionToRpair (IN n0) (H2 n0))) <= w <= (snd (BoundedClosedsectionToRpair (IN n0) (H2 n0)))) z.
+move=> H19.
+rewrite H16.
+apply (proj2 H19).
+rewrite - H18.
+apply (H13 n0).
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n0 = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n0) (H2 n0))).
+simpl.
+move=> x H18.
+apply (proj2 H18).
+apply H14.
+apply (Rnot_gt_le a z).
+move=> H14.
+elim (proj2 (proj2 (proj1 Proposition_1_3 (Im nat R (Full_set nat)
+           (fun n : nat =>
+            fst
+              (BoundedClosedsectionToRpair (IN n) (H2 n))))
+        a) H7) z).
+move => b0.
+case.
+elim.
+move => n0 H15 y H16 H17.
+apply (Rlt_not_ge z y H17).
+suff: (IN n0) = (fun w : R => (fst (BoundedClosedsectionToRpair (IN n0) (H2 n0))) <= w <= (snd (BoundedClosedsectionToRpair (IN n0) (H2 n0)))).
+move=> H18.
+suff: In R (fun w : R => (fst (BoundedClosedsectionToRpair (IN n0) (H2 n0))) <= w <= (snd (BoundedClosedsectionToRpair (IN n0) (H2 n0)))) z.
+move=> H19.
+rewrite H16.
+apply (Rle_ge (fst (BoundedClosedsectionToRpair (IN n0) (H2 n0))) z).
+apply (proj1 H19).
+rewrite - H18.
+apply (H13 n0).
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n0 = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n0) (H2 n0))).
+simpl.
+move=> x H18.
+apply (proj2 H18).
+apply H14.
+apply (Rminus_diag_uniq_sym a b).
+apply (Proposition_2_3 (fun m : nat =>
+        snd (BoundedClosedsectionToRpair (IN m) (H2 m)) -
+        fst (BoundedClosedsectionToRpair (IN m) (H2 m))) (b - a) 0).
+suff: (fun m : nat =>
+   snd (BoundedClosedsectionToRpair (IN m) (H2 m)) -
+   fst (BoundedClosedsectionToRpair (IN m) (H2 m))) = (RSequencePlus (fun m : nat =>
+   snd (BoundedClosedsectionToRpair (IN m) (H2 m))) (RSequenceOpp (fun m : nat =>
+   fst (BoundedClosedsectionToRpair (IN m) (H2 m))))).
+move=> H12.
+rewrite H12.
+apply (Theorem_2_5_1_plus (fun m : nat =>
+      snd (BoundedClosedsectionToRpair (IN m) (H2 m))) (RSequenceOpp
+        (fun m : nat =>
+         fst (BoundedClosedsectionToRpair (IN m) (H2 m)))) b (- a)).
+apply H10.
+apply (Theorem_2_5_1_opp (fun m : nat =>
+      fst (BoundedClosedsectionToRpair (IN m) (H2 m))) a).
+apply H6.
+apply (functional_extensionality (fun m : nat =>
+ snd (BoundedClosedsectionToRpair (IN m) (H2 m)) -
+ fst (BoundedClosedsectionToRpair (IN m) (H2 m))) (RSequencePlus
+  (fun m : nat =>
+   snd (BoundedClosedsectionToRpair (IN m) (H2 m)))
+  (RSequenceOpp
+     (fun m : nat =>
+      fst (BoundedClosedsectionToRpair (IN m) (H2 m)))))).
+move=> n.
+by [].
+apply H1.
+exists (fst (BoundedClosedsectionToRpair (IN O) (H2 O))).
+move=> x.
+elim.
+move=> n H9 y H10.
+rewrite H10.
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n) (H2 n))).
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN 0%nat = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN 0%nat) (H2 0%nat))).
+simpl.
+move=> i0 H11 iN H12.
+apply (Rle_ge (fst i0) (snd iN)).
+suff: In R (IN O) (snd iN).
+rewrite (proj2 H11).
+move=> H13.
+apply (proj1 H13).
+apply (shrinking_prop_ER IN n 0).
+apply H3.
+apply (le_0_n n).
+rewrite (proj2 H12).
+apply conj.
+apply (proj1 H12).
+apply (Req_le (snd iN) (snd iN)).
+by [].
+move=> n.
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n) (H2 n))).
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN (S n) = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN (S n)) (H2 (S n)))).
+simpl.
+move=> iSN H8 iN H9.
+suff: (In R (IN n) (snd iSN)).
+rewrite (proj2 H9).
+move=> H10.
+apply (Rle_ge (snd iSN) (snd iN)).
+apply (proj2 H10).
+apply (H3 n (snd iSN)).
+rewrite (proj2 H8).
+apply conj.
+apply (proj1 H8).
+apply (Req_le (snd iSN) (snd iSN)).
+by [].
+exists (snd (BoundedClosedsectionToRpair (IN O) (H2 O))).
+move=> x.
+elim.
+move=> n H9 y H10.
+rewrite H10.
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n) (H2 n))).
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN 0%nat = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN 0%nat) (H2 0%nat))).
+simpl.
+move=> i0 H11 iN H12.
+suff: In R (IN O) (fst iN).
+rewrite (proj2 H11).
+move=> H13.
+apply (proj2 H13).
+apply (shrinking_prop_ER IN n 0).
+apply H3.
+apply (le_0_n n).
+rewrite (proj2 H12).
+apply conj.
+apply (Req_le (fst iN) (fst iN)).
+by [].
+apply (proj1 H12).
+move=> n.
+rewrite /BoundedClosedsectionToRpair.
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN n = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN n) (H2 n))).
+elim (constructive_definite_description
+         (fun x : R * R =>
+          fst x <= snd x /\ IN (S n) = (fun y0 : R => fst x <= y0 <= snd x))
+         (BoundedClosedsectionUniqueRpair (IN (S n)) (H2 (S n)))).
+simpl.
+move=> iSN H8 iN H9.
+suff: (In R (IN n) (fst iSN)).
+rewrite (proj2 H9).
+move=> H10.
+apply (proj1 H10).
+apply (H3 n (fst iSN)).
+rewrite (proj2 H8).
+apply conj.
+apply (Req_le (fst iSN) (fst iSN)).
+by [].
+apply (proj1 H8).
+Qed.
+
+Definition Subsequence (ABn An : nat -> R) : Prop :=
+exists (Bn : nat -> nat), (forall (n : nat),(Bn n) < (Bn (S n)))%nat /\ (forall (n : nat),(ABn n) = (An (Bn n))).
+
+Lemma Formula_3_17 : forall (An : nat -> nat), (forall (n : nat),(An n) < (An (S n)))%nat -> (forall (n : nat),(An n) >= n)%nat.
+Proof.
+move=> An H1.
+elim.
+apply (le_0_n (An O)).
+move=> n H2.
+apply (le_trans (S n) (S (An n)) (An (S n))).
+apply (le_n_S n (An n)).
+apply H2.
+apply (H1 n).
+Qed.
+
+Lemma Formula_3_18 : forall (An Bn : nat -> R), (Subsequence An Bn) -> forall (x : R), (Un_cv Bn x) -> (Un_cv An x).
+Proof.
+move=> An Bn H1 x H2.
+elim H1.
+move=> kn.
+case.
+move=> H3 H4.
+move=> eps H5.
+elim (H2 eps H5).
+move=> n H6.
+exists n.
+move=> n0 H7.
+rewrite (H4 n0).
+apply (H6 (kn n0)).
+apply (le_trans n n0 (kn n0)).
+apply H7.
+apply (Formula_3_17 kn H3 n0).
+Qed.
+
+Lemma Infinite_Set_Or : forall (U : Type) (A B : Ensemble U), (~ Finite U (Union U A B)) -> (~ Finite U A) \/ (~ Finite U B).
+Proof.
+move=> U A B H1.
+apply (NNPP (~ Finite U A \/ ~ Finite U B)).
+move=> H2.
+apply H1.
+apply (Finite_Set_Or U A B).
+apply (NNPP (Finite U A)).
+move=> H3.
+apply H2.
+left.
+apply H3.
+apply (NNPP (Finite U B)).
+move=> H3.
+apply H2.
+right.
+apply H3.
+Qed.
+
+Lemma Infinite_Or_Infinite : forall (U : Type), exists (f : ((Ensemble U) * (Ensemble U)) -> (Ensemble U)), forall (AB : ((Ensemble U) * (Ensemble U))), (~ Finite U (Union U (fst AB) (snd AB))) -> (~ Finite U (f AB)) /\ ((f AB) = (fst AB) \/ (f AB) = (snd AB)).
+Proof.
+move=> U.
+apply (functional_choice (fun (AB : ((Ensemble U) * (Ensemble U))) (X : Ensemble U) => (~ Finite U (Union U (fst AB) (snd AB))) -> (~ Finite U X) /\ (X = (fst AB) \/ X = (snd AB)))).
+move=> x.
+elim (classic (Finite U (Union U (fst x) (snd x)))).
+move=> H1.
+exists (Full_set U).
+move=> H2.
+apply False_ind.
+apply (H2 H1).
+move=> H1.
+elim (Infinite_Set_Or U (fst x) (snd x) H1).
+move=> H2.
+exists (fst x).
+move=> H3.
+apply conj.
+apply H2.
+left.
+by [].
+move=> H2.
+exists (snd x).
+move=> H3.
+apply conj.
+apply H2.
+right.
+by [].
+Qed.
+
+Lemma  Iminv_Infinite_Or_Infinite : forall (V U : Type), forall (F : V -> U), exists (f : ((Ensemble U) * (Ensemble U)) -> (Ensemble U)), forall (AB : ((Ensemble U) * (Ensemble U))), (~ Finite V (fun v : V => (In U (Union U (fst AB) (snd AB)) (F v))) -> (~ Finite V (fun v : V => In U (f AB) (F v)))) /\ ((f AB) = (fst AB) \/ (f AB) = (snd AB)).
+Proof.
+move=> V U F.
+apply (functional_choice (fun (AB : ((Ensemble U) * (Ensemble U))) (X : Ensemble U) =>  (~
+   Finite V
+     (fun v : V => In U (Union U (fst AB) (snd AB)) (F v)) ->
+   ~ Finite V (fun v : V => In U X (F v))) /\
+  (X = fst AB \/ X = snd AB)
+)).
+move=> x.
+elim (classic (Finite V
+    (fun v : V => In U (Union U (fst x) (snd x)) (F v)))).
+move=> H1.
+exists (fst x).
+apply conj.
+move=> H2.
+apply False_ind.
+apply (H2 H1).
+left.
+by [].
+move=> H1.
+suff: (fun v : V => In U (Union U (fst x) (snd x)) (F v)) = Union V (fun v : V => In U (fst x) (F v)) (fun v : V => In U (snd x) (F v)).
+move=> H2.
+elim (Infinite_Set_Or V (fun v : V => In U (fst x) (F v)) (fun v : V => In U (snd x) (F v))).
+move=> H3.
+exists (fst x).
+apply conj.
+move=> H4.
+apply H3.
+left.
+by [].
+move=> H3.
+exists (snd x).
+apply conj.
+move=> H4.
+apply H3.
+right.
+by [].
+rewrite - H2.
+apply H1.
+apply (Extensionality_Ensembles V (fun v : V => In U (Union U (fst x) (snd x)) (F v))
+(Union V (fun v : V => In U (fst x) (F v))
+  (fun v : V => In U (snd x) (F v)))).
+apply conj.
+move=> y H2.
+suff: ((fun v : V => In U (fst x) (F v)) y) \/
+     ((fun v : V => In U (snd x) (F v)) y).
+case.
+move=> H3.
+apply (Union_introl V (fun v : V => In U (fst x) (F v))
+     (fun v : V => In U (snd x) (F v))).
+apply H3.
+move=> H3.
+apply (Union_intror V (fun v : V => In U (fst x) (F v))
+     (fun v : V => In U (snd x) (F v))).
+apply H3.
+elim H2.
+move=> z.
+left.
+apply H.
+move=> z.
+right.
+apply H.
+move=> y.
+elim.
+move=> z H2.
+apply (Union_introl U (fst x) (snd x)).
+apply H2.
+move=> z H2.
+apply (Union_intror U (fst x) (snd x)).
+apply H2.
+Qed.
+
+Lemma FullsetNatInfinite : (~ Finite nat (Full_set nat)).
+Proof.
+move=> H1.
+elim (Finite_max_nat (Full_set nat)).
+move=> ma H2.
+apply (le_not_lt (S ma) ma).
+apply (proj2 H2 (S ma)).
+by [].
+by [].
+apply H1.
+exists O.
+by [].
+Qed.
+
+Lemma Theorem_3_4 : forall (An : nat -> R) (H : my_bounded (Image.Im nat R (Full_set nat) An)), exists (Bn : nat -> R), (Subsequence Bn An).
+Proof.
+move=> An H1.
+elim (proj1 H1).
+move=> b H2.
+elim (proj2 H1).
+move=> a H3.
+suff: a <= b.
+move=> H10.
+elim (Iminv_Infinite_Or_Infinite nat R An).
+move=> F H4.
+suff: exists (IN : nat -> (Ensemble R)) (H : (forall n : nat, (In (Ensemble R) BoundedClosedSection (IN n)))), forall (n : nat),(BoundedClosedsectionSize (IN n) (H n)) = (b - a) / (2 ^ n) /\ (~ Finite nat (fun m : nat => In R (IN n) (An m))) /\ (Included R (IN (S n)) (IN n)).
+elim.
+move=> IN.
+elim.
+move=> H5 H6.
+suff: exists (G : nat -> nat -> nat), forall (n m : nat), (is_min_nat (fun k : nat => (In R (IN n) (An k)) /\ (k >= m)%nat) (G n m)).
+elim.
+move=> G H7.
+exists (fun (k : nat) => An ((fix Bn (n : nat) : nat := 
+match n with 
+  | O => (G O O)
+  | S n0 => (G (S n0) (S (Bn n0)))
+end) k)).
+exists (fix Bn (n : nat) : nat := 
+match n with 
+  | O => (G O O)
+  | S n0 => (G (S n0) (S (Bn n0)))
+end).
+apply conj.
+elim.
+apply (proj2 (proj1 (H7 1%nat (S (G O O))))).
+move=> n0 H8.
+apply (proj2 (proj1 (H7 (S (S n0))
+   (S
+      (G (S n0)
+         (S
+            ((fix Bn (n : nat) : nat :=
+                match n with
+                | 0 => G 0 0
+                | S n1 => G (S n1) (S (Bn n1))
+                end) n0)))))%nat)).
+by [].
+suff: forall (n m : nat), (exists ! x : nat,
+     is_min_nat
+       (fun k : nat => In R (IN n) (An k) /\ (k >= m)%nat) x).
+move=> H7.
+exists (fun (n m : nat) => proj1_sig (constructive_definite_description (fun (l : nat) => is_min_nat
+    (fun k : nat => In R (IN n) (An k) /\ (k >= m)%nat) l) (H7 n m))).
+move=> n m.
+elim (constructive_definite_description
+        (fun l : nat =>
+         is_min_nat
+           (fun k : nat =>
+            In R (IN n) (An k) /\ (k >= m)%nat) l)
+        (H7 n m)).
+simpl.
+by [].
+move=> n m.
+apply (unique_existence (fun x : nat => is_min_nat
+    (fun k : nat => In R (IN n) (An k) /\ (k >= m)%nat) x)).
+apply conj.
+apply (Exist_min_nat (fun k : nat => In R (IN n) (An k) /\ (k >= m)%nat)).
+apply (NNPP (Inhabited nat
+  (fun k : nat => In R (IN n) (An k) /\ (k >= m)%nat))).
+move=> H7.
+apply (proj1 (proj2 (H6 n))).
+apply (Finite_Set_Included nat (fun k : nat => In R (IN n) (An k)) (fun k : nat => (k < m)%nat)).
+apply (cardinal_finite nat (fun k : nat => (k < m)%nat) m).
+apply (nat_cardinal m).
+move=> x H8.
+elim (le_or_lt m x).
+move=> H9.
+apply False_ind.
+apply H7.
+exists x.
+apply conj.
+apply H8.
+apply H9.
+apply.
+move=> k l H7 H8.
+apply (le_antisym k l).
+apply ((proj2 H7) l (proj1 H8)).
+apply ((proj2 H8) k (proj1 H7)).
+suff: forall (I : Ensemble R) (H : (In (Ensemble R) BoundedClosedSection I)),
+(In (Ensemble R) BoundedClosedSection (F ((fun x : R => (BoundedClosedsectionL I H) <= x <= ((BoundedClosedsectionL I H) + (BoundedClosedsectionR I H)) / 2),(fun x : R => ((BoundedClosedsectionL I H) + (BoundedClosedsectionR I H)) / 2 <= x <= (BoundedClosedsectionR I H))))).
+move=> H6.
+suff: (In (Ensemble R) BoundedClosedSection (fun x : R => a <= x <= b)).
+move=> H7.
+exists (fun n : nat => (proj1_sig ((fix IN (n : nat) : {I : (Ensemble R) | In (Ensemble R) BoundedClosedSection I} := 
+match n with
+  | O => exist (fun x : (Ensemble R) => In (Ensemble R) BoundedClosedSection x) (fun x : R => a <= x <= b) H7 
+  | S n0 => exist (fun x : (Ensemble R) => In (Ensemble R) BoundedClosedSection x) (F ((fun x : R => (BoundedClosedsectionL (proj1_sig (IN n0)) (proj2_sig (IN n0))) <= x <= ((BoundedClosedsectionL (proj1_sig (IN n0)) (proj2_sig (IN n0))) + (BoundedClosedsectionR (proj1_sig (IN n0)) (proj2_sig (IN n0)))) / 2),(fun x : R => ((BoundedClosedsectionL (proj1_sig (IN n0)) (proj2_sig (IN n0))) + (BoundedClosedsectionR (proj1_sig (IN n0)) (proj2_sig (IN n0)))) / 2 <= x <= (BoundedClosedsectionR (proj1_sig (IN n0)) (proj2_sig (IN n0))))))
+ (H6 (proj1_sig (IN n0)) (proj2_sig (IN n0)))
+end) n))).
+suff: forall n : nat,
+      In (Ensemble R) BoundedClosedSection
+        (proj1_sig
+           ((fix IN (n0 : nat) :
+               {I : Ensemble R |
+               In (Ensemble R) BoundedClosedSection I} :=
+               match n0 with
+               | 0%nat =>
+                   exist
+                     (fun x : Ensemble R =>
+                      In (Ensemble R) BoundedClosedSection
+                        x) (fun x : R => a <= x <= b) H7
+               | S n1 =>
+                   exist
+                     (fun x : Ensemble R =>
+                      In (Ensemble R) BoundedClosedSection
+                        x)
+                     (F
+                        (fun x : R =>
+                         BoundedClosedsectionL
+                           (proj1_sig (IN n1))
+                           (proj2_sig (IN n1)) <= x <=
+                         (BoundedClosedsectionL
+                            (proj1_sig (IN n1))
+                            (proj2_sig (IN n1)) +
+                          BoundedClosedsectionR
+                            (proj1_sig (IN n1))
+                            (proj2_sig (IN n1))) / 2,
+                        fun x : R =>
+                        (BoundedClosedsectionL
+                           (proj1_sig (IN n1))
+                           (proj2_sig (IN n1)) +
+                         BoundedClosedsectionR
+                           (proj1_sig (IN n1))
+                           (proj2_sig (IN n1))) / 2 <=
+                        x <=
+                        BoundedClosedsectionR
+                          (proj1_sig (IN n1))
+                          (proj2_sig (IN n1))))
+                     (H6 (proj1_sig (IN n1))
+                        (proj2_sig (IN n1)))
+               end) n)).
+move=> H8.
+exists H8.
+suff: let IN_sub := (fix IN (n : nat) : {I : (Ensemble R) | In (Ensemble R) BoundedClosedSection I} := 
+match n with
+  | O => exist (fun x : (Ensemble R) => In (Ensemble R) BoundedClosedSection x) (fun x : R => a <= x <= b) H7 
+  | S n0 => exist (fun x : (Ensemble R) => In (Ensemble R) BoundedClosedSection x) (F ((fun x : R => (BoundedClosedsectionL (proj1_sig (IN n0)) (proj2_sig (IN n0))) <= x <= ((BoundedClosedsectionL (proj1_sig (IN n0)) (proj2_sig (IN n0))) + (BoundedClosedsectionR (proj1_sig (IN n0)) (proj2_sig (IN n0)))) / 2),(fun x : R => ((BoundedClosedsectionL (proj1_sig (IN n0)) (proj2_sig (IN n0))) + (BoundedClosedsectionR (proj1_sig (IN n0)) (proj2_sig (IN n0)))) / 2 <= x <= (BoundedClosedsectionR (proj1_sig (IN n0)) (proj2_sig (IN n0))))))
+ (H6 (proj1_sig (IN n0)) (proj2_sig (IN n0)))
+end) in let IN := (fun n : nat => (proj1_sig (IN_sub n))) in forall n : nat,
+  BoundedClosedsectionSize (IN n) (H8 n) = (b - a) / 2 ^ n /\
+  ~ Finite nat (fun m : nat => In R (IN n) (An m)) /\
+  Included R (IN (S n)) (IN n).
+by [].
+move=> IN_sub IN.
+elim.
+apply conj.
+rewrite /BoundedClosedsectionSize.
+rewrite (BoundedClosedsectionRCalc a b H10).
+rewrite (BoundedClosedsectionLCalc a b H10).
+rewrite /Rdiv.
+rewrite (Rinv_1).
+rewrite (Rmult_1_r (b - a)).
+by [].
+apply conj.
+move=> H9.
+apply FullsetNatInfinite.
+apply (Finite_Set_Included nat (Full_set nat) (fun m : nat => In R (IN 0%nat) (An m))).
+apply H9.
+move=> n.
+move=> H11.
+rewrite /IN.
+simpl.
+apply conj.
+apply (Rge_le (An n) a).
+apply (H3 (An n)).
+apply (Im_intro nat R (Full_set nat) An n).
+by [].
+by [].
+apply (H2 (An n)).
+apply (Im_intro nat R (Full_set nat) An n).
+by [].
+by [].
+rewrite /IN.
+simpl.
+rewrite (BoundedClosedsectionRCalc a b H10).
+rewrite (BoundedClosedsectionLCalc a b H10).
+suff: ~ Finite nat
+                 (fun v : nat =>
+                  In R
+                    (Union R
+                       (fst
+                          (fun x : R => a <= x <= (a + b) / 2,
+                          fun x : R => (a + b) / 2 <= x <= b))
+                       (snd
+                          (fun x : R => a <= x <= (a + b) / 2,
+                          fun x : R => (a + b) / 2 <= x <= b)))
+                    (An v)).
+move=> H9.
+elim (proj2 (H4 (fun x : R => a <= x <= (a + b) / 2,
+     fun x : R => (a + b) / 2 <= x <= b))).
+move=> H11.
+rewrite H11.
+simpl.
+move=> x H12.
+apply conj.
+apply H12.
+apply (Rle_trans x ((a + b) / 2) b).
+apply H12.
+rewrite /Rdiv.
+rewrite - {2}(eps2 b).
+rewrite (Rmult_plus_distr_r a b (/ 2)).
+apply (Rplus_le_compat_r (b * / 2) (a * / 2) (b * / 2)).
+apply (Rmult_le_compat_r (/ 2) a b).
+apply (Rlt_le 0 (/ 2)).
+apply (Rinv_0_lt_compat 2).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rlt_trans 0 1 (1 + 1)).
+apply (Rlt_0_1).
+apply (Rlt_plus_1 1).
+apply H10.
+move=> H11.
+rewrite H11.
+simpl.
+move=> x H12.
+apply conj.
+apply (Rle_trans a ((a + b) / 2) x).
+rewrite /Rdiv.
+rewrite - {1}(eps2 a).
+rewrite (Rmult_plus_distr_r a b (/ 2)).
+apply (Rplus_le_compat_l (a * / 2) (a * / 2) (b * / 2)).
+apply (Rmult_le_compat_r (/ 2) a b).
+apply (Rlt_le 0 (/ 2)).
+apply (Rinv_0_lt_compat 2).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rlt_trans 0 1 (1 + 1)).
+apply (Rlt_0_1).
+apply (Rlt_plus_1 1).
+apply H10.
+apply H12.
+apply H12.
+move=> H9.
+apply FullsetNatInfinite.
+apply (Finite_Set_Included nat (Full_set nat) (fun v : nat =>
+        In R
+          (Union R
+             (fst
+                (fun x : R => a <= x <= (a + b) / 2,
+                fun x : R => (a + b) / 2 <= x <= b))
+             (snd
+                (fun x : R => a <= x <= (a + b) / 2,
+                fun x : R => (a + b) / 2 <= x <= b)))
+          (An v))).
+apply H9.
+move=> n.
+move=> H11.
+elim (Rlt_le_dec (An n) ((a + b) / 2)).
+move=> H12.
+left.
+simpl.
+apply conj.
+apply (Rge_le (An n) a).
+apply (H3 (An n)).
+apply (Im_intro nat R (Full_set nat) An n).
+by [].
+by [].
+apply (Rlt_le (An n) ((a + b) / 2) H12).
+move=> H12.
+right.
+simpl.
+apply conj.
+apply H12.
+apply (H2 (An n)).
+apply (Im_intro nat R (Full_set nat) An n).
+by [].
+by [].
+move=> n H9.
+apply conj.
+rewrite /BoundedClosedsectionSize.
+rewrite /BoundedClosedsectionR.
+rewrite /BoundedClosedsectionL.
+rewrite /IN.
+simpl.
+suff: let ISN1 := (fun x : R =>
+         BoundedClosedsectionL (proj1_sig (IN_sub n))
+           (proj2_sig (IN_sub n)) <= x <=
+         (BoundedClosedsectionL (proj1_sig (IN_sub n))
+            (proj2_sig (IN_sub n)) +
+          BoundedClosedsectionR (proj1_sig (IN_sub n))
+            (proj2_sig (IN_sub n))) / 2) in
+      let ISN2 := (fun x : R =>
+        (BoundedClosedsectionL (proj1_sig (IN_sub n))
+           (proj2_sig (IN_sub n)) +
+         BoundedClosedsectionR (proj1_sig (IN_sub n))
+           (proj2_sig (IN_sub n))) / 2 <= x <=
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) in
+      (snd ( BoundedClosedsectionToRpair (F (ISN1,ISN2)) (H8 (S n))) 
+    - fst ( BoundedClosedsectionToRpair (F (ISN1,ISN2)) (H8 (S n)))) = (b - a) / (2 * 2 ^ n).
+by [].
+move=> ISN1 ISN2.
+suff: ~
+     Finite nat
+       (fun v : nat => In R (Union R (fst (ISN1, ISN2)) (snd (ISN1, ISN2))) (An v)).
+move=> H11.
+elim (H4 (ISN1, ISN2)).
+move=> H12.
+case.
+move=> H13.
+suff: forall (xv yv : Ensemble R),forall (xp : (In (Ensemble R) BoundedClosedSection xv)),forall (yp : (In (Ensemble R) BoundedClosedSection yv)),
+xv = yv -> (BoundedClosedsectionToRpair xv xp) = (BoundedClosedsectionToRpair yv yp).
+move=> H14.
+suff: In (Ensemble R) BoundedClosedSection (fst (ISN1, ISN2)).
+move=> H15.
+rewrite (H14 (F (ISN1, ISN2)) (fst (ISN1, ISN2)) (H8 (S n)) H15 H13).
+simpl.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := (constructive_definite_description
+        (fun x : R * R =>
+         fst x <= snd x /\
+         ISN1 = (fun y : R => fst x <= y <= snd x))
+        (BoundedClosedsectionUniqueRpair ISN1 H15)) in
+snd (proj1_sig y) - fst (proj1_sig y) = (b - a) / (2 * 2 ^ n).
+by [].
+elim (constructive_definite_description
+        (fun x : R * R =>
+         fst x <= snd x /\
+         ISN1 = (fun y : R => fst x <= y <= snd x))
+        (BoundedClosedsectionUniqueRpair ISN1 H15)).
+rewrite /ISN1.
+move=> x H16.
+simpl.
+suff: BoundedClosedsectionL (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n)) = fst x.
+move=> H17.
+suff: (BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2 = snd x.
+move=> H18.
+rewrite - H17.
+rewrite - H18.
+rewrite /Rdiv.
+suff: let x1 := (BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) in
+let x2 := (BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) in
+((x1 + x2) * / 2 - x1 = (b - a) * / (2 * 2 ^ n)).
+by [].
+move=> x1 x2.
+rewrite - {2}(eps2 x1).
+rewrite (Rmult_plus_distr_r x1 x2 (/ 2)).
+rewrite (Rplus_comm (x1 * / 2) (x2 * / 2)).
+rewrite /Rminus.
+rewrite (Rplus_assoc (x2 * / 2) (x1 * / 2) (-(x1 * / 2 + x1 * / 2))).
+rewrite (Ropp_plus_distr (x1 * / 2) (x1 * / 2)).
+rewrite - (Rplus_assoc (x1 * / 2) (- (x1 * / 2)) (- (x1 * / 2))).
+rewrite (Rplus_opp_r (x1 * / 2)).
+rewrite (Rplus_0_l (- (x1 * / 2))).
+rewrite (Ropp_mult_distr_l x1 (/ 2)).
+rewrite - (Rmult_plus_distr_r x2 (- x1) (/ 2)).
+rewrite /BoundedClosedsectionSize in H9.
+rewrite /IN in H9.
+rewrite /x1.
+rewrite /x2.
+rewrite (proof_irrelevance (In (Ensemble R) BoundedClosedSection (proj1_sig (IN_sub n))) (proj2_sig (IN_sub n)) (H8 n)).
+rewrite /Rminus in H9.
+rewrite (proj1 H9).
+rewrite /Rdiv.
+rewrite (Rmult_assoc (b + - a) (/ 2 ^ n) (/ 2)).
+rewrite (Rinv_mult_distr 2 (2 ^ n)).
+rewrite (Rmult_comm (/ 2) (/ 2 ^ n)).
+by [].
+apply (Rgt_not_eq 2 0).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rgt_trans (1 + 1) 1 0).
+apply (Rlt_plus_1 1).
+apply (Rlt_0_1).
+apply (Rgt_not_eq (2 ^ n) 0).
+elim n.
+simpl.
+rewrite /2.
+apply Rlt_0_1.
+move=> n0 H19.
+simpl.
+rewrite {1}/2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rmult_gt_0_compat (1 + 1) (2 ^ n0)).
+apply (Rgt_trans (1 + 1) 1 0).
+apply (Rlt_plus_1 1).
+apply (Rlt_0_1).
+apply H19.
+suff: BoundedClosedsectionL (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n)) <=
+       (BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2.
+move=> H18.
+apply (Rle_antisym ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n)) +
+ BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) / 2) (snd x)).
+suff: In R (fun y : R => fst x <= y <= snd x) ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n)) +
+ BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) / 2).
+move=> H19.
+apply (proj2 H19).
+rewrite - (proj2 H16).
+apply conj.
+apply H18.
+apply (Req_le ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n)) +
+ BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) / 2) ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n)) +
+ BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) / 2)).
+by [].
+suff: In R (fun x : R =>
+       BoundedClosedsectionL (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n)) <= x <=
+       (BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2) (snd x).
+move=> H19.
+apply H19.
+rewrite (proj2 H16).
+apply conj.
+apply (proj1 H16).
+apply (Req_le (snd x) (snd x)).
+by [].
+suff: In R (fun x : R =>
+       BoundedClosedsectionL (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n)) <= x <=
+       (BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2) (snd x).
+move=> H18.
+apply (Rle_trans (BoundedClosedsectionL (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n))) (snd x) ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2)).
+apply H18.
+apply H18.
+rewrite (proj2 H16).
+apply conj.
+apply (proj1 H16).
+apply (Req_le (snd x) (snd x)).
+by [].
+apply (Rle_antisym (BoundedClosedsectionL (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n))) (fst x)).
+suff: In R (fun x : R =>
+       BoundedClosedsectionL (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n)) <= x <=
+       (BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2) (fst x).
+move=> H17.
+apply H17.
+rewrite (proj2 H16).
+apply conj.
+apply (Req_le (fst x) (fst x)).
+by [].
+apply (proj1 H16).
+suff: In R (fun y : R => fst x <= y <= snd x) (BoundedClosedsectionL (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n))).
+move=> H17.
+apply H17.
+rewrite - (proj2 H16).
+apply conj.
+apply (Req_le (BoundedClosedsectionL (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n))) (BoundedClosedsectionL (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n)))).
+by [].
+suff: In R (fun x : R =>
+       BoundedClosedsectionL (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n)) <= x <=
+       (BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2) (snd x).
+move=> H18.
+apply (Rle_trans (BoundedClosedsectionL (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n))) (snd x) ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2)).
+apply H18.
+apply H18.
+rewrite (proj2 H16).
+apply conj.
+apply (proj1 H16).
+apply (Req_le (snd x) (snd x)).
+by [].
+simpl.
+rewrite /ISN1.
+apply (Im_intro (R * R) (Ensemble R) (fun (x : (R * R)) => (fst x) <= (snd x)) (fun (x : (R * R)) => (fun (y : R) => (fst x) <= y <= (snd x)))
+(BoundedClosedsectionL (proj1_sig (IN_sub n))
+     (proj2_sig (IN_sub n)),
+   (BoundedClosedsectionL (proj1_sig (IN_sub n))
+    (proj2_sig (IN_sub n)) +
+  BoundedClosedsectionR (proj1_sig (IN_sub n))
+    (proj2_sig (IN_sub n))) / 2)).
+simpl.
+suff: (BoundedClosedsectionL (proj1_sig (IN_sub n))
+     (proj2_sig (IN_sub n))) <=
+  ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+     (proj2_sig (IN_sub n)) +
+   BoundedClosedsectionR (proj1_sig (IN_sub n))
+     (proj2_sig (IN_sub n))) / 2).
+by [].
+rewrite /Rdiv.
+rewrite - {1}(eps2 (BoundedClosedsectionL (proj1_sig (IN_sub n))
+     (proj2_sig (IN_sub n)))).
+rewrite (Rmult_plus_distr_r (BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) (BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) (/ 2)).
+apply (Rplus_le_compat_l (BoundedClosedsectionL (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n)) * / 2) (BoundedClosedsectionL (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n)) * / 2) (BoundedClosedsectionR (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n)) * / 2)).
+apply (Rmult_le_compat_r (/ 2) (BoundedClosedsectionL (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n))) (BoundedClosedsectionR (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n)))).
+apply (Rlt_le 0 (/ 2)).
+apply (Rinv_0_lt_compat 2).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rgt_trans (1 + 1) 1 0).
+apply (Rlt_plus_1 1).
+apply (Rlt_0_1).
+rewrite /BoundedClosedsectionL.
+rewrite /BoundedClosedsectionR.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := (constructive_definite_description
+        (fun x : R * R =>
+         fst x <= snd x /\
+         proj1_sig (IN_sub n) =
+         (fun y : R => fst x <= y <= snd x))
+        (BoundedClosedsectionUniqueRpair
+           (proj1_sig (IN_sub n)) (proj2_sig (IN_sub n)))) in 
+fst (proj1_sig y) <= snd (proj1_sig y).
+by [].
+elim (constructive_definite_description
+    (fun x : R * R =>
+     fst x <= snd x /\
+     proj1_sig (IN_sub n) =
+     (fun y : R => fst x <= y <= snd x))
+    (BoundedClosedsectionUniqueRpair
+       (proj1_sig (IN_sub n)) (proj2_sig (IN_sub n)))).
+move=> x xp.
+simpl.
+apply (proj1 xp).
+by [].
+move=> xv yv xp yp H14.
+subst xv.
+rewrite (proof_irrelevance (In (Ensemble R) BoundedClosedSection yv) xp yp).
+by [].
+move=> H13.
+suff: forall (xv yv : Ensemble R),forall (xp : (In (Ensemble R) BoundedClosedSection xv)),forall (yp : (In (Ensemble R) BoundedClosedSection yv)),
+xv = yv -> (BoundedClosedsectionToRpair xv xp) = (BoundedClosedsectionToRpair yv yp).
+move=> H14.
+suff: In (Ensemble R) BoundedClosedSection (snd (ISN1, ISN2)).
+move=> H15.
+rewrite (H14 (F (ISN1, ISN2)) (snd (ISN1, ISN2)) (H8 (S n)) H15 H13).
+simpl.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := (constructive_definite_description
+        (fun x : R * R =>
+         fst x <= snd x /\
+         ISN2 = (fun y : R => fst x <= y <= snd x))
+        (BoundedClosedsectionUniqueRpair ISN2 H15)) in
+snd (proj1_sig y) - fst (proj1_sig y) = (b - a) / (2 * 2 ^ n).
+by [].
+elim (constructive_definite_description
+        (fun x : R * R =>
+         fst x <= snd x /\
+         ISN2 = (fun y : R => fst x <= y <= snd x))
+        (BoundedClosedsectionUniqueRpair ISN2 H15)).
+rewrite /ISN2.
+move=> x H16.
+simpl.
+suff: (BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2 = fst x.
+move=> H17.
+suff: (BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) = snd x.
+move=> H18.
+rewrite - H17.
+rewrite - H18.
+rewrite /Rdiv.
+suff: let x1 := (BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) in
+let x2 := (BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) in
+(x2 - (x1 + x2) * / 2 = (b - a) * / (2 * 2 ^ n)).
+by [].
+move=> x1 x2.
+rewrite - {1}(eps2 x2).
+rewrite (Rmult_plus_distr_r x1 x2 (/ 2)).
+rewrite (Rplus_comm (x1 * / 2) (x2 * / 2)).
+rewrite /Rminus.
+rewrite (Rplus_assoc (x2 * / 2) (x2 * / 2) (-(x2 * / 2 + x1 * / 2))).
+rewrite (Ropp_plus_distr (x2 * / 2) (x1 * / 2)).
+rewrite - (Rplus_assoc (x2 * / 2) (- (x2 * / 2)) (- (x1 * / 2))).
+rewrite (Rplus_opp_r (x2 * / 2)).
+rewrite (Rplus_0_l (- (x1 * / 2))).
+rewrite (Ropp_mult_distr_l x1 (/ 2)).
+rewrite - (Rmult_plus_distr_r x2 (- x1) (/ 2)).
+rewrite /BoundedClosedsectionSize in H9.
+rewrite /IN in H9.
+rewrite /x1.
+rewrite /x2.
+rewrite (proof_irrelevance (In (Ensemble R) BoundedClosedSection (proj1_sig (IN_sub n))) (proj2_sig (IN_sub n)) (H8 n)).
+rewrite /Rminus in H9.
+rewrite (proj1 H9).
+rewrite /Rdiv.
+rewrite (Rmult_assoc (b + - a) (/ 2 ^ n) (/ 2)).
+rewrite (Rinv_mult_distr 2 (2 ^ n)).
+rewrite (Rmult_comm (/ 2) (/ 2 ^ n)).
+by [].
+apply (Rgt_not_eq 2 0).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rgt_trans (1 + 1) 1 0).
+apply (Rlt_plus_1 1).
+apply (Rlt_0_1).
+apply (Rgt_not_eq (2 ^ n) 0).
+elim n.
+simpl.
+rewrite /2.
+apply Rlt_0_1.
+move=> n0 H19.
+simpl.
+rewrite {1}/2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rmult_gt_0_compat (1 + 1) (2 ^ n0)).
+apply (Rgt_trans (1 + 1) 1 0).
+apply (Rlt_plus_1 1).
+apply (Rlt_0_1).
+apply H19.
+suff: (BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2 <= BoundedClosedsectionR (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n)).
+move=> H18.
+apply (Rle_antisym (BoundedClosedsectionR (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n))) (snd x)).
+suff: In R (fun y : R => fst x <= y <= snd x) (BoundedClosedsectionR (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n))).
+move=> H19.
+apply (proj2 H19).
+rewrite - (proj2 H16).
+apply conj.
+apply H18.
+apply (Req_le (BoundedClosedsectionR (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n))) (BoundedClosedsectionR (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n)))).
+by [].
+suff: In R (fun x : R =>
+       (BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2 <= x <=
+       BoundedClosedsectionR (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n)))
+ (snd x).
+move=> H19.
+apply H19.
+rewrite (proj2 H16).
+apply conj.
+apply (proj1 H16).
+apply (Req_le (snd x) (snd x)).
+by [].
+suff: In R (fun x : R =>
+       (BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2 <= x <=
+       BoundedClosedsectionR (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n))) (fst x).
+move=> H18.
+apply (Rle_trans ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n)) +
+ BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) / 2) (fst x) (BoundedClosedsectionR (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n)))).
+apply H18.
+apply H18.
+rewrite (proj2 H16).
+apply conj.
+apply (Req_le (fst x) (fst x)).
+by [].
+apply (proj1 H16).
+apply (Rle_antisym ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n)) +
+ BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) / 2) (fst x)).
+suff: In R (fun x : R =>
+       (BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2 <= x <=
+       BoundedClosedsectionR (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n))) (fst x).
+move=> H18.
+apply H18.
+rewrite (proj2 H16).
+apply conj.
+apply (Req_le (fst x) (fst x)).
+by [].
+apply (proj1 H16).
+suff: In R (fun y : R => fst x <= y <= snd x) ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n)) +
+ BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) / 2).
+move=> H17.
+apply H17.
+rewrite - (proj2 H16).
+apply conj.
+apply (Req_le ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n)) +
+ BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) / 2) ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n)) +
+ BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) / 2)).
+by [].
+suff: In R (fun x : R =>
+       (BoundedClosedsectionL (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n)) +
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) / 2 <= x <=
+       BoundedClosedsectionR (proj1_sig (IN_sub n))
+         (proj2_sig (IN_sub n))) (fst x).
+move=> H18.
+apply (Rle_trans ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n)) +
+ BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) / 2) (fst x) (BoundedClosedsectionR (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n)))).
+apply H18.
+apply H18.
+rewrite (proj2 H16).
+apply conj.
+apply (Req_le (fst x) (fst x)).
+by [].
+apply (proj1 H16).
+simpl.
+rewrite /ISN2.
+apply (Im_intro (R * R) (Ensemble R) (fun (x : (R * R)) => (fst x) <= (snd x)) (fun (x : (R * R)) => (fun (y : R) => (fst x) <= y <= (snd x)))
+((BoundedClosedsectionL (proj1_sig (IN_sub n))
+      (proj2_sig (IN_sub n)) +
+    BoundedClosedsectionR (proj1_sig (IN_sub n))
+      (proj2_sig (IN_sub n))) / 2 ,
+   BoundedClosedsectionR (proj1_sig (IN_sub n))
+     (proj2_sig (IN_sub n)))).
+suff: (
+  ((BoundedClosedsectionL (proj1_sig (IN_sub n))
+     (proj2_sig (IN_sub n)) +
+   BoundedClosedsectionR (proj1_sig (IN_sub n))
+     (proj2_sig (IN_sub n))) / 2 <= BoundedClosedsectionR (proj1_sig (IN_sub n))
+     (proj2_sig (IN_sub n)))).
+by [].
+rewrite /Rdiv.
+rewrite - {2}(eps2 (BoundedClosedsectionR (proj1_sig (IN_sub n))
+     (proj2_sig (IN_sub n)))).
+rewrite (Rmult_plus_distr_r (BoundedClosedsectionL (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) (BoundedClosedsectionR (proj1_sig (IN_sub n))
+   (proj2_sig (IN_sub n))) (/ 2)).
+apply (Rplus_le_compat_r (BoundedClosedsectionR (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n)) * / 2) (BoundedClosedsectionL (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n)) * / 2) (BoundedClosedsectionR (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n)) * / 2)).
+apply (Rmult_le_compat_r (/ 2) (BoundedClosedsectionL (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n))) (BoundedClosedsectionR (proj1_sig (IN_sub n))
+  (proj2_sig (IN_sub n)))).
+apply (Rlt_le 0 (/ 2)).
+apply (Rinv_0_lt_compat 2).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rgt_trans (1 + 1) 1 0).
+apply (Rlt_plus_1 1).
+apply (Rlt_0_1).
+rewrite /BoundedClosedsectionL.
+rewrite /BoundedClosedsectionR.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := (constructive_definite_description
+        (fun x : R * R =>
+         fst x <= snd x /\
+         proj1_sig (IN_sub n) =
+         (fun y : R => fst x <= y <= snd x))
+        (BoundedClosedsectionUniqueRpair
+           (proj1_sig (IN_sub n)) (proj2_sig (IN_sub n)))) in 
+fst (proj1_sig y) <= snd (proj1_sig y).
+by [].
+elim (constructive_definite_description
+    (fun x : R * R =>
+     fst x <= snd x /\
+     proj1_sig (IN_sub n) =
+     (fun y : R => fst x <= y <= snd x))
+    (BoundedClosedsectionUniqueRpair
+       (proj1_sig (IN_sub n)) (proj2_sig (IN_sub n)))).
+move=> x xp.
+simpl.
+apply (proj1 xp).
+by [].
+move=> xv yv xp yp H14.
+subst xv.
+rewrite (proof_irrelevance (In (Ensemble R) BoundedClosedSection yv) xp yp).
+by [].
+move=> H12.
+apply (proj1 (proj2 H9)).
+apply (Finite_Set_Included nat (fun m : nat => In R (IN n) (An m)) (fun v : nat =>
+         In R
+           (Union R (fst (ISN1, ISN2)) (snd (ISN1, ISN2)))
+           (An v))).
+apply H12.
+simpl.
+move=> n0.
+rewrite /IN.
+rewrite /ISN1.
+rewrite /ISN2.
+rewrite /BoundedClosedsectionL.
+rewrite /BoundedClosedsectionR.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := (constructive_definite_description
+                 (fun x0 : R * R =>
+                  fst x0 <= snd x0 /\
+                  proj1_sig (IN_sub n) =
+                  (fun y : R => fst x0 <= y <= snd x0))
+                 (BoundedClosedsectionUniqueRpair
+                    (proj1_sig (IN_sub n))
+                    (proj2_sig (IN_sub n)))) in 
+In nat (fun m : nat => In R (proj1_sig (IN_sub n)) (An m))
+  n0 ->
+In nat
+  (fun v : nat =>
+   In R
+     (Union R
+        (fun x : R =>
+         fst
+           (proj1_sig y) <= x <= (fst (proj1_sig y) + snd (proj1_sig y)) / 2)
+         (fun x : R => (fst (proj1_sig y) + snd (proj1_sig y)) / 2 <= x <= 
+snd (proj1_sig y))) (An v)) n0.
+by [].
+elim (constructive_definite_description
+    (fun x0 : R * R =>
+     fst x0 <= snd x0 /\
+     proj1_sig (IN_sub n) =
+     (fun y : R => fst x0 <= y <= snd x0))
+    (BoundedClosedsectionUniqueRpair
+       (proj1_sig (IN_sub n)) (proj2_sig (IN_sub n)))).
+move=> x p.
+simpl.
+rewrite (proj2 p).
+move=> H13.
+elim (Rle_lt_dec (An n0) ((fst x + snd x) / 2)).
+move=> H14.
+apply (Union_introl R (fun x0 : R => fst x <= x0 <= (fst x + snd x) / 2)
+        (fun x0 : R => (fst x + snd x) / 2 <= x0 <= snd x) (An n0)).
+apply conj.
+apply (proj1 H13).
+apply H14.
+move=> H14.
+apply (Union_intror R (fun x0 : R => fst x <= x0 <= (fst x + snd x) / 2)
+        (fun x0 : R => (fst x + snd x) / 2 <= x0 <= snd x) (An n0)).
+apply conj.
+apply (Rlt_le ((fst x + snd x) / 2) (An n0)).
+apply H14.
+apply (proj2 H13).
+apply conj.
+rewrite /IN.
+simpl.
+suff: let ISN1 := (fun x : R =>
+         BoundedClosedsectionL (proj1_sig (IN_sub n))
+           (proj2_sig (IN_sub n)) <= x <=
+         (BoundedClosedsectionL (proj1_sig (IN_sub n))
+            (proj2_sig (IN_sub n)) +
+          BoundedClosedsectionR (proj1_sig (IN_sub n))
+            (proj2_sig (IN_sub n))) / 2) in
+let ISN2 := (fun x : R =>
+        (BoundedClosedsectionL (proj1_sig (IN_sub n))
+           (proj2_sig (IN_sub n)) +
+         BoundedClosedsectionR (proj1_sig (IN_sub n))
+           (proj2_sig (IN_sub n))) / 2 <= x <=
+        BoundedClosedsectionR (proj1_sig (IN_sub n))
+          (proj2_sig (IN_sub n))) in ~
+Finite nat
+  (fun m : nat =>
+   In R
+     (F (ISN1,ISN2)) (An m)).
+by [].
+move=> ISN1 ISN2.
+suff:  ~
+     Finite nat
+       (fun v : nat =>
+        In R (Union R (fst (ISN1,ISN2)) (snd (ISN1,ISN2))) (An v)).
+move=> H11.
+apply (H4 (ISN1,ISN2)).
+move=> H12.
+apply (proj1 (proj2 H9)).
+apply (Finite_Set_Included nat (fun m : nat => In R (IN n) (An m)) (fun v : nat =>
+         In R
+           (Union R (fst (ISN1, ISN2)) (snd (ISN1, ISN2)))
+           (An v))).
+apply H12.
+simpl.
+move=> n0.
+rewrite /IN.
+rewrite /ISN1.
+rewrite /ISN2.
+rewrite /BoundedClosedsectionL.
+rewrite /BoundedClosedsectionR.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := (constructive_definite_description
+                 (fun x0 : R * R =>
+                  fst x0 <= snd x0 /\
+                  proj1_sig (IN_sub n) =
+                  (fun y : R => fst x0 <= y <= snd x0))
+                 (BoundedClosedsectionUniqueRpair
+                    (proj1_sig (IN_sub n))
+                    (proj2_sig (IN_sub n)))) in 
+In nat (fun m : nat => In R (proj1_sig (IN_sub n)) (An m))
+  n0 ->
+In nat
+  (fun v : nat =>
+   In R
+     (Union R
+        (fun x : R =>
+         fst
+           (proj1_sig y) <= x <= (fst (proj1_sig y) + snd (proj1_sig y)) / 2)
+         (fun x : R => (fst (proj1_sig y) + snd (proj1_sig y)) / 2 <= x <= 
+snd (proj1_sig y))) (An v)) n0.
+by [].
+elim (constructive_definite_description
+    (fun x0 : R * R =>
+     fst x0 <= snd x0 /\
+     proj1_sig (IN_sub n) =
+     (fun y : R => fst x0 <= y <= snd x0))
+    (BoundedClosedsectionUniqueRpair
+       (proj1_sig (IN_sub n)) (proj2_sig (IN_sub n)))).
+move=> x p.
+simpl.
+rewrite (proj2 p).
+move=> H13.
+elim (Rle_lt_dec (An n0) ((fst x + snd x) / 2)).
+move=> H14.
+apply (Union_introl R (fun x0 : R => fst x <= x0 <= (fst x + snd x) / 2)
+        (fun x0 : R => (fst x + snd x) / 2 <= x0 <= snd x) (An n0)).
+apply conj.
+apply (proj1 H13).
+apply H14.
+move=> H14.
+apply (Union_intror R (fun x0 : R => fst x <= x0 <= (fst x + snd x) / 2)
+        (fun x0 : R => (fst x + snd x) / 2 <= x0 <= snd x) (An n0)).
+apply conj.
+apply (Rlt_le ((fst x + snd x) / 2) (An n0)).
+apply H14.
+apply (proj2 H13).
+
+
+move=> H20.
+apply (proj1 (proj2 H9)).
+
+apply (Finite_Set_Included nat (fun m : nat => In R (IN n) (An m)) (fun v : nat =>
+         In R
+           (Union R (fst (ISN1, ISN2)) (snd (ISN1, ISN2)))
+           (An v))).
+apply H20.
+simpl.
+move=> n1.
+rewrite /IN.
+rewrite /ISN1.
+rewrite /ISN2.
+rewrite /BoundedClosedsectionL.
+rewrite /BoundedClosedsectionR.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := (constructive_definite_description
+                 (fun x1 : R * R =>
+                  fst x1 <= snd x1 /\
+                  proj1_sig (IN_sub n) =
+                  (fun y : R => fst x1 <= y <= snd x1))
+                 (BoundedClosedsectionUniqueRpair
+                    (proj1_sig (IN_sub n))
+                    (proj2_sig (IN_sub n)))) in 
+In nat (fun m : nat => In R (proj1_sig (IN_sub n)) (An m))
+  n1 ->
+In nat
+  (fun v : nat =>
+   In R
+     (Union R
+        (fun x : R =>
+         fst
+           (proj1_sig y) <= x <= (fst (proj1_sig y) + snd (proj1_sig y)) / 2)
+         (fun x : R => (fst (proj1_sig y) + snd (proj1_sig y)) / 2 <= x <= 
+snd (proj1_sig y))) (An v)) n1.
+by [].
+elim (constructive_definite_description
+                 (fun x1 : R * R =>
+                  fst x1 <= snd x1 /\
+                  proj1_sig (IN_sub n) =
+                  (fun y : R => fst x1 <= y <= snd x1))
+                 (BoundedClosedsectionUniqueRpair
+                    (proj1_sig (IN_sub n))
+                    (proj2_sig (IN_sub n)))).
+move=> z zp.
+simpl.
+rewrite (proj2 zp).
+move=> H13.
+elim (Rle_lt_dec (An n1) ((fst z + snd z) / 2)).
+move=> H14.
+apply (Union_introl R (fun x0 : R => fst z <= x0 <= (fst z + snd z) / 2)
+        (fun x0 : R => (fst z + snd z) / 2 <= x0 <= snd z) (An n1)).
+apply conj.
+apply (proj1 H13).
+apply H14.
+move=> H14.
+apply (Union_intror R (fun x0 : R => fst z <= x0 <= (fst z + snd z) / 2)
+        (fun x0 : R => (fst z + snd z) / 2 <= x0 <= snd z) (An n1)).
+apply conj.
+apply (Rlt_le ((fst z + snd z) / 2) (An n1)).
+apply H14.
+apply (proj2 H13).
+
+
+
+
+suff: forall (n : nat), Included R (IN (S n)) (IN n).
+move=> H11.
+apply (H11 (S n)).
+
+rewrite /IN.
+simpl.
+move=> n0 x.
+rewrite /IN.
+simpl.
+suff:let ISN1 := (fun x0 : R =>
+      BoundedClosedsectionL (proj1_sig (IN_sub n0))
+        (proj2_sig (IN_sub n0)) <= x0 <=
+      (BoundedClosedsectionL (proj1_sig (IN_sub n0))
+         (proj2_sig (IN_sub n0)) +
+       BoundedClosedsectionR (proj1_sig (IN_sub n0))
+         (proj2_sig (IN_sub n0))) / 2) in
+let ISN2 := (fun x0 : R =>
+     (BoundedClosedsectionL (proj1_sig (IN_sub n0))
+        (proj2_sig (IN_sub n0)) +
+      BoundedClosedsectionR (proj1_sig (IN_sub n0))
+        (proj2_sig (IN_sub n0))) / 2 <= x0 <=
+     BoundedClosedsectionR (proj1_sig (IN_sub n0))
+       (proj2_sig (IN_sub n0))) in
+In R (F (ISN1 , ISN2)) x -> In R (proj1_sig (IN_sub n0)) x.
+by [].
+move=> ISN1 ISN2.
+case (proj2 (H4 (ISN1,ISN2))).
+move=> H12.
+rewrite H12.
+simpl.
+rewrite /ISN1.
+rewrite /BoundedClosedsectionL.
+rewrite /BoundedClosedsectionR.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := (constructive_definite_description
+           (fun x1 : R * R =>
+            fst x1 <= snd x1 /\
+            proj1_sig (IN_sub n0) =
+            (fun y : R => fst x1 <= y <= snd x1))
+           (BoundedClosedsectionUniqueRpair
+              (proj1_sig (IN_sub n0))
+              (proj2_sig (IN_sub n0)))) in 
+In R (fun x0 : R => fst (proj1_sig y) <= x0 <= (fst (proj1_sig y) + snd (proj1_sig y)) / 2) x -> In R (proj1_sig (IN_sub n0)) x.
+by [].
+elim (constructive_definite_description
+           (fun x1 : R * R =>
+            fst x1 <= snd x1 /\
+            proj1_sig (IN_sub n0) =
+            (fun y : R => fst x1 <= y <= snd x1))
+           (BoundedClosedsectionUniqueRpair
+              (proj1_sig (IN_sub n0))
+              (proj2_sig (IN_sub n0)))).
+move=> z zp.
+simpl.
+rewrite (proj2 zp).
+move=> H13.
+apply conj.
+apply (proj1 H13).
+apply (Rle_trans x ((fst z + snd z) / 2) (snd z)).
+apply (proj2 H13).
+rewrite /Rdiv.
+rewrite - {2}(eps2 (snd z)).
+rewrite (Rmult_plus_distr_r (fst z) (snd z) (/ 2)).
+apply (Rplus_le_compat_r (snd z * / 2) (fst z * / 2) (snd z * / 2)).
+apply (Rmult_le_compat_r (/ 2) (fst z) (snd z)).
+apply (Rlt_le 0 (/ 2)).
+apply (Rinv_0_lt_compat 2).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rgt_trans (1 + 1) 1 0).
+apply (Rlt_plus_1 1).
+apply (Rlt_0_1).
+apply (proj1 zp).
+move=> H12.
+rewrite H12.
+simpl.
+rewrite /ISN2.
+rewrite /BoundedClosedsectionL.
+rewrite /BoundedClosedsectionR.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := (constructive_definite_description
+           (fun x1 : R * R =>
+            fst x1 <= snd x1 /\
+            proj1_sig (IN_sub n0) =
+            (fun y : R => fst x1 <= y <= snd x1))
+           (BoundedClosedsectionUniqueRpair
+              (proj1_sig (IN_sub n0))
+              (proj2_sig (IN_sub n0)))) in 
+In R (fun x0 : R => (fst (proj1_sig y) + snd (proj1_sig y)) / 2 <= x0 <= snd (proj1_sig y)) x -> In R (proj1_sig (IN_sub n0)) x.
+by [].
+elim (constructive_definite_description
+           (fun x1 : R * R =>
+            fst x1 <= snd x1 /\
+            proj1_sig (IN_sub n0) =
+            (fun y : R => fst x1 <= y <= snd x1))
+           (BoundedClosedsectionUniqueRpair
+              (proj1_sig (IN_sub n0))
+              (proj2_sig (IN_sub n0)))).
+move=> z zp.
+simpl.
+rewrite (proj2 zp).
+move=> H13.
+apply conj.
+apply (Rle_trans (fst z) ((fst z + snd z) / 2) x).
+rewrite /Rdiv.
+rewrite - {1}(eps2 (fst z)).
+rewrite (Rmult_plus_distr_r (fst z) (snd z) (/ 2)).
+apply (Rplus_le_compat_l (fst z * / 2) (fst z * / 2) (snd z * / 2)).
+apply (Rmult_le_compat_r (/ 2) (fst z) (snd z)).
+apply (Rlt_le 0 (/ 2)).
+apply (Rinv_0_lt_compat 2).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rgt_trans (1 + 1) 1 0).
+apply (Rlt_plus_1 1).
+apply (Rlt_0_1).
+apply (proj1 zp).
+apply (proj1 H13).
+apply (proj2 H13).
+move=> n.
+apply (proj2_sig ((fix IN (n0 : nat) :
+         {I : Ensemble R |
+         In (Ensemble R) BoundedClosedSection I} :=
+         match n0 with
+         | 0%nat =>
+             exist
+               (fun x : Ensemble R =>
+                In (Ensemble R) BoundedClosedSection x)
+               (fun x : R => a <= x <= b) H7
+         | S n1 =>
+             exist
+               (fun x : Ensemble R =>
+                In (Ensemble R) BoundedClosedSection x)
+               (F
+                  (fun x : R =>
+                   BoundedClosedsectionL
+                     (proj1_sig (IN n1))
+                     (proj2_sig (IN n1)) <= x <=
+                   (BoundedClosedsectionL
+                      (proj1_sig (IN n1))
+                      (proj2_sig (IN n1)) +
+                    BoundedClosedsectionR
+                      (proj1_sig (IN n1))
+                      (proj2_sig (IN n1))) / 2,
+                  fun x : R =>
+                  (BoundedClosedsectionL
+                     (proj1_sig (IN n1))
+                     (proj2_sig (IN n1)) +
+                   BoundedClosedsectionR
+                     (proj1_sig (IN n1))
+                     (proj2_sig (IN n1))) / 2 <= x <=
+                  BoundedClosedsectionR
+                    (proj1_sig (IN n1))
+                    (proj2_sig (IN n1))))
+               (H6 (proj1_sig (IN n1)) (proj2_sig (IN n1)))
+         end) n)).
+apply (BoundedClosedsectionDef a b H10).
+move=> I H.
+elim (proj2 (H4 (fun x : R =>
+      BoundedClosedsectionL I H <= x <=
+      (BoundedClosedsectionL I H +
+       BoundedClosedsectionR I H) / 2,
+     fun x : R =>
+     (BoundedClosedsectionL I H +
+      BoundedClosedsectionR I H) / 2 <= x <=
+     BoundedClosedsectionR I H))).
+move=> H6.
+rewrite H6.
+simpl.
+apply (BoundedClosedsectionDef (BoundedClosedsectionL I H) ((BoundedClosedsectionL I H + BoundedClosedsectionR I H) /
+   2)).
+rewrite /Rdiv.
+rewrite - {1}(eps2 (BoundedClosedsectionL I H)).
+rewrite (Rmult_plus_distr_r (BoundedClosedsectionL I H) (BoundedClosedsectionR I H) (/ 2)).
+apply (Rplus_le_compat_l (BoundedClosedsectionL I H * / 2) (BoundedClosedsectionL I H * / 2) (BoundedClosedsectionR I H * / 2)).
+apply (Rmult_le_compat_r (/ 2) (BoundedClosedsectionL I H) (BoundedClosedsectionR I H)).
+apply (Rlt_le 0 (/ 2)).
+apply (Rinv_0_lt_compat 2).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rlt_trans 0 1 (1 + 1)).
+apply (Rlt_0_1).
+apply (Rlt_plus_1 1).
+rewrite /BoundedClosedsectionL.
+rewrite /BoundedClosedsectionR.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := constructive_definite_description
+        (fun x : R * R =>
+         fst x <= snd x /\
+         I = (fun y : R => fst x <= y <= snd x))
+        (BoundedClosedsectionUniqueRpair I H) in
+fst (proj1_sig y) <= snd (proj1_sig y).
+by [].
+elim (constructive_definite_description
+    (fun x : R * R =>
+     fst x <= snd x /\
+     I = (fun y : R => fst x <= y <= snd x))
+    (BoundedClosedsectionUniqueRpair I H)).
+move=> x xp.
+simpl.
+apply (proj1 xp).
+move=> H6.
+rewrite H6.
+simpl.
+apply (BoundedClosedsectionDef ((BoundedClosedsectionL I H + BoundedClosedsectionR I H) / 2) (BoundedClosedsectionR I H) ).
+rewrite /Rdiv.
+rewrite - {2}(eps2 (BoundedClosedsectionR I H)).
+rewrite (Rmult_plus_distr_r (BoundedClosedsectionL I H) (BoundedClosedsectionR I H) (/ 2)).
+apply (Rplus_le_compat_r (BoundedClosedsectionR I H * / 2) (BoundedClosedsectionL I H * / 2) (BoundedClosedsectionR I H * / 2)).
+apply (Rmult_le_compat_r (/ 2) (BoundedClosedsectionL I H) (BoundedClosedsectionR I H)).
+apply (Rlt_le 0 (/ 2)).
+apply (Rinv_0_lt_compat 2).
+rewrite /2.
+rewrite - (INR_IPR 2).
+simpl.
+apply (Rlt_trans 0 1 (1 + 1)).
+apply (Rlt_0_1).
+apply (Rlt_plus_1 1).
+rewrite /BoundedClosedsectionL.
+rewrite /BoundedClosedsectionR.
+rewrite /BoundedClosedsectionToRpair.
+suff: let y := constructive_definite_description
+        (fun x : R * R =>
+         fst x <= snd x /\
+         I = (fun y : R => fst x <= y <= snd x))
+        (BoundedClosedsectionUniqueRpair I H) in
+fst (proj1_sig y) <= snd (proj1_sig y).
+by [].
+elim (constructive_definite_description
+    (fun x : R * R =>
+     fst x <= snd x /\
+     I = (fun y : R => fst x <= y <= snd x))
+    (BoundedClosedsectionUniqueRpair I H)).
+move=> x xp.
+simpl.
+apply (proj1 xp).
+apply (Rle_trans a (An O) b).
+apply (Rge_le (An O) a).
+apply (H3 (An O)).
+apply (Im_intro nat R (Full_set nat) An O).
+by [].
+by [].
+apply (H2 (An O)).
+apply (Im_intro nat R (Full_set nat) An O).
+by [].
+by [].
 Qed.
