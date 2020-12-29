@@ -1,1 +1,3 @@
-# CoqKaisekiNyuumonnSugiura
+# 使い方
+まずmakeでコンパイルします。
+ルートディレクトリでcoqideを実行して使えます。
