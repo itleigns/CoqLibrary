@@ -1,5 +1,6 @@
 Add LoadPath "MyAlgebraicStructure" as MyAlgebraicStructure.
 Add LoadPath "Tools" as Tools.
+Add LoadPath "BasicProperty" as BasicProperty.
 
 From mathcomp
 Require Import ssreflect.
