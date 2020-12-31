@@ -494,6 +494,16 @@ move=> n.
 apply Fmul_comm.
 Qed.
 
+Lemma MTransVMult : forall (f : Field) (M N : nat) (c : FT f) (A : Matrix f M N), (MTranspose f M N (VMmult f M N c A)) = (VMmult f N M c (MTranspose f M N A)).
+Proof.
+move=> f M N c A.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+reflexivity.
+Qed.
+
 Lemma blockdividesub : forall (m1 m2 : nat) (x : {n : nat | (n < m1 + m2)%nat}), (m1 <= proj1_sig x)%nat -> {y : {n : nat | (n < m2)%nat} | (m1 + proj1_sig y = proj1_sig x)%nat}.
 Proof.
 move=> m1 m2 x H1.
@@ -535,6 +545,38 @@ move=> x.
 apply functional_extensionality.
 move=> y.
 unfold Mplus.
+unfold MBlockW.
+elim (le_lt_dec N1 (proj1_sig y)).
+move=> H1.
+reflexivity.
+move=> H1.
+reflexivity.
+Qed.
+
+Lemma MBlockHOpp : forall (f : Field) (M1 M2 N : nat) (A1 : Matrix f M1 N) (A2 : Matrix f M2 N), Mopp f (M1 + M2)%nat N (MBlockH f M1 M2 N A1 A2) = MBlockH f M1 M2 N (Mopp f M1 N A1) (Mopp f M2 N A2).
+Proof.
+move=> f M1 M2 N A1 A2.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mopp.
+unfold MBlockH.
+elim (le_lt_dec M1 (proj1_sig x)).
+move=> H1.
+reflexivity.
+move=> H1.
+reflexivity.
+Qed.
+
+Lemma MBlockWOpp : forall (f : Field) (M N1 N2 : nat) (A1 : Matrix f M N1) (A2 : Matrix f M N2), Mopp f M (N1 + N2)%nat (MBlockW f M N1 N2 A1 A2) = MBlockW f M N1 N2 (Mopp f M N1 A1) (Mopp f M N2 A2).
+Proof.
+move=> f M N1 N2 A1 A2.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mopp.
 unfold MBlockW.
 elim (le_lt_dec N1 (proj1_sig y)).
 move=> H1.
@@ -750,6 +792,58 @@ move=> u.
 apply (lt_le_trans (proj1_sig u) N1 (N1 + N2)%nat (proj2_sig u)).
 rewrite - {1} (plus_0_r N1).
 apply (plus_le_compat_l 0 N2 N1 (le_0_n N2)).
+Qed.
+
+Lemma MBlockHVMult : forall (f : Field) (M1 M2 N : nat) (c : FT f) (A1 : Matrix f M1 N) (A2 : Matrix f M2 N), VMmult f (M1 + M2)%nat N c (MBlockH f M1 M2 N A1 A2) = MBlockH f M1 M2 N (VMmult f M1 N c A1) (VMmult f M2 N c A2).
+Proof.
+move=> f M1 M2 N c A1 A2.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold VMmult.
+unfold MBlockH.
+elim (le_lt_dec M1 (proj1_sig x)).
+move=> H1.
+reflexivity.
+move=> H1.
+reflexivity.
+Qed.
+
+Lemma MBlockWVMult : forall (f : Field) (M N1 N2 : nat) (c : FT f) (A1 : Matrix f M N1) (A2 : Matrix f M N2), VMmult f M (N1 + N2)%nat c (MBlockW f M N1 N2 A1 A2) = MBlockW f M N1 N2 (VMmult f M N1 c A1) (VMmult f M N2 c A2).
+Proof.
+move=> f M N1 N2 c A1 A2.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold VMmult.
+unfold MBlockW.
+elim (le_lt_dec N1 (proj1_sig y)).
+move=> H1.
+reflexivity.
+move=> H1.
+reflexivity.
+Qed.
+
+Lemma MBlockHTranspose : forall (f : Field) (M1 M2 N : nat) (A1 : Matrix f M1 N) (A2 : Matrix f M2 N), MTranspose f (M1 + M2)%nat N (MBlockH f M1 M2 N A1 A2) = MBlockW f N M1 M2 (MTranspose f M1 N A1) (MTranspose f M2 N A2).
+Proof.
+move=> f M1 M2 N A1 A2.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+reflexivity.
+Qed.
+
+Lemma MBlockWTranspose : forall (f : Field) (M N1 N2 : nat) (A1 : Matrix f M N1) (A2 : Matrix f M N2), MTranspose f M (N1 + N2)%nat (MBlockW f M N1 N2 A1 A2) = MBlockH f N1 N2 M (MTranspose f M N1 A1) (MTranspose f M N2 A2).
+Proof.
+move=> f M N1 N2 A1 A2.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+reflexivity.
 Qed.
 
 End Matrix.
