@@ -10,20 +10,20 @@ Section VectorSpace.
 
 Record VectorSpace : Type := mkVectorSpace
 {
-F   : Field;
+VF   : Field;
 VT   : Type;
 VO : VT;
 Vadd : VT -> VT -> VT;
-Vmul : (FT F) -> VT -> VT;
+Vmul : (FT VF) -> VT -> VT;
 Vopp : VT -> VT;
 Vadd_comm : forall (x y : VT), (Vadd x y) = (Vadd y x);
 Vadd_assoc : forall (x y z : VT), (Vadd (Vadd x y) z) = (Vadd x (Vadd y z));
 Vadd_O_l : forall x : VT, (Vadd VO x) = x;
 Vadd_opp_r : forall x : VT, (Vadd x (Vopp x)) = VO;
-Vmul_add_distr_l : forall (x : FT F) (y z : VT), (Vmul x (Vadd y z)) = (Vadd (Vmul x y) (Vmul x z));
-Vmul_add_distr_r : forall (x y : FT F) (z : VT), (Vmul (Fadd F x y) z) = (Vadd (Vmul x z) (Vmul y z));
-Vmul_assoc : forall (x y : FT F) (z : VT), (Vmul x (Vmul y z)) = (Vmul (Fmul F x y) z);
-Vmul_I_l : forall x : VT, (Vmul (FI F) x) = x;
+Vmul_add_distr_l : forall (x : FT VF) (y z : VT), (Vmul x (Vadd y z)) = (Vadd (Vmul x y) (Vmul x z));
+Vmul_add_distr_r : forall (x y : FT VF) (z : VT), (Vmul (Fadd VF x y) z) = (Vadd (Vmul x z) (Vmul y z));
+Vmul_assoc : forall (x y : FT VF) (z : VT), (Vmul x (Vmul y z)) = (Vmul (Fmul VF x y) z);
+Vmul_I_l : forall x : VT, (Vmul (FI VF) x) = x;
 }.
 
 Lemma Vadd_O_r : forall (v : VectorSpace) (x : VT v), (Vadd v x (VO v)) = x.
@@ -111,7 +111,7 @@ rewrite H1.
 by [].
 Qed.
 
-Lemma Vmul_O_r : forall (v : VectorSpace) (x : FT (F v)), (Vmul v x (VO v)) = (VO v).
+Lemma Vmul_O_r : forall (v : VectorSpace) (x : FT (VF v)), (Vmul v x (VO v)) = (VO v).
 Proof.
 move=> v x.
 apply (Vadd_O_r_uniq v (Vmul v x (VO v)) (Vmul v x (VO v))).
@@ -120,72 +120,72 @@ rewrite (Vadd_O_l v (VO v)).
 by [].
 Qed.
 
-Lemma Vmul_O_l : forall (v : VectorSpace) (x : VT v), (Vmul v (FO (F v)) x) = (VO v).
+Lemma Vmul_O_l : forall (v : VectorSpace) (x : VT v), (Vmul v (FO (VF v)) x) = (VO v).
 Proof.
 move=> v x.
-apply (Vadd_O_r_uniq v (Vmul v (FO (F v)) x) (Vmul v (FO (F v)) x)).
-rewrite - (Vmul_add_distr_r v (FO (F v)) (FO (F v)) x).
-rewrite (Fadd_O_l (F v) (FO (F v))).
+apply (Vadd_O_r_uniq v (Vmul v (FO (VF v)) x) (Vmul v (FO (VF v)) x)).
+rewrite - (Vmul_add_distr_r v (FO (VF v)) (FO (VF v)) x).
+rewrite (Fadd_O_l (VF v) (FO (VF v))).
 by [].
 Qed.
 
-Lemma Vmul_eq_compat_l : forall (v : VectorSpace) (x : FT (F v)) (y z : VT v), y = z -> (Vmul v x y) = (Vmul v x z).
+Lemma Vmul_eq_compat_l : forall (v : VectorSpace) (x : FT (VF v)) (y z : VT v), y = z -> (Vmul v x y) = (Vmul v x z).
 Proof.
 move=> v x y z H1.
 rewrite H1.
 by [].
 Qed.
 
-Lemma Vmul_eq_compat_r : forall (v : VectorSpace) (x : VT v) (y z : FT (F v)), y = z -> (Vmul v y x) = (Vmul v z x).
+Lemma Vmul_eq_compat_r : forall (v : VectorSpace) (x : VT v) (y z : FT (VF v)), y = z -> (Vmul v y x) = (Vmul v z x).
 Proof.
 move=> v x y z H1.
 rewrite H1.
 by [].
 Qed.
 
-Lemma Vmul_eq_reg_l : forall (v : VectorSpace) (x : FT (F v)) (y z : VT v), (Vmul v x y) = (Vmul v x z) -> x <> (FO (F v)) -> y = z.
+Lemma Vmul_eq_reg_l : forall (v : VectorSpace) (x : FT (VF v)) (y z : VT v), (Vmul v x y) = (Vmul v x z) -> x <> (FO (VF v)) -> y = z.
 Proof.
 move=> v x y z H1 H2.
 rewrite - (Vmul_I_l v y).
 rewrite - (Vmul_I_l v z).
-rewrite - (Finv_l (F v) x H2).
-rewrite - (Vmul_assoc v (Finv (F v) x) x y).
-rewrite - (Vmul_assoc v (Finv (F v) x) x z).
+rewrite - (Finv_l (VF v) x H2).
+rewrite - (Vmul_assoc v (Finv (VF v) x) x y).
+rewrite - (Vmul_assoc v (Finv (VF v) x) x z).
 rewrite H1.
 by [].
 Qed.
 
-Lemma Vmul_eq_reg_r : forall (v : VectorSpace) (x : VT v) (y z : FT (F v)), (Vmul v y x) = (Vmul v z x) -> x <> (VO v) -> y = z.
+Lemma Vmul_eq_reg_r : forall (v : VectorSpace) (x : VT v) (y z : FT (VF v)), (Vmul v y x) = (Vmul v z x) -> x <> (VO v) -> y = z.
 Proof.
 move=> v x y z H1 H2.
 apply NNPP.
 move=> H3.
 apply H2.
 rewrite - (Vmul_I_l v x).
-rewrite - (Finv_l (F v) (Fadd (F v) y (Fopp (F v) z))).
-rewrite - (Vmul_assoc v (Finv (F v) (Fadd (F v) y (Fopp (F v) z))) (Fadd (F v) y (Fopp (F v) z)) x).
-suff: ((Vmul v (Fadd (F v) y (Fopp (F v) z)) x) = VO v).
+rewrite - (Finv_l (VF v) (Fadd (VF v) y (Fopp (VF v) z))).
+rewrite - (Vmul_assoc v (Finv (VF v) (Fadd (VF v) y (Fopp (VF v) z))) (Fadd (VF v) y (Fopp (VF v) z)) x).
+suff: ((Vmul v (Fadd (VF v) y (Fopp (VF v) z)) x) = VO v).
 move=> H4.
 rewrite H4.
-apply (Vmul_O_r v (Finv (F v) (Fadd (F v) y (Fopp (F v) z)))).
-apply (Vadd_eq_reg_r v (Vmul v z x) (Vmul v (Fadd (F v) y (Fopp (F v) z)) x) (VO v)).
+apply (Vmul_O_r v (Finv (VF v) (Fadd (VF v) y (Fopp (VF v) z)))).
+apply (Vadd_eq_reg_r v (Vmul v z x) (Vmul v (Fadd (VF v) y (Fopp (VF v) z)) x) (VO v)).
 rewrite (Vadd_O_l v (Vmul v z x)).
-rewrite (Vmul_add_distr_r v y (Fopp (F v) z) x).
-rewrite (Vadd_assoc v (Vmul v y x) (Vmul v (Fopp (F v) z) x) (Vmul v z x)).
-rewrite - (Vmul_add_distr_r v (Fopp (F v) z) z x).
-rewrite (Fadd_opp_l (F v) z).
+rewrite (Vmul_add_distr_r v y (Fopp (VF v) z) x).
+rewrite (Vadd_assoc v (Vmul v y x) (Vmul v (Fopp (VF v) z) x) (Vmul v z x)).
+rewrite - (Vmul_add_distr_r v (Fopp (VF v) z) z x).
+rewrite (Fadd_opp_l (VF v) z).
 rewrite (Vmul_O_l v x).
 rewrite H1.
 apply (Vadd_O_r v (Vmul v z x)).
 move=> H4.
 apply H3.
-apply (Fminus_diag_uniq (F v) y z H4).
+apply (Fminus_diag_uniq (VF v) y z H4).
 Qed.
 
-Lemma Vmul_integral : forall (v : VectorSpace) (x : FT (F v)) (y : VT v), (Vmul v x y) = (VO v) -> x = (FO (F v)) \/ y = (VO v).
+Lemma Vmul_integral : forall (v : VectorSpace) (x : FT (VF v)) (y : VT v), (Vmul v x y) = (VO v) -> x = (FO (VF v)) \/ y = (VO v).
 Proof.
 move=> v x y H1.
-apply (NNPP (x = FO (F v) \/ y = VO v)).
+apply (NNPP (x = FO (VF v) \/ y = VO v)).
 move=> H2.
 apply H2.
 right.
@@ -199,7 +199,7 @@ left.
 apply H3.
 Qed.
 
-Lemma Vmul_eq_O_compat : forall (v : VectorSpace) (x : FT (F v)) (y : VT v), (x = (FO (F v)) \/ y = (VO v)) -> (Vmul v x y) = (VO v).
+Lemma Vmul_eq_O_compat : forall (v : VectorSpace) (x : FT (VF v)) (y : VT v), (x = (FO (VF v)) \/ y = (VO v)) -> (Vmul v x y) = (VO v).
 Proof.
 move=> v x y H1.
 case H1.
@@ -211,21 +211,21 @@ rewrite H2.
 apply (Vmul_O_r v x).
 Qed.
 
-Lemma Vmul_eq_O_compat_r : forall (v : VectorSpace) (x : FT (F v)) (y : VT v), x = (FO (F v)) -> (Vmul v x y) = (VO v).
+Lemma Vmul_eq_O_compat_r : forall (v : VectorSpace) (x : FT (VF v)) (y : VT v), x = (FO (VF v)) -> (Vmul v x y) = (VO v).
 Proof.
 move=> v x y H1.
 rewrite H1.
 apply (Vmul_O_l v y).
 Qed.
 
-Lemma Vmul_eq_O_compat_l : forall (v : VectorSpace) (x : FT (F v)) (y : VT v), y = (VO v) -> (Vmul v x y) = (VO v).
+Lemma Vmul_eq_O_compat_l : forall (v : VectorSpace) (x : FT (VF v)) (y : VT v), y = (VO v) -> (Vmul v x y) = (VO v).
 Proof.
 move=> v x y H1.
 rewrite H1.
 apply (Vmul_O_r v x).
 Qed.
 
-Lemma Vmul_neq_O_reg : forall (v : VectorSpace) (x : FT (F v)) (y : VT v), (Vmul v x y) <> (VO v) -> x <> (FO (F v)) /\ y <> (VO v).
+Lemma Vmul_neq_O_reg : forall (v : VectorSpace) (x : FT (VF v)) (y : VT v), (Vmul v x y) <> (VO v) -> x <> (FO (VF v)) /\ y <> (VO v).
 Proof.
 move=> v x y H1.
 apply conj.
@@ -239,23 +239,21 @@ rewrite H2.
 apply (Vmul_O_r v x).
 Qed.
 
-Lemma Vmul_integral_contrapositive : forall (v : VectorSpace) (x : FT (F v)) (y : VT v), x <> (FO (F v)) /\ y <> (VO v) -> (Vmul v x y) <> (VO v).
+Lemma Vmul_integral_contrapositive : forall (v : VectorSpace) (x : FT (VF v)) (y : VT v), x <> (FO (VF v)) /\ y <> (VO v) -> (Vmul v x y) <> (VO v).
 Proof.
-move=> v x y H1.
-move=> H2.
+move=> v x y H1 H2.
 apply (proj1 H1).
-apply (Vmul_eq_reg_r v y x (FO (F v))).
+apply (Vmul_eq_reg_r v y x (FO (VF v))).
 rewrite (Vmul_O_l v y).
 apply H2.
 apply (proj2 H1).
 Qed.
 
-Lemma Vmul_integral_contrapositive_currified : forall (v : VectorSpace) (x : FT (F v)) (y : VT v), x <> (FO (F v)) -> y <> (VO v) -> (Vmul v x y) <> (VO v).
+Lemma Vmul_integral_contrapositive_currified : forall (v : VectorSpace) (x : FT (VF v)) (y : VT v), x <> (FO (VF v)) -> y <> (VO v) -> (Vmul v x y) <> (VO v).
 Proof.
-move=> v x y H1 H2.
-move=> H3.
+move=> v x y H1 H2 H3.
 apply H1.
-apply (Vmul_eq_reg_r v y x (FO (F v))).
+apply (Vmul_eq_reg_r v y x (FO (VF v))).
 rewrite (Vmul_O_l v y).
 apply H3.
 apply H2.
@@ -318,27 +316,27 @@ rewrite (Vadd_O_r v y).
 apply (Vadd_opp_r v y).
 Qed.
 
-Lemma Vopp_mul_distr_l : forall (v : VectorSpace) (x : FT (F v)) (y : VT v), (Vopp v (Vmul v x y)) = (Vmul v (Fopp (F v) x) y).
+Lemma Vopp_mul_distr_l : forall (v : VectorSpace) (x : FT (VF v)) (y : VT v), (Vopp v (Vmul v x y)) = (Vmul v (Fopp (VF v) x) y).
 Proof.
 move=> v x y.
-suff: Vmul v (Fopp (F v) x) y = Vopp v (Vmul v x y).
+suff: Vmul v (Fopp (VF v) x) y = Vopp v (Vmul v x y).
 move=> H1.
 rewrite H1.
 by [].
 apply (Vadd_opp_r_uniq v (Vmul v x y)).
-rewrite - (Vmul_add_distr_r v x (Fopp (F v) x) y).
-rewrite (Fadd_opp_r (F v) x).
+rewrite - (Vmul_add_distr_r v x (Fopp (VF v) x) y).
+rewrite (Fadd_opp_r (VF v) x).
 apply (Vmul_O_l v y).
 Qed.
 
-Lemma Vopp_mul_distr_l_reverse : forall (v : VectorSpace) (x : FT (F v)) (y : VT v), (Vmul v (Fopp (F v) x) y) = (Vopp v (Vmul v x y)).
+Lemma Vopp_mul_distr_l_reverse : forall (v : VectorSpace) (x : FT (VF v)) (y : VT v), (Vmul v (Fopp (VF v) x) y) = (Vopp v (Vmul v x y)).
 Proof.
 move=> v x y.
 rewrite (Vopp_mul_distr_l v x y).
 reflexivity.
 Qed.
 
-Lemma Vopp_mul_distr_r : forall (v : VectorSpace) (x : FT (F v)) (y : VT v), (Vopp v (Vmul v x y)) = (Vmul v x (Vopp v y)).
+Lemma Vopp_mul_distr_r : forall (v : VectorSpace) (x : FT (VF v)) (y : VT v), (Vopp v (Vmul v x y)) = (Vmul v x (Vopp v y)).
 Proof.
 move=> v x y.
 suff: Vmul v x (Vopp v y) = Vopp v (Vmul v x y).
@@ -351,14 +349,14 @@ rewrite (Vadd_opp_r v y).
 apply (Vmul_O_r v x).
 Qed.
 
-Lemma Vopp_mul_distr_r_reverse : forall (v : VectorSpace) (x : FT (F v)) (y : VT v), (Vmul v x (Vopp v y)) = (Vopp v (Vmul v x y)).
+Lemma Vopp_mul_distr_r_reverse : forall (v : VectorSpace) (x : FT (VF v)) (y : VT v), (Vmul v x (Vopp v y)) = (Vopp v (Vmul v x y)).
 Proof.
 move=> v x y.
 rewrite (Vopp_mul_distr_r v x y).
 reflexivity.
 Qed.
 
-Lemma Vmul_opp_opp : forall (v : VectorSpace) (x : FT (F v)) (y : VT v), (Vmul v (Fopp (F v) x) (Vopp v y)) = (Vmul v x y).
+Lemma Vmul_opp_opp : forall (v : VectorSpace) (x : FT (VF v)) (y : VT v), (Vmul v (Fopp (VF v) x) (Vopp v y)) = (Vmul v x y).
 Proof.
 move=> v x y.
 rewrite (Vopp_mul_distr_l_reverse v x (Vopp v y)).
@@ -452,7 +450,7 @@ rewrite H2.
 reflexivity.
 Qed.
 
-Lemma Vmul_minus_distr_l : forall (v : VectorSpace) (x : FT (F v)) (y z : VT v), (Vmul v x (Vadd v y (Vopp v z))) = (Vadd v (Vmul v x y) (Vopp v (Vmul v x z))).
+Lemma Vmul_minus_distr_l : forall (v : VectorSpace) (x : FT (VF v)) (y z : VT v), (Vmul v x (Vadd v y (Vopp v z))) = (Vadd v (Vmul v x y) (Vopp v (Vmul v x z))).
 Proof.
 move=> v x y z.
 rewrite (Vmul_add_distr_l v x y (Vopp v z)).
