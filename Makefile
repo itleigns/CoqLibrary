@@ -1,4 +1,4 @@
-all: KaisekiNyuumonn1.vo Matrix.vo MyField.vo MyVectorSpace.vo MySum.vo
+all: KaisekiNyuumonn1.vo Matrix.vo MyField.vo MyVectorSpace.vo MySum.vo NatProperty.vo
 
 KaisekiNyuumonn1.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn1.v MyField.vo MyVectorSpace.vo MySum.vo
 	coqc Analysis/KaisekiNyuumonn/KaisekiNyuumonn1.v
@@ -6,7 +6,7 @@ KaisekiNyuumonn1.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn1.v MyField.vo MyVe
 Matrix.vo: LinearAlgebra/Matrix.v MyField.vo MyVectorSpace.vo MySum.vo
 	coqc -Q LinearAlgebra LinearAlgebra LinearAlgebra/Matrix.v
 
-MyField.vo: MyAlgebraicStructure/MyField.v
+MyField.vo: MyAlgebraicStructure/MyField.v NatProperty.vo
 	coqc -Q MyAlgebraicStructure MyAlgebraicStructure MyAlgebraicStructure/MyField.v
 
 MyVectorSpace.vo: MyAlgebraicStructure/MyVectorSpace.v MyField.vo
@@ -14,6 +14,9 @@ MyVectorSpace.vo: MyAlgebraicStructure/MyVectorSpace.v MyField.vo
 
 MySum.vo: Tools/MySum.v
 	coqc -Q Tools Tools Tools/MySum.v
+
+NatProperty.vo: BasicProperty/NatProperty.v
+	coqc -Q BasicProperty BasicProperty BasicProperty/NatProperty.v
 
 clean:
 	find . -type f | grep -E "(.*\.vo)|(.*\.glob)|(.*\.aux)" - | xargs rm

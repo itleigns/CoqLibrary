@@ -1,6 +1,12 @@
+Add LoadPath "BasicProperty" as BasicProperty.
+
 From mathcomp
 Require Import ssreflect.
 Require Import Classical.
+Require Import Coq.Logic.ClassicalDescription.
+Require Import Coq.Sets.Ensembles.
+Require Import Coq.Sets.Finite_sets.
+Require Import BasicProperty.NatProperty.
 
 Section Field.
 
@@ -606,5 +612,15 @@ rewrite (Finv_l f x H1).
 rewrite (Fmul_I_l f (Finv f y)).
 reflexivity.
 Qed.
+
+Definition NatCorrespondField := fun (f : Field) => (fix NatCorrespond (n : nat) : FT f := match n with
+  | O => FO f
+  | S n0 => (Fadd f (NatCorrespond n0) (FI f))
+end).
+
+Definition CharacteristicField := fun (f : Field) => (match excluded_middle_informative (Inhabited nat (fun (n : nat) => NatCorrespondField f (S n) = FO f)) with
+  | left H => S (proj1_sig (min_nat_get (fun (n : nat) => NatCorrespondField f (S n) = FO f) H))
+  | right _ => O
+end).
 
 End Field.
