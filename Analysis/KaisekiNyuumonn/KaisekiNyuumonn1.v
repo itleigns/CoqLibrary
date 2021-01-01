@@ -7666,7 +7666,7 @@ move=> H1.
 rewrite H1.
 rewrite - (Vopp_mul_distr_r (RnVS N) 1 y).
 rewrite (Vopp_mul_distr_l (RnVS N) 1 y).
-have: ((Rnmult N (- 1) y) = (Vmul (RnVS N) (Fopp (F (RnVS N)) 1) y)).
+have: ((Rnmult N (- 1) y) = (Vmul (RnVS N) (Fopp (VF (RnVS N)) 1) y)).
 simpl.
 reflexivity.
 move=> H2.
@@ -8223,7 +8223,7 @@ elim (classic ((RnInnerProduct N x x) = 0)).
 move=> H2.
 exists 0.
 left.
-suff: ((Rnmult N 0 y) = (Vmul (RnVS N) (FO (F (RnVS N))) y)).
+suff: ((Rnmult N 0 y) = (Vmul (RnVS N) (FO (VF (RnVS N))) y)).
 move=> H3.
 rewrite H3.
 rewrite (Vmul_O_l (RnVS N) y).
@@ -8684,7 +8684,7 @@ unfold Rn_dist.
 rewrite H1.
 rewrite - (Vopp_minus_distr (RnVS N) x y).
 rewrite - (Vmul_I_l (RnVS N) (Vadd (RnVS N) x (Vopp (RnVS N) y))).
-rewrite (Vopp_mul_distr_l (RnVS N) (FI (F (RnVS N))) (Vadd (RnVS N) x (Vopp (RnVS N) y))).
+rewrite (Vopp_mul_distr_l (RnVS N) (FI (VF (RnVS N))) (Vadd (RnVS N) x (Vopp (RnVS N) y))).
 simpl.
 rewrite (Proposition_4_4_1 N (- 1) (Rnplus N x (Rnopp N y))).
 rewrite (Rabs_Ropp 1).
@@ -23418,12 +23418,12 @@ move=> H14.
 rewrite H14.
 reflexivity.
 rewrite - {1} (Vmul_I_l (RnVS N) (Vopp (RnVS N) r)).
-rewrite - (Vopp_mul_distr_r (RnVS N) (FI (F (RnVS N))) r).
-rewrite (Vopp_mul_distr_l (RnVS N) (FI (F (RnVS N))) r).
-rewrite - (Vmul_add_distr_r (RnVS N) (1 - t) (Fopp (F (RnVS N)) (FI (F (RnVS N)))) r).
+rewrite - (Vopp_mul_distr_r (RnVS N) (FI (VF (RnVS N))) r).
+rewrite (Vopp_mul_distr_l (RnVS N) (FI (VF (RnVS N))) r).
+rewrite - (Vmul_add_distr_r (RnVS N) (1 - t) (Fopp (VF (RnVS N)) (FI (VF (RnVS N)))) r).
 rewrite - (Vopp_mul_distr_r (RnVS N) t r).
 rewrite (Vopp_mul_distr_l (RnVS N) t r).
-suff: ((Fadd (F (RnVS N)) (1 - t) (Fopp (F (RnVS N)) (FI (F (RnVS N))))) = (Fopp (F (RnVS N)) t)).
+suff: ((Fadd (VF (RnVS N)) (1 - t) (Fopp (VF (RnVS N)) (FI (VF (RnVS N))))) = (Fopp (VF (RnVS N)) t)).
 move=> H14.
 rewrite H14.
 reflexivity.
@@ -23850,13 +23850,13 @@ rewrite (Vadd_comm (RnVS N) (Vmul (RnVS N) (y - b) r03) (Vadd (RnVS N) (Vopp (Rn
 rewrite (Vadd_assoc (RnVS N) (Vopp (RnVS N) (Vmul (RnVS N) (1 - (r - b)) r02)) (Vopp (RnVS N) (Vmul (RnVS N) (r - b) r03)) (Vmul (RnVS N) (y - b) r03)).
 rewrite - (Vadd_assoc (RnVS N) (Vmul (RnVS N) (1 - (y - b)) r02) (Vopp (RnVS N) (Vmul (RnVS N) (1 - (r - b)) r02)) (Vadd (RnVS N) (Vopp (RnVS N) (Vmul (RnVS N) (r - b) r03)) (Vmul (RnVS N) (y - b) r03))).
 rewrite (Vopp_mul_distr_l (RnVS N) (1 - (r - b)) r02).
-rewrite - (Vmul_add_distr_r (RnVS N) (1 - (y - b)) (Fopp (F (RnVS N)) (1 - (r - b))) r02).
-suff: ((Fadd (F (RnVS N)) (1 - (y - b)) (Fopp (F (RnVS N)) (1 - (r - b)))) = r - y).
+rewrite - (Vmul_add_distr_r (RnVS N) (1 - (y - b)) (Fopp (VF (RnVS N)) (1 - (r - b))) r02).
+suff: ((Fadd (VF (RnVS N)) (1 - (y - b)) (Fopp (VF (RnVS N)) (1 - (r - b)))) = r - y).
 move=> H14.
 rewrite H14.
 rewrite (Vopp_mul_distr_l (RnVS N) (r - b) r03).
-rewrite - (Vmul_add_distr_r (RnVS N) (Fopp (F (RnVS N)) (r - b)) (y - b) r03).
-suff: ((Fadd (F (RnVS N)) (Fopp (F (RnVS N)) (r - b)) (y - b)) = - (r - y)).
+rewrite - (Vmul_add_distr_r (RnVS N) (Fopp (VF (RnVS N)) (r - b)) (y - b) r03).
+suff: ((Fadd (VF (RnVS N)) (Fopp (VF (RnVS N)) (r - b)) (y - b)) = - (r - y)).
 move=> H15.
 rewrite H15.
 rewrite - (Vopp_mul_distr_l (RnVS N) (r - y) r03).
@@ -24304,13 +24304,13 @@ rewrite (Vadd_comm (RnVS N) (Vmul (RnVS N) z y) (Vadd (RnVS N) (Vopp (RnVS N) (V
 rewrite (Vadd_assoc (RnVS N) (Vopp (RnVS N) (Vmul (RnVS N) (1 - r) x)) (Vopp (RnVS N) (Vmul (RnVS N) r y)) (Vmul (RnVS N) z y)).
 rewrite - (Vadd_assoc (RnVS N) (Vmul (RnVS N) (1 - z) x) (Vopp (RnVS N) (Vmul (RnVS N) (1 - r) x)) (Vadd (RnVS N) (Vopp (RnVS N) (Vmul (RnVS N) r y)) (Vmul (RnVS N) z y))).
 rewrite (Vopp_mul_distr_l (RnVS N) (1 - r) x).
-rewrite - (Vmul_add_distr_r (RnVS N) (1 - z) (Fopp (F (RnVS N)) (1 - r)) x).
-suff: ((Fadd (F (RnVS N)) (1 - z) (Fopp (F (RnVS N)) (1 - r))) = r - z).
+rewrite - (Vmul_add_distr_r (RnVS N) (1 - z) (Fopp (VF (RnVS N)) (1 - r)) x).
+suff: ((Fadd (VF (RnVS N)) (1 - z) (Fopp (VF (RnVS N)) (1 - r))) = r - z).
 move=> H10.
 rewrite H10.
 rewrite (Vopp_mul_distr_l (RnVS N) r y).
-rewrite - (Vmul_add_distr_r (RnVS N) (Fopp (F (RnVS N)) r) z y).
-suff: ((Fadd (F (RnVS N)) (Fopp (F (RnVS N)) r) z) = - (r - z)).
+rewrite - (Vmul_add_distr_r (RnVS N) (Fopp (VF (RnVS N)) r) z y).
+suff: ((Fadd (VF (RnVS N)) (Fopp (VF (RnVS N)) r) z) = - (r - z)).
 move=> H11.
 rewrite H11.
 rewrite - (Vopp_mul_distr_l (RnVS N) (r - z) y).
