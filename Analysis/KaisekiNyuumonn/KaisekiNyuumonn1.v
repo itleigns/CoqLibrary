@@ -7594,7 +7594,7 @@ Lemma Proposition_4_2_4_3 : forall (N : nat) (x : Rn N), x = (RnO N) -> (RnInner
 Proof.
 move=> N x H1.
 rewrite H1.
-have: Rnmult N 0 (RnO N) = (Vmul (RnVS N) 0 (RnO N)).
+have: Rnmult N 0 (RnO N) = (Vmul Rfield (RnVS N) 0 (RnO N)).
 simpl.
 reflexivity.
 move=> H2.
@@ -7604,7 +7604,7 @@ rewrite {2} H3.
 rewrite - (Proposition_4_2_2_2 N 0 (RnO N) (RnO N)).
 apply (Rmult_0_l (RnInnerProduct N (RnO N) (RnO N))).
 rewrite H2.
-rewrite (Vmul_O_l (RnVS N) (RnO N)).
+rewrite (Vmul_O_l Rfield (RnVS N) (RnO N)).
 reflexivity.
 Qed.
 
@@ -7657,16 +7657,16 @@ rewrite (Proposition_4_2_1_2 N (Rnopp N y) x (Rnopp N y)).
 rewrite (Rplus_assoc (RnInnerProduct N x x) (RnInnerProduct N x (Rnopp N y)) (RnInnerProduct N (Rnopp N y) x + RnInnerProduct N (Rnopp N y) (Rnopp N y))).
 rewrite (Rplus_assoc (RnInnerProduct N x x) (- (2 * RnInnerProduct N x y)) (RnInnerProduct N y y)).
 apply (Rplus_eq_compat_l (RnInnerProduct N x x) (RnInnerProduct N x (Rnopp N y) + (RnInnerProduct N (Rnopp N y) x + RnInnerProduct N (Rnopp N y) (Rnopp N y))) (- (2 * RnInnerProduct N x y) + RnInnerProduct N y y)).
-rewrite - (Vmul_I_l (RnVS N) (Rnopp N y)).
+rewrite - (Vmul_I_l Rfield (RnVS N) (Rnopp N y)).
 simpl.
-have: ((Rnmult N 1 (Rnopp N y)) = (Vmul (RnVS N) 1 (Vopp (RnVS N) y))).
+have: ((Rnmult N 1 (Rnopp N y)) = (Vmul Rfield (RnVS N) 1 (Vopp Rfield (RnVS N) y))).
 simpl.
 reflexivity.
 move=> H1.
 rewrite H1.
-rewrite - (Vopp_mul_distr_r (RnVS N) 1 y).
-rewrite (Vopp_mul_distr_l (RnVS N) 1 y).
-have: ((Rnmult N (- 1) y) = (Vmul (RnVS N) (Fopp (VF (RnVS N)) 1) y)).
+rewrite - (Vopp_mul_distr_r Rfield (RnVS N) 1 y).
+rewrite (Vopp_mul_distr_l Rfield (RnVS N) 1 y).
+have: ((Rnmult N (- 1) y) = (Vmul Rfield (RnVS N) (Fopp Rfield 1) y)).
 simpl.
 reflexivity.
 move=> H2.
@@ -8067,12 +8067,12 @@ apply (Rmult_0_l (RnInnerProduct N (RnO N) (RnO N))).
 rewrite H2.
 rewrite (Proposition_4_2_2_1 N 0 (RnO N) y).
 apply (Rmult_0_l (RnInnerProduct N (RnO N) y)).
-have: Rnmult N 0 (RnO N) = (Vmul (RnVS N) 0 (RnO N)).
+have: Rnmult N 0 (RnO N) = (Vmul Rfield (RnVS N) 0 (RnO N)).
 simpl.
 reflexivity.
 move=> H2.
 rewrite H2.
-rewrite (Vmul_O_l (RnVS N) (RnO N)).
+rewrite (Vmul_O_l Rfield (RnVS N) (RnO N)).
 simpl.
 reflexivity.
 move=> H2.
@@ -8223,10 +8223,10 @@ elim (classic ((RnInnerProduct N x x) = 0)).
 move=> H2.
 exists 0.
 left.
-suff: ((Rnmult N 0 y) = (Vmul (RnVS N) (FO (VF (RnVS N))) y)).
+suff: ((Rnmult N 0 y) = (Vmul Rfield (RnVS N) (FO Rfield) y)).
 move=> H3.
 rewrite H3.
-rewrite (Vmul_O_l (RnVS N) y).
+rewrite (Vmul_O_l Rfield (RnVS N) y).
 simpl.
 apply (Proposition_4_2_4_2 N x H2).
 simpl.
@@ -8347,7 +8347,7 @@ move=> H6.
 apply H3.
 exists t.
 right.
-apply (Vminus_diag_uniq_sym (RnVS N) y (Rnmult N t x)).
+apply (Vminus_diag_uniq_sym Rfield (RnVS N) y (Rnmult N t x)).
 apply H6.
 apply (Proposition_4_2_4_2 N (Rnminus N (Rnmult N t x) y)).
 rewrite (proj2 (RnNormNature N (Rnminus N (Rnmult N t x) y))).
@@ -8677,14 +8677,14 @@ Qed.
 Lemma Rn_dist_sym : forall (N : nat) (x y : Rn N), Rn_dist N x y = Rn_dist N y x.
 Proof.
 move=> N x y.
-have: (Rnminus N y x) = (Vadd (RnVS N) y (Vopp (RnVS N) x)).
+have: (Rnminus N y x) = (Vadd Rfield (RnVS N) y (Vopp Rfield (RnVS N) x)).
 reflexivity.
 move=> H1.
 unfold Rn_dist.
 rewrite H1.
-rewrite - (Vopp_minus_distr (RnVS N) x y).
-rewrite - (Vmul_I_l (RnVS N) (Vadd (RnVS N) x (Vopp (RnVS N) y))).
-rewrite (Vopp_mul_distr_l (RnVS N) (FI (VF (RnVS N))) (Vadd (RnVS N) x (Vopp (RnVS N) y))).
+rewrite - (Vopp_minus_distr Rfield (RnVS N) x y).
+rewrite - (Vmul_I_l Rfield (RnVS N) (Vadd Rfield (RnVS N) x (Vopp Rfield (RnVS N) y))).
+rewrite (Vopp_mul_distr_l Rfield (RnVS N) (FI Rfield) (Vadd Rfield (RnVS N) x (Vopp Rfield (RnVS N) y))).
 simpl.
 rewrite (Proposition_4_4_1 N (- 1) (Rnplus N x (Rnopp N y))).
 rewrite (Rabs_Ropp 1).
@@ -8698,7 +8698,7 @@ Proof.
 move=> N x y.
 apply conj.
 move=> H1.
-apply (Vminus_diag_uniq (RnVS N) x y).
+apply (Vminus_diag_uniq Rfield (RnVS N) x y).
 simpl.
 apply (Proposition_4_4_3_2 N (Rnplus N x (Rnopp N y))).
 apply H1.
@@ -8730,11 +8730,11 @@ unfold Rnminus.
 rewrite - (Rnplus_assoc N (Rnplus N x (Rnopp N z)) z (Rnopp N y)).
 rewrite (Rnplus_assoc N x (Rnopp N z) z).
 have: Rnplus N (Rnopp N z) z = RnO N.
-apply (Vadd_opp_l (RnVS N) z).
+apply (Vadd_opp_l Rfield (RnVS N) z).
 move=> H1.
 rewrite H1.
 have: (Rnplus N x (RnO N)) = x.
-apply (Vadd_O_r (RnVS N) x).
+apply (Vadd_O_r Rfield (RnVS N) x).
 move=> H2.
 rewrite H2.
 reflexivity.
@@ -10424,7 +10424,7 @@ rewrite sum_f_Rn_component.
 reflexivity.
 Qed.
 
-Definition RnPCM (N : nat) : CommutativeMonoid := mkCommutativeMonoid (Rn N) (RnO N) (Rnplus N) (Rnplus_comm N) (Vadd_O_r (RnVS N)) (Rnplus_assoc N).
+Definition RnPCM (N : nat) : CommutativeMonoid := mkCommutativeMonoid (Rn N) (RnO N) (Rnplus N) (Rnplus_comm N) (Vadd_O_r Rfield (RnVS N)) (Rnplus_assoc N).
 
 Lemma MySumF2RPNCM_component : forall (N : nat) (U : Type) (A : {X : Ensemble U | Finite U X}) (f : U -> Rn N), MySumF2 U A (RnPCM N) f = (fun (m : Count N) => MySumF2 U A RPCM (fun (n : U) => f n m)).
 Proof.
@@ -10737,10 +10737,10 @@ move=> n H4.
 unfold dist.
 unfold Rn_met.
 unfold Rn_dist.
-suff: (Rnminus N (an n) (RnO N) = Vadd (RnVS N) (an n) (Vopp (RnVS N) (VO (RnVS N)))).
+suff: (Rnminus N (an n) (RnO N) = Vadd Rfield (RnVS N) (an n) (Vopp Rfield (RnVS N) (VO Rfield (RnVS N)))).
 move=> H5.
 rewrite H5.
-rewrite (Vminus_O_r (RnVS N) (an n)).
+rewrite (Vminus_O_r Rfield (RnVS N) (an n)).
 move: H4.
 elim n.
 move=> H6.
@@ -11017,10 +11017,10 @@ apply (FiniteSetInduction U A).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
-suff: (Rnmult N c (CMe (RnPCM N)) = (Vmul (RnVS N) c (VO (RnVS N)))).
+suff: (Rnmult N c (CMe (RnPCM N)) = (Vmul Rfield (RnVS N) c (VO Rfield (RnVS N)))).
 move=> H1.
 rewrite H1.
-rewrite (Vmul_O_r (RnVS N) c).
+rewrite (Vmul_O_r Rfield (RnVS N) c).
 reflexivity.
 reflexivity.
 move=> B b H1 H2 H3 H4.
@@ -11602,7 +11602,7 @@ rewrite Rnplus_assoc.
 rewrite (Rnplus_comm N a (Rnplus N (sum_f_Rn N Bn M1) (Rnopp N (sum_f_Rn N An M1)))).
 unfold Rnminus.
 rewrite Rnplus_assoc.
-suff: (Rnopp N (Rnplus N (Rnplus N (sum_f_Rn N Bn M1) (Rnopp N (sum_f_Rn N An M1))) a) = Vopp (RnVS N) (Vadd (RnVS N) (Rnplus N (sum_f_Rn N Bn M1) (Rnopp N (sum_f_Rn N An M1))) a)).
+suff: (Rnopp N (Rnplus N (Rnplus N (sum_f_Rn N Bn M1) (Rnopp N (sum_f_Rn N An M1))) a) = Vopp Rfield (RnVS N) (Vadd Rfield (RnVS N) (Rnplus N (sum_f_Rn N Bn M1) (Rnopp N (sum_f_Rn N An M1))) a)).
 move=> H10.
 rewrite H10.
 rewrite Vopp_add_distr.
@@ -12632,7 +12632,7 @@ unfold dist.
 unfold Rn_met.
 unfold Rn_dist.
 unfold Rnminus.
-suff: ((Rnopp N (Rnplus N s (Rnopp N (sum_f_Rn N an k)))) = Vopp (RnVS N) (Vadd (RnVS N) s (Rnopp N (sum_f_Rn N an k)))).
+suff: ((Rnopp N (Rnplus N s (Rnopp N (sum_f_Rn N an k)))) = Vopp Rfield (RnVS N) (Vadd Rfield (RnVS N) s (Rnopp N (sum_f_Rn N an k)))).
 move=> H6.
 rewrite H6.
 rewrite Vopp_add_distr.
@@ -12665,8 +12665,8 @@ unfold Rnminus.
 rewrite Rnplus_assoc.
 rewrite Rnplus_comm.
 rewrite Rnplus_assoc.
-rewrite - (Vopp_involutive (RnVS N) (sum_f_Rn N an k)).
-suff: ((Rnplus N (Rnopp N s) (Vopp (RnVS N) (Vopp (RnVS N) (sum_f_Rn N an k)))) = Vadd (RnVS N) (Vopp (RnVS N) s) (Vopp (RnVS N) (Vopp (RnVS N) (sum_f_Rn N an k)))).
+rewrite - (Vopp_involutive Rfield (RnVS N) (sum_f_Rn N an k)).
+suff: ((Rnplus N (Rnopp N s) (Vopp Rfield (RnVS N) (Vopp Rfield (RnVS N) (sum_f_Rn N an k)))) = Vadd Rfield (RnVS N) (Vopp Rfield (RnVS N) s) (Vopp Rfield (RnVS N) (Vopp Rfield (RnVS N) (sum_f_Rn N an k)))).
 move=> H7.
 rewrite H7.
 rewrite - Vopp_add_distr.
@@ -18451,7 +18451,7 @@ Proof.
 move=> T N f.
 apply functional_extensionality.
 move=> x.
-apply (Vadd_O_r (RnVS N)).
+apply (Vadd_O_r Rfield (RnVS N)).
 Qed.
 
 Lemma RnFplus_assoc : forall (T : Type) (N : nat) (f g h : T -> Rn N), (RnFplus T N (RnFplus T N f g) h) = (RnFplus T N f (RnFplus T N g h)).
@@ -19169,14 +19169,14 @@ apply (H3 (an n)).
 apply (H2 n).
 unfold Rn_dist.
 unfold Rnminus.
-suff: ((Rnopp N (RnO N)) = (Vopp (RnVS N) (VO (RnVS N)))).
+suff: ((Rnopp N (RnO N)) = (Vopp Rfield (RnVS N) (VO Rfield (RnVS N)))).
 move=> H9.
 rewrite H9.
-rewrite (Vopp_O (RnVS N)).
-suff: ((Rnplus N (an n) (VO (RnVS N))) = (Vadd (RnVS N) (an n) (VO (RnVS N)))).
+rewrite (Vopp_O Rfield (RnVS N)).
+suff: ((Rnplus N (an n) (VO Rfield (RnVS N))) = (Vadd Rfield (RnVS N) (an n) (VO Rfield (RnVS N)))).
 move=> H10.
 rewrite H10.
-rewrite (Vadd_O_r (RnVS N) (an n)).
+rewrite (Vadd_O_r Rfield (RnVS N) (an n)).
 reflexivity.
 reflexivity.
 reflexivity.
@@ -19914,11 +19914,11 @@ apply (Rge_le (RnNorm N a) 0).
 apply (proj1 (RnNormNature N a)).
 apply H11.
 apply H11.
-suff: (Rnplus N a (Rnopp N (RnO N)) = Vadd (RnVS N) a (Vopp (RnVS N) (VO (RnVS N)))).
+suff: (Rnplus N a (Rnopp N (RnO N)) = Vadd Rfield (RnVS N) a (Vopp Rfield (RnVS N) (VO Rfield (RnVS N)))).
 move=> H10.
 rewrite H10.
-rewrite (Vopp_O (RnVS N)).
-apply (Vadd_O_r (RnVS N) a).
+rewrite (Vopp_O Rfield (RnVS N)).
+apply (Vadd_O_r Rfield (RnVS N) a).
 reflexivity.
 apply (Rlt_le (Rn_dist N a (RnO N)) M).
 apply (H6 a H9).
@@ -23338,23 +23338,23 @@ reflexivity.
 unfold Rnminus.
 rewrite (proj2 H12).
 rewrite (Rnplus_comm N (Rnmult N (1 - t) a) (Rnmult N t r)).
-suff: (Rnplus N (Rnplus N (Rnmult N t r) (Rnmult N (1 - t) a)) (Rnopp N r) = Vadd (RnVS N) (Vadd (RnVS N) (Vmul (RnVS N) t r) (Vmul (RnVS N) (1 - t) a)) (Vopp (RnVS N) r)).
+suff: (Rnplus N (Rnplus N (Rnmult N t r) (Rnmult N (1 - t) a)) (Rnopp N r) = Vadd Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) t r) (Vmul Rfield (RnVS N) (1 - t) a)) (Vopp Rfield (RnVS N) r)).
 move=> H13.
 rewrite H13.
-suff: (Rnmult N (1 - t) (Rnplus N a (Rnopp N r)) = Vmul (RnVS N) (1 - t) (Vadd (RnVS N) a (Vopp (RnVS N) r))).
+suff: (Rnmult N (1 - t) (Rnplus N a (Rnopp N r)) = Vmul Rfield (RnVS N) (1 - t) (Vadd Rfield (RnVS N) a (Vopp Rfield (RnVS N) r))).
 move=> H14.
 rewrite H14.
-rewrite (Vadd_comm (RnVS N) (Vmul (RnVS N) t r) (Vmul (RnVS N) (1 - t) a)).
-rewrite (Vadd_assoc (RnVS N) (Vmul (RnVS N) (1 - t) a) (Vmul (RnVS N) t r) (Vopp (RnVS N) r)).
-rewrite (Vmul_add_distr_l (RnVS N) (1 - t) a (Vopp (RnVS N) r)).
-suff: ((Vadd (RnVS N) (Vmul (RnVS N) t r) (Vopp (RnVS N) r)) = (Vmul (RnVS N) (1 - t) (Vopp (RnVS N) r))).
+rewrite (Vadd_comm Rfield (RnVS N) (Vmul Rfield (RnVS N) t r) (Vmul Rfield (RnVS N) (1 - t) a)).
+rewrite (Vadd_assoc Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - t) a) (Vmul Rfield (RnVS N) t r) (Vopp Rfield (RnVS N) r)).
+rewrite (Vmul_add_distr_l Rfield (RnVS N) (1 - t) a (Vopp Rfield (RnVS N) r)).
+suff: ((Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) t r) (Vopp Rfield (RnVS N) r)) = (Vmul Rfield (RnVS N) (1 - t) (Vopp Rfield (RnVS N) r))).
 move=> H15.
 rewrite H15.
 reflexivity.
-rewrite (Vmul_add_distr_r (RnVS N) 1 (- t) (Vopp (RnVS N) r)).
-rewrite (Vadd_comm (RnVS N) (Vmul (RnVS N) t r) (Vopp (RnVS N) r)).
-rewrite (Vmul_I_l (RnVS N) (Vopp (RnVS N) r)).
-rewrite (Vmul_opp_opp (RnVS N) t r).
+rewrite (Vmul_add_distr_r Rfield (RnVS N) 1 (- t) (Vopp Rfield (RnVS N) r)).
+rewrite (Vadd_comm Rfield (RnVS N) (Vmul Rfield (RnVS N) t r) (Vopp Rfield (RnVS N) r)).
+rewrite (Vmul_I_l Rfield (RnVS N) (Vopp Rfield (RnVS N) r)).
+rewrite (Vmul_opp_opp Rfield (RnVS N) t r).
 reflexivity.
 reflexivity.
 reflexivity.
@@ -23404,26 +23404,26 @@ reflexivity.
 apply (Rle_ge 0 t (proj1 (proj1 H11))).
 unfold Rnminus.
 rewrite (proj2 H11).
-suff: (Rnplus N (Rnplus N (Rnmult N (1 - t) r) (Rnmult N t a)) (Rnopp N r) = Vadd (RnVS N) (Vadd (RnVS N) (Vmul (RnVS N) (1 - t) r) (Vmul (RnVS N) t a)) (Vopp (RnVS N) r)).
+suff: (Rnplus N (Rnplus N (Rnmult N (1 - t) r) (Rnmult N t a)) (Rnopp N r) = Vadd Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - t) r) (Vmul Rfield (RnVS N) t a)) (Vopp Rfield (RnVS N) r)).
 move=> H12.
 rewrite H12.
-suff: (Rnmult N t (Rnplus N a (Rnopp N r)) = Vmul (RnVS N) t (Vadd (RnVS N) a (Vopp (RnVS N) r))).
+suff: (Rnmult N t (Rnplus N a (Rnopp N r)) = Vmul Rfield (RnVS N) t (Vadd Rfield (RnVS N) a (Vopp Rfield (RnVS N) r))).
 move=> H13.
 rewrite H13.
-rewrite (Vadd_comm (RnVS N) (Vmul (RnVS N) (1 - t) r) (Vmul (RnVS N) t a)).
-rewrite (Vadd_assoc (RnVS N) (Vmul (RnVS N) t a) (Vmul (RnVS N) (1 - t) r) (Vopp (RnVS N) r)).
-rewrite (Vmul_add_distr_l (RnVS N) t a (Vopp (RnVS N) r)).
-suff: ((Vadd (RnVS N) (Vmul (RnVS N) (1 - t) r) (Vopp (RnVS N) r)) = (Vmul (RnVS N) t (Vopp (RnVS N) r))).
+rewrite (Vadd_comm Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - t) r) (Vmul Rfield (RnVS N) t a)).
+rewrite (Vadd_assoc Rfield (RnVS N) (Vmul Rfield (RnVS N) t a) (Vmul Rfield (RnVS N) (1 - t) r) (Vopp Rfield (RnVS N) r)).
+rewrite (Vmul_add_distr_l Rfield (RnVS N) t a (Vopp Rfield (RnVS N) r)).
+suff: ((Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - t) r) (Vopp Rfield (RnVS N) r)) = (Vmul Rfield (RnVS N) t (Vopp Rfield (RnVS N) r))).
 move=> H14.
 rewrite H14.
 reflexivity.
-rewrite - {1} (Vmul_I_l (RnVS N) (Vopp (RnVS N) r)).
-rewrite - (Vopp_mul_distr_r (RnVS N) (FI (VF (RnVS N))) r).
-rewrite (Vopp_mul_distr_l (RnVS N) (FI (VF (RnVS N))) r).
-rewrite - (Vmul_add_distr_r (RnVS N) (1 - t) (Fopp (VF (RnVS N)) (FI (VF (RnVS N)))) r).
-rewrite - (Vopp_mul_distr_r (RnVS N) t r).
-rewrite (Vopp_mul_distr_l (RnVS N) t r).
-suff: ((Fadd (VF (RnVS N)) (1 - t) (Fopp (VF (RnVS N)) (FI (VF (RnVS N))))) = (Fopp (VF (RnVS N)) t)).
+rewrite - {1} (Vmul_I_l Rfield (RnVS N) (Vopp Rfield (RnVS N) r)).
+rewrite - (Vopp_mul_distr_r Rfield (RnVS N) (FI Rfield) r).
+rewrite (Vopp_mul_distr_l Rfield (RnVS N) (FI Rfield) r).
+rewrite - (Vmul_add_distr_r Rfield (RnVS N) (1 - t) (Fopp Rfield (FI Rfield)) r).
+rewrite - (Vopp_mul_distr_r Rfield (RnVS N) t r).
+rewrite (Vopp_mul_distr_l Rfield (RnVS N) t r).
+suff: ((Fadd Rfield (1 - t) (Fopp Rfield (FI Rfield))) = (Fopp Rfield t)).
 move=> H14.
 rewrite H14.
 reflexivity.
@@ -23504,14 +23504,14 @@ rewrite (Rplus_opp_r b).
 rewrite Ropp_0.
 rewrite (Rplus_0_r 1).
 rewrite (Rnmult_I_l N r02).
-suff: (Rnmult N 0 r03 = Vmul (RnVS N) 0 r03).
+suff: (Rnmult N 0 r03 = Vmul Rfield (RnVS N) 0 r03).
 move=> H10.
 rewrite H10.
-rewrite (Vmul_O_l (RnVS N) r03).
-suff: (Rnplus N r02 (VO (RnVS N)) = Vadd (RnVS N) r02 (VO (RnVS N))).
+rewrite (Vmul_O_l Rfield (RnVS N) r03).
+suff: (Rnplus N r02 (VO Rfield (RnVS N)) = Vadd Rfield (RnVS N) r02 (VO Rfield (RnVS N))).
 move=> H11.
 rewrite H11.
-rewrite (Vadd_O_r (RnVS N) r02).
+rewrite (Vadd_O_r Rfield (RnVS N) r02).
 rewrite - (proj1 H5).
 rewrite - (proj1 (proj2 H5)).
 rewrite H9.
@@ -23537,11 +23537,11 @@ suff: ((b + 1 - b) = 1).
 move=> H10.
 rewrite H10.
 rewrite (Rnmult_I_l N r03).
-suff: (Rnplus N (Rnmult N 0 r02) r03 = Vadd (RnVS N) (Vmul (RnVS N) 0 r02) r03).
+suff: (Rnplus N (Rnmult N 0 r02) r03 = Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) 0 r02) r03).
 move=> H11.
 rewrite H11.
-rewrite (Vmul_O_l (RnVS N) r02).
-apply (Vadd_O_l (RnVS N) r03).
+rewrite (Vmul_O_l Rfield (RnVS N) r02).
+apply (Vadd_O_l Rfield (RnVS N) r03).
 reflexivity.
 unfold Rminus.
 rewrite (Rplus_comm (b + 1) (- b)).
@@ -23700,8 +23700,8 @@ suff: ((Rnmult N 0 r03) = RnO N).
 move=> H19.
 rewrite H19.
 rewrite (proj1 (proj2 H5)).
-apply (Vadd_O_r (RnVS N) r02).
-apply (Vmul_O_l (RnVS N) r03).
+apply (Vadd_O_r Rfield (RnVS N) r02).
+apply (Vmul_O_l Rfield (RnVS N) r03).
 move=> H17.
 elim (Rlt_le_dec r b).
 move=> H18.
@@ -23838,30 +23838,30 @@ move=> H13.
 apply H8.
 apply (proj1 (dist_refl (Rn_met N) r02 r03) H13).
 unfold Rnminus.
-suff: (Rnplus N (Rnplus N (Rnmult N (1 - (y - b)) r02) (Rnmult N (y - b) r03)) (Rnopp N (Rnplus N (Rnmult N (1 - (r - b)) r02) (Rnmult N (r - b) r03))) = Vadd (RnVS N) (Vadd (RnVS N) (Vmul (RnVS N) (1 - (y - b)) r02) (Vmul (RnVS N) (y - b) r03)) (Vopp (RnVS N) (Vadd (RnVS N) (Vmul (RnVS N) (1 - (r - b)) r02) (Vmul (RnVS N) (r - b) r03)))).
+suff: (Rnplus N (Rnplus N (Rnmult N (1 - (y - b)) r02) (Rnmult N (y - b) r03)) (Rnopp N (Rnplus N (Rnmult N (1 - (r - b)) r02) (Rnmult N (r - b) r03))) = Vadd Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (y - b)) r02) (Vmul Rfield (RnVS N) (y - b) r03)) (Vopp Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (r - b)) r02) (Vmul Rfield (RnVS N) (r - b) r03)))).
 move=> H12.
 rewrite H12.
-suff: (Rnmult N (r - y) (Rnplus N r02 (Rnopp N r03)) = Vmul (RnVS N) (r - y) (Vadd (RnVS N) r02 (Vopp (RnVS N) r03))).
+suff: (Rnmult N (r - y) (Rnplus N r02 (Rnopp N r03)) = Vmul Rfield (RnVS N) (r - y) (Vadd Rfield (RnVS N) r02 (Vopp Rfield (RnVS N) r03))).
 move=> H13.
 rewrite H13.
-rewrite (Vopp_add_distr (RnVS N) (Vmul (RnVS N) (1 - (r - b)) r02) (Vmul (RnVS N) (r - b) r03)).
-rewrite (Vadd_assoc (RnVS N) (Vmul (RnVS N) (1 - (y - b)) r02) (Vmul (RnVS N) (y - b) r03) (Vadd (RnVS N) (Vopp (RnVS N) (Vmul (RnVS N) (1 - (r - b)) r02)) (Vopp (RnVS N) (Vmul (RnVS N) (r - b) r03)))).
-rewrite (Vadd_comm (RnVS N) (Vmul (RnVS N) (y - b) r03) (Vadd (RnVS N) (Vopp (RnVS N) (Vmul (RnVS N) (1 - (r - b)) r02)) (Vopp (RnVS N) (Vmul (RnVS N) (r - b) r03)))).
-rewrite (Vadd_assoc (RnVS N) (Vopp (RnVS N) (Vmul (RnVS N) (1 - (r - b)) r02)) (Vopp (RnVS N) (Vmul (RnVS N) (r - b) r03)) (Vmul (RnVS N) (y - b) r03)).
-rewrite - (Vadd_assoc (RnVS N) (Vmul (RnVS N) (1 - (y - b)) r02) (Vopp (RnVS N) (Vmul (RnVS N) (1 - (r - b)) r02)) (Vadd (RnVS N) (Vopp (RnVS N) (Vmul (RnVS N) (r - b) r03)) (Vmul (RnVS N) (y - b) r03))).
-rewrite (Vopp_mul_distr_l (RnVS N) (1 - (r - b)) r02).
-rewrite - (Vmul_add_distr_r (RnVS N) (1 - (y - b)) (Fopp (VF (RnVS N)) (1 - (r - b))) r02).
-suff: ((Fadd (VF (RnVS N)) (1 - (y - b)) (Fopp (VF (RnVS N)) (1 - (r - b)))) = r - y).
+rewrite (Vopp_add_distr Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (r - b)) r02) (Vmul Rfield (RnVS N) (r - b) r03)).
+rewrite (Vadd_assoc Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (y - b)) r02) (Vmul Rfield (RnVS N) (y - b) r03) (Vadd Rfield (RnVS N) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (r - b)) r02)) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) (r - b) r03)))).
+rewrite (Vadd_comm Rfield (RnVS N) (Vmul Rfield (RnVS N) (y - b) r03) (Vadd Rfield (RnVS N) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (r - b)) r02)) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) (r - b) r03)))).
+rewrite (Vadd_assoc Rfield (RnVS N) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (r - b)) r02)) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) (r - b) r03)) (Vmul Rfield (RnVS N) (y - b) r03)).
+rewrite - (Vadd_assoc Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (y - b)) r02) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (r - b)) r02)) (Vadd Rfield (RnVS N) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) (r - b) r03)) (Vmul Rfield (RnVS N) (y - b) r03))).
+rewrite (Vopp_mul_distr_l Rfield (RnVS N) (1 - (r - b)) r02).
+rewrite - (Vmul_add_distr_r Rfield (RnVS N) (1 - (y - b)) (Fopp Rfield (1 - (r - b))) r02).
+suff: ((Fadd Rfield (1 - (y - b)) (Fopp Rfield (1 - (r - b)))) = r - y).
 move=> H14.
 rewrite H14.
-rewrite (Vopp_mul_distr_l (RnVS N) (r - b) r03).
-rewrite - (Vmul_add_distr_r (RnVS N) (Fopp (VF (RnVS N)) (r - b)) (y - b) r03).
-suff: ((Fadd (VF (RnVS N)) (Fopp (VF (RnVS N)) (r - b)) (y - b)) = - (r - y)).
+rewrite (Vopp_mul_distr_l Rfield (RnVS N) (r - b) r03).
+rewrite - (Vmul_add_distr_r Rfield (RnVS N) (Fopp Rfield (r - b)) (y - b) r03).
+suff: ((Fadd Rfield (Fopp Rfield (r - b)) (y - b)) = - (r - y)).
 move=> H15.
 rewrite H15.
-rewrite - (Vopp_mul_distr_l (RnVS N) (r - y) r03).
-rewrite (Vopp_mul_distr_r (RnVS N) (r - y) r03).
-rewrite (Vmul_add_distr_l (RnVS N) (r - y) r02 (Vopp (RnVS N) r03)).
+rewrite - (Vopp_mul_distr_l Rfield (RnVS N) (r - y) r03).
+rewrite (Vopp_mul_distr_r Rfield (RnVS N) (r - y) r03).
+rewrite (Vmul_add_distr_l Rfield (RnVS N) (r - y) r02 (Vopp Rfield (RnVS N) r03)).
 reflexivity.
 simpl.
 rewrite (Ropp_minus_distr r b).
@@ -24222,8 +24222,8 @@ rewrite (Rnmult_I_l N x).
 suff: ((Rnmult N 0 y) = RnO N).
 move=> H4.
 rewrite H4.
-apply (Vadd_O_r (RnVS N) x).
-apply (Vmul_O_l (RnVS N) y).
+apply (Vadd_O_r Rfield (RnVS N) x).
+apply (Vmul_O_l Rfield (RnVS N) y).
 apply conj.
 unfold Rminus.
 rewrite (Rplus_opp_r 1).
@@ -24231,8 +24231,8 @@ rewrite (Rnmult_I_l N y).
 suff: ((Rnmult N 0 x) = RnO N).
 move=> H4.
 rewrite H4.
-apply (Vadd_O_l (RnVS N) y).
-apply (Vmul_O_l (RnVS N) x).
+apply (Vadd_O_l Rfield (RnVS N) y).
+apply (Vmul_O_l Rfield (RnVS N) x).
 apply conj.
 move=> r H4.
 apply (Full_intro (Rn N) (Rnplus N (Rnmult N (1 - r) x) (Rnmult N r y))).
@@ -24292,30 +24292,30 @@ move=> H9.
 apply H6.
 apply (proj1 (dist_refl (Rn_met N) x y) H9).
 unfold Rnminus.
-suff: (Rnplus N (Rnplus N (Rnmult N (1 - z) x) (Rnmult N z y)) (Rnopp N (Rnplus N (Rnmult N (1 - r) x) (Rnmult N r y))) = Vadd (RnVS N) (Vadd (RnVS N) (Vmul (RnVS N) (1 - z) x) (Vmul (RnVS N) z y)) (Vopp (RnVS N) (Vadd (RnVS N) (Vmul (RnVS N) (1 - r) x) (Vmul (RnVS N) r y)))).
+suff: (Rnplus N (Rnplus N (Rnmult N (1 - z) x) (Rnmult N z y)) (Rnopp N (Rnplus N (Rnmult N (1 - r) x) (Rnmult N r y))) = Vadd Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - z) x) (Vmul Rfield (RnVS N) z y)) (Vopp Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - r) x) (Vmul Rfield (RnVS N) r y)))).
 move=> H8.
 rewrite H8.
-suff: (Rnmult N (r - z) (Rnplus N x (Rnopp N y)) = Vmul (RnVS N) (r - z) (Vadd (RnVS N) x (Vopp (RnVS N) y))).
+suff: (Rnmult N (r - z) (Rnplus N x (Rnopp N y)) = Vmul Rfield (RnVS N) (r - z) (Vadd Rfield (RnVS N) x (Vopp Rfield (RnVS N) y))).
 move=> H9.
 rewrite H9.
-rewrite (Vopp_add_distr (RnVS N) (Vmul (RnVS N) (1 - r) x) (Vmul (RnVS N) r y)).
-rewrite (Vadd_assoc (RnVS N) (Vmul (RnVS N) (1 - z) x) (Vmul (RnVS N) z y) (Vadd (RnVS N) (Vopp (RnVS N) (Vmul (RnVS N) (1 - r) x)) (Vopp (RnVS N) (Vmul (RnVS N) r y)))).
-rewrite (Vadd_comm (RnVS N) (Vmul (RnVS N) z y) (Vadd (RnVS N) (Vopp (RnVS N) (Vmul (RnVS N) (1 - r) x)) (Vopp (RnVS N) (Vmul (RnVS N) r y)))).
-rewrite (Vadd_assoc (RnVS N) (Vopp (RnVS N) (Vmul (RnVS N) (1 - r) x)) (Vopp (RnVS N) (Vmul (RnVS N) r y)) (Vmul (RnVS N) z y)).
-rewrite - (Vadd_assoc (RnVS N) (Vmul (RnVS N) (1 - z) x) (Vopp (RnVS N) (Vmul (RnVS N) (1 - r) x)) (Vadd (RnVS N) (Vopp (RnVS N) (Vmul (RnVS N) r y)) (Vmul (RnVS N) z y))).
-rewrite (Vopp_mul_distr_l (RnVS N) (1 - r) x).
-rewrite - (Vmul_add_distr_r (RnVS N) (1 - z) (Fopp (VF (RnVS N)) (1 - r)) x).
-suff: ((Fadd (VF (RnVS N)) (1 - z) (Fopp (VF (RnVS N)) (1 - r))) = r - z).
+rewrite (Vopp_add_distr Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - r) x) (Vmul Rfield (RnVS N) r y)).
+rewrite (Vadd_assoc Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - z) x) (Vmul Rfield (RnVS N) z y) (Vadd Rfield (RnVS N) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - r) x)) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) r y)))).
+rewrite (Vadd_comm Rfield (RnVS N) (Vmul Rfield (RnVS N) z y) (Vadd Rfield (RnVS N) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - r) x)) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) r y)))).
+rewrite (Vadd_assoc Rfield (RnVS N) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - r) x)) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) r y)) (Vmul Rfield (RnVS N) z y)).
+rewrite - (Vadd_assoc Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - z) x) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - r) x)) (Vadd Rfield (RnVS N) (Vopp Rfield (RnVS N) (Vmul Rfield (RnVS N) r y)) (Vmul Rfield (RnVS N) z y))).
+rewrite (Vopp_mul_distr_l Rfield (RnVS N) (1 - r) x).
+rewrite - (Vmul_add_distr_r Rfield (RnVS N) (1 - z) (Fopp Rfield (1 - r)) x).
+suff: ((Fadd Rfield (1 - z) (Fopp Rfield (1 - r))) = r - z).
 move=> H10.
 rewrite H10.
-rewrite (Vopp_mul_distr_l (RnVS N) r y).
-rewrite - (Vmul_add_distr_r (RnVS N) (Fopp (VF (RnVS N)) r) z y).
-suff: ((Fadd (VF (RnVS N)) (Fopp (VF (RnVS N)) r) z) = - (r - z)).
+rewrite (Vopp_mul_distr_l Rfield (RnVS N) r y).
+rewrite - (Vmul_add_distr_r Rfield (RnVS N) (Fopp Rfield r) z y).
+suff: ((Fadd Rfield (Fopp Rfield r) z) = - (r - z)).
 move=> H11.
 rewrite H11.
-rewrite - (Vopp_mul_distr_l (RnVS N) (r - z) y).
-rewrite (Vopp_mul_distr_r (RnVS N) (r - z) y).
-rewrite (Vmul_add_distr_l (RnVS N) (r - z) x (Vopp (RnVS N) y)).
+rewrite - (Vopp_mul_distr_l Rfield (RnVS N) (r - z) y).
+rewrite (Vopp_mul_distr_r Rfield (RnVS N) (r - z) y).
+rewrite (Vmul_add_distr_l Rfield (RnVS N) (r - z) x (Vopp Rfield (RnVS N) y)).
 reflexivity.
 simpl.
 rewrite (Ropp_minus_distr r z).
