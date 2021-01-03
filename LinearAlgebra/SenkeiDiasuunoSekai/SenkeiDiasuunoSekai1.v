@@ -12,6 +12,7 @@ Require Import Coq.Sets.Finite_sets.
 Require Import Coq.Sets.Finite_sets_facts.
 Require Import MyAlgebraicStructure.MyField.
 Require Import MyAlgebraicStructure.MyVectorSpace.
+Require Import BasicProperty.MappingProperty.
 Require Import Tools.MySum.
 
 Section Senkeidaisuunosekai1.
@@ -736,6 +737,383 @@ move=> m H3 H4.
 apply H3.
 Qed.
 
+Definition Fn (F : Field) (N : nat) := (Count N -> FT F).
+
+Definition Fnadd (F : Field) (N : nat) := fun (f1 f2 : Fn F N) => (fun (n : Count N) => Fadd F (f1 n) (f2 n)).
+
+Definition Fnmul (F : Field) (N : nat) := fun (c : FT F) (f : Fn F N) => (fun (n : Count N) => Fmul F c (f n)).
+
+Definition Fnopp (F : Field) (N : nat) := fun (f : (Fn F N)) => (fun (n : Count N) => Fopp F (f n)).
+
+Definition Fnminus (F : Field) (N : nat) := fun (f1 f2 : (Fn F N)) => (Fnadd F N f1 (Fnopp F N f2)).
+
+Definition FnO (F : Field) (N : nat) := (fun (n : Count N) => FO F).
+
+Lemma Fnadd_comm : forall (F : Field) (N : nat) (f1 f2 : Fn F N), (Fnadd F N f1 f2) = (Fnadd F N f2 f1).
+Proof.
+move=> F N f1 f2.
+apply functional_extensionality.
+move=> n.
+apply (Fadd_comm F (f1 n) (f2 n)).
+Qed.
+
+Lemma Fnadd_assoc : forall (F : Field) (N : nat) (f1 f2 f3 : Fn F N), (Fnadd F N (Fnadd F N f1 f2) f3) = (Fnadd F N f1 (Fnadd F N f2 f3)).
+Proof.
+move=> F N f1 f2 f3.
+apply functional_extensionality.
+move=> n.
+apply (Fadd_assoc F (f1 n) (f2 n) (f3 n)).
+Qed.
+
+Lemma Fnadd_O_l : forall (F : Field) (N : nat) (f : Fn F N), (Fnadd F N (FnO F N) f) = f.
+Proof.
+move=> F N f.
+apply functional_extensionality.
+move=> n.
+apply (Fadd_O_l F (f n)).
+Qed.
+
+Lemma Fnadd_opp_r : forall (F : Field) (N : nat) (f : Fn F N), (Fnadd F N f (Fnopp F N f)) = (FnO F N).
+Proof.
+move=> F N f.
+apply functional_extensionality.
+move=> n.
+apply (Fadd_opp_r F (f n)).
+Qed.
+
+Lemma Fnadd_distr_l : forall (F : Field) (N : nat) (c : FT F) (f1 f2 : Fn F N), (Fnmul F N c (Fnadd F N f1 f2)) = (Fnadd F N (Fnmul F N c f1) (Fnmul F N c f2)).
+Proof.
+move=> F N c f1 f2.
+apply functional_extensionality.
+move=> n.
+apply (Fmul_add_distr_l F c (f1 n) (f2 n)).
+Qed.
+
+Lemma Fnadd_distr_r : forall (F : Field) (N : nat) (c1 c2 : FT F) (f : Fn F N), (Fnmul F N (Fadd F c1 c2) f) = (Fnadd F N (Fnmul F N c1 f) (Fnmul F N c2 f)).
+Proof.
+move=> F N c1 c2 f.
+apply functional_extensionality.
+move=> n.
+apply (Fmul_add_distr_r F c1 c2 (f n)).
+Qed.
+
+Lemma Fnmul_assoc : forall (F : Field) (N : nat) (c1 c2 : FT F) (f : Fn F N), (Fnmul F N c1 (Fnmul F N c2 f)) = (Fnmul F N (Fmul F c1 c2) f).
+Proof.
+move=> F N c1 c2 f.
+apply functional_extensionality.
+move=> n.
+unfold Fnmul.
+rewrite (Fmul_assoc F c1 c2 (f n)).
+reflexivity.
+Qed.
+
+Lemma Fnmul_I_l : forall (F : Field) (N : nat) (f : Fn F N), (Fnmul F N (FI F) f) = f.
+Proof.
+move=> F N f.
+apply functional_extensionality.
+move=> n.
+apply (Fmul_I_l F (f n)).
+Qed.
+
+Definition FnVS (F : Field) (N : nat) := mkVectorSpace F (Fn F N) (FnO F N) (Fnadd F N) (Fnmul F N) (Fnopp F N) (Fnadd_comm F N) (Fnadd_assoc F N) (Fnadd_O_l F N) (Fnadd_opp_r F N) (Fnadd_distr_l F N) (Fnadd_distr_r F N) (Fnmul_assoc F N) (Fnmul_I_l F N).
+
+Definition StandardBasisVS (F : Field) (N : nat) := fun (n : Count N) (m : Count N) => match excluded_middle_informative (proj1_sig n = proj1_sig m) with
+  | left _ => FI F
+  | right _ => FO F
+end.
+
+Lemma StandardBasisNatureVS : forall (F : Field) (N : nat), BasisVS (FnVS F N) (Count N) (StandardBasisVS F N).
+Proof.
+move=> F N.
+apply (proj2 (FiniteBasisVS (FnVS F N) N (StandardBasisVS F N))).
+move=> v.
+apply (proj1 (unique_existence (fun (a : Count N -> FT (VF (FnVS F N))) => v = MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM (FnVS F N)) (fun n : Count N => Vmul (FnVS F N) (a n) (StandardBasisVS F N n))))).
+apply conj.
+exists (fun (n : Count N) => v n).
+apply functional_extensionality.
+move=> m.
+rewrite (MySumF2Excluded (Count N) (VSPCM (FnVS F N)) (fun (n : Count N) => Vmul (FnVS F N) (v n) (StandardBasisVS F N n)) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (k : Count N) => k = m)).
+suff: ((MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Complement (Count N) (fun k : Count N => k = m))) (VSPCM (FnVS F N)) (fun n : Count N => Vmul (FnVS F N) (v n) (StandardBasisVS F N n))) m = FO F).
+move=> H1.
+simpl.
+unfold Fnadd.
+rewrite H1.
+rewrite (Fadd_O_r F (MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun k : Count N => k = m)) (VSPCM (FnVS F N)) (fun n : Count N => Fnmul F N (v n) (StandardBasisVS F N n)) m)).
+suff: ((FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun k : Count N => k = m)) = FiniteSingleton (Count N) m).
+move=> H2.
+rewrite H2.
+rewrite MySumF2Singleton.
+unfold Fnmul.
+unfold StandardBasisVS.
+elim (excluded_middle_informative (proj1_sig m = proj1_sig m)).
+move=> H3.
+rewrite (Fmul_I_r F (v m)).
+reflexivity.
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+apply sig_map.
+simpl.
+apply Extensionality_Ensembles.
+apply conj.
+move=> n.
+elim.
+move=> n0 H2 H3.
+rewrite H2.
+apply (In_singleton (Count N) m).
+move=> n.
+elim.
+apply (Intersection_intro (Count N) (fun k : Count N => k = m) (Full_set (Count N))).
+reflexivity.
+apply (Full_intro (Count N) m).
+apply (FiniteSetInduction (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Complement (Count N) (fun k : Count N => k = m)))).
+apply conj.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H1 H2 H3 H4.
+rewrite MySumF2Add.
+simpl.
+unfold Fnadd.
+rewrite H4.
+suff: ((Fnmul F N (v b) (StandardBasisVS F N b) m) = FO F).
+move=> H5.
+rewrite H5.
+apply (Fadd_O_l F (FO F)).
+unfold StandardBasisVS.
+unfold Fnmul.
+elim (excluded_middle_informative (proj1_sig b = proj1_sig m)).
+elim H2.
+move=> k H5 H6 H7.
+apply False_ind.
+apply H5.
+apply sig_map.
+apply H7.
+move=> H5.
+apply (Fmul_O_r F (v b)).
+apply H3.
+move=> m1 m2 H1 H2.
+suff: (forall (m : Fn F N), m = MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM (FnVS F N)) (fun n : Count N => Vmul (FnVS F N) (m n) (StandardBasisVS F N n))).
+move=> H3.
+rewrite (H3 m1).
+rewrite (H3 m2).
+rewrite - H1.
+apply H2.
+move=> m.
+apply functional_extensionality.
+move=> n.
+rewrite (MySumF2Excluded (Count N) (VSPCM (FnVS F N)) (fun (n0 : Count N) => Vmul (FnVS F N) (m n0) (StandardBasisVS F N n0)) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (k : Count N) => k = n)).
+simpl.
+unfold Fnadd.
+suff: ((FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun k : Count N => k = n)) = FiniteSingleton (Count N) n).
+move=> H3.
+rewrite H3.
+suff: ((MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Complement (Count N) (fun k : Count N => k = n))) (VSPCM (FnVS F N)) (fun n0 : Count N => Fnmul F N (m n0) (StandardBasisVS F N n0)) n) = FO F).
+move=> H4.
+rewrite H4.
+rewrite (Fadd_O_r F (MySumF2 (Count N) (FiniteSingleton (Count N) n) (VSPCM (FnVS F N)) (fun n0 : Count N => Fnmul F N (m n0) (StandardBasisVS F N n0)) n)).
+rewrite MySumF2Singleton.
+unfold Fnmul.
+unfold StandardBasisVS.
+elim (excluded_middle_informative (proj1_sig n = proj1_sig n)).
+move=> H5.
+rewrite (Fmul_I_r F (m n)).
+reflexivity.
+move=> H5.
+apply False_ind.
+apply H5.
+reflexivity.
+apply (FiniteSetInduction (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Complement (Count N) (fun k : Count N => k = n)))).
+apply conj.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H4 H5 H6 H7.
+rewrite MySumF2Add.
+simpl.
+unfold Fnadd.
+rewrite H7.
+unfold Fnmul.
+unfold StandardBasisVS.
+elim (excluded_middle_informative (proj1_sig b = proj1_sig n)).
+elim H5.
+move=> b0 H8 H9 H10.
+apply False_ind.
+apply H8.
+apply sig_map.
+apply H10.
+move=> H8.
+rewrite (Fmul_O_r F (m b)).
+apply (Fadd_O_l F (FO F)).
+apply H6.
+apply sig_map.
+apply Extensionality_Ensembles.
+simpl.
+apply conj.
+move=> k.
+elim.
+move=> k0 H3 H4.
+rewrite H3.
+apply (In_singleton (Count N) n).
+move=> k.
+elim.
+apply (Intersection_intro (Count N) (fun k0 : Count N => k0 = n) (Full_set (Count N)) n).
+reflexivity.
+apply (Full_intro (Count N) n).
+Qed.
+
+Lemma Proposition_2_3_1 : forall (V : VectorSpace) (N : nat) (F : Count N -> VT V), (BasisVS V (Count N) F) <-> (Bijective (Fn (VF V) N) (VT V) (fun (a : Fn (VF V) N) => MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM V) (fun (n : Count N) => Vmul V (a n) (F n)))).
+Proof.
+move=> V N F.
+unfold BasisVS.
+suff: (forall (a : Fn (VF V) N), Finite (Count N) (fun (t : Count N) => a t <> FO (VF V))).
+move=> H1.
+suff: (forall (g : DirectSumField (VF V) (Count N)), MySumF2 (Count N) (exist (Finite (Count N)) (fun t : Count N => proj1_sig g t <> FO (VF V)) (proj2_sig g)) (VSPCM V) (fun t : Count N => Vmul V (proj1_sig g t) (F t)) = MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM V) (fun n : Count N => Vmul V ((proj1_sig g) n) (F n))).
+move=> H2.
+apply conj.
+elim.
+move=> G H3.
+exists (fun (v : VT V) => proj1_sig (G v)).
+apply conj.
+move=> f.
+suff: (f = proj1_sig (exist (fun (a : Fn (VF V) N) => Finite (Count N) (fun t : Count N => a t <> FO (VF V))) f (H1 f))).
+move=> H4.
+rewrite {1} H4.
+rewrite - (H2 (exist (fun (a : Fn (VF V) N) => Finite (Count N) (fun t : Count N => a t <> FO (VF V))) f (H1 f))).
+rewrite (proj1 H3 (exist (fun (a : Fn (VF V) N) => Finite (Count N) (fun t : Count N => a t <> FO (VF V))) f (H1 f))).
+reflexivity.
+reflexivity.
+move=> v.
+rewrite - (H2 (G v)).
+apply (proj2 H3 v).
+elim.
+move=> G H3.
+exists (fun (v : VT V) => exist (fun (a : Fn (VF V) N) => Finite (Count N) (fun t : Count N => a t <> FO (VF V))) (G v) (H1 (G v))).
+apply conj.
+move=> f.
+apply sig_map.
+simpl.
+rewrite (H2 f).
+apply (proj1 H3 (proj1_sig f)).
+move=> v.
+rewrite (H2 (exist (fun a : Fn (VF V) N => Finite (Count N) (fun t0 : Count N => a t0 <> FO (VF V))) (G v) (H1 (G v)))).
+apply (proj2 H3 v).
+move=> g.
+rewrite (MySumF2Excluded (Count N) (VSPCM V) (fun n : Count N => Vmul V (proj1_sig g n) (F n)) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun t : Count N => proj1_sig g t <> FO (VF V))).
+suff: ((MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Complement (Count N) (fun t : Count N => proj1_sig g t <> FO (VF V)))) (VSPCM V) (fun n : Count N => Vmul V (proj1_sig g n) (F n))) = VO V).
+move=> H2.
+rewrite H2.
+simpl.
+rewrite (Vadd_O_r V (MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun t : Count N => proj1_sig g t <> FO (VF V))) (VSPCM V) (fun n : Count N => Vmul V (proj1_sig g n) (F n)))).
+suff: ((exist (Finite (Count N)) (fun t : Count N => proj1_sig g t <> FO (VF V)) (proj2_sig g)) = (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))(fun t : Count N => proj1_sig g t <> FO (VF V)))).
+move=> H3.
+rewrite H3.
+reflexivity.
+apply sig_map.
+simpl.
+apply Extensionality_Ensembles.
+apply conj.
+move=> n H3.
+apply (Intersection_intro (Count N) (fun t : Count N => proj1_sig g t <> FO (VF V)) (Full_set (Count N))).
+apply H3.
+apply (Full_intro (Count N) n).
+move=> n.
+elim.
+move=> n0 H3 H4.
+apply H3.
+apply MySumF2Induction.
+apply conj.
+reflexivity.
+move=> v n H2 H3.
+rewrite H3.
+suff: ((proj1_sig g n) = FO (VF V)).
+move=> H4.
+rewrite H4.
+rewrite (Vmul_O_l V (F n)).
+apply (Vadd_O_l V (VO V)).
+elim H2.
+move=> m H4 H5.
+apply NNPP.
+apply H4.
+move=> a.
+apply (Finite_downward_closed (Count N) (Full_set (Count N)) (CountFinite N) (fun t : Count N => a t <> FO (VF V))).
+move=> t H1.
+apply (Full_intro (Count N) t).
+Qed.
+
+Lemma Proposition_2_3_2 : forall (V : VectorSpace) (N : nat) (F : Count N -> VT V), (BasisVS V (Count N) F) <-> ((forall (v : VT V), exists (a : Count N -> FT (VF V)), v = MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM V) (fun n : Count N => Vmul V (a n) (F n))) /\ (forall (a : Count N -> FT (VF V)), MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM V) (fun n : Count N => Vmul V (a n) (F n)) = VO V -> a = FnO (VF V) N)).
+Proof.
+move=> V N F.
+apply conj.
+move=> H1.
+suff: (forall v : VT V, exists! a : Count N -> FT (VF V), v = MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM V) (fun n : Count N => Vmul V (a n) (F n))).
+move=> H2.
+apply conj.
+move=> v.
+apply (proj1 (proj2 (unique_existence (fun (a : Count N -> FT (VF V)) => v = MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM V) (fun n : Count N => Vmul V (a n) (F n)))) (H2 v))).
+move=> a0 H3. 
+apply (proj2 (proj2 (unique_existence (fun (a : Count N -> FT (VF V)) => VO V = MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM V) (fun n : Count N => Vmul V (a n) (F n)))) (H2 (VO V))) a0 (FnO (VF V) N)).
+rewrite H3.
+reflexivity.
+apply (MySumF2Induction (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
+apply conj.
+reflexivity.
+move=> v n H4 H5.
+rewrite H5.
+rewrite (Vmul_O_l V (F n)).
+rewrite - {1} (Vadd_O_r V v).
+reflexivity.
+apply (proj1 (FiniteBasisVS V N F) H1).
+move=> H1.
+apply (proj2 (FiniteBasisVS V N F)).
+move=> v.
+apply (proj1 (unique_existence (fun (a : Count N -> FT (VF V)) => v = MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM V) (fun n : Count N => Vmul V (a n) (F n))))).
+apply conj.
+apply (proj1 H1 v).
+move=> a1 a2 H2 H3.
+rewrite - (Vadd_O_r (FnVS (VF V) N) a1).
+rewrite - (Vadd_O_l (FnVS (VF V) N) a2).
+rewrite - {1} (Vadd_opp_l (FnVS (VF V) N) a2).
+rewrite - (Vadd_assoc (FnVS (VF V) N) a1 (Vopp (FnVS (VF V) N) a2) a2).
+simpl.
+suff: (Fnminus (VF V) N a1 a2 = FnO (VF V) N).
+unfold Fnminus.
+move=> H4.
+rewrite H4.
+reflexivity.
+apply (proj2 H1 (Fnminus (VF V) N a1 a2)).
+suff: (MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM V) (fun n : Count N => Vmul V (Fnminus (VF V) N a1 a2 n) (F n)) = Vadd V (MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM V) (fun n : Count N => Vmul V (a1 n) (F n))) (Vopp V (MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM V) (fun n : Count N => Vmul V (a2 n) (F n))))).
+move=> H4.
+rewrite H4.
+rewrite - H2.
+rewrite - H3.
+apply (Vadd_opp_r V v).
+apply (FiniteSetInduction (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+simpl.
+rewrite (Vadd_opp_r V (VO V)).
+reflexivity.
+move=> B b H4 H5 H6 H7.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+simpl.
+rewrite H7.
+rewrite (Vopp_add_distr V (MySumF2 (Count N) B (VSPCM V) (fun n : Count N => Vmul V (a2 n) (F n))) (Vmul V (a2 b) (F b))).
+rewrite (Vadd_assoc V (MySumF2 (Count N) B (VSPCM V) (fun n : Count N => Vmul V (a1 n) (F n))) (Vmul V (a1 b) (F b)) (Vadd V (Vopp V (MySumF2 (Count N) B (VSPCM V) (fun n : Count N => Vmul V (a2 n) (F n)))) (Vopp V (Vmul V (a2 b) (F b))))).
+rewrite - (Vadd_assoc V (Vmul V (a1 b) (F b)) (Vopp V (MySumF2 (Count N) B (VSPCM V) (fun n : Count N => Vmul V (a2 n) (F n)))) (Vopp V (Vmul V (a2 b) (F b)))).
+rewrite (Vadd_comm V (Vmul V (a1 b) (F b)) (Vopp V (MySumF2 (Count N) B (VSPCM V) (fun n : Count N => Vmul V (a2 n) (F n))))).
+rewrite (Vadd_assoc V (Vopp V (MySumF2 (Count N) B (VSPCM V) (fun n : Count N => Vmul V (a2 n) (F n)))) (Vmul V (a1 b) (F b)) (Vopp V (Vmul V (a2 b) (F b)))).
+rewrite (Vadd_assoc V (MySumF2 (Count N) B (VSPCM V) (fun n : Count N => Vmul V (a1 n) (F n))) (Vopp V (MySumF2 (Count N) B (VSPCM V) (fun n : Count N => Vmul V (a2 n) (F n)))) (Vmul V (Fnminus (VF V) N a1 a2 b) (F b))).
+rewrite (Vopp_mul_distr_l V (a2 b) (F b)).
+rewrite - (Vmul_add_distr_r V (a1 b) (Fopp (VF V) (a2 b)) (F b)).
+reflexivity.
+apply H6.
+apply H6.
+apply H6.
+Qed.
 
 
 End Senkeidaisuunosekai1.
