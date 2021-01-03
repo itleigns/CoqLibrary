@@ -4303,4 +4303,40 @@ apply H4.
 apply H4.
 Qed.
 
+Lemma MySumF2O : forall (U : Type) (A : {X : Ensemble U | Finite U X}) (CM : CommutativeMonoid) (F : U -> CMT CM), (forall (u : U), proj1_sig A u -> F u = CMe CM)  -> (MySumF2 U A CM F) = CMe CM.
+Proof.
+intros U A CM F H1.
+apply (FiniteSetInduction U A).
+apply conj.
+rewrite MySumF2Empty.
+reflexivity.
+intros B b H2 H3 H4 H5.
+rewrite MySumF2Add.
+rewrite H5.
+rewrite (H1 b).
+apply (CM_O_r CM (CMe CM)).
+apply H3.
+apply H4.
+Qed.
+
+Lemma MySumF2Included : forall (U : Type) (A B : {X : Ensemble U | Finite U X}) (CM : CommutativeMonoid) (F : U -> CMT CM), (Included U (proj1_sig A) (proj1_sig B))  -> (MySumF2 U B CM F) = CMc CM (MySumF2 U A CM F) (MySumF2 U (FiniteIntersection U B (Ensembles.Complement U (proj1_sig A))) CM F).
+Proof.
+intros U A B CM F H1.
+rewrite (MySumF2Excluded U CM F B (proj1_sig A)).
+cut (FiniteIntersection U B (proj1_sig A) = A).
+intro H2.
+rewrite H2.
+reflexivity.
+apply sig_map.
+simpl.
+apply Extensionality_Ensembles.
+apply conj.
+intros u H2.
+elim H2.
+intros u0 H3 H4.
+apply H3.
+intros u H2.
+apply (Intersection_intro U (proj1_sig A) (proj1_sig B) u H2 (H1 u H2)).
+Qed.
+
 End MySum.
