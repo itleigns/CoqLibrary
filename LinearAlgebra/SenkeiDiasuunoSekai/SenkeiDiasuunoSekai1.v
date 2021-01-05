@@ -10,6 +10,7 @@ Require Import Coq.Logic.ClassicalDescription.
 Require Import Coq.Sets.Ensembles.
 Require Import Coq.Sets.Finite_sets.
 Require Import Coq.Sets.Finite_sets_facts.
+Require Import Coq.Sets.Image.
 Require Import MyAlgebraicStructure.MyField.
 Require Import MyAlgebraicStructure.MyVectorSpace.
 Require Import BasicProperty.MappingProperty.
@@ -1115,6 +1116,707 @@ apply H6.
 apply H6.
 Qed.
 
+Definition PairVST (K : Field) (V1 V2 : VectorSpace K) := prod (VT K V1) (VT K V2).
+
+Definition PairVSVO (K : Field) (V1 V2 : VectorSpace K) := (VO K V1, VO K V2).
+
+Definition PairVSVadd (K : Field) (V1 V2 : VectorSpace K) := fun (v1 v2 : PairVST K V1 V2) => (Vadd K V1 (fst v1) (fst v2), Vadd K V2 (snd v1) (snd v2)).
+
+Definition PairVSVmul (K : Field) (V1 V2 : VectorSpace K) := fun (f : FT K) (v : PairVST K V1 V2) => (Vmul K V1 f (fst v), Vmul K V2 f (snd v)).
+
+Definition PairVSVopp (K : Field) (V1 V2 : VectorSpace K) := fun (v : PairVST K V1 V2) => (Vopp K V1 (fst v), Vopp K V2 (snd v)).
+
+Lemma PairVSVadd_comm : forall (K : Field) (V1 V2 : VectorSpace K) (v1 v2 : PairVST K V1 V2), PairVSVadd K V1 V2 v1 v2 = PairVSVadd K V1 V2 v2 v1.
+Proof.
+move=> K V1 V2 v1 v2.
+apply injective_projections.
+apply (Vadd_comm K V1 (fst v1) (fst v2)).
+apply (Vadd_comm K V2 (snd v1) (snd v2)).
+Qed.
+
+Lemma PairVSVadd_assoc : forall (K : Field) (V1 V2 : VectorSpace K) (v1 v2 v3 : PairVST K V1 V2), PairVSVadd K V1 V2 (PairVSVadd K V1 V2 v1 v2) v3 = PairVSVadd K V1 V2 v1 (PairVSVadd K V1 V2 v2 v3).
+Proof.
+move=> K V1 V2 v1 v2 v3.
+apply injective_projections.
+apply (Vadd_assoc K V1 (fst v1) (fst v2) (fst v3)).
+apply (Vadd_assoc K V2 (snd v1) (snd v2) (snd v3)).
+Qed.
+
+Lemma PairVSVadd_O_l : forall (K : Field) (V1 V2 : VectorSpace K) (v : PairVST K V1 V2), PairVSVadd K V1 V2 (PairVSVO K V1 V2) v = v.
+Proof.
+move=> K V1 V2 v.
+apply injective_projections.
+apply (Vadd_O_l K V1 (fst v)).
+apply (Vadd_O_l K V2 (snd v)).
+Qed.
+
+Lemma PairVSVadd_opp_r : forall (K : Field) (V1 V2 : VectorSpace K) (v : PairVST K V1 V2), PairVSVadd K V1 V2 v (PairVSVopp K V1 V2 v) = PairVSVO K V1 V2.
+Proof.
+move=> K V1 V2 v.
+apply injective_projections.
+apply (Vadd_opp_r K V1 (fst v)).
+apply (Vadd_opp_r K V2 (snd v)).
+Qed.
+
+Lemma PairVSVmul_add_distr_l : forall (K : Field) (V1 V2 : VectorSpace K) (f : FT K) (v1 v2 : PairVST K V1 V2), PairVSVmul K V1 V2 f (PairVSVadd K V1 V2 v1 v2) = (PairVSVadd K V1 V2 (PairVSVmul K V1 V2 f v1) (PairVSVmul K V1 V2 f v2)).
+Proof.
+move=> K V1 V2 f v1 v2.
+apply injective_projections.
+apply (Vmul_add_distr_l K V1 f (fst v1) (fst v2)).
+apply (Vmul_add_distr_l K V2 f (snd v1) (snd v2)).
+Qed.
+
+Lemma PairVSVmul_add_distr_r : forall (K : Field) (V1 V2 : VectorSpace K) (f1 f2 : FT K) (v : PairVST K V1 V2), (PairVSVmul K V1 V2 (Fadd K f1 f2) v) = (PairVSVadd K V1 V2 (PairVSVmul K V1 V2 f1 v) (PairVSVmul K V1 V2 f2 v)).
+Proof.
+move=> K V1 V2 f1 f2 v.
+apply injective_projections.
+apply (Vmul_add_distr_r K V1 f1 f2 (fst v)).
+apply (Vmul_add_distr_r K V2 f1 f2 (snd v)).
+Qed.
+
+Lemma PairVSVmul_assoc : forall (K : Field) (V1 V2 : VectorSpace K) (f1 f2 : FT K) (v : PairVST K V1 V2), (PairVSVmul K V1 V2 f1 (PairVSVmul K V1 V2 f2 v)) = (PairVSVmul K V1 V2 (Fmul K f1 f2) v).
+Proof.
+move=> K V1 V2 f1 f2 v.
+apply injective_projections.
+apply (Vmul_assoc K V1 f1 f2 (fst v)).
+apply (Vmul_assoc K V2 f1 f2 (snd v)).
+Qed.
+
+Lemma PairVSVmul_I_l : forall (K : Field) (V1 V2 : VectorSpace K) (v : PairVST K V1 V2), (PairVSVmul K V1 V2 (FI K) v) = v.
+Proof.
+move=> K V1 V2 v.
+apply injective_projections.
+apply (Vmul_I_l K V1 (fst v)).
+apply (Vmul_I_l K V2 (snd v)).
+Qed.
+
+Definition PairVS (K : Field) (V1 V2 : VectorSpace K) := mkVectorSpace K (PairVST K V1 V2) (PairVSVO K V1 V2) (PairVSVadd K V1 V2) (PairVSVmul K V1 V2) (PairVSVopp K V1 V2) (PairVSVadd_comm K V1 V2) (PairVSVadd_assoc K V1 V2) (PairVSVadd_O_l K V1 V2) (PairVSVadd_opp_r K V1 V2) (PairVSVmul_add_distr_l K V1 V2) (PairVSVmul_add_distr_r K V1 V2) (PairVSVmul_assoc K V1 V2) (PairVSVmul_I_l K V1 V2).
+
+Definition PairSystemVS (K : Field) (T1 T2 : Type) (V1 V2 : VectorSpace K) (a1 : T1 -> (VT K V1)) (a2 : T2 -> (VT K V2)) := fun (t : T1 + T2) => match t with
+  | inl t1 => (a1 t1, VO K V2)
+  | inr t2 => (VO K V1, a2 t2)
+end.
+
+Lemma PairBasisVS : forall (K : Field) (T1 T2 : Type) (V1 V2 : VectorSpace K) (a1 : T1 -> (VT K V1)) (a2 : T2 -> (VT K V2)), (BasisVS K V1 T1 a1) -> (BasisVS K V2 T2 a2) -> (BasisVS K (PairVS K V1 V2) (T1 + T2) (PairSystemVS K T1 T2 V1 V2 a1 a2)).
+Proof.
+move=> K T1 T2 V1 V2 a1 a2 H1 H2.
+suff: (forall (g : DirectSumField K (T1 + T2)), Finite T1 (fun t : T1 => proj1_sig g (inl t) <> FO K)).
+move=> H3.
+suff: (forall (g : DirectSumField K (T1 + T2)), Finite T2 (fun t : T2 => proj1_sig g (inr t) <> FO K)).
+move=> H4.
+suff: (forall (g : DirectSumField K (T1 + T2)), fst (MySumF2 (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K (PairVS K V1 V2)) (fun t : T1 + T2 => Vmul K (PairVS K V1 V2) (proj1_sig g t) (PairSystemVS K T1 T2 V1 V2 a1 a2 t))) = MySumF2 T1 (exist (Finite T1) (fun t : T1 => proj1_sig g (inl t) <> FO K) (H3 g)) (VSPCM K V1) (fun t : T1 => Vmul K V1 (proj1_sig g (inl t)) (a1 t))).
+move=> H5.
+suff: (forall (g : DirectSumField K (T1 + T2)), snd (MySumF2 (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K (PairVS K V1 V2)) (fun t : T1 + T2 => Vmul K (PairVS K V1 V2) (proj1_sig g t) (PairSystemVS K T1 T2 V1 V2 a1 a2 t))) = MySumF2 T2 (exist (Finite T2) (fun t : T2 => proj1_sig g (inr t) <> FO K) (H4 g)) (VSPCM K V2) (fun t : T2 => Vmul K V2 (proj1_sig g (inr t)) (a2 t))).
+move=> H6.
+apply (InjSurjBij (DirectSumField K (T1 + T2)) (VT K V1 * VT K V2) (fun g : DirectSumField K (T1 + T2) => MySumF2 (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K (PairVS K V1 V2)) (fun t : T1 + T2 => Vmul K (PairVS K V1 V2) (proj1_sig g t) (PairSystemVS K T1 T2 V1 V2 a1 a2 t)))).
+move=> x1 x2 H7.
+apply sig_map.
+apply functional_extensionality.
+elim.
+suff: (exist (fun (G : T1 -> FT K) => Finite T1 (fun t : T1 => G t <> FO K)) (fun (t : T1) => proj1_sig x1 (inl t)) (H3 x1) = exist (fun (G : T1 -> FT K) => Finite T1 (fun t : T1 => G t <> FO K)) (fun (t : T1) => proj1_sig x2 (inl t)) (H3 x2)).
+move=> H8 t.
+suff: (proj1_sig x1 (inl t) = proj1_sig (exist (fun G : T1 -> FT K => Finite T1 (fun t : T1 => G t <> FO K)) (fun t : T1 => proj1_sig x1 (inl t)) (H3 x1)) t).
+move=> H9.
+rewrite H9.
+rewrite H8.
+reflexivity.
+reflexivity.
+suff: (Injective (DirectSumField K T1) (VT K V1) (fun g : DirectSumField K T1 => MySumF2 T1 (exist (Finite T1) (fun t : T1 => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K V1) (fun t : T1 => Vmul K V1 (proj1_sig g t) (a1 t)))).
+move=> H8.
+apply (H8 (exist (fun G : T1 -> FT K => Finite T1 (fun t : T1 => G t <> FO K)) (fun t : T1 => proj1_sig x1 (inl t)) (H3 x1)) (exist (fun G : T1 -> FT K => Finite T1 (fun t : T1 => G t <> FO K)) (fun t : T1 => proj1_sig x2 (inl t)) (H3 x2))).
+simpl.
+rewrite - (H5 x1).
+rewrite - (H5 x2).
+rewrite H7.
+reflexivity.
+apply (BijInj (DirectSumField K T1) (VT K V1) (fun g : DirectSumField K T1 => MySumF2 T1 (exist (Finite T1) (fun t : T1 => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K V1) (fun t : T1 => Vmul K V1 (proj1_sig g t) (a1 t))) H1).
+suff: (exist (fun (G : T2 -> FT K) => Finite T2 (fun t : T2 => G t <> FO K)) (fun (t : T2) => proj1_sig x1 (inr t)) (H4 x1) = exist (fun (G : T2 -> FT K) => Finite T2 (fun t : T2 => G t <> FO K)) (fun (t : T2) => proj1_sig x2 (inr t)) (H4 x2)).
+move=> H8 t.
+suff: (proj1_sig x1 (inr t) = proj1_sig (exist (fun G : T2 -> FT K => Finite T2 (fun t : T2 => G t <> FO K)) (fun t : T2 => proj1_sig x1 (inr t)) (H4 x1)) t).
+move=> H9.
+rewrite H9.
+rewrite H8.
+reflexivity.
+reflexivity.
+suff: (Injective (DirectSumField K T2) (VT K V2) (fun g : DirectSumField K T2 => MySumF2 T2 (exist (Finite T2) (fun t : T2 => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K V2) (fun t : T2 => Vmul K V2 (proj1_sig g t) (a2 t)))).
+move=> H8.
+apply (H8 (exist (fun G : T2 -> FT K => Finite T2 (fun t : T2 => G t <> FO K)) (fun t : T2 => proj1_sig x1 (inr t)) (H4 x1)) (exist (fun G : T2 -> FT K => Finite T2 (fun t : T2 => G t <> FO K)) (fun t : T2 => proj1_sig x2 (inr t)) (H4 x2))).
+simpl.
+rewrite - (H6 x1).
+rewrite - (H6 x2).
+rewrite H7.
+reflexivity.
+apply (BijInj (DirectSumField K T2) (VT K V2) (fun g : DirectSumField K T2 => MySumF2 T2 (exist (Finite T2) (fun t : T2 => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K V2) (fun t : T2 => Vmul K V2 (proj1_sig g t) (a2 t))) H2).
+move=> v.
+suff: (Surjective (DirectSumField K T1) (VT K V1) (fun g : DirectSumField K T1 => MySumF2 T1 (exist (Finite T1) (fun t : T1 => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K V1) (fun t : T1 => Vmul K V1 (proj1_sig g t) (a1 t)))).
+move=> H7.
+suff: (Surjective (DirectSumField K T2) (VT K V2) (fun g : DirectSumField K T2 => MySumF2 T2 (exist (Finite T2) (fun t : T2 => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K V2) (fun t : T2 => Vmul K V2 (proj1_sig g t) (a2 t)))).
+move=> H8.
+elim (H7 (fst v)).
+move=> x1 H9.
+elim (H8 (snd v)).
+move=> x2 H10.
+suff: (Finite (T1 + T2) (fun t : T1 + T2 => (fun t0 : T1 + T2 => match t0 with
+  | inl t0l => proj1_sig x1 t0l
+  | inr t0r => proj1_sig x2 t0r
+end) t <> FO K)).
+move=> H11.
+exists (exist (fun (G : T1 + T2 -> FT K) => Finite (T1 + T2) (fun t : T1 + T2 => G t <> FO K)) (fun t0 : T1 + T2 => match t0 with
+  | inl t0l => proj1_sig x1 t0l
+  | inr t0r => proj1_sig x2 t0r
+end) H11).
+apply injective_projections.
+simpl.
+rewrite (H5 (exist (fun (G : T1 + T2 -> FT K) => Finite (T1 + T2) (fun t : T1 + T2 => G t <> FO K)) (fun t0 : T1 + T2 => match t0 with
+  | inl t0l => proj1_sig x1 t0l
+  | inr t0r => proj1_sig x2 t0r
+end) H11)).
+simpl.
+suff: ((exist (Finite T1) (fun t : T1 => proj1_sig x1 t <> FO K) (H3 (exist (fun G : T1 + T2 -> FT K => Finite (T1 + T2) (fun t : T1 + T2 => G t <> FO K)) (fun t0 : T1 + T2 => match t0 with
+  | inl t0l => proj1_sig x1 t0l
+  | inr t0r => proj1_sig x2 t0r
+end) H11))) = (exist (Finite T1) (fun t : T1 => proj1_sig x1 t <> FO K) (proj2_sig x1))).
+move=> H12.
+rewrite H12.
+apply H9.
+apply sig_map.
+reflexivity.
+simpl.
+rewrite (H6 (exist (fun (G : T1 + T2 -> FT K) => Finite (T1 + T2) (fun t : T1 + T2 => G t <> FO K)) (fun t0 : T1 + T2 => match t0 with
+  | inl t0l => proj1_sig x1 t0l
+  | inr t0r => proj1_sig x2 t0r
+end) H11)).
+simpl.
+suff: ((exist (Finite T2) (fun t : T2 => proj1_sig x2 t <> FO K) (H4 (exist (fun G : T1 + T2 -> FT K => Finite (T1 + T2) (fun t : T1 + T2 => G t <> FO K)) (fun t0 : T1 + T2 => match t0 with
+  | inl t0l => proj1_sig x1 t0l
+  | inr t0r => proj1_sig x2 t0r
+end) H11))) = (exist (Finite T2) (fun t : T2 => proj1_sig x2 t <> FO K) (proj2_sig x2))).
+move=> H12.
+rewrite H12.
+apply H10.
+apply sig_map.
+reflexivity.
+suff: ((fun t : T1 + T2 => match t with
+  | inl t0l => proj1_sig x1 t0l
+  | inr t0r => proj1_sig x2 t0r
+end <> FO K) = Union (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl t0l => proj1_sig x1 t0l <> FO K
+  | inr _ => False
+end) (fun t : T1 + T2 => match t with
+  | inl _ => False
+  | inr t0r => proj1_sig x2 t0r <> FO K
+end)).
+move=> H11.
+rewrite H11.
+apply (Union_preserves_Finite (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl t0l => proj1_sig x1 t0l <> FO K
+  | inr _ => False
+end) (fun t : T1 + T2 => match t with
+  | inl _ => False
+  | inr t0r => proj1_sig x2 t0r <> FO K
+end)).
+suff: ((fun t : T1 + T2 => match t with
+  | inl t0l => proj1_sig x1 t0l <> FO K
+  | inr _ => False
+end) = Im T1 (T1 + T2) (fun (t : T1) => proj1_sig x1 t <> FO K) inl).
+move=> H12.
+rewrite H12.
+apply (finite_image T1 (T1 + T2) (fun t : T1 => proj1_sig x1 t <> FO K) inl).
+apply (proj2_sig x1).
+apply Extensionality_Ensembles.
+apply conj.
+unfold Included.
+unfold In.
+elim.
+move=> t1 H12.
+apply (Im_intro T1 (T1 + T2) (fun t : T1 => proj1_sig x1 t <> FO K) inl t1).
+apply H12.
+reflexivity.
+move=> t2 H12.
+apply False_ind.
+apply H12.
+move=> t.
+elim.
+move=> t1 H12 tt H13.
+rewrite H13.
+apply H12.
+suff: ((fun t : T1 + T2 => match t with
+  | inl _ => False
+  | inr t0r => proj1_sig x2 t0r <> FO K
+end) = Im T2 (T1 + T2) (fun (t : T2) => proj1_sig x2 t <> FO K) inr).
+move=> H12.
+rewrite H12.
+apply (finite_image T2 (T1 + T2) (fun t : T2 => proj1_sig x2 t <> FO K) inr).
+apply (proj2_sig x2).
+apply Extensionality_Ensembles.
+apply conj.
+unfold Included.
+unfold In.
+elim.
+move=> t1 H12.
+apply False_ind.
+apply H12.
+move=> t2 H12.
+apply (Im_intro T2 (T1 + T2) (fun t : T2 => proj1_sig x2 t <> FO K) inr t2).
+apply H12.
+reflexivity.
+move=> t.
+elim.
+move=> t2 H12 tt H13.
+rewrite H13.
+apply H12.
+apply Extensionality_Ensembles.
+apply conj.
+unfold Included.
+unfold In.
+elim.
+move=> t1 H11.
+left.
+apply H11.
+move=> t2 H11.
+right.
+apply H11.
+unfold Included.
+unfold In.
+elim.
+move=> t1 H11.
+suff: (In (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl t0l => proj1_sig x1 t0l <> FO K
+  | inr _ => False
+end) (inl t1) \/ In (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl _ => False
+  | inr t0r => proj1_sig x2 t0r <> FO K
+end) (inl t1)).
+elim.
+apply.
+move=> H12 H13.
+apply H12.
+elim H11.
+move=> t12 H12.
+left.
+apply H12.
+move=> t12 H12.
+right.
+apply H12.
+move=> t2 H11.
+suff: (In (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl t0l => proj1_sig x1 t0l <> FO K
+  | inr _ => False
+end) (inr t2) \/ In (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl _ => False
+  | inr t0r => proj1_sig x2 t0r <> FO K
+end) (inr t2)).
+elim.
+move=> H12 H13.
+apply H12.
+apply.
+elim H11.
+move=> t12 H12.
+left.
+apply H12.
+move=> t12 H12.
+right.
+apply H12.
+apply (BijSurj (DirectSumField K T2) (VT K V2) (fun g : DirectSumField K T2 => MySumF2 T2 (exist (Finite T2) (fun t : T2 => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K V2) (fun t : T2 => Vmul K V2 (proj1_sig g t) (a2 t))) H2).
+apply (BijSurj (DirectSumField K T1) (VT K V1) (fun g : DirectSumField K T1 => MySumF2 T1 (exist (Finite T1) (fun t : T1 => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K V1) (fun t : T1 => Vmul K V1 (proj1_sig g t) (a1 t))) H1).
+move=> g.
+rewrite (MySumF2Excluded (T1 + T2) (VSPCM K (PairVS K V1 V2)) (fun t : T1 + T2 => Vmul K (PairVS K V1 V2) (proj1_sig g t) (PairSystemVS K T1 T2 V1 V2 a1 a2 t)) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (fun t : T1 + T2 => match t with
+  | inl t1 => False
+  | inr t2 => True
+end)).
+simpl.
+suff: ((snd (MySumF2 (T1 + T2) (FiniteIntersection (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (Complement (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl _ => False
+  | inr _ => True
+end))) (VSPCM K (PairVS K V1 V2)) (fun t : T1 + T2 => PairVSVmul K V1 V2 (proj1_sig g t) (PairSystemVS K T1 T2 V1 V2 a1 a2 t)))) = VO K V2).
+move=> H6.
+rewrite H6.
+rewrite (Vadd_O_r K V2).
+rewrite - (MySumF2BijectiveSame T2 (exist (Finite T2) (fun t : T2 => proj1_sig g (inr t) <> FO K) (H4 g)) (T1 + T2) (FiniteIntersection (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (fun t : T1 + T2 => match t with
+  | inl _ => False
+  | inr _ => True
+end)) (VSPCM K (PairVS K V1 V2)) (fun t : T1 + T2 => PairVSVmul K V1 V2 (proj1_sig g t) (PairSystemVS K T1 T2 V1 V2 a1 a2 t)) inr).
+apply (FiniteSetInduction T2 (exist (Finite T2) (fun t : T2 => proj1_sig g (inr t) <> FO K) (H4 g))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H7 H8 H9 H10.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+simpl.
+rewrite H10.
+reflexivity.
+apply H9.
+apply H9.
+simpl.
+move=> t2 H7.
+apply (Intersection_intro (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl _ => False
+  | inr _ => True
+end) (fun t : T1 + T2 => proj1_sig g t <> FO K) (inr t2)).
+apply I.
+apply H7.
+move=> H7.
+apply InjSurjBij.
+move=> u1 u2 H8.
+apply sig_map.
+suff: (inr T1 (proj1_sig u1) = inr T1 (proj1_sig u2)).
+move=> H9.
+suff: (proj1_sig u1 = let temp := (fun (t : T1 + T2) => match t with 
+  | inl _ => proj1_sig u1
+  | inr t2 => t2
+end) in temp (inr (proj1_sig u1))).
+move=> H10.
+rewrite H10.
+rewrite H9.
+reflexivity.
+reflexivity.
+suff: (inr (proj1_sig u1) = proj1_sig (exist (proj1_sig (FiniteIntersection (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (fun t : T1 + T2 => match t with
+  | inl _ => False
+  | inr _ => True
+end))) (inr (proj1_sig u1)) (H7 (proj1_sig u1) (proj2_sig u1)))).
+move=> H9.
+rewrite H9.
+rewrite H8.
+reflexivity.
+reflexivity.
+move=> u.
+suff: (exists x : {u0 : T2 | proj1_sig (exist (Finite T2) (fun t : T2 => proj1_sig g (inr t) <> FO K) (H4 g)) u0}, proj1_sig (exist (proj1_sig (FiniteIntersection (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (fun t : T1 + T2 => match t with
+  | inl _ => False
+  | inr _ => True
+end))) (inr (proj1_sig x)) (H7 (proj1_sig x) (proj2_sig x))) = proj1_sig u).
+elim.
+move=> x H8.
+exists x.
+apply sig_map.
+apply H8.
+suff: (In (T1 + T2) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj1_sig u)).
+suff: (In (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl _ => False
+  | inr _ => True
+end) (proj1_sig u)).
+elim (proj1_sig u).
+move=> t1 H8.
+apply False_ind.
+apply H8.
+move=> t2 H8 H9.
+exists (exist (fun (u0 : T2) => proj1_sig (exist (Finite T2) (fun t : T2 => proj1_sig g (inr t) <> FO K) (H4 g)) u0) t2 H9).
+reflexivity.
+elim (proj2_sig u).
+move=> t H8 H9.
+apply H8.
+elim (proj2_sig u).
+move=> t H8 H9.
+apply H9.
+apply (FiniteSetInduction (T1 + T2) (FiniteIntersection (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (Complement (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl _ => False
+  | inr _ => True
+end)))).
+apply conj.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H6 H7 H8 H9.
+rewrite MySumF2Add.
+simpl.
+rewrite H9.
+suff: ((Vmul K V2 (proj1_sig g b) (snd (PairSystemVS K T1 T2 V1 V2 a1 a2 b))) = VO K V2).
+move=> H10.
+rewrite H10.
+apply (Vadd_O_r K V2 (VO K V2)).
+elim H7.
+elim.
+move=> a H10 H11.
+simpl.
+apply (Vmul_O_r K V2 (proj1_sig g (inl a))).
+move=> a H10 H11.
+apply False_ind.
+apply H10.
+apply I.
+apply H8.
+move=> g.
+rewrite (MySumF2Excluded (T1 + T2) (VSPCM K (PairVS K V1 V2)) (fun t : T1 + T2 => Vmul K (PairVS K V1 V2) (proj1_sig g t) (PairSystemVS K T1 T2 V1 V2 a1 a2 t)) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (fun t : T1 + T2 => match t with
+  | inl t1 => True
+  | inr t2 => False
+end)).
+simpl.
+suff: ((fst (MySumF2 (T1 + T2) (FiniteIntersection (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (Complement (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl _ => True
+  | inr _ => False
+end))) (VSPCM K (PairVS K V1 V2)) (fun t : T1 + T2 => PairVSVmul K V1 V2 (proj1_sig g t) (PairSystemVS K T1 T2 V1 V2 a1 a2 t)))) = VO K V1).
+move=> H5.
+rewrite H5.
+rewrite (Vadd_O_r K V1).
+rewrite - (MySumF2BijectiveSame T1 (exist (Finite T1) (fun t : T1 => proj1_sig g (inl t) <> FO K) (H3 g)) (T1 + T2) (FiniteIntersection (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (fun t : T1 + T2 => match t with
+  | inl _ => True
+  | inr _ => False
+end)) (VSPCM K (PairVS K V1 V2)) (fun t : T1 + T2 => PairVSVmul K V1 V2 (proj1_sig g t) (PairSystemVS K T1 T2 V1 V2 a1 a2 t)) inl).
+apply (FiniteSetInduction T1 (exist (Finite T1) (fun t : T1 => proj1_sig g (inl t) <> FO K) (H3 g))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H6 H7 H8 H9.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+simpl.
+rewrite H9.
+reflexivity.
+apply H8.
+apply H8.
+simpl.
+move=> t1 H6.
+apply (Intersection_intro (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl _ => True
+  | inr _ => False
+end) (fun t : T1 + T2 => proj1_sig g t <> FO K) (inl t1)).
+apply I.
+apply H6.
+move=> H6.
+apply InjSurjBij.
+move=> u1 u2 H7.
+apply sig_map.
+suff: (inl T2 (proj1_sig u1) = inl T2 (proj1_sig u2)).
+move=> H8.
+suff: (proj1_sig u1 = let temp := (fun (t : T1 + T2) => match t with 
+  | inl t1 => t1
+  | inr t2 => proj1_sig u1
+end) in temp (inl (proj1_sig u1))).
+move=> H9.
+rewrite H9.
+rewrite H8.
+reflexivity.
+reflexivity.
+suff: (inl (proj1_sig u1) = proj1_sig (exist (proj1_sig (FiniteIntersection (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (fun t : T1 + T2 => match t with
+  | inl _ => True
+  | inr _ => False
+end))) (inl (proj1_sig u1)) (H6 (proj1_sig u1) (proj2_sig u1)))).
+move=> H8.
+rewrite H8.
+rewrite H7.
+reflexivity.
+reflexivity.
+move=> u.
+suff: (exists  x : {u0 : T1 | proj1_sig (exist (Finite T1) (fun t : T1 => proj1_sig g (inl t) <> FO K) (H3 g)) u0}, proj1_sig (exist (proj1_sig (FiniteIntersection (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (fun t : T1 + T2 => match t with
+  | inl _ => True
+  | inr _ => False
+end))) (inl (proj1_sig x)) (H6 (proj1_sig x) (proj2_sig x))) = proj1_sig u).
+elim.
+move=> x H7.
+exists x.
+apply sig_map.
+apply H7.
+suff: (In (T1 + T2) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj1_sig u)).
+suff: (In (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl _ => True
+  | inr _ => False
+end) (proj1_sig u)).
+elim (proj1_sig u).
+move=> t1 H7 H8.
+exists (exist (fun (u0 : T1) => proj1_sig (exist (Finite T1) (fun t : T1 => proj1_sig g (inl t) <> FO K) (H3 g)) u0) t1 H8).
+reflexivity.
+move=> t2 H7.
+apply False_ind.
+apply H7.
+elim (proj2_sig u).
+move=> t H7 H8.
+apply H7.
+elim (proj2_sig u).
+move=> t H7 H8.
+apply H8.
+apply (FiniteSetInduction (T1 + T2) (FiniteIntersection (T1 + T2) (exist (Finite (T1 + T2)) (fun t : T1 + T2 => proj1_sig g t <> FO K) (proj2_sig g)) (Complement (T1 + T2) (fun t : T1 + T2 => match t with
+  | inl _ => True
+  | inr _ => False
+end)))).
+apply conj.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H5 H6 H7 H8.
+rewrite MySumF2Add.
+simpl.
+rewrite H8.
+suff: ((Vmul K V1 (proj1_sig g b) (fst (PairSystemVS K T1 T2 V1 V2 a1 a2 b))) = VO K V1).
+move=> H9.
+rewrite H9.
+apply (Vadd_O_r K V1 (VO K V1)).
+elim H6.
+elim.
+move=> a H9 H10.
+apply False_ind.
+apply H9.
+apply I.
+simpl.
+move=> a H9 H10.
+apply (Vmul_O_r K V1 (proj1_sig g (inr a))).
+apply H7.
+move=> g.
+elim (classic (Inhabited T2 (fun t : T2 => proj1_sig g (inr t) <> FO K))).
+elim.
+move=> t2 H4.
+suff: ((fun t : T2 => proj1_sig g (inr t) <> FO K) = Im (T1 + T2) T2 (fun t : T1 + T2 => proj1_sig g t <> FO K) (fun t : T1 + T2 => match t with
+  | inl _ => t2
+  | inr t0 => t0
+end)).
+move=> H5.
+rewrite H5.
+apply (finite_image (T1 + T2) T2 (fun t : T1 + T2 => proj1_sig g t <> FO K) (fun t : T1 + T2 => match t with
+  | inl _ => t2
+  | inr t0 => t0
+end)).
+apply (proj2_sig g).
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H5.
+exists (inr t).
+apply H5.
+reflexivity.
+move=> t12.
+elim.
+move=> t0 H5 t1 H6.
+rewrite H6.
+move: H5.
+elim t0.
+move=> a H7.
+apply H4.
+move=> b.
+apply.
+move=> H4.
+suff: ((fun t : T2 => proj1_sig g (inr t) <> FO K) = Empty_set T2).
+move=> H5.
+rewrite H5.
+apply Empty_is_finite.
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H5.
+apply False_ind.
+apply H4.
+apply (Inhabited_intro T2 (fun t0 : T2 => proj1_sig g (inr t0) <> FO K) t H5).
+move=> t.
+elim.
+move=> g.
+elim (classic (Inhabited T1 (fun t : T1 => proj1_sig g (inl t) <> FO K))).
+elim.
+move=> t1 H3.
+suff: ((fun t : T1 => proj1_sig g (inl t) <> FO K) = Im (T1 + T2) T1 (fun t : T1 + T2 => proj1_sig g t <> FO K) (fun t : T1 + T2 => match t with
+  | inl t0 => t0
+  | inr _ => t1
+end)).
+move=> H4.
+rewrite H4.
+apply (finite_image (T1 + T2) T1 (fun t : T1 + T2 => proj1_sig g t <> FO K) (fun t : T1 + T2 => match t with
+  | inl t0 => t0
+  | inr _ => t1
+end)).
+apply (proj2_sig g).
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H4.
+exists (inl t).
+apply H4.
+reflexivity.
+move=> t12.
+elim.
+move=> t0 H4 t2 H5.
+rewrite H5.
+move: H4.
+elim t0.
+move=> a H6.
+apply H6.
+move=> b H6.
+apply H3.
+move=> H3.
+suff: ((fun t : T1 => proj1_sig g (inl t) <> FO K) = Empty_set T1).
+move=> H4.
+rewrite H4.
+apply Empty_is_finite.
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H4.
+apply False_ind.
+apply H3.
+apply (Inhabited_intro T1 (fun t0 : T1 => proj1_sig g (inl t0) <> FO K) t H4).
+move=> t.
+elim.
+Qed.
+
+Definition DirectProdVST (K : Field) (T : Type) (V : T -> VectorSpace K) := forall (t : T), VT K (V t).
+
+Definition DirectProdVSVO (K : Field) (T : Type) (V : T -> VectorSpace K) := fun (t : T) => VO K (V t).
+
+Definition DirectProdVSVadd (K : Field) (T : Type) (V : T -> VectorSpace K) := fun (v1 v2 : DirectProdVST K T V) (t : T) => Vadd K (V t) (v1 t) (v2 t).
+
+Definition DirectProdVSVmul (K : Field) (T : Type) (V : T -> VectorSpace K) := fun (f : FT K) (v : DirectProdVST K T V) (t : T) => Vmul K (V t) f (v t).
+
+Definition DirectProdVSVopp (K : Field) (T : Type) (V : T -> VectorSpace K) := fun (v : DirectProdVST K T V) (t : T) => Vopp K (V t) (v t).
+
+Lemma DirectProdVSVadd_comm : forall (K : Field) (T : Type) (V : T -> VectorSpace K) (v1 v2 : DirectProdVST K T V), DirectProdVSVadd K T V v1 v2 = DirectProdVSVadd K T V v2 v1.
+Proof.
+move=> K T V v1 v2.
+unfold DirectProdVSVadd.
+apply functional_extensionality_dep.
+move=> t.
+apply (Vadd_comm K (V t) (v1 t) (v2 t)).
+Qed.
+
+Lemma DirectProdVSVadd_assoc : forall (K : Field) (T : Type) (V : T -> VectorSpace K) (v1 v2 v3 : DirectProdVST K T V), DirectProdVSVadd K T V (DirectProdVSVadd K T V v1 v2) v3 = DirectProdVSVadd K T V v1 (DirectProdVSVadd K T V v2 v3).
+Proof.
+move=> K T V v1 v2 v3.
+apply functional_extensionality_dep.
+move=> t.
+apply (Vadd_assoc K (V t) (v1 t) (v2 t) (v3 t)).
+Qed.
+
+Lemma DirectProdVSVadd_O_l : forall (K : Field) (T : Type) (V : T -> VectorSpace K) (v : DirectProdVST K T V), DirectProdVSVadd K T V (DirectProdVSVO K T V) v = v.
+Proof.
+move=> K T V v.
+apply functional_extensionality_dep.
+move=> t.
+apply (Vadd_O_l K (V t) (v t)).
+Qed.
+
+Lemma DirectProdVSVadd_opp_r : forall (K : Field) (T : Type) (V : T -> VectorSpace K) (v : DirectProdVST K T V), DirectProdVSVadd K T V v (DirectProdVSVopp K T V v) = DirectProdVSVO K T V.
+Proof.
+move=> K T V v.
+apply functional_extensionality_dep.
+move=> t.
+apply (Vadd_opp_r K (V t) (v t)).
+Qed.
+
+Lemma DirectProdVSVmul_add_distr_l : forall (K : Field) (T : Type) (V : T -> VectorSpace K) (f : FT K) (v1 v2 : DirectProdVST K T V), DirectProdVSVmul K T V f (DirectProdVSVadd K T V v1 v2) = (DirectProdVSVadd K T V (DirectProdVSVmul K T V f v1) (DirectProdVSVmul K T V f v2)).
+Proof.
+move=> K T V f v1 v2.
+apply functional_extensionality_dep.
+move=> t.
+apply (Vmul_add_distr_l K (V t) f (v1 t) (v2 t)).
+Qed.
+
+Lemma DirectProdVSVmul_add_distr_r : forall (K : Field) (T : Type) (V : T -> VectorSpace K) (f1 f2 : FT K) (v : DirectProdVST K T V), (DirectProdVSVmul K T V (Fadd K f1 f2) v) = (DirectProdVSVadd K T V (DirectProdVSVmul K T V f1 v) (DirectProdVSVmul K T V f2 v)).
+Proof.
+move=> K T V f1 f2 v.
+apply functional_extensionality_dep.
+move=> t.
+apply (Vmul_add_distr_r K (V t) f1 f2 (v t)).
+Qed.
+
+Lemma DirectProdVSVmul_assoc : forall (K : Field) (T : Type) (V : T -> VectorSpace K) (f1 f2 : FT K) (v : DirectProdVST K T V), (DirectProdVSVmul K T V f1 (DirectProdVSVmul K T V f2 v)) = (DirectProdVSVmul K T V (Fmul K f1 f2) v).
+Proof.
+move=> K T V f1 f2 v.
+apply functional_extensionality_dep.
+move=> t.
+apply (Vmul_assoc K (V t) f1 f2 (v t)).
+Qed.
+
+Lemma DirectProdVSVmul_I_l : forall (K : Field) (T : Type) (V : T -> VectorSpace K) (v : DirectProdVST K T V), (DirectProdVSVmul K T V (FI K) v) = v.
+Proof.
+move=> K T V v.
+apply functional_extensionality_dep.
+move=> t.
+apply (Vmul_I_l K (V t) (v t)).
+Qed.
+
+Definition DirectProdVS (K : Field) (T : Type) (V : T -> VectorSpace K) := mkVectorSpace K (DirectProdVST K T V) (DirectProdVSVO K T V) (DirectProdVSVadd K T V) (DirectProdVSVmul K T V) (DirectProdVSVopp K T V) (DirectProdVSVadd_comm K T V) (DirectProdVSVadd_assoc K T V) (DirectProdVSVadd_O_l K T V) (DirectProdVSVadd_opp_r K T V) (DirectProdVSVmul_add_distr_l K T V) (DirectProdVSVmul_add_distr_r K T V) (DirectProdVSVmul_assoc K T V) (DirectProdVSVmul_I_l K T V).
+
 End Senkeidaisuunosekai1.
+
 
 
