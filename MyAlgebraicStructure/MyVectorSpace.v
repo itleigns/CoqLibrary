@@ -4,7 +4,8 @@ Add LoadPath "BasicProperty" as BasicProperty.
 From mathcomp
 Require Import ssreflect.
 Require Import Classical.
-Require Import MyAlgebraicStructure.MyField. 
+Require Import MyAlgebraicStructure.MyField.
+Require Import BasicProperty.MappingProperty.
 
 Section VectorSpace.
 
@@ -453,6 +454,52 @@ Proof.
 move=> F v x y z.
 rewrite (Vmul_add_distr_l F v x y (Vopp F v z)).
 rewrite (Vopp_mul_distr_r F v x z).
+reflexivity.
+Qed.
+
+Definition IsomorphicVS (F : Field) (v1 v2 : VectorSpace F) (f : VT F v1 -> VT F v2) := Bijective f /\ f (VO F v1) = VO F v2 /\ (forall (x y : VT F v1), f (Vadd F v1 x y) = Vadd F v2 (f x) (f y)) /\ (forall (c : FT F) (x : VT F v1), f (Vmul F v1 c x) = Vmul F v2 c (f x)).
+
+Lemma IsomorphicChainVS : forall (F : Field) (v1 v2 v3 : VectorSpace F) (f : VT F v1 -> VT F v2) (g : VT F v2 -> VT F v3), IsomorphicVS F v1 v2 f -> IsomorphicVS F v2 v3 g -> IsomorphicVS F v1 v3 (fun (x : VT F v1) => g (f x)).
+Proof.
+move=> F v1 v2 v3 f g H1 H2.
+apply conj.
+apply (BijChain (VT F v1) (VT F v2) (VT F v3) f g (proj1 H1) (proj1 H2)).
+apply conj.
+rewrite (proj1 (proj2 H1)).
+apply (proj1 (proj2 H2)).
+apply conj.
+move=> x y.
+rewrite (proj1 (proj2 (proj2 H1)) x y).
+apply (proj1 (proj2 (proj2 H2)) (f x) (f y)).
+move=> c x.
+rewrite (proj2 (proj2 (proj2 H1)) c x).
+apply (proj2 (proj2 (proj2 H2)) c (f x)).
+Qed.
+
+Lemma IsomorphicInvVS : forall (F : Field) (v1 v2 : VectorSpace F) (f : VT F v1 -> VT F v2) (g : VT F v2 -> VT F v1), IsomorphicVS F v1 v2 f -> (forall (x : VT F v1), g (f x) = x) /\ (forall (y : VT F v2), f (g y) = y) -> IsomorphicVS F v2 v1 g.
+Proof.
+move=> F v1 v2 f g H1 H2.
+apply conj.
+exists f.
+apply conj.
+apply (proj2 H2).
+apply (proj1 H2).
+apply conj.
+rewrite - (proj1 (proj2 H1)).
+apply (proj1 H2).
+apply conj.
+move=> x y.
+apply (BijInj (VT F v1) (VT F v2) f (proj1 H1) (g (Vadd F v2 x y)) (Vadd F v1 (g x) (g y))).
+rewrite (proj1 (proj2 (proj2 H1)) (g x) (g y)).
+rewrite (proj2 H2 (Vadd F v2 x y)).
+rewrite (proj2 H2 x).
+rewrite (proj2 H2 y).
+reflexivity.
+move=> c x.
+apply (BijInj (VT F v1) (VT F v2) f (proj1 H1) (g (Vmul F v2 c x)) (Vmul F v1 c (g x))).
+rewrite (proj2 (proj2 (proj2 H1)) c (g x)).
+rewrite (proj2 H2 (Vmul F v2 c x)).
+rewrite (proj2 H2 x).
 reflexivity.
 Qed.
 
