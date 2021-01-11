@@ -1,7 +1,7 @@
 all: KaisekiNyuumonn1.vo Matrix.vo MyField.vo MyVectorSpace.vo MySum.vo NatProperty.vo MappingProperty.vo
 
 KaisekiNyuumonn1.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn1.v MyField.vo MyVectorSpace.vo MySum.vo
-	coqc Analysis/KaisekiNyuumonn/KaisekiNyuumonn1.v
+	coqc -Q Analysis/KaisekiNyuumonn Analysis.KaisekiNyuumonn Analysis/KaisekiNyuumonn/KaisekiNyuumonn1.v
 
 Matrix.vo: LinearAlgebra/Matrix.v MyField.vo MyVectorSpace.vo MySum.vo
 	coqc -Q LinearAlgebra LinearAlgebra LinearAlgebra/Matrix.v
