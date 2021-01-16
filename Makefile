@@ -27,7 +27,7 @@ MappingProperty.vo: BasicProperty/MappingProperty.v
 DatatypesExtension.vo: LibraryExtension/DatatypesExtension.v
 	coqc -Q LibraryExtension LibraryExtension LibraryExtension/DatatypesExtension.v
 
-Ensembles.vo: LibraryExtension/EnsemblesExtension.v
+EnsemblesExtension.vo: LibraryExtension/EnsemblesExtension.v
 	coqc -Q LibraryExtension LibraryExtension LibraryExtension/EnsemblesExtension.v
 
 clean:
