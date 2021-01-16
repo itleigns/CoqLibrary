@@ -24,514 +24,6 @@ Definition DirectSumField (K : Field) (T : Type) := {G : T -> FT K | Finite T (f
 
 Definition BasisVS (K : Field) (V : VectorSpace K) (T : Type) := fun (F : T -> VT K V) => Bijective (DirectSumField K T) (VT K V) (fun (g : DirectSumField K T) => MySumF2 T (exist (Finite T) (fun (t : T) => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K V) (fun (t : T) => Vmul K V (proj1_sig g t) (F t))).
 
-Definition SubspaceVS (K : Field) (V : VectorSpace K) := fun (W : Ensemble (VT K V)) => (forall (v1 v2 : VT K V), In (VT K V) W v1 -> In (VT K V) W v2 -> In (VT K V) W (Vadd K V v1 v2)) /\ (forall (f : FT K) (v : VT K V), In (VT K V) W v -> In (VT K V) W (Vmul K V f v)) /\ (In (VT K V) W (VO K V)).
-
-Lemma SubspaceMakeVSVoppSub : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)), (SubspaceVS K V W) -> forall (v : VT K V), (In (VT K V) W v) -> (In (VT K V) W (Vopp K V v)).
-Proof.
-move=> K V W H1 v H2.
-rewrite - (Vmul_I_l K V (Vopp K V v)).
-rewrite - (Vopp_mul_distr_r K V (FI K) v).
-rewrite (Vopp_mul_distr_l K V (FI K) v).
-apply (proj1 (proj2 H1) (Fopp K (FI K)) v H2).
-Qed.
-
-Definition SubspaceMakeVST (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := {x : (VT K V) | In (VT K V) W x}.
-
-Definition SubspaceMakeVSVO (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := (exist W (VO K V) (proj2 (proj2 H))).
-
-Definition SubspaceMakeVSVadd (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := fun (v1 v2 : SubspaceMakeVST K V W H) => (exist W (Vadd K V (proj1_sig v1) (proj1_sig v2)) (proj1 H (proj1_sig v1) (proj1_sig v2) (proj2_sig v1) (proj2_sig v2))).
-
-Definition SubspaceMakeVSVmul (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := fun (f : FT K) (v : SubspaceMakeVST K V W H) => (exist W (Vmul K V f (proj1_sig v)) (proj1 (proj2 H) f (proj1_sig v) (proj2_sig v))).
-
-Definition SubspaceMakeVSVopp (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := fun (v : SubspaceMakeVST K V W H) => (exist W (Vopp K V (proj1_sig v)) (SubspaceMakeVSVoppSub K V W H (proj1_sig v) (proj2_sig v))).
-
-Lemma SubspaceMakeVSVadd_comm : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (v1 v2 : SubspaceMakeVST K V W H), SubspaceMakeVSVadd K V W H v1 v2 = SubspaceMakeVSVadd K V W H v2 v1.
-Proof.
-move=> K V W H1 v1 v2.
-apply sig_map.
-apply (Vadd_comm K V (proj1_sig v1) (proj1_sig v2)).
-Qed.
-
-Lemma SubspaceMakeVSVadd_assoc : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (v1 v2 v3 : SubspaceMakeVST K V W H), SubspaceMakeVSVadd K V W H (SubspaceMakeVSVadd K V W H v1 v2) v3 = SubspaceMakeVSVadd K V W H v1 (SubspaceMakeVSVadd K V W H v2 v3).
-Proof.
-move=> K V W H1 v1 v2 v3.
-apply sig_map.
-apply (Vadd_assoc K V (proj1_sig v1) (proj1_sig v2) (proj1_sig v3)).
-Qed.
-
-Lemma SubspaceMakeVSVadd_O_l : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (v : SubspaceMakeVST K V W H), SubspaceMakeVSVadd K V W H (SubspaceMakeVSVO K V W H) v = v.
-Proof.
-move=> K V W H1 v.
-apply sig_map.
-apply (Vadd_O_l K V (proj1_sig v)).
-Qed.
-
-Lemma SubspaceMakeVSVadd_opp_r : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (v : SubspaceMakeVST K V W H), SubspaceMakeVSVadd K V W H v (SubspaceMakeVSVopp K V W H v) = SubspaceMakeVSVO K V W H.
-Proof.
-move=> K V W H1 v.
-apply sig_map.
-apply (Vadd_opp_r K V (proj1_sig v)).
-Qed.
-
-Lemma SubspaceMakeVSVmul_add_distr_l : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (f : FT K) (v1 v2 : SubspaceMakeVST K V W H), SubspaceMakeVSVmul K V W H f (SubspaceMakeVSVadd K V W H v1 v2) = (SubspaceMakeVSVadd K V W H (SubspaceMakeVSVmul K V W H f v1) (SubspaceMakeVSVmul K V W H f v2)).
-Proof.
-move=> K V W H1 f v1 v2.
-apply sig_map.
-apply (Vmul_add_distr_l K V f (proj1_sig v1) (proj1_sig v2)).
-Qed.
-
-Lemma SubspaceMakeVSVmul_add_distr_r : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (f1 f2 : FT K) (v : SubspaceMakeVST K V W H), (SubspaceMakeVSVmul K V W H (Fadd K f1 f2) v) = (SubspaceMakeVSVadd K V W H (SubspaceMakeVSVmul K V W H f1 v) (SubspaceMakeVSVmul K V W H f2 v)).
-Proof.
-move=> K V W H f1 f2 v.
-apply sig_map.
-apply (Vmul_add_distr_r K V f1 f2 (proj1_sig v)).
-Qed.
-
-Lemma SubspaceMakeVSVmul_assoc : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (f1 f2 : FT K) (v : SubspaceMakeVST K V W H), (SubspaceMakeVSVmul K V W H f1 (SubspaceMakeVSVmul K V W H f2 v)) = (SubspaceMakeVSVmul K V W H (Fmul K f1 f2) v).
-Proof.
-move=> K V W H f1 f2 v.
-apply sig_map.
-apply (Vmul_assoc K V f1 f2 (proj1_sig v)).
-Qed.
-
-Lemma SubspaceMakeVSVmul_I_l : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (v : SubspaceMakeVST K V W H), (SubspaceMakeVSVmul K V W H (FI K) v) = v.
-Proof.
-move=> K V W H v.
-apply sig_map.
-apply (Vmul_I_l K V (proj1_sig v)).
-Qed.
-
-Definition SubspaceMakeVS (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := mkVectorSpace K (SubspaceMakeVST K V W H) (SubspaceMakeVSVO K V W H) (SubspaceMakeVSVadd K V W H) (SubspaceMakeVSVmul K V W H) (SubspaceMakeVSVopp K V W H) (SubspaceMakeVSVadd_comm K V W H) (SubspaceMakeVSVadd_assoc K V W H) (SubspaceMakeVSVadd_O_l K V W H) (SubspaceMakeVSVadd_opp_r K V W H) (SubspaceMakeVSVmul_add_distr_l K V W H) (SubspaceMakeVSVmul_add_distr_r K V W H) (SubspaceMakeVSVmul_assoc K V W H) (SubspaceMakeVSVmul_I_l K V W H).
-
-Definition SpanVS (K : Field) (V : VectorSpace K) (T : Type) (x : T -> VT K V) := fun (v : VT K V) => exists (a : DirectSumField K T), v = MySumF2 T (exist (Finite T) (fun (t : T) => proj1_sig a t <> FO K) (proj2_sig a)) (VSPCM K V) (fun (t : T) => Vmul K V (proj1_sig a t) (x t)).
-
-Lemma SpanSubspaceVS (K : Field) (V : VectorSpace K) (T : Type) (x : T -> VT K V) : SubspaceVS K V (SpanVS K V T x).
-Proof.
-apply conj.
-move=> v1 v2.
-elim.
-move=> a1 H1.
-elim.
-move=> a2 H2.
-suff: (Finite T (fun (t : T) => Fadd K (proj1_sig a1 t) (proj1_sig a2 t) <> FO K)).
-move=> H3.
-exists (exist (fun (G : T -> FT K) => Finite T (fun t : T => G t <> FO K)) (fun (t : T) => Fadd K (proj1_sig a1 t) (proj1_sig a2 t)) H3).
-suff: (MySumF2 T (exist (Finite T) (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t <> FO K) (proj2_sig (exist (fun G : T -> FT K => Finite T (fun t : T => G t <> FO K)) (fun t : T => Fadd K (proj1_sig a1 t) (proj1_sig a2 t)) H3))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t) (x t)) = MySumF2 T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t) (x t))).
-move=> H4.
-rewrite H4.
-suff: (v1 = MySumF2 T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t))).
-move=> H5.
-rewrite H5.
-suff: (v2 = MySumF2 T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t))).
-move=> H6.
-rewrite H6.
-apply (FiniteSetInduction T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2)))).
-apply conj.
-rewrite MySumF2Empty.
-rewrite MySumF2Empty.
-rewrite MySumF2Empty.
-apply (Vadd_O_l K V (VO K V)).
-move=> B b H7 H8 H9.
-simpl.
-move=> H10.
-rewrite MySumF2Add.
-rewrite MySumF2Add.
-rewrite MySumF2Add.
-simpl.
-rewrite - H10.
-rewrite - (Vadd_assoc K V (Vadd K V (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t))) (Vmul K V (proj1_sig a1 b) (x b))) (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t))) (Vmul K V (proj1_sig a2 b) (x b))).
-rewrite (Vadd_comm K V (Vadd K V (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t))) (Vmul K V (proj1_sig a1 b) (x b))) (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t)))).
-rewrite - (Vadd_assoc K V (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t))) (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t))) (Vmul K V (proj1_sig a1 b) (x b))).
-rewrite (Vadd_comm K V (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t))) (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t)))).
-rewrite (Vadd_assoc K V (Vadd K V (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t))) (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t)))) (Vmul K V (proj1_sig a1 b) (x b)) (Vmul K V (proj1_sig a2 b) (x b))).
-rewrite (Vmul_add_distr_r K V (proj1_sig a1 b) (proj1_sig a2 b) (x b)).
-reflexivity.
-apply H9.
-apply H9.
-apply H9.
-rewrite H2.
-rewrite (MySumF2Excluded T (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t)) (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig a2 t <> FO K)).
-suff: ((MySumF2 T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (Complement T (fun t : T => proj1_sig a2 t <> FO K))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t))) = VO K V).
-move=> H6.
-rewrite H6.
-simpl.
-rewrite (Vadd_O_r K V (MySumF2 T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig a2 t <> FO K)) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t)))).
-suff: ((exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2)) = (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig a2 t <> FO K))).
-move=> H7.
-rewrite - H7.
-reflexivity.
-apply sig_map.
-simpl.
-apply Extensionality_Ensembles.
-apply conj.
-move=> t H7.
-apply (Intersection_intro T (fun t0 : T => proj1_sig a2 t0 <> FO K) (Union T (fun t0 : T => proj1_sig a1 t0 <> FO K) (fun t0 : T => proj1_sig a2 t0 <> FO K)) t).
-apply H7.
-right.
-apply H7.
-move=> t.
-elim.
-move=> t0 H7 H8.
-apply H7.
-apply (MySumF2Induction T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (Complement T (fun t : T => proj1_sig a2 t <> FO K)))).
-apply conj.
-reflexivity.
-simpl.
-move=> v u H6 H7.
-rewrite H7.
-suff: (proj1_sig a2 u = FO K).
-move=> H8.
-rewrite H8.
-rewrite (Vmul_O_l K V (x u)).
-apply (Vadd_O_l K V (VO K V)).
-apply NNPP.
-elim H6.
-move=> u0 H8 H9 H10.
-apply (H8 H10).
-rewrite H1.
-rewrite (MySumF2Excluded T (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t)) (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig a1 t <> FO K)).
-suff: ((MySumF2 T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (Complement T (fun t : T => proj1_sig a1 t <> FO K))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t))) = VO K V).
-move=> H5.
-rewrite H5.
-simpl.
-rewrite (Vadd_O_r K V (MySumF2 T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig a1 t <> FO K)) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t)))).
-suff: ((exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) = (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig a1 t <> FO K))).
-move=> H6.
-rewrite - H6.
-reflexivity.
-apply sig_map.
-simpl.
-apply Extensionality_Ensembles.
-apply conj.
-move=> t H6.
-apply (Intersection_intro T (fun t0 : T => proj1_sig a1 t0 <> FO K) (Union T (fun t0 : T => proj1_sig a1 t0 <> FO K) (fun t0 : T => proj1_sig a2 t0 <> FO K)) t).
-apply H6.
-left.
-apply H6.
-move=> t.
-elim.
-move=> t0 H6 H7.
-apply H6.
-apply (MySumF2Induction T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (Complement T (fun t : T => proj1_sig a1 t <> FO K)))).
-apply conj.
-reflexivity.
-simpl.
-move=> v u H5 H6.
-rewrite H6.
-suff: (proj1_sig a1 u = FO K).
-move=> H7.
-rewrite H7.
-rewrite (Vmul_O_l K V (x u)).
-apply (Vadd_O_l K V (VO K V)).
-apply NNPP.
-elim H5.
-move=> u0 H7 H8 H9.
-apply (H7 H9).
-rewrite (MySumF2Excluded T (VSPCM K V) (fun t : T => Vmul K V (proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t) (x t)) (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t <> FO K)).
-suff: ((MySumF2 T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (Complement T (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t <> FO K))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t) (x t))) = VO K V).
-move=> H4.
-rewrite H4.
-simpl.
-rewrite (Vadd_O_r K V (MySumF2 T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => Fadd K (proj1_sig a1 t) (proj1_sig a2 t) <> FO K)) (VSPCM K V) (fun t : T => Vmul K V (Fadd K (proj1_sig a1 t) (proj1_sig a2 t)) (x t)))).
-suff: ((exist (Finite T) (fun t : T => Fadd K (proj1_sig a1 t) (proj1_sig a2 t) <> FO K) H3) = (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => Fadd K (proj1_sig a1 t) (proj1_sig a2 t) <> FO K))).
-move=> H5.
-rewrite H5.
-reflexivity.
-apply sig_map.
-simpl.
-apply Extensionality_Ensembles.
-apply conj.
-move=> t H5.
-apply (Intersection_intro T (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0) <> FO K) (Union T (fun t0 : T => proj1_sig a1 t0 <> FO K) (fun t0 : T => proj1_sig a2 t0 <> FO K)) t).
-apply H5.
-apply NNPP.
-move=> H6.
-apply H5.
-suff: (proj1_sig a1 t = FO K).
-move=> H7.
-rewrite H7.
-suff: (proj1_sig a2 t = FO K).
-move=> H8.
-rewrite H8.
-apply (Fadd_O_l K (FO K)).
-apply NNPP.
-move=> H8.
-apply H6.
-right.
-apply H8.
-apply NNPP.
-move=> H7.
-apply H6.
-left.
-apply H7.
-move=> t.
-elim.
-move=> t0 H5 H6.
-apply H5.
-apply (MySumF2Induction T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (Complement T (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t <> FO K)))).
-apply conj.
-reflexivity.
-simpl.
-move=> v u H4 H5.
-rewrite H5.
-suff: ((Fadd K (proj1_sig a1 u) (proj1_sig a2 u)) = FO K).
-move=> H6.
-rewrite H6.
-rewrite (Vmul_O_l K V (x u)).
-apply (Vadd_O_l K V (VO K V)).
-elim H4.
-move=> u0 H6 H7.
-apply NNPP.
-move=> H8.
-apply (H6 H8).
-suff: (Finite T (Union T (fun t : T => proj1_sig a1 t <> FO K) (fun t : T => proj1_sig a2 t <> FO K))).
-move=> H3.
-apply (Finite_downward_closed T (Union T (fun t : T => proj1_sig a1 t <> FO K) (fun t : T => proj1_sig a2 t <> FO K)) H3 (fun t : T => Fadd K (proj1_sig a1 t) (proj1_sig a2 t) <> FO K)).
-move=> t H4.
-apply NNPP.
-move=> H5.
-apply H4.
-suff: (proj1_sig a1 t) = (FO K).
-move=> H6.
-suff: (proj1_sig a2 t) = (FO K).
-move=> H7.
-rewrite H6.
-rewrite H7.
-apply (Fadd_O_r K (FO K)).
-apply NNPP.
-move=> H7.
-apply H5.
-right.
-apply H7.
-apply NNPP.
-move=> H6.
-apply H5.
-left.
-apply H6.
-apply (Union_preserves_Finite T (fun t : T => proj1_sig a1 t <> FO K) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a1) (proj2_sig a2)).
-apply conj.
-move=> f v.
-elim.
-move=> a H1.
-elim (classic (f = (FO K))).
-move=> H2.
-rewrite H2.
-rewrite (Vmul_O_l K V v).
-suff: (Finite T (fun (t : T) => FO K <> FO K)).
-move=> H3.
-exists (exist (fun (G : T -> FT K) => Finite T (fun t : T => G t <> FO K)) (fun (t : T) => FO K) H3).
-suff: ((exist (Finite T) (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun _ : T => FO K) H3) t <> FO K) (proj2_sig (exist (fun G : T -> FT K => Finite T (fun t : T => G t <> FO K)) (fun _ : T => FO K) H3))) = FiniteEmpty T).
-move=> H4.
-rewrite H4.
-rewrite MySumF2Empty.
-reflexivity.
-apply sig_map.
-simpl.
-apply Extensionality_Ensembles.
-apply conj.
-move=> t H4.
-apply False_ind.
-apply H4.
-reflexivity.
-move=> t.
-elim.
-suff: ((fun _ : T => FO K <> FO K) = Empty_set T).
-move=> H3.
-rewrite H3.
-apply (Empty_is_finite T).
-apply Extensionality_Ensembles.
-apply conj.
-move=> t H3.
-apply False_ind.
-apply H3.
-reflexivity.
-move=> t.
-elim.
-move=> H2.
-suff: (Finite T (fun (t : T) => Fmul K f (proj1_sig a t) <> FO K)).
-move=> H3.
-exists (exist (fun (G : T -> FT K) => Finite T (fun t : T => G t <> FO K)) (fun (t : T) => Fmul K f (proj1_sig a t)) H3).
-rewrite H1.
-suff: ((exist (Finite T) (fun t : T => proj1_sig a t <> FO K) (proj2_sig a)) = (exist (Finite T) (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fmul K f (proj1_sig a t0)) H3) t <> FO K) (proj2_sig (exist (fun G : T -> FT K => Finite T (fun t : T => G t <> FO K)) (fun t : T => Fmul K f (proj1_sig a t)) H3)))).
-move=> H4.
-rewrite H4.
-simpl.
-apply (FiniteSetInduction T (exist (Finite T) (fun t : T => Fmul K f (proj1_sig a t) <> FO K) H3)).
-apply conj.
-rewrite MySumF2Empty.
-rewrite MySumF2Empty.
-apply (Vmul_O_r K V f).
-move=> B b H5 H6 H7 H8.
-rewrite MySumF2Add.
-rewrite MySumF2Add.
-simpl.
-rewrite (Vmul_add_distr_l K V f (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a t) (x t))) (Vmul K V (proj1_sig a b) (x b))).
-rewrite H8.
-rewrite (Vmul_assoc K V f (proj1_sig a b) (x b)).
-reflexivity.
-apply H7.
-apply H7.
-apply sig_map.
-simpl.
-apply Extensionality_Ensembles.
-apply conj.
-move=> t H4 H5.
-apply H4.
-rewrite - (Fmul_I_l K (proj1_sig a t)).
-rewrite - (Finv_l K f).
-rewrite (Fmul_assoc K (Finv K f) f (proj1_sig a t)).
-rewrite H5.
-apply (Fmul_O_r K (Finv K f)).
-apply H2.
-move=> t H4 H5.
-apply H4.
-rewrite H5.
-apply (Fmul_O_r K f).
-suff: ((fun t : T => Fmul K f (proj1_sig a t) <> FO K) = (fun t : T => proj1_sig a t <> FO K)).
-move=> H3.
-rewrite H3.
-apply (proj2_sig a).
-apply Extensionality_Ensembles.
-apply conj.
-move=> t H3 H4.
-apply H3.
-rewrite H4.
-apply (Fmul_O_r K f).
-move=> t H3 H4.
-apply H3.
-rewrite - (Fmul_I_l K (proj1_sig a t)).
-rewrite - (Finv_l K f).
-rewrite (Fmul_assoc K (Finv K f) f (proj1_sig a t)).
-rewrite H4.
-apply (Fmul_O_r K (Finv K f)).
-apply H2.
-suff: (Finite T (fun (t : T) => FO K <> FO K)).
-move=> H1.
-exists (exist (fun (G : T -> FT K) => Finite T (fun t : T => G t <> FO K)) (fun (t : T) => FO K) H1).
-suff: ((exist (Finite T) (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun _ : T => FO K) H1) t <> FO K) (proj2_sig (exist (fun G : T -> FT K => Finite T (fun t : T => G t <> FO K)) (fun _ : T => FO K) H1))) = FiniteEmpty T).
-move=> H2.
-rewrite H2.
-rewrite MySumF2Empty.
-reflexivity.
-apply sig_map.
-simpl.
-apply Extensionality_Ensembles.
-apply conj.
-move=> t H2.
-apply False_ind.
-apply H2.
-reflexivity.
-move=> t.
-elim.
-suff: ((fun _ : T => FO K <> FO K) = Empty_set T).
-move=> H1.
-rewrite H1.
-apply (Empty_is_finite T).
-apply Extensionality_Ensembles.
-apply conj.
-move=> t H1.
-apply False_ind.
-apply H1.
-reflexivity.
-move=> t.
-elim.
-Qed.
-
-Lemma SpanContainSelfVS : forall (K : Field) (V : VectorSpace K) (T : Type) (x : T -> VT K V) (t : T), In (VT K V) (SpanVS K V T x) (x t).
-Proof.
-move=> K V T x t.
-elim (classic (FI K = FO K)).
-move=> H1.
-rewrite - (Vmul_I_l K V (x t)).
-rewrite H1.
-rewrite (Vmul_O_l K V (x t)).
-apply (proj2 (proj2 (SpanSubspaceVS K V T x))).
-move=> H1.
-suff: (Finite T (fun t0 : T => (fun (t1 : T) => match (excluded_middle_informative (t1 = t)) with
-  | left _ => FI K
-  | right _ => FO K
-end) t0 <> FO K)).
-move=> H2. 
-exists (exist (fun (G : T -> FT K) => Finite T (fun t : T => G t <> FO K)) (fun t0 : T => (fun (t1 : T) => match (excluded_middle_informative (t1 = t)) with
-  | left _ => FI K
-  | right _ => FO K
-end) t0) H2).
-suff: ((exist (Finite T) (fun t0 : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t1 : T => G t1 <> FO K)) (fun t1 : T => match excluded_middle_informative (t1 = t) with
-  | left _ => FI K
-  | right _ => FO K 
-end) H2) t0 <> FO K) (proj2_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => match excluded_middle_informative (t0 = t) with
-  | left _ => FI K
-  | right _ => FO K 
-end) H2))) = FiniteSingleton T t).
-move=> H3.
-rewrite H3.
-rewrite MySumF2Singleton.
-simpl.
-elim (excluded_middle_informative (t = t)).
-move=> H4.
-rewrite (Vmul_I_l K V (x t)).
-reflexivity.
-move=> H4.
-apply False_ind.
-apply H4.
-reflexivity.
-apply sig_map.
-simpl.
-apply Extensionality_Ensembles.
-apply conj.
-move=> t0.
-unfold In.
-elim (excluded_middle_informative (t0 = t)).
-move=> H3 H4.
-rewrite H3.
-apply (In_singleton T t).
-move=> H3 H4.
-apply False_ind.
-apply H4.
-reflexivity.
-move=> t0.
-elim.
-unfold In.
-elim (excluded_middle_informative (t = t)).
-move=> H3.
-apply H1.
-move=> H3 H4.
-apply H3.
-reflexivity.
-suff: ((fun t0 : T => (match excluded_middle_informative (t0 = t) with
-  | left _ =>  FI K
-  | right _ => FO K
-end) <> FO K) = Singleton T t).
-move=> H2.
-rewrite H2.
-apply (Singleton_is_finite T t).
-apply Extensionality_Ensembles.
-apply conj.
-move=> t0.
-unfold In.
-elim (excluded_middle_informative (t0 = t)).
-move=> H2 H3.
-rewrite H2.
-apply (In_singleton T t).
-move=> H2 H3.
-apply False_ind.
-apply H3.
-reflexivity.
-move=> t0.
-elim.
-unfold In.
-elim (excluded_middle_informative (t = t)).
-move=> H2.
-apply H1.
-move=> H2 H3.
-apply H2.
-reflexivity.
-Qed.
-
-Definition LinearlyIndependentVS (K : Field) (V : VectorSpace K) (T : Type) (F : T -> VT K V) := BasisVS K (SubspaceMakeVS K V (SpanVS K V T F) (SpanSubspaceVS K V T F)) T (fun (t : T) => exist (SpanVS K V T F) (F t) (SpanContainSelfVS K V T F t)).
-
-Definition GeneratingSystemVS (K : Field) (V : VectorSpace K) (T : Type) (F : T -> VT K V) := Full_set (VT K V) = SpanVS K V T F.
-
 Lemma IsomorphicSaveBasisVS : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), IsomorphicVS K V1 V2 G -> BasisVS K V1 T F -> BasisVS K V2 T (fun t : T => G (F t)).
 Proof.
 move=> K V1 V2 T F G H1 H2.
@@ -561,137 +53,6 @@ rewrite (proj2 (proj2 H1) (proj1_sig g b) (F b)).
 reflexivity.
 apply H5.
 apply H5.
-Qed.
-
-Lemma IsomorphicSaveLinearlyIndependentVS : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), IsomorphicVS K V1 V2 G -> LinearlyIndependentVS K V1 T F -> LinearlyIndependentVS K V2 T (fun t : T => G (F t)).
-Proof.
-move=> K V1 V2 T F G H1 H2.
-unfold LinearlyIndependentVS.
-suff: (forall (v : VT K V1), (SpanVS K V1 T F) v -> (SpanVS K V2 T (fun t : T => G (F t))) (G v)).
-move=> H3.
-suff: ((fun t : T => exist (SpanVS K V2 T (fun t0 : T => G (F t0))) (G (F t)) (SpanContainSelfVS K V2 T (fun t0 : T => G (F t0)) t)) = (fun t : T => exist (SpanVS K V2 T (fun t0 : T => G (F t0))) (G (proj1_sig (exist (SpanVS K V1 T F) (F t) (SpanContainSelfVS K V1 T F t)))) (H3 (proj1_sig (exist (SpanVS K V1 T F) (F t) (SpanContainSelfVS K V1 T F t))) (proj2_sig (exist (SpanVS K V1 T F) (F t) (SpanContainSelfVS K V1 T F t)))))).
-move=> H4.
-rewrite H4.
-apply (IsomorphicSaveBasisVS K (SubspaceMakeVS K V1 (SpanVS K V1 T F) (SpanSubspaceVS K V1 T F)) (SubspaceMakeVS K V2 (SpanVS K V2 T (fun t : T => G (F t))) (SpanSubspaceVS K V2 T (fun t : T => G (F t)))) T (fun t : T => exist (SpanVS K V1 T F) (F t) (SpanContainSelfVS K V1 T F t)) (fun v0 : {v : VT K V1 | SpanVS K V1 T F v} => exist (SpanVS K V2 T (fun t : T => G (F t))) (G (proj1_sig v0)) (H3 (proj1_sig v0) (proj2_sig v0)))).
-apply conj.
-apply (InjSurjBij {v : VT K V1 | SpanVS K V1 T F v} {v : VT K V2 | SpanVS K V2 T (fun t : T => G (F t)) v}).
-move=> v1 v2 H5.
-apply sig_map.
-apply (BijInj (VT K V1) (VT K V2) G (proj1 H1) (proj1_sig v1) (proj1_sig v2)).
-suff: (G (proj1_sig v1) = proj1_sig (exist (SpanVS K V2 T (fun t : T => G (F t))) (G (proj1_sig v1)) (H3 (proj1_sig v1) (proj2_sig v1)))).
-move=> H6.
-rewrite H6.
-rewrite H5.
-reflexivity.
-reflexivity.
-move=> v.
-elim (BijSurj (VT K V1) (VT K V2) G (proj1 H1) (proj1_sig v)).
-move=> v0 H5.
-suff: (In (VT K V1) (SpanVS K V1 T F) v0).
-move=> H6.
-exists (exist (SpanVS K V1 T F) v0 H6).
-apply sig_map.
-apply H5.
-elim (proj2_sig v).
-move=> x H6.
-exists x.
-apply (BijInj (VT K V1) (VT K V2) G (proj1 H1) v0 (MySumF2 T (exist (Finite T) (fun t : T => proj1_sig x t <> FO K) (proj2_sig x)) (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t)))).
-rewrite H5.
-rewrite H6.
-apply (FiniteSetInduction T (exist (Finite T) (fun t : T => proj1_sig x t <> FO K) (proj2_sig x))).
-apply conj.
-rewrite MySumF2Empty.
-rewrite MySumF2Empty.
-simpl.
-rewrite - (Vmul_O_l K V1 (VO K V1)).
-rewrite (proj2 (proj2 H1)).
-rewrite (Vmul_O_l K V2 (G (VO K V1))).
-reflexivity.
-move=> B b H7 H8 H9 H10.
-rewrite MySumF2Add.
-rewrite MySumF2Add.
-simpl.
-rewrite (proj1 (proj2 H1) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t))) (Vmul K V1 (proj1_sig x b) (F b))).
-rewrite H10.
-rewrite (proj2 (proj2 H1) (proj1_sig x b) (F b)).
-reflexivity.
-apply H9.
-apply H9.
-apply conj.
-move=> v1 v2.
-apply sig_map.
-apply (proj1 (proj2 H1) (proj1_sig v1) (proj1_sig v2)).
-move=> c v.
-apply sig_map.
-apply (proj2 (proj2 H1) c (proj1_sig v)).
-apply H2.
-apply functional_extensionality.
-move=> t.
-apply sig_map.
-reflexivity.
-move=> v.
-elim.
-move=> x H3.
-exists x.
-rewrite H3.
-apply (FiniteSetInduction T (exist (Finite T) (fun t : T => proj1_sig x t <> FO K) (proj2_sig x))).
-apply conj.
-rewrite MySumF2Empty.
-rewrite MySumF2Empty.
-simpl.
-rewrite - (Vmul_O_l K V1 (VO K V1)).
-rewrite (proj2 (proj2 H1)).
-rewrite (Vmul_O_l K V2 (G (VO K V1))).
-reflexivity.
-move=> B b H4 H5 H6 H7.
-rewrite MySumF2Add.
-rewrite MySumF2Add.
-simpl.
-rewrite (proj1 (proj2 H1) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t))) (Vmul K V1 (proj1_sig x b) (F b))).
-rewrite H7.
-rewrite (proj2 (proj2 H1) (proj1_sig x b) (F b)).
-reflexivity.
-apply H6.
-apply H6.
-Qed.
-
-Lemma IsomorphicSaveGeneratingSystemVS : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), IsomorphicVS K V1 V2 G -> GeneratingSystemVS K V1 T F -> GeneratingSystemVS K V2 T (fun t : T => G (F t)).
-Proof.
-move=> K V1 V2 T F G H1 H2.
-apply Extensionality_Ensembles.
-apply conj.
-move=> v2 H3.
-elim (BijSurj (VT K V1) (VT K V2) G (proj1 H1) v2).
-move=> v1 H4.
-suff: (In (VT K V1) (SpanVS K V1 T F) v1).
-elim.
-move=> x H5.
-exists x.
-rewrite - H4.
-rewrite H5.
-apply (FiniteSetInduction T (exist (Finite T) (fun t : T => proj1_sig x t <> FO K) (proj2_sig x))).
-apply conj.
-rewrite MySumF2Empty.
-rewrite MySumF2Empty.
-simpl.
-rewrite - (Vmul_O_l K V1 (VO K V1)).
-rewrite (proj2 (proj2 H1)).
-rewrite (Vmul_O_l K V2 (G (VO K V1))).
-reflexivity.
-move=> B b H6 H7 H8 H9.
-rewrite MySumF2Add.
-rewrite MySumF2Add.
-simpl.
-rewrite (proj1 (proj2 H1) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t))) (Vmul K V1 (proj1_sig x b) (F b))).
-rewrite H9.
-rewrite (proj2 (proj2 H1) (proj1_sig x b) (F b)).
-reflexivity.
-apply H8.
-apply H8.
-rewrite - H2.
-apply (Full_intro (VT K V1) v1).
-move=> v H3.
-apply (Full_intro (VT K V2) v).
 Qed.
 
 Lemma CountFinite : forall (N : nat), Finite (Count N) (Full_set (Count N)).
@@ -2356,6 +1717,85 @@ apply (FiniteSigSame (sumT {n : nat | n < N} T)).
 apply (proj2_sig v).
 Qed.
 
+Definition SubspaceVS (K : Field) (V : VectorSpace K) := fun (W : Ensemble (VT K V)) => (forall (v1 v2 : VT K V), In (VT K V) W v1 -> In (VT K V) W v2 -> In (VT K V) W (Vadd K V v1 v2)) /\ (forall (f : FT K) (v : VT K V), In (VT K V) W v -> In (VT K V) W (Vmul K V f v)) /\ (In (VT K V) W (VO K V)).
+
+Lemma SubspaceMakeVSVoppSub : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)), (SubspaceVS K V W) -> forall (v : VT K V), (In (VT K V) W v) -> (In (VT K V) W (Vopp K V v)).
+Proof.
+move=> K V W H1 v H2.
+rewrite - (Vmul_I_l K V (Vopp K V v)).
+rewrite - (Vopp_mul_distr_r K V (FI K) v).
+rewrite (Vopp_mul_distr_l K V (FI K) v).
+apply (proj1 (proj2 H1) (Fopp K (FI K)) v H2).
+Qed.
+
+Definition SubspaceMakeVST (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := {x : (VT K V) | In (VT K V) W x}.
+
+Definition SubspaceMakeVSVO (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := (exist W (VO K V) (proj2 (proj2 H))).
+
+Definition SubspaceMakeVSVadd (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := fun (v1 v2 : SubspaceMakeVST K V W H) => (exist W (Vadd K V (proj1_sig v1) (proj1_sig v2)) (proj1 H (proj1_sig v1) (proj1_sig v2) (proj2_sig v1) (proj2_sig v2))).
+
+Definition SubspaceMakeVSVmul (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := fun (f : FT K) (v : SubspaceMakeVST K V W H) => (exist W (Vmul K V f (proj1_sig v)) (proj1 (proj2 H) f (proj1_sig v) (proj2_sig v))).
+
+Definition SubspaceMakeVSVopp (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := fun (v : SubspaceMakeVST K V W H) => (exist W (Vopp K V (proj1_sig v)) (SubspaceMakeVSVoppSub K V W H (proj1_sig v) (proj2_sig v))).
+
+Lemma SubspaceMakeVSVadd_comm : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (v1 v2 : SubspaceMakeVST K V W H), SubspaceMakeVSVadd K V W H v1 v2 = SubspaceMakeVSVadd K V W H v2 v1.
+Proof.
+move=> K V W H1 v1 v2.
+apply sig_map.
+apply (Vadd_comm K V (proj1_sig v1) (proj1_sig v2)).
+Qed.
+
+Lemma SubspaceMakeVSVadd_assoc : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (v1 v2 v3 : SubspaceMakeVST K V W H), SubspaceMakeVSVadd K V W H (SubspaceMakeVSVadd K V W H v1 v2) v3 = SubspaceMakeVSVadd K V W H v1 (SubspaceMakeVSVadd K V W H v2 v3).
+Proof.
+move=> K V W H1 v1 v2 v3.
+apply sig_map.
+apply (Vadd_assoc K V (proj1_sig v1) (proj1_sig v2) (proj1_sig v3)).
+Qed.
+
+Lemma SubspaceMakeVSVadd_O_l : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (v : SubspaceMakeVST K V W H), SubspaceMakeVSVadd K V W H (SubspaceMakeVSVO K V W H) v = v.
+Proof.
+move=> K V W H1 v.
+apply sig_map.
+apply (Vadd_O_l K V (proj1_sig v)).
+Qed.
+
+Lemma SubspaceMakeVSVadd_opp_r : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (v : SubspaceMakeVST K V W H), SubspaceMakeVSVadd K V W H v (SubspaceMakeVSVopp K V W H v) = SubspaceMakeVSVO K V W H.
+Proof.
+move=> K V W H1 v.
+apply sig_map.
+apply (Vadd_opp_r K V (proj1_sig v)).
+Qed.
+
+Lemma SubspaceMakeVSVmul_add_distr_l : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (f : FT K) (v1 v2 : SubspaceMakeVST K V W H), SubspaceMakeVSVmul K V W H f (SubspaceMakeVSVadd K V W H v1 v2) = (SubspaceMakeVSVadd K V W H (SubspaceMakeVSVmul K V W H f v1) (SubspaceMakeVSVmul K V W H f v2)).
+Proof.
+move=> K V W H1 f v1 v2.
+apply sig_map.
+apply (Vmul_add_distr_l K V f (proj1_sig v1) (proj1_sig v2)).
+Qed.
+
+Lemma SubspaceMakeVSVmul_add_distr_r : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (f1 f2 : FT K) (v : SubspaceMakeVST K V W H), (SubspaceMakeVSVmul K V W H (Fadd K f1 f2) v) = (SubspaceMakeVSVadd K V W H (SubspaceMakeVSVmul K V W H f1 v) (SubspaceMakeVSVmul K V W H f2 v)).
+Proof.
+move=> K V W H f1 f2 v.
+apply sig_map.
+apply (Vmul_add_distr_r K V f1 f2 (proj1_sig v)).
+Qed.
+
+Lemma SubspaceMakeVSVmul_assoc : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (f1 f2 : FT K) (v : SubspaceMakeVST K V W H), (SubspaceMakeVSVmul K V W H f1 (SubspaceMakeVSVmul K V W H f2 v)) = (SubspaceMakeVSVmul K V W H (Fmul K f1 f2) v).
+Proof.
+move=> K V W H f1 f2 v.
+apply sig_map.
+apply (Vmul_assoc K V f1 f2 (proj1_sig v)).
+Qed.
+
+Lemma SubspaceMakeVSVmul_I_l : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (v : SubspaceMakeVST K V W H), (SubspaceMakeVSVmul K V W H (FI K) v) = v.
+Proof.
+move=> K V W H v.
+apply sig_map.
+apply (Vmul_I_l K V (proj1_sig v)).
+Qed.
+
+Definition SubspaceMakeVS (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := mkVectorSpace K (SubspaceMakeVST K V W H) (SubspaceMakeVSVO K V W H) (SubspaceMakeVSVadd K V W H) (SubspaceMakeVSVmul K V W H) (SubspaceMakeVSVopp K V W H) (SubspaceMakeVSVadd_comm K V W H) (SubspaceMakeVSVadd_assoc K V W H) (SubspaceMakeVSVadd_O_l K V W H) (SubspaceMakeVSVadd_opp_r K V W H) (SubspaceMakeVSVmul_add_distr_l K V W H) (SubspaceMakeVSVmul_add_distr_r K V W H) (SubspaceMakeVSVmul_assoc K V W H) (SubspaceMakeVSVmul_I_l K V W H).
+
 Definition BasisSubspaceVS (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (T : Type) (F : T -> VT K V) := exists (H1 : forall (t : T), In (VT K V) W (F t)), BasisVS K (SubspaceMakeVS K V W H) T (fun (t : T) => exist W (F t) (H1 t)).
 
 Lemma FullsetSubspaceVS : forall (K : Field) (V : VectorSpace K), SubspaceVS K V (Full_set (VT K V)).
@@ -2751,6 +2191,472 @@ move=> t.
 apply (proj2 (proj2 (H1 t))).
 Qed.
 
+Definition SpanVS (K : Field) (V : VectorSpace K) (T : Type) (x : T -> VT K V) := fun (v : VT K V) => exists (a : DirectSumField K T), v = MySumF2 T (exist (Finite T) (fun (t : T) => proj1_sig a t <> FO K) (proj2_sig a)) (VSPCM K V) (fun (t : T) => Vmul K V (proj1_sig a t) (x t)).
+
+Lemma SpanSubspaceVS (K : Field) (V : VectorSpace K) (T : Type) (x : T -> VT K V) : SubspaceVS K V (SpanVS K V T x).
+Proof.
+apply conj.
+move=> v1 v2.
+elim.
+move=> a1 H1.
+elim.
+move=> a2 H2.
+suff: (Finite T (fun (t : T) => Fadd K (proj1_sig a1 t) (proj1_sig a2 t) <> FO K)).
+move=> H3.
+exists (exist (fun (G : T -> FT K) => Finite T (fun t : T => G t <> FO K)) (fun (t : T) => Fadd K (proj1_sig a1 t) (proj1_sig a2 t)) H3).
+suff: (MySumF2 T (exist (Finite T) (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t <> FO K) (proj2_sig (exist (fun G : T -> FT K => Finite T (fun t : T => G t <> FO K)) (fun t : T => Fadd K (proj1_sig a1 t) (proj1_sig a2 t)) H3))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t) (x t)) = MySumF2 T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t) (x t))).
+move=> H4.
+rewrite H4.
+suff: (v1 = MySumF2 T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t))).
+move=> H5.
+rewrite H5.
+suff: (v2 = MySumF2 T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t))).
+move=> H6.
+rewrite H6.
+apply (FiniteSetInduction T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2)))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+apply (Vadd_O_l K V (VO K V)).
+move=> B b H7 H8 H9.
+simpl.
+move=> H10.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+simpl.
+rewrite - H10.
+rewrite - (Vadd_assoc K V (Vadd K V (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t))) (Vmul K V (proj1_sig a1 b) (x b))) (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t))) (Vmul K V (proj1_sig a2 b) (x b))).
+rewrite (Vadd_comm K V (Vadd K V (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t))) (Vmul K V (proj1_sig a1 b) (x b))) (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t)))).
+rewrite - (Vadd_assoc K V (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t))) (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t))) (Vmul K V (proj1_sig a1 b) (x b))).
+rewrite (Vadd_comm K V (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t))) (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t)))).
+rewrite (Vadd_assoc K V (Vadd K V (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t))) (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t)))) (Vmul K V (proj1_sig a1 b) (x b)) (Vmul K V (proj1_sig a2 b) (x b))).
+rewrite (Vmul_add_distr_r K V (proj1_sig a1 b) (proj1_sig a2 b) (x b)).
+reflexivity.
+apply H9.
+apply H9.
+apply H9.
+rewrite H2.
+rewrite (MySumF2Excluded T (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t)) (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig a2 t <> FO K)).
+suff: ((MySumF2 T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (Complement T (fun t : T => proj1_sig a2 t <> FO K))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t))) = VO K V).
+move=> H6.
+rewrite H6.
+simpl.
+rewrite (Vadd_O_r K V (MySumF2 T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig a2 t <> FO K)) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a2 t) (x t)))).
+suff: ((exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2)) = (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig a2 t <> FO K))).
+move=> H7.
+rewrite - H7.
+reflexivity.
+apply sig_map.
+simpl.
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H7.
+apply (Intersection_intro T (fun t0 : T => proj1_sig a2 t0 <> FO K) (Union T (fun t0 : T => proj1_sig a1 t0 <> FO K) (fun t0 : T => proj1_sig a2 t0 <> FO K)) t).
+apply H7.
+right.
+apply H7.
+move=> t.
+elim.
+move=> t0 H7 H8.
+apply H7.
+apply (MySumF2Induction T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (Complement T (fun t : T => proj1_sig a2 t <> FO K)))).
+apply conj.
+reflexivity.
+simpl.
+move=> v u H6 H7.
+rewrite H7.
+suff: (proj1_sig a2 u = FO K).
+move=> H8.
+rewrite H8.
+rewrite (Vmul_O_l K V (x u)).
+apply (Vadd_O_l K V (VO K V)).
+apply NNPP.
+elim H6.
+move=> u0 H8 H9 H10.
+apply (H8 H10).
+rewrite H1.
+rewrite (MySumF2Excluded T (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t)) (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig a1 t <> FO K)).
+suff: ((MySumF2 T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (Complement T (fun t : T => proj1_sig a1 t <> FO K))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t))) = VO K V).
+move=> H5.
+rewrite H5.
+simpl.
+rewrite (Vadd_O_r K V (MySumF2 T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig a1 t <> FO K)) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a1 t) (x t)))).
+suff: ((exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) = (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig a1 t <> FO K))).
+move=> H6.
+rewrite - H6.
+reflexivity.
+apply sig_map.
+simpl.
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H6.
+apply (Intersection_intro T (fun t0 : T => proj1_sig a1 t0 <> FO K) (Union T (fun t0 : T => proj1_sig a1 t0 <> FO K) (fun t0 : T => proj1_sig a2 t0 <> FO K)) t).
+apply H6.
+left.
+apply H6.
+move=> t.
+elim.
+move=> t0 H6 H7.
+apply H6.
+apply (MySumF2Induction T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (Complement T (fun t : T => proj1_sig a1 t <> FO K)))).
+apply conj.
+reflexivity.
+simpl.
+move=> v u H5 H6.
+rewrite H6.
+suff: (proj1_sig a1 u = FO K).
+move=> H7.
+rewrite H7.
+rewrite (Vmul_O_l K V (x u)).
+apply (Vadd_O_l K V (VO K V)).
+apply NNPP.
+elim H5.
+move=> u0 H7 H8 H9.
+apply (H7 H9).
+rewrite (MySumF2Excluded T (VSPCM K V) (fun t : T => Vmul K V (proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t) (x t)) (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t <> FO K)).
+suff: ((MySumF2 T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (Complement T (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t <> FO K))) (VSPCM K V) (fun t : T => Vmul K V (proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t) (x t))) = VO K V).
+move=> H4.
+rewrite H4.
+simpl.
+rewrite (Vadd_O_r K V (MySumF2 T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => Fadd K (proj1_sig a1 t) (proj1_sig a2 t) <> FO K)) (VSPCM K V) (fun t : T => Vmul K V (Fadd K (proj1_sig a1 t) (proj1_sig a2 t)) (x t)))).
+suff: ((exist (Finite T) (fun t : T => Fadd K (proj1_sig a1 t) (proj1_sig a2 t) <> FO K) H3) = (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (fun t : T => Fadd K (proj1_sig a1 t) (proj1_sig a2 t) <> FO K))).
+move=> H5.
+rewrite H5.
+reflexivity.
+apply sig_map.
+simpl.
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H5.
+apply (Intersection_intro T (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0) <> FO K) (Union T (fun t0 : T => proj1_sig a1 t0 <> FO K) (fun t0 : T => proj1_sig a2 t0 <> FO K)) t).
+apply H5.
+apply NNPP.
+move=> H6.
+apply H5.
+suff: (proj1_sig a1 t = FO K).
+move=> H7.
+rewrite H7.
+suff: (proj1_sig a2 t = FO K).
+move=> H8.
+rewrite H8.
+apply (Fadd_O_l K (FO K)).
+apply NNPP.
+move=> H8.
+apply H6.
+right.
+apply H8.
+apply NNPP.
+move=> H7.
+apply H6.
+left.
+apply H7.
+move=> t.
+elim.
+move=> t0 H5 H6.
+apply H5.
+apply (MySumF2Induction T (FiniteIntersection T (FiniteUnion T (exist (Finite T) (fun t : T => proj1_sig a1 t <> FO K) (proj2_sig a1)) (exist (Finite T) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a2))) (Complement T (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fadd K (proj1_sig a1 t0) (proj1_sig a2 t0)) H3) t <> FO K)))).
+apply conj.
+reflexivity.
+simpl.
+move=> v u H4 H5.
+rewrite H5.
+suff: ((Fadd K (proj1_sig a1 u) (proj1_sig a2 u)) = FO K).
+move=> H6.
+rewrite H6.
+rewrite (Vmul_O_l K V (x u)).
+apply (Vadd_O_l K V (VO K V)).
+elim H4.
+move=> u0 H6 H7.
+apply NNPP.
+move=> H8.
+apply (H6 H8).
+suff: (Finite T (Union T (fun t : T => proj1_sig a1 t <> FO K) (fun t : T => proj1_sig a2 t <> FO K))).
+move=> H3.
+apply (Finite_downward_closed T (Union T (fun t : T => proj1_sig a1 t <> FO K) (fun t : T => proj1_sig a2 t <> FO K)) H3 (fun t : T => Fadd K (proj1_sig a1 t) (proj1_sig a2 t) <> FO K)).
+move=> t H4.
+apply NNPP.
+move=> H5.
+apply H4.
+suff: (proj1_sig a1 t) = (FO K).
+move=> H6.
+suff: (proj1_sig a2 t) = (FO K).
+move=> H7.
+rewrite H6.
+rewrite H7.
+apply (Fadd_O_r K (FO K)).
+apply NNPP.
+move=> H7.
+apply H5.
+right.
+apply H7.
+apply NNPP.
+move=> H6.
+apply H5.
+left.
+apply H6.
+apply (Union_preserves_Finite T (fun t : T => proj1_sig a1 t <> FO K) (fun t : T => proj1_sig a2 t <> FO K) (proj2_sig a1) (proj2_sig a2)).
+apply conj.
+move=> f v.
+elim.
+move=> a H1.
+elim (classic (f = (FO K))).
+move=> H2.
+rewrite H2.
+rewrite (Vmul_O_l K V v).
+suff: (Finite T (fun (t : T) => FO K <> FO K)).
+move=> H3.
+exists (exist (fun (G : T -> FT K) => Finite T (fun t : T => G t <> FO K)) (fun (t : T) => FO K) H3).
+suff: ((exist (Finite T) (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun _ : T => FO K) H3) t <> FO K) (proj2_sig (exist (fun G : T -> FT K => Finite T (fun t : T => G t <> FO K)) (fun _ : T => FO K) H3))) = FiniteEmpty T).
+move=> H4.
+rewrite H4.
+rewrite MySumF2Empty.
+reflexivity.
+apply sig_map.
+simpl.
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H4.
+apply False_ind.
+apply H4.
+reflexivity.
+move=> t.
+elim.
+suff: ((fun _ : T => FO K <> FO K) = Empty_set T).
+move=> H3.
+rewrite H3.
+apply (Empty_is_finite T).
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> t.
+elim.
+move=> H2.
+suff: (Finite T (fun (t : T) => Fmul K f (proj1_sig a t) <> FO K)).
+move=> H3.
+exists (exist (fun (G : T -> FT K) => Finite T (fun t : T => G t <> FO K)) (fun (t : T) => Fmul K f (proj1_sig a t)) H3).
+rewrite H1.
+suff: ((exist (Finite T) (fun t : T => proj1_sig a t <> FO K) (proj2_sig a)) = (exist (Finite T) (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => Fmul K f (proj1_sig a t0)) H3) t <> FO K) (proj2_sig (exist (fun G : T -> FT K => Finite T (fun t : T => G t <> FO K)) (fun t : T => Fmul K f (proj1_sig a t)) H3)))).
+move=> H4.
+rewrite H4.
+simpl.
+apply (FiniteSetInduction T (exist (Finite T) (fun t : T => Fmul K f (proj1_sig a t) <> FO K) H3)).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+apply (Vmul_O_r K V f).
+move=> B b H5 H6 H7 H8.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+simpl.
+rewrite (Vmul_add_distr_l K V f (MySumF2 T B (VSPCM K V) (fun t : T => Vmul K V (proj1_sig a t) (x t))) (Vmul K V (proj1_sig a b) (x b))).
+rewrite H8.
+rewrite (Vmul_assoc K V f (proj1_sig a b) (x b)).
+reflexivity.
+apply H7.
+apply H7.
+apply sig_map.
+simpl.
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H4 H5.
+apply H4.
+rewrite - (Fmul_I_l K (proj1_sig a t)).
+rewrite - (Finv_l K f).
+rewrite (Fmul_assoc K (Finv K f) f (proj1_sig a t)).
+rewrite H5.
+apply (Fmul_O_r K (Finv K f)).
+apply H2.
+move=> t H4 H5.
+apply H4.
+rewrite H5.
+apply (Fmul_O_r K f).
+suff: ((fun t : T => Fmul K f (proj1_sig a t) <> FO K) = (fun t : T => proj1_sig a t <> FO K)).
+move=> H3.
+rewrite H3.
+apply (proj2_sig a).
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H3 H4.
+apply H3.
+rewrite H4.
+apply (Fmul_O_r K f).
+move=> t H3 H4.
+apply H3.
+rewrite - (Fmul_I_l K (proj1_sig a t)).
+rewrite - (Finv_l K f).
+rewrite (Fmul_assoc K (Finv K f) f (proj1_sig a t)).
+rewrite H4.
+apply (Fmul_O_r K (Finv K f)).
+apply H2.
+suff: (Finite T (fun (t : T) => FO K <> FO K)).
+move=> H1.
+exists (exist (fun (G : T -> FT K) => Finite T (fun t : T => G t <> FO K)) (fun (t : T) => FO K) H1).
+suff: ((exist (Finite T) (fun t : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun _ : T => FO K) H1) t <> FO K) (proj2_sig (exist (fun G : T -> FT K => Finite T (fun t : T => G t <> FO K)) (fun _ : T => FO K) H1))) = FiniteEmpty T).
+move=> H2.
+rewrite H2.
+rewrite MySumF2Empty.
+reflexivity.
+apply sig_map.
+simpl.
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H2.
+apply False_ind.
+apply H2.
+reflexivity.
+move=> t.
+elim.
+suff: ((fun _ : T => FO K <> FO K) = Empty_set T).
+move=> H1.
+rewrite H1.
+apply (Empty_is_finite T).
+apply Extensionality_Ensembles.
+apply conj.
+move=> t H1.
+apply False_ind.
+apply H1.
+reflexivity.
+move=> t.
+elim.
+Qed.
+
+Lemma SpanContainSelfVS : forall (K : Field) (V : VectorSpace K) (T : Type) (x : T -> VT K V) (t : T), In (VT K V) (SpanVS K V T x) (x t).
+Proof.
+move=> K V T x t.
+elim (classic (FI K = FO K)).
+move=> H1.
+rewrite - (Vmul_I_l K V (x t)).
+rewrite H1.
+rewrite (Vmul_O_l K V (x t)).
+apply (proj2 (proj2 (SpanSubspaceVS K V T x))).
+move=> H1.
+suff: (Finite T (fun t0 : T => (fun (t1 : T) => match (excluded_middle_informative (t1 = t)) with
+  | left _ => FI K
+  | right _ => FO K
+end) t0 <> FO K)).
+move=> H2. 
+exists (exist (fun (G : T -> FT K) => Finite T (fun t : T => G t <> FO K)) (fun t0 : T => (fun (t1 : T) => match (excluded_middle_informative (t1 = t)) with
+  | left _ => FI K
+  | right _ => FO K
+end) t0) H2).
+suff: ((exist (Finite T) (fun t0 : T => proj1_sig (exist (fun G : T -> FT K => Finite T (fun t1 : T => G t1 <> FO K)) (fun t1 : T => match excluded_middle_informative (t1 = t) with
+  | left _ => FI K
+  | right _ => FO K 
+end) H2) t0 <> FO K) (proj2_sig (exist (fun G : T -> FT K => Finite T (fun t0 : T => G t0 <> FO K)) (fun t0 : T => match excluded_middle_informative (t0 = t) with
+  | left _ => FI K
+  | right _ => FO K 
+end) H2))) = FiniteSingleton T t).
+move=> H3.
+rewrite H3.
+rewrite MySumF2Singleton.
+simpl.
+elim (excluded_middle_informative (t = t)).
+move=> H4.
+rewrite (Vmul_I_l K V (x t)).
+reflexivity.
+move=> H4.
+apply False_ind.
+apply H4.
+reflexivity.
+apply sig_map.
+simpl.
+apply Extensionality_Ensembles.
+apply conj.
+move=> t0.
+unfold In.
+elim (excluded_middle_informative (t0 = t)).
+move=> H3 H4.
+rewrite H3.
+apply (In_singleton T t).
+move=> H3 H4.
+apply False_ind.
+apply H4.
+reflexivity.
+move=> t0.
+elim.
+unfold In.
+elim (excluded_middle_informative (t = t)).
+move=> H3.
+apply H1.
+move=> H3 H4.
+apply H3.
+reflexivity.
+suff: ((fun t0 : T => (match excluded_middle_informative (t0 = t) with
+  | left _ =>  FI K
+  | right _ => FO K
+end) <> FO K) = Singleton T t).
+move=> H2.
+rewrite H2.
+apply (Singleton_is_finite T t).
+apply Extensionality_Ensembles.
+apply conj.
+move=> t0.
+unfold In.
+elim (excluded_middle_informative (t0 = t)).
+move=> H2 H3.
+rewrite H2.
+apply (In_singleton T t).
+move=> H2 H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> t0.
+elim.
+unfold In.
+elim (excluded_middle_informative (t = t)).
+move=> H2.
+apply H1.
+move=> H2 H3.
+apply H2.
+reflexivity.
+Qed.
+
+Definition GeneratingSystemVS (K : Field) (V : VectorSpace K) (T : Type) (F : T -> VT K V) := Full_set (VT K V) = SpanVS K V T F.
+
+Lemma IsomorphicSaveGeneratingSystemVS : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), IsomorphicVS K V1 V2 G -> GeneratingSystemVS K V1 T F -> GeneratingSystemVS K V2 T (fun t : T => G (F t)).
+Proof.
+move=> K V1 V2 T F G H1 H2.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v2 H3.
+elim (BijSurj (VT K V1) (VT K V2) G (proj1 H1) v2).
+move=> v1 H4.
+suff: (In (VT K V1) (SpanVS K V1 T F) v1).
+elim.
+move=> x H5.
+exists x.
+rewrite - H4.
+rewrite H5.
+apply (FiniteSetInduction T (exist (Finite T) (fun t : T => proj1_sig x t <> FO K) (proj2_sig x))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+simpl.
+rewrite - (Vmul_O_l K V1 (VO K V1)).
+rewrite (proj2 (proj2 H1)).
+rewrite (Vmul_O_l K V2 (G (VO K V1))).
+reflexivity.
+move=> B b H6 H7 H8 H9.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+simpl.
+rewrite (proj1 (proj2 H1) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t))) (Vmul K V1 (proj1_sig x b) (F b))).
+rewrite H9.
+rewrite (proj2 (proj2 H1) (proj1_sig x b) (F b)).
+reflexivity.
+apply H8.
+apply H8.
+rewrite - H2.
+apply (Full_intro (VT K V1) v1).
+move=> v H3.
+apply (Full_intro (VT K V2) v).
+Qed.
+
 Lemma Proposition_4_9 : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)), SubspaceVS K V W1 -> SubspaceVS K V W2 -> forall (H : forall (x : ({v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v})), In (VT K V) (SumEnsembleVS K V W1 W2) (Vadd K V (proj1_sig (fst x)) (proj1_sig (snd x)))), (Intersection (VT K V) W1 W2 = Singleton (VT K V) (VO K V)) <-> Bijective ({v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v}) {v : VT K V | In (VT K V) (SumEnsembleVS K V W1 W2) v} (fun (x : ({v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v})) => exist (SumEnsembleVS K V W1 W2) (Vadd K V (proj1_sig (fst x)) (proj1_sig (snd x))) (H x)).
 Proof.
 move=> K V W1 W2 H1 H2 H3.
@@ -2848,6 +2754,100 @@ elim.
 apply (Intersection_intro (VT K V) W1 W2 (VO K V)).
 apply (proj2 (proj2 H1)).
 apply (proj2 (proj2 H2)).
+Qed.
+
+Definition LinearlyIndependentVS (K : Field) (V : VectorSpace K) (T : Type) (F : T -> VT K V) := BasisVS K (SubspaceMakeVS K V (SpanVS K V T F) (SpanSubspaceVS K V T F)) T (fun (t : T) => exist (SpanVS K V T F) (F t) (SpanContainSelfVS K V T F t)).
+
+Lemma IsomorphicSaveLinearlyIndependentVS : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), IsomorphicVS K V1 V2 G -> LinearlyIndependentVS K V1 T F -> LinearlyIndependentVS K V2 T (fun t : T => G (F t)).
+Proof.
+move=> K V1 V2 T F G H1 H2.
+unfold LinearlyIndependentVS.
+suff: (forall (v : VT K V1), (SpanVS K V1 T F) v -> (SpanVS K V2 T (fun t : T => G (F t))) (G v)).
+move=> H3.
+suff: ((fun t : T => exist (SpanVS K V2 T (fun t0 : T => G (F t0))) (G (F t)) (SpanContainSelfVS K V2 T (fun t0 : T => G (F t0)) t)) = (fun t : T => exist (SpanVS K V2 T (fun t0 : T => G (F t0))) (G (proj1_sig (exist (SpanVS K V1 T F) (F t) (SpanContainSelfVS K V1 T F t)))) (H3 (proj1_sig (exist (SpanVS K V1 T F) (F t) (SpanContainSelfVS K V1 T F t))) (proj2_sig (exist (SpanVS K V1 T F) (F t) (SpanContainSelfVS K V1 T F t)))))).
+move=> H4.
+rewrite H4.
+apply (IsomorphicSaveBasisVS K (SubspaceMakeVS K V1 (SpanVS K V1 T F) (SpanSubspaceVS K V1 T F)) (SubspaceMakeVS K V2 (SpanVS K V2 T (fun t : T => G (F t))) (SpanSubspaceVS K V2 T (fun t : T => G (F t)))) T (fun t : T => exist (SpanVS K V1 T F) (F t) (SpanContainSelfVS K V1 T F t)) (fun v0 : {v : VT K V1 | SpanVS K V1 T F v} => exist (SpanVS K V2 T (fun t : T => G (F t))) (G (proj1_sig v0)) (H3 (proj1_sig v0) (proj2_sig v0)))).
+apply conj.
+apply (InjSurjBij {v : VT K V1 | SpanVS K V1 T F v} {v : VT K V2 | SpanVS K V2 T (fun t : T => G (F t)) v}).
+move=> v1 v2 H5.
+apply sig_map.
+apply (BijInj (VT K V1) (VT K V2) G (proj1 H1) (proj1_sig v1) (proj1_sig v2)).
+suff: (G (proj1_sig v1) = proj1_sig (exist (SpanVS K V2 T (fun t : T => G (F t))) (G (proj1_sig v1)) (H3 (proj1_sig v1) (proj2_sig v1)))).
+move=> H6.
+rewrite H6.
+rewrite H5.
+reflexivity.
+reflexivity.
+move=> v.
+elim (BijSurj (VT K V1) (VT K V2) G (proj1 H1) (proj1_sig v)).
+move=> v0 H5.
+suff: (In (VT K V1) (SpanVS K V1 T F) v0).
+move=> H6.
+exists (exist (SpanVS K V1 T F) v0 H6).
+apply sig_map.
+apply H5.
+elim (proj2_sig v).
+move=> x H6.
+exists x.
+apply (BijInj (VT K V1) (VT K V2) G (proj1 H1) v0 (MySumF2 T (exist (Finite T) (fun t : T => proj1_sig x t <> FO K) (proj2_sig x)) (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t)))).
+rewrite H5.
+rewrite H6.
+apply (FiniteSetInduction T (exist (Finite T) (fun t : T => proj1_sig x t <> FO K) (proj2_sig x))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+simpl.
+rewrite - (Vmul_O_l K V1 (VO K V1)).
+rewrite (proj2 (proj2 H1)).
+rewrite (Vmul_O_l K V2 (G (VO K V1))).
+reflexivity.
+move=> B b H7 H8 H9 H10.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+simpl.
+rewrite (proj1 (proj2 H1) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t))) (Vmul K V1 (proj1_sig x b) (F b))).
+rewrite H10.
+rewrite (proj2 (proj2 H1) (proj1_sig x b) (F b)).
+reflexivity.
+apply H9.
+apply H9.
+apply conj.
+move=> v1 v2.
+apply sig_map.
+apply (proj1 (proj2 H1) (proj1_sig v1) (proj1_sig v2)).
+move=> c v.
+apply sig_map.
+apply (proj2 (proj2 H1) c (proj1_sig v)).
+apply H2.
+apply functional_extensionality.
+move=> t.
+apply sig_map.
+reflexivity.
+move=> v.
+elim.
+move=> x H3.
+exists x.
+rewrite H3.
+apply (FiniteSetInduction T (exist (Finite T) (fun t : T => proj1_sig x t <> FO K) (proj2_sig x))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+simpl.
+rewrite - (Vmul_O_l K V1 (VO K V1)).
+rewrite (proj2 (proj2 H1)).
+rewrite (Vmul_O_l K V2 (G (VO K V1))).
+reflexivity.
+move=> B b H4 H5 H6 H7.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+simpl.
+rewrite (proj1 (proj2 H1) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t))) (Vmul K V1 (proj1_sig x b) (F b))).
+rewrite H7.
+rewrite (proj2 (proj2 H1) (proj1_sig x b) (F b)).
+reflexivity.
+apply H6.
+apply H6.
 Qed.
 
 
