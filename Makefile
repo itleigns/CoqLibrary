@@ -1,4 +1,4 @@
-all: KaisekiNyuumonn1.vo Matrix.vo MyField.vo MyVectorSpace.vo MySum.vo NatProperty.vo MappingProperty.vo BasicTool.vo DatatypesExtension.vo EnsemblesExtension.vo
+all: KaisekiNyuumonn1.vo Matrix.vo MyField.vo MyVectorSpace.vo MySum.vo NatProperty.vo MappingProperty.vo BasicTools.vo DatatypesExtension.vo EnsemblesExtension.vo
 
 KaisekiNyuumonn1.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn1.v MyField.vo MyVectorSpace.vo MySum.vo
 	coqc -Q Analysis/KaisekiNyuumonn Analysis.KaisekiNyuumonn Analysis/KaisekiNyuumonn/KaisekiNyuumonn1.v
@@ -12,8 +12,8 @@ MyField.vo: MyAlgebraicStructure/MyField.v NatProperty.vo
 MyVectorSpace.vo: MyAlgebraicStructure/MyVectorSpace.v MyField.vo
 	coqc -Q MyAlgebraicStructure MyAlgebraicStructure MyAlgebraicStructure/MyVectorSpace.v
 
-BasicTool.vo: Tools/BasicTool.v
-	coqc -Q Tools Tools Tools/BasicTool.v
+BasicTools.vo: Tools/BasicTools.v
+	coqc -Q Tools Tools Tools/BasicTools.v
 
 MySum.vo: Tools/MySum.v
 	coqc -Q Tools Tools Tools/MySum.v
