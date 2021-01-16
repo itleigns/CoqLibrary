@@ -1,4 +1,4 @@
-all: KaisekiNyuumonn1.vo Matrix.vo MyField.vo MyVectorSpace.vo MySum.vo NatProperty.vo MappingProperty.vo BasicTool.vo
+all: KaisekiNyuumonn1.vo Matrix.vo MyField.vo MyVectorSpace.vo MySum.vo NatProperty.vo MappingProperty.vo BasicTool.vo DatatypesExtension.vo EnsemblesExtension.vo
 
 KaisekiNyuumonn1.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn1.v MyField.vo MyVectorSpace.vo MySum.vo
 	coqc -Q Analysis/KaisekiNyuumonn Analysis.KaisekiNyuumonn Analysis/KaisekiNyuumonn/KaisekiNyuumonn1.v
@@ -23,6 +23,12 @@ NatProperty.vo: BasicProperty/NatProperty.v
 
 MappingProperty.vo: BasicProperty/MappingProperty.v
 	coqc -Q BasicProperty BasicProperty BasicProperty/MappingProperty.v
+
+DatatypesExtension.vo: LibraryExtension/DatatypesExtension.v
+	coqc -Q LibraryExtension LibraryExtension LibraryExtension/DatatypesExtension.v
+
+Ensembles.vo: LibraryExtension/EnsemblesExtension.v
+	coqc -Q LibraryExtension LibraryExtension LibraryExtension/EnsemblesExtension.v
 
 clean:
 	find . -type f | grep -E "(.*\.vo)|(.*\.glob)|(.*\.aux)" - | xargs rm
