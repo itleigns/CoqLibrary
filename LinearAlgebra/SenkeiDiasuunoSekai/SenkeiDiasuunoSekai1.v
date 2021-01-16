@@ -546,15 +546,18 @@ apply (FiniteSetInduction T (exist (Finite T) (fun t : T => proj1_sig g t <> FO 
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
-rewrite (proj1 (proj2 H1)).
+simpl.
+rewrite - (Vmul_O_l K V1 (VO K V1)).
+rewrite (proj2 (proj2 H1)).
+rewrite (Vmul_O_l K V2 (G (VO K V1))).
 reflexivity.
 move=> B b H3 H4 H5 H6.
 rewrite MySumF2Add.
 rewrite MySumF2Add.
 simpl.
 rewrite H6.
-rewrite (proj1 (proj2 (proj2 H1)) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig g t) (F t))) (Vmul K V1 (proj1_sig g b) (F b))).
-rewrite (proj2 (proj2 (proj2 H1)) (proj1_sig g b) (F b)).
+rewrite (proj1 (proj2 H1) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig g t) (F t))) (Vmul K V1 (proj1_sig g b) (F b))).
+rewrite (proj2 (proj2 H1) (proj1_sig g b) (F b)).
 reflexivity.
 apply H5.
 apply H5.
@@ -599,29 +602,28 @@ apply (FiniteSetInduction T (exist (Finite T) (fun t : T => proj1_sig x t <> FO 
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
-rewrite (proj1 (proj2 H1)).
+simpl.
+rewrite - (Vmul_O_l K V1 (VO K V1)).
+rewrite (proj2 (proj2 H1)).
+rewrite (Vmul_O_l K V2 (G (VO K V1))).
 reflexivity.
 move=> B b H7 H8 H9 H10.
 rewrite MySumF2Add.
 rewrite MySumF2Add.
 simpl.
-rewrite (proj1 (proj2 (proj2 H1)) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t))) (Vmul K V1 (proj1_sig x b) (F b))).
+rewrite (proj1 (proj2 H1) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t))) (Vmul K V1 (proj1_sig x b) (F b))).
 rewrite H10.
-rewrite (proj2 (proj2 (proj2 H1)) (proj1_sig x b) (F b)).
+rewrite (proj2 (proj2 H1) (proj1_sig x b) (F b)).
 reflexivity.
 apply H9.
 apply H9.
 apply conj.
-apply sig_map.
-simpl.
-apply (proj1 (proj2 H1)).
-apply conj.
 move=> v1 v2.
 apply sig_map.
-apply (proj1 (proj2 (proj2 H1)) (proj1_sig v1) (proj1_sig v2)).
+apply (proj1 (proj2 H1) (proj1_sig v1) (proj1_sig v2)).
 move=> c v.
 apply sig_map.
-apply (proj2 (proj2 (proj2 H1)) c (proj1_sig v)).
+apply (proj2 (proj2 H1) c (proj1_sig v)).
 apply H2.
 apply functional_extensionality.
 move=> t.
@@ -636,14 +638,18 @@ apply (FiniteSetInduction T (exist (Finite T) (fun t : T => proj1_sig x t <> FO 
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
-apply (proj1 (proj2 H1)).
+simpl.
+rewrite - (Vmul_O_l K V1 (VO K V1)).
+rewrite (proj2 (proj2 H1)).
+rewrite (Vmul_O_l K V2 (G (VO K V1))).
+reflexivity.
 move=> B b H4 H5 H6 H7.
 rewrite MySumF2Add.
 rewrite MySumF2Add.
 simpl.
-rewrite (proj1 (proj2 (proj2 H1)) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t))) (Vmul K V1 (proj1_sig x b) (F b))).
+rewrite (proj1 (proj2 H1) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t))) (Vmul K V1 (proj1_sig x b) (F b))).
 rewrite H7.
-rewrite (proj2 (proj2 (proj2 H1)) (proj1_sig x b) (F b)).
+rewrite (proj2 (proj2 H1) (proj1_sig x b) (F b)).
 reflexivity.
 apply H6.
 apply H6.
@@ -667,14 +673,18 @@ apply (FiniteSetInduction T (exist (Finite T) (fun t : T => proj1_sig x t <> FO 
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
-apply (proj1 (proj2 H1)).
+simpl.
+rewrite - (Vmul_O_l K V1 (VO K V1)).
+rewrite (proj2 (proj2 H1)).
+rewrite (Vmul_O_l K V2 (G (VO K V1))).
+reflexivity.
 move=> B b H6 H7 H8 H9.
 rewrite MySumF2Add.
 rewrite MySumF2Add.
 simpl.
-rewrite (proj1 (proj2 (proj2 H1)) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t))) (Vmul K V1 (proj1_sig x b) (F b))).
+rewrite (proj1 (proj2 H1) (MySumF2 T B (VSPCM K V1) (fun t : T => Vmul K V1 (proj1_sig x t) (F t))) (Vmul K V1 (proj1_sig x b) (F b))).
 rewrite H9.
-rewrite (proj2 (proj2 (proj2 H1)) (proj1_sig x b) (F b)).
+rewrite (proj2 (proj2 H1) (proj1_sig x b) (F b)).
 reflexivity.
 apply H8.
 apply H8.
@@ -2740,6 +2750,106 @@ apply (IntersectionT_intro (VT K V) T W (VO K V)).
 move=> t.
 apply (proj2 (proj2 (H1 t))).
 Qed.
+
+Lemma Proposition_4_9 : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)), SubspaceVS K V W1 -> SubspaceVS K V W2 -> forall (H : forall (x : ({v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v})), In (VT K V) (SumEnsembleVS K V W1 W2) (Vadd K V (proj1_sig (fst x)) (proj1_sig (snd x)))), (Intersection (VT K V) W1 W2 = Singleton (VT K V) (VO K V)) <-> Bijective ({v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v}) {v : VT K V | In (VT K V) (SumEnsembleVS K V W1 W2) v} (fun (x : ({v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v})) => exist (SumEnsembleVS K V W1 W2) (Vadd K V (proj1_sig (fst x)) (proj1_sig (snd x))) (H x)).
+Proof.
+move=> K V W1 W2 H1 H2 H3.
+apply conj.
+move=> H4.
+apply (InjSurjBij ({v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v}) {v : VT K V | In (VT K V) (SumEnsembleVS K V W1 W2) v}).
+move=> x1 x2 H5.
+suff: (Vadd K V (proj1_sig (fst x1)) (Vopp K V (proj1_sig (fst x2))) = Vadd K V (proj1_sig (snd x2)) (Vopp K V (proj1_sig (snd x1)))).
+move=> H6.
+suff: (Vadd K V (proj1_sig (fst x1)) (Vopp K V (proj1_sig (fst x2))) = VO K V).
+move=> H7.
+apply injective_projections.
+apply sig_map.
+apply (Vminus_diag_uniq K V).
+apply H7.
+apply sig_map.
+apply (Vminus_diag_uniq_sym K V).
+rewrite - H6.
+apply H7.
+suff: (In (VT K V) (Singleton (VT K V) (VO K V)) (Vadd K V (proj1_sig (fst x1)) (Vopp K V (proj1_sig (fst x2))))).
+elim.
+reflexivity.
+rewrite - H4.
+apply (Intersection_intro (VT K V) W1 W2 (Vadd K V (proj1_sig (fst x1)) (Vopp K V (proj1_sig (fst x2))))).
+apply (proj1 H1 (proj1_sig (fst x1)) (Vopp K V (proj1_sig (fst x2)))).
+apply (proj2_sig (fst x1)).
+apply (SubspaceMakeVSVoppSub K V W1 H1 (proj1_sig (fst x2)) (proj2_sig (fst x2))).
+rewrite H6.
+apply (proj1 H2 (proj1_sig (snd x2)) (Vopp K V (proj1_sig (snd x1)))).
+apply (proj2_sig (snd x2)).
+apply (SubspaceMakeVSVoppSub K V W2 H2 (proj1_sig (snd x1)) (proj2_sig (snd x1))).
+apply (Vadd_eq_reg_r K V (proj1_sig (fst x2))).
+rewrite (Vadd_assoc K V (proj1_sig (fst x1)) (Vopp K V (proj1_sig (fst x2))) (proj1_sig (fst x2))).
+rewrite (Vadd_opp_l K V (proj1_sig (fst x2))).
+rewrite (Vadd_O_r K V (proj1_sig (fst x1))).
+rewrite (Vadd_comm K V (Vadd K V (proj1_sig (snd x2)) (Vopp K V (proj1_sig (snd x1)))) (proj1_sig (fst x2))).
+rewrite - (Vadd_assoc K V (proj1_sig (fst x2)) (proj1_sig (snd x2)) (Vopp K V (proj1_sig (snd x1)))).
+apply (Vadd_eq_reg_r K V (proj1_sig (snd x1))).
+rewrite (Vadd_assoc K V (Vadd K V (proj1_sig (fst x2)) (proj1_sig (snd x2))) (Vopp K V (proj1_sig (snd x1))) (proj1_sig (snd x1))).
+rewrite (Vadd_opp_l K V (proj1_sig (snd x1))).
+rewrite (Vadd_O_r K V).
+suff: (Vadd K V (proj1_sig (fst x1)) (proj1_sig (snd x1)) = proj1_sig (exist (SumEnsembleVS K V W1 W2) (Vadd K V (proj1_sig (fst x1)) (proj1_sig (snd x1))) (H3 x1))).
+move=> H6.
+rewrite H6.
+rewrite H5.
+reflexivity.
+reflexivity.
+move=> y.
+suff: (exists (y1 y2 : VT K V), In (VT K V) W1 y1 /\ In (VT K V) W2 y2 /\ Vadd K V y1 y2 = proj1_sig y).
+elim.
+move=> y1.
+elim.
+move=> y2 H5.
+exists (exist W1 y1 (proj1 H5), exist W2 y2 (proj1 (proj2 H5))).
+apply sig_map.
+apply (proj2 (proj2 H5)).
+elim (proj2_sig y).
+move=> y1 y2 H5 H6.
+exists y1.
+exists y2.
+apply conj.
+apply H5.
+apply conj.
+apply H6.
+reflexivity.
+move=> H4.
+apply Extensionality_Ensembles.
+apply conj.
+move=> x.
+elim.
+move=> x0 H5 H6.
+suff: (x0 = (VO K V)).
+move=> H7.
+rewrite H7.
+apply (In_singleton (VT K V) (VO K V)).
+suff: (In (VT K V) W2 (Vopp K V x0)).
+move=> H7.
+suff: ((exist W1 (VO K V) (proj2 (proj2 H1)), exist W2 (VO K V) (proj2 (proj2 H2))) = (exist W1 x0 H5, exist W2 (Vopp K V x0) H7)).
+move=> H8.
+suff: (VO K V = proj1_sig (fst (exist W1 (VO K V) (proj2 (proj2 H1)), exist W2 (VO K V) (proj2 (proj2 H2))))).
+move=> H9.
+rewrite H9.
+rewrite H8.
+reflexivity.
+reflexivity.
+apply (BijInj ({v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v}) {v : VT K V | In (VT K V) (SumEnsembleVS K V W1 W2) v} (fun (x : {v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v}) => exist (SumEnsembleVS K V W1 W2) (Vadd K V (proj1_sig (fst x)) (proj1_sig (snd x))) (H3 x)) H4).
+apply sig_map.
+simpl.
+rewrite (Vadd_O_r K V (VO K V)).
+rewrite (Vadd_opp_r K V x0).
+reflexivity.
+apply (SubspaceMakeVSVoppSub K V W2 H2 x0 H6).
+move=> x.
+elim.
+apply (Intersection_intro (VT K V) W1 W2 (VO K V)).
+apply (proj2 (proj2 H1)).
+apply (proj2 (proj2 H2)).
+Qed.
+
 
 
 
