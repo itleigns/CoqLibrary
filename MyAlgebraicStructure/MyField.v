@@ -27,7 +27,8 @@ Fadd_O_l : forall x : FT, (Fadd FO x) = x;
 Fmul_I_l : forall x : FT, (Fmul FI x) = x;
 Fadd_opp_r : forall x : FT, (Fadd x (Fopp x)) = FO;
 Finv_l : forall x : FT, x <> FO -> (Fmul (Finv x) x) = FI;
-Fmul_add_distr_l : forall (x y z : FT), (Fmul x (Fadd y z)) = (Fadd (Fmul x y) (Fmul x z))
+Fmul_add_distr_l : forall (x y z : FT), (Fmul x (Fadd y z)) = (Fadd (Fmul x y) (Fmul x z));
+FI_neq_FO : FI <> FO
 }.
 
 Lemma Fadd_O_r : forall (f : Field) (x : FT f), (Fadd f x (FO f)) = x.
