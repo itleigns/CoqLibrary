@@ -7198,7 +7198,7 @@ Definition Rnopp (N : nat) := fun (a : (Rn N)) => (fun (x : {n : nat| (n < N)%na
 
 Definition Rnminus (N : nat) := fun (a b : (Rn N)) => (Rnplus N a (Rnopp N b)).
 
-Definition Rfield := mkField R 0 1 Rplus Rmult Ropp Rinv Rplus_assoc Rmult_assoc Rplus_comm Rmult_comm Rplus_0_l Rmult_1_l Rplus_opp_r Rinv_l Rmult_plus_distr_l.
+Definition Rfield := mkField R 0 1 Rplus Rmult Ropp Rinv Rplus_assoc Rmult_assoc Rplus_comm Rmult_comm Rplus_0_l Rmult_1_l Rplus_opp_r Rinv_l Rmult_plus_distr_l R1_neq_R0.
 
 Definition RnO (N : nat) := (fun (x : {n : nat| (n < N)%nat }) => 0).
 
@@ -9754,10 +9754,6 @@ apply Rplus_eq_compat_l.
 apply Rplus_comm.
 Qed.
 
-Definition Cfield := mkField C CO CI Cplus Cmult Copp Cinv Cplus_assoc Cmult_assoc Cplus_comm Cmult_comm Cplus_0_l Cmult_1_l Cplus_opp_r Cinv_l Cmult_plus_distr_l.
-
-Definition Conjugate (c : C) := Cmake (c CRe) (- c CIm).
-
 Lemma CRe_neq_CIm : CRe <> CIm.
 Proof.
 move=> H1.
@@ -9775,6 +9771,30 @@ apply CRe_neq_CIm.
 rewrite H1.
 reflexivity.
 Qed.
+
+Lemma CI_neq_CO : CI <> CO.
+Proof.
+move=> H1.
+apply R1_neq_R0.
+suff: (1 = CI CRe).
+move=> H2.
+rewrite H2.
+rewrite H1.
+reflexivity.
+unfold CI.
+unfold Cmake.
+elim (CReorCIm CRe).
+move=> H2.
+reflexivity.
+move=> H2.
+apply False_ind.
+apply CRe_neq_CIm.
+apply H2.
+Qed.
+
+Definition Cfield := mkField C CO CI Cplus Cmult Copp Cinv Cplus_assoc Cmult_assoc Cplus_comm Cmult_comm Cplus_0_l Cmult_1_l Cplus_opp_r Cinv_l Cmult_plus_distr_l CI_neq_CO.
+
+Definition Conjugate (c : C) := Cmake (c CRe) (- c CIm).
 
 Lemma ConjugateRe : forall (c : C), (Conjugate c CRe) = (c CRe).
 Proof.
