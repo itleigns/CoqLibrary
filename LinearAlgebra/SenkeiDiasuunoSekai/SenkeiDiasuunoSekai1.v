@@ -2099,6 +2099,53 @@ Qed.
 Inductive SumTEnsembleVS (K : Field) (V : VectorSpace K) (T : Type) (W : T -> Ensemble (VT K V)) : Ensemble (VT K V) := 
   | SumTEnsembleVS_intro : forall (a : T -> VT K V) (H : Finite T (fun (t : T) => a t <> VO K V)), (forall (t : T), In (VT K V) (W t) (a t)) -> In (VT K V) (SumTEnsembleVS K V T W) (MySumF2 T (exist (Finite T) (fun (t : T) => a t <> VO K V) H) (VSPCM K V) a).
 
+Lemma FiniteSumTEnsembleVS : forall (K : Field) (V : VectorSpace K) (N : nat) (W : {n : nat | n < N} -> Ensemble (VT K V)), SumTEnsembleVS K V {n : nat | n < N} W = (fun (t : VT K V) => exists (a : {n : nat | n < N} -> VT K V), (forall (m : {n : nat | n < N}), In (VT K V) (W m) (a m)) /\ (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) a = t)).
+Proof.
+move=> K V N W.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
+elim.
+move=> a H1 H2.
+exists a.
+apply conj.
+apply H2.
+rewrite (MySumF2Included {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => a t <> VO K V) H1) (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) a).
+rewrite (MySumF2O {n : nat | n < N} (FiniteIntersection {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (Complement {n : nat | n < N} (proj1_sig (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => a t <> VO K V) H1)))) (VSPCM K V) a).
+apply (Vadd_O_r K V).
+move=> u.
+elim.
+move=> m H3 H4.
+apply NNPP.
+apply H3.
+move=> m H3.
+apply (Full_intro {n : nat | n < N} m).
+move=> v.
+elim.
+move=> a H1.
+rewrite - (proj2 H1).
+suff: (Finite {n : nat | n < N} (fun t : {n : nat | n < N} => a t <> VO K V)).
+move=> H2.
+suff: ((MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) a) = (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => a t <> VO K V) H2) (VSPCM K V) a)).
+move=> H3.
+rewrite H3.
+apply (SumTEnsembleVS_intro K V {n : nat | n < N} W a H2).
+apply (proj1 H1).
+rewrite (MySumF2Included {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => a t <> VO K V) H2) (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) a).
+rewrite (MySumF2O {n : nat | n < N} (FiniteIntersection {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (Complement {n : nat | n < N} (proj1_sig (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => a t <> VO K V) H2)))) (VSPCM K V) a).
+apply (Vadd_O_r K V).
+move=> u.
+elim.
+move=> m H3 H4.
+apply NNPP.
+apply H3.
+move=> m H3.
+apply (Full_intro {n : nat | n < N} m).
+apply (Finite_downward_closed {n : nat | n < N} (Full_set {n : nat | n < N}) (CountFinite N)).
+move=> t H2.
+apply (Full_intro {n : nat | n < N} t).
+Qed.
+
 Lemma SumTSubspaceVS : forall (K : Field) (V : VectorSpace K) (T : Type) (W : T -> Ensemble (VT K V)), (forall (t : T), SubspaceVS K V (W t)) -> SubspaceVS K V (SumTEnsembleVS K V T W).
 Proof.
 move=> K V T W H1.
@@ -3995,6 +4042,199 @@ elim (proj2_sig t).
 apply (IntersectionSubspaceVS K V W1 W2 H1 H2).
 Qed.
 
+Lemma Formula_P23 : forall (K : Field) (V : VectorSpace K) (N : nat) (F : {n : nat | n < N} -> VT K V) (H : forall (t : (forall (m : {n : nat | n < N}), {v : VT K V | exists (f : FT K), v = Vmul K V f (F m)})), In (VT K V) (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun (m : {n : nat | n < N}) => proj1_sig (t m)))), BasisVS K V {n : nat | n < N} F <-> ((Bijective (DirectProdVST K {n : nat | n < N} (fun (m : {n : nat | n < N}) => SubspaceMakeVS K V (fun (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m)) (SingleSubspaceVS K V (F m)))) {w : VT K V | SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m)) w} (fun (t : forall (m : {n : nat | n < N}), {v : VT K V | exists (f : FT K), v = Vmul K V f (F m)}) => exist (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun (m : {n : nat | n < N}) => proj1_sig (t m))) (H t))) /\ (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m)) = Full_set (VT K V)) /\ forall (m : {n : nat | n < N}), (F m) <> VO K V).
+Proof.
+move=> K V N F H1.
+apply conj.
+move=> H2.
+suff: (forall m : {n : nat | n < N}, F m <> VO K V).
+move=> H3.
+apply conj.
+apply InjSurjBij.
+move=> x1 x2 H4.
+suff: (exists (a : {n : nat | n < N} -> FT K), (forall (m : {n : nat | n < N}), proj1_sig (x1 m) = Vmul K V (a m) (F m)) /\ forall (m : {n : nat | n < N}), proj1_sig (x2 m) = Vmul K V (a m) (F m)).
+elim.
+move=> a H5.
+apply functional_extensionality_dep.
+move=> m.
+apply sig_map.
+rewrite (proj2 H5 m).
+apply (proj1 H5 m).
+suff: (forall (m : {n : nat | n < N}), {f : FT K | proj1_sig (x1 m) = Vmul K V f (F m)}).
+move=> H5.
+exists (fun (m : {n : nat | n < N}) => proj1_sig (H5 m)).
+apply conj.
+move=> m.
+apply (proj2_sig (H5 m)).
+suff: (forall (m : {n : nat | n < N}), {f : FT K | proj1_sig (x2 m) = Vmul K V f (F m)}).
+move=> H6.
+suff: ((fun (m : {n : nat | n < N}) => (proj1_sig (H5 m))) = (fun (m : {n : nat | n < N}) => (proj1_sig (H6 m)))).
+move=> H7 m.
+suff: ((proj1_sig (H5 m)) = let temp := (fun m : {n : nat | n < N} => proj1_sig (H5 m)) in temp m).
+move=> H8.
+rewrite H8.
+rewrite H7.
+apply (proj2_sig (H6 m)).
+reflexivity.
+apply (proj2 (proj2 (unique_existence (fun (a : Count N -> FT K) => MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun m : {n : nat | n < N} => proj1_sig (x1 m)) = MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM K V) (fun n : Count N => Vmul K V (a n) (F n)))) (proj1 (FiniteBasisVS K V N F) H2 (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun m : {n : nat | n < N} => proj1_sig (x1 m)))))).
+suff: ((fun m : {n : nat | n < N} => proj1_sig (x1 m)) = (fun n : Count N => Vmul K V (proj1_sig (H5 n)) (F n))).
+move=> H7.
+rewrite H7.
+reflexivity.
+apply functional_extensionality.
+move=> m.
+apply (proj2_sig (H5 m)).
+suff: (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun m : {n : nat | n < N} => proj1_sig (x1 m)) = proj1_sig (exist (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun m : {n : nat | n < N} => proj1_sig (x1 m))) (H1 x1))).
+move=> H7.
+rewrite H7.
+rewrite H4.
+simpl.
+suff: ((fun m : {n : nat | n < N} => proj1_sig (x2 m)) = (fun n : Count N => Vmul K V (proj1_sig (H6 n)) (F n))).
+move=> H8.
+rewrite H8.
+reflexivity.
+apply functional_extensionality.
+move=> m.
+apply (proj2_sig (H6 m)).
+reflexivity.
+move=> m.
+apply (constructive_definite_description (fun (f : FT K) => proj1_sig (x2 m) = Vmul K V f (F m))).
+apply (proj1 (unique_existence (fun (f : FT K) => proj1_sig (x2 m) = Vmul K V f (F m)))).
+apply conj.
+apply (proj2_sig (x2 m)).
+move=> f1 f2 H6 H7.
+apply (Vmul_eq_reg_r K V (F m) f1 f2).
+rewrite - H6.
+apply H7.
+apply (H3 m).
+move=> m.
+apply (constructive_definite_description (fun (f : FT K) => proj1_sig (x1 m) = Vmul K V f (F m))).
+apply (proj1 (unique_existence (fun (f : FT K) => proj1_sig (x1 m) = Vmul K V f (F m)))).
+apply conj.
+apply (proj2_sig (x1 m)).
+move=> f1 f2 H5 H6.
+apply (Vmul_eq_reg_r K V (F m) f1 f2).
+rewrite - H5.
+apply H6.
+apply (H3 m).
+move=> v.
+suff: (In (VT K V) (fun t : VT K V => exists a : {n : nat | n < N} -> VT K V, (forall m : {n : nat | n < N}, In (VT K V) (fun v : VT K V => exists f : FT K, v = Vmul K V f (F m)) (a m)) /\ MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) a = t) (proj1_sig v)).
+elim.
+move=> a H4.
+exists (fun (m : {n : nat | n < N}) => exist (fun v : VT K V => exists f : FT K, v = Vmul K V f (F m)) (a m) (proj1 H4 m)).
+apply sig_map.
+apply (proj2 H4).
+rewrite - (FiniteSumTEnsembleVS K V N (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))).
+apply (proj2_sig v).
+apply conj.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v H4.
+apply (Full_intro (VT K V) v).
+move=> v H4.
+elim (proj1 (proj2 (unique_existence (fun (a : Count N -> FT K) => v = MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM K V) (fun n : Count N => Vmul K V (a n) (F n)))) (proj1 (FiniteBasisVS K V N F) H2 v))).
+move=> a H5.
+rewrite H5.
+rewrite (FiniteSumTEnsembleVS K V N (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))).
+exists (fun n : Count N => Vmul K V (a n) (F n)).
+apply conj.
+move=> m.
+exists (a m).
+reflexivity.
+reflexivity.
+apply H3.
+move=> m H3.
+apply (FI_neq_FO K).
+suff: ((fun (k : {n : nat | n < N}) => match excluded_middle_informative (k = m) with | left _ => FI K | right _ => FO K end) = (fun (k : {n : nat | n < N}) => FO K)).
+move=> H5.
+suff: (FI K = let temp := (fun (k : {n : nat | n < N}) => match excluded_middle_informative (k = m) with | left _ => FI K | right _ => FO K end) in temp m).
+move=> H6.
+rewrite H6.
+rewrite H5.
+reflexivity.
+simpl.
+elim (excluded_middle_informative (m = m)).
+move=> H6.
+reflexivity.
+move=> H6.
+apply False_ind.
+apply H6.
+reflexivity.
+apply (proj2 (proj2 (unique_existence (fun (t : {n : nat | n < N} -> FT K) => VO K V = MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun m : {n : nat | n < N} => Vmul K V (t m) (F m)))) (proj1 (FiniteBasisVS K V N F) H2 (VO K V))) ).
+rewrite MySumF2O.
+reflexivity.
+move=> u H4.
+elim (excluded_middle_informative (u = m)).
+move=> H5.
+rewrite H5.
+rewrite H3.
+apply (Vmul_O_r K V (FI K)).
+move=> H5.
+apply (Vmul_O_l K V (F u)).
+rewrite MySumF2O.
+reflexivity.
+move=> u H4.
+apply (Vmul_O_l K V (F u)).
+move=> H2.
+apply (proj2 (FiniteBasisVS K V N F)).
+move=> v.
+apply (proj1 (unique_existence (fun (a : {n : nat | n < N} -> FT K) => v = MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM K V) (fun n : Count N => Vmul K V (a n) (F n))))).
+apply conj.
+suff: (In (VT K V) (fun t : VT K V => exists a : {n : nat | n < N} -> VT K V, (forall m : {n : nat | n < N}, In (VT K V) (fun v : VT K V => exists f : FT K, v = Vmul K V f (F m)) (a m)) /\ MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) a = t) v).
+elim.
+move=> a H3.
+suff: (forall (m : {n : nat | n < N}), {f : FT K | a m = Vmul K V f (F m)}).
+move=> H4.
+exists (fun (m : {n : nat | n < N}) => proj1_sig (H4 m)).
+rewrite - (proj2 H3).
+suff: (a = (fun n : Count N => Vmul K V (proj1_sig (H4 n)) (F n))).
+move=> H5.
+rewrite {1} H5.
+reflexivity.
+apply functional_extensionality.
+move=> m.
+apply (proj2_sig (H4 m)).
+move=> m.
+apply (constructive_definite_description (fun (f : FT K) => a m = Vmul K V f (F m))).
+apply (proj1 (unique_existence (fun (f : FT K) => a m = Vmul K V f (F m)))).
+apply conj.
+elim (proj1 H3 m).
+move=> f H4.
+exists f.
+apply H4.
+move=> f1 f2 H4 H5.
+apply (Vmul_eq_reg_r K V (F m) f1 f2).
+rewrite - H4.
+apply H5.
+apply (proj2 (proj2 H2) m).
+rewrite - (FiniteSumTEnsembleVS K V N (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))).
+rewrite (proj1 (proj2 H2)).
+apply (Full_intro (VT K V) v).
+suff: (forall (a : {n : nat | n < N} -> FT K) (m : {n : nat | n < N}), In (VT K V) (fun (v : VT K V) => exists f : FT K, v = Vmul K V f (F m)) (Vmul K V (a m) (F m))).
+move=> H3 a1 a2 H4 H5.
+suff: ((fun n : Count N => exist (fun v : VT K V => exists f : FT K, v = Vmul K V f (F n)) (Vmul K V (a1 n) (F n)) (H3 a1 n)) = (fun n : Count N => exist (fun v : VT K V => exists f : FT K, v = Vmul K V f (F n)) (Vmul K V (a2 n) (F n)) (H3 a2 n))).
+move=> H6.
+apply functional_extensionality.
+move=> m.
+apply (Vmul_eq_reg_r K V (F m) (a1 m) (a2 m)).
+suff: (Vmul K V (a1 m) (F m) = let temp := (fun n : Count N => exist (fun v : VT K V => exists f : FT K, v = Vmul K V f (F n)) (Vmul K V (a1 n) (F n)) (H3 a1 n)) in proj1_sig (temp m)).
+move=> H7.
+rewrite H7.
+rewrite H6.
+reflexivity.
+reflexivity.
+apply (proj2 (proj2 H2) m).
+apply (BijInj (DirectProdVST K {n : nat | n < N} (fun m : {n : nat | n < N} => SubspaceMakeVS K V (fun v : VT K V => exists f : FT K, v = Vmul K V f (F m)) (SingleSubspaceVS K V (F m)))) {w : VT K V | SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m)) w} (fun t : forall m : {n : nat | n < N}, {v : VT K V | exists f : FT K, v = Vmul K V f (F m)} => exist (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun m : {n : nat | n < N} => proj1_sig (t m))) (H1 t))).
+apply (proj1 H2).
+apply sig_map.
+simpl.
+rewrite - H4.
+apply H5.
+move=> a m.
+exists (a m).
+reflexivity.
+Qed.
+
 Definition LinearlyIndependentVS (K : Field) (V : VectorSpace K) (T : Type) (F : T -> VT K V) := BasisVS K (SubspaceMakeVS K V (SpanVS K V T F) (SpanSubspaceVS K V T F)) T (fun (t : T) => exist (SpanVS K V T F) (F t) (SpanContainSelfVS K V T F t)).
 
 Lemma IsomorphicSaveLinearlyIndependentVS : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), IsomorphicVS K V1 V2 G -> LinearlyIndependentVS K V1 T F -> LinearlyIndependentVS K V2 T (fun t : T => G (F t)).
@@ -4088,6 +4328,9 @@ reflexivity.
 apply H6.
 apply H6.
 Qed.
+
+Print SumTEnsembleVS.
+Print SpanVS.
 
 End Senkeidaisuunosekai1.
 
