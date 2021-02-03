@@ -2044,6 +2044,13 @@ rewrite (Vmul_I_l K V x).
 reflexivity.
 Qed.
 
+Lemma Formula_P18_1_exists : forall (K : Field) (V : VectorSpace K) (x : VT K V), exists (H : SubspaceVS K V (fun (v0 : VT K V) => exists (f : FT K), v0 = Vmul K V f x)), x <> VO K V -> BasisSubspaceVS K V (fun (v0 : VT K V) => exists (f : FT K), v0 = Vmul K V f x) H {n : nat | n < S O} (fun (m : {n : nat | n < S O}) => x).
+Proof.
+move=> K V x.
+exists (SingleSubspaceVS K V x).
+apply (Formula_P18_1 K V x (SingleSubspaceVS K V x)).
+Qed.
+
 Lemma Formula_P18_2 : forall (K : Field) (V : VectorSpace K) (x : VT K V), x = VO K V -> (fun (v0 : VT K V) => exists (f : FT K), v0 = Vmul K V f x) = (Singleton (VT K V) (VO K V)).
 Proof.
 move=> K V x H1.
@@ -3198,6 +3205,17 @@ apply (proj2 (proj2 H1)).
 apply (proj2 (proj2 H2)).
 Qed.
 
+Lemma Proposition_4_9_exists : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)), SubspaceVS K V W1 -> SubspaceVS K V W2 -> exists (H : forall (x : ({v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v})), In (VT K V) (SumEnsembleVS K V W1 W2) (Vadd K V (proj1_sig (fst x)) (proj1_sig (snd x)))), (Intersection (VT K V) W1 W2 = Singleton (VT K V) (VO K V)) <-> Bijective ({v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v}) {v : VT K V | In (VT K V) (SumEnsembleVS K V W1 W2) v} (fun (x : ({v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v})) => exist (SumEnsembleVS K V W1 W2) (Vadd K V (proj1_sig (fst x)) (proj1_sig (snd x))) (H x)).
+Proof.
+move=> K V W1 W2 H1 H2.
+suff: (forall (x : {v : VT K V | In (VT K V) W1 v} * {v : VT K V | In (VT K V) W2 v}), In (VT K V) (SumEnsembleVS K V W1 W2) (Vadd K V (proj1_sig (fst x)) (proj1_sig (snd x)))).
+move=> H3.
+exists H3.
+apply (Proposition_4_9 K V W1 W2 H1 H2 H3).
+move=> x.
+apply (SumEnsembleVS_intro K V W1 W2 (proj1_sig (fst x)) (proj1_sig (snd x)) (proj2_sig (fst x)) (proj2_sig (snd x))).
+Qed.
+
 Lemma Corollary_4_10 : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2) (H3 : SubspaceVS K V (Intersection (VT K V) W1 W2)) (H4 : SubspaceVS K V (SumEnsembleVS K V W1 W2)) (T1 T2 T3 : Type) (x : T1 -> VT K V) (y : T2 -> VT K V) (z : T3 -> VT K V), BasisSubspaceVS K V (Intersection (VT K V) W1 W2) H3 T1 x -> BasisSubspaceVS K V W1 H1 (T1 + T2) (fun (t : T1 + T2) => match t with | inl t0 => x t0 | inr t0 => y t0 end) -> BasisSubspaceVS K V W2 H2 (T1 + T3) (fun (t : T1 + T3) => match t with | inl t0 => x t0 | inr t0 => z t0 end) -> BasisSubspaceVS K V (SumEnsembleVS K V W1 W2) H4 (T1 + T2 + T3) (fun (t : T1 + T2 + T3) => match t with | inl t0 => (match t0 with | inl t1 => x t1 | inr t1 => y t1 end) | inr t0 => z t0 end).
 Proof.
 move=> K V W1 W2 H1 H2 H3 H4 T1 T2 T3 x y z H5 H6 H7.
@@ -3926,6 +3944,20 @@ apply H12.
 apply SpanSubspaceVS.
 Qed.
 
+Lemma Corollary_4_10_exists : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2), exists (H3 : SubspaceVS K V (Intersection (VT K V) W1 W2)) (H4 : SubspaceVS K V (SumEnsembleVS K V W1 W2)), forall (T1 T2 T3 : Type) (x : T1 -> VT K V) (y : T2 -> VT K V) (z : T3 -> VT K V), BasisSubspaceVS K V (Intersection (VT K V) W1 W2) H3 T1 x -> BasisSubspaceVS K V W1 H1 (T1 + T2) (fun (t : T1 + T2) => match t with | inl t0 => x t0 | inr t0 => y t0 end) -> BasisSubspaceVS K V W2 H2 (T1 + T3) (fun (t : T1 + T3) => match t with | inl t0 => x t0 | inr t0 => z t0 end) -> BasisSubspaceVS K V (SumEnsembleVS K V W1 W2) H4 (T1 + T2 + T3) (fun (t : T1 + T2 + T3) => match t with | inl t0 => (match t0 with | inl t1 => x t1 | inr t1 => y t1 end) | inr t0 => z t0 end).
+Proof.
+move=> K V W1 W2 H1 H2.
+suff: (SubspaceVS K V (Intersection (VT K V) W1 W2)).
+move=> H3.
+suff: (SubspaceVS K V (SumEnsembleVS K V W1 W2)).
+move=> H4.
+exists H3.
+exists H4.
+apply (Corollary_4_10 K V W1 W2 H1 H2 H3 H4).
+apply (SumSubspaceVS K V W1 W2 H1 H2).
+apply (IntersectionSubspaceVS K V W1 W2 H1 H2).
+Qed.
+
 Lemma SumEnsembleBasisVS : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2) (H3 : SubspaceVS K V (SumEnsembleVS K V W1 W2)) (T1 T2 : Type) (x : T1 -> VT K V) (y : T2 -> VT K V), (Intersection (VT K V) W1 W2) = (Singleton (VT K V) (VO K V)) -> BasisSubspaceVS K V W1 H1 T1 x -> BasisSubspaceVS K V W2 H2 T2 y -> BasisSubspaceVS K V (SumEnsembleVS K V W1 W2) H3 (T1 + T2) (fun (t : T1 + T2) => match t with | inl t0 => x t0 | inr t0 => y t0 end).
 Proof.
 move=> K V W1 W2 H1 H2 H3 T1 T2 x y H4 H5 H6.
@@ -4185,6 +4217,16 @@ elim (proj2_sig t).
 apply (IntersectionSubspaceVS K V W1 W2 H1 H2).
 Qed.
 
+Lemma SumEnsembleBasisVS_exists : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2), exists (H3 : SubspaceVS K V (SumEnsembleVS K V W1 W2)), forall (T1 T2 : Type) (x : T1 -> VT K V) (y : T2 -> VT K V), (Intersection (VT K V) W1 W2) = (Singleton (VT K V) (VO K V)) -> BasisSubspaceVS K V W1 H1 T1 x -> BasisSubspaceVS K V W2 H2 T2 y -> BasisSubspaceVS K V (SumEnsembleVS K V W1 W2) H3 (T1 + T2) (fun (t : T1 + T2) => match t with | inl t0 => x t0 | inr t0 => y t0 end).
+Proof.
+move=> K V W1 W2 H1 H2.
+suff: (SubspaceVS K V (SumEnsembleVS K V W1 W2)).
+move=> H3.
+exists H3.
+apply (SumEnsembleBasisVS K V W1 W2 H1 H2 H3).
+apply (SumSubspaceVS K V W1 W2 H1 H2).
+Qed.
+
 Lemma Formula_P23 : forall (K : Field) (V : VectorSpace K) (N : nat) (F : {n : nat | n < N} -> VT K V) (H : forall (t : (forall (m : {n : nat | n < N}), {v : VT K V | exists (f : FT K), v = Vmul K V f (F m)})), In (VT K V) (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun (m : {n : nat | n < N}) => proj1_sig (t m)))), BasisVS K V {n : nat | n < N} F <-> ((Bijective (DirectProdVST K {n : nat | n < N} (fun (m : {n : nat | n < N}) => SubspaceMakeVS K V (fun (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m)) (SingleSubspaceVS K V (F m)))) {w : VT K V | SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m)) w} (fun (t : forall (m : {n : nat | n < N}), {v : VT K V | exists (f : FT K), v = Vmul K V f (F m)}) => exist (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun (m : {n : nat | n < N}) => proj1_sig (t m))) (H t))) /\ (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m)) = Full_set (VT K V)) /\ forall (m : {n : nat | n < N}), (F m) <> VO K V).
 Proof.
 move=> K V N F H1.
@@ -4375,6 +4417,22 @@ rewrite - H4.
 apply H5.
 move=> a m.
 exists (a m).
+reflexivity.
+Qed.
+
+Lemma Formula_P23_exists : forall (K : Field) (V : VectorSpace K) (N : nat) (F : {n : nat | n < N} -> VT K V), exists (H : forall (t : (forall (m : {n : nat | n < N}), {v : VT K V | exists (f : FT K), v = Vmul K V f (F m)})), In (VT K V) (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun (m : {n : nat | n < N}) => proj1_sig (t m)))), BasisVS K V {n : nat | n < N} F <-> ((Bijective (DirectProdVST K {n : nat | n < N} (fun (m : {n : nat | n < N}) => SubspaceMakeVS K V (fun (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m)) (SingleSubspaceVS K V (F m)))) {w : VT K V | SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m)) w} (fun (t : forall (m : {n : nat | n < N}), {v : VT K V | exists (f : FT K), v = Vmul K V f (F m)}) => exist (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun (m : {n : nat | n < N}) => proj1_sig (t m))) (H t))) /\ (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m)) = Full_set (VT K V)) /\ forall (m : {n : nat | n < N}), (F m) <> VO K V).
+Proof.
+move=> K V N F.
+suff: (forall (t : forall m : {n : nat | n < N}, {v : VT K V | exists f : FT K, v = Vmul K V f (F m)}), In (VT K V) (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun m : {n : nat | n < N} => proj1_sig (t m)))).
+move=> H1.
+exists H1.
+apply (Formula_P23 K V N F H1).
+move=> t.
+rewrite (FiniteSumTEnsembleVS K V N (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))).
+exists (fun (m : {n : nat | n < N}) => proj1_sig (t m)).
+apply conj.
+move=> m.
+apply (proj2_sig (t m)).
 reflexivity.
 Qed.
 
@@ -5091,6 +5149,14 @@ apply H8.
 apply H8.
 Qed.
 
+Lemma Proposition_5_2_exists : forall (K : Field) (V : VectorSpace K) (N : nat), exists (H1 : forall (m : Count N), proj1_sig m < S N) (H2 : N < S N), forall (F : Count (S N) -> VT K V), (LinearlyIndependentVS K V (Count (S N)) F) <-> (LinearlyIndependentVS K V (Count N) (fun (m : Count N) => F (exist (fun (n : nat) => n < S N) (proj1_sig m) (H1 m))) /\ ~ (In (VT K V) (SpanVS K V (Count N) (fun (m : Count N) => F (exist (fun (n : nat) => n < S N) (proj1_sig m) (H1 m)))) (F (exist (fun (n : nat) => n < S N) N H2)))).
+Proof.
+move=> K V N.
+exists (fun (m : Count N) => le_S (S (proj1_sig m)) N (proj2_sig m)).
+exists (le_n (S N)).
+apply (Proposition_5_2 K V N (fun (m : Count N) => le_S (S (proj1_sig m)) N (proj2_sig m)) (le_n (S N))).
+Qed.
+ 
 End Senkeidaisuunosekai1.
 
 
