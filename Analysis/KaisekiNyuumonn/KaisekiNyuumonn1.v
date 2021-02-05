@@ -8747,54 +8747,6 @@ Definition Rn_met (N : nat) : Metric_Space := Build_Metric_Space (Rn N) (Rn_dist
 
 Definition RPCM : CommutativeMonoid := mkCommutativeMonoid R 0 Rplus Rplus_comm Rplus_0_r Rplus_assoc.
 
-Lemma CountFinite : forall (N : nat), Finite (Count N) (Full_set (Count N)).
-Proof.
-move=> N.
-apply EnsembleSetFinite.
-elim N.
-suff: ((fun u : nat => (u < 0)%nat) = Empty_set nat).
-move=> H1.
-rewrite H1.
-apply Empty_is_finite.
-apply Extensionality_Ensembles.
-apply conj.
-move=> n H1.
-apply False_ind.
-apply (PeanoNat.Nat.nlt_0_r n H1).
-move=> n.
-elim.
-move=> n H1.
-suff: ((fun u : nat => (u < S n)%nat) = Add nat (fun u : nat => (u < n)%nat) n).
-move=> H2.
-rewrite H2.
-apply (Union_is_finite nat (fun u : nat => (u < n)%nat) H1 n).
-apply (lt_irrefl n).
-apply Extensionality_Ensembles.
-apply conj.
-move=> m H2.
-elim (classic (m = n)).
-move=> H3.
-right.
-rewrite H3.
-reflexivity.
-intro H3.
-left.
-elim (le_lt_or_eq (S m) (S n) H2).
-apply (lt_S_n m n).
-move=> H4.
-apply False_ind.
-apply H3.
-apply (PeanoNat.Nat.succ_inj m n H4).
-move=> m.
-elim.
-move=> m1 H2.
-apply (le_S (S m1) n).
-apply H2.
-move=> m1 H2.
-rewrite H2.
-apply (le_n (S m1)).
-Qed.
-
 Lemma RnInnerProductDefinition : forall (N : nat) (x y : Rn N), (RnInnerProduct N x y) = MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) RPCM (fun (n : Count N) => (x n) * (y n)).
 Proof.
 move=> N x y.
