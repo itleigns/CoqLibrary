@@ -925,3 +925,127 @@ elim (CountCardinalInjective T N f H1).
 move=> n H2.
 apply (cardinal_finite T (Full_set T) n (proj2 H2)).
 Qed.
+
+Lemma BijectiveSigFull : forall (T : Type) (A : Ensemble T), (forall (t : T), In T A t) -> {f : T -> {t : T | In T A t} | (forall (t : T), t = proj1_sig (f t)) /\ Bijective f}.
+Proof.
+move=> T A H1.
+exists (fun (t : T) => exist A t (H1 t)).
+apply conj.
+move=> t.
+reflexivity.
+exists (fun (t0 : {t : T | In T A t}) => proj1_sig t0).
+apply conj.
+move=> x.
+reflexivity.
+move=> y.
+apply sig_map.
+reflexivity.
+Qed.
+
+Lemma BijectiveSigFullInv : forall (T : Type) (A : Ensemble T), (forall (t : T), In T A t) -> {f : {t : T | In T A t} -> T | (forall (t0 : {t : T | In T A t}), proj1_sig t0 = f t0) /\ Bijective f}.
+Proof.
+move=> T A H1.
+exists (fun (t0 : {t : T | In T A t}) => proj1_sig t0).
+apply conj.
+move=> t0.
+reflexivity.
+exists (fun (t : T) => exist A t (H1 t)).
+apply conj.
+move=> x.
+apply sig_map.
+reflexivity.
+move=> y.
+reflexivity.
+Qed.
+
+Lemma BijectiveSameSig : forall (T : Type) (A B : Ensemble T), A = B -> {f : {t : T | In T A t} -> {t : T | In T B t} | (forall (t0 : {t : T | In T A t}), proj1_sig t0 = proj1_sig (f t0)) /\ Bijective f}.
+Proof.
+move=> T A B H1.
+rewrite H1.
+exists (fun (t0 : {t : T | In T B t}) => t0).
+apply conj.
+move=> t0.
+reflexivity.
+exists (fun (t0 : {t : T | In T B t}) => t0).
+apply conj.
+move=> x.
+reflexivity.
+move=> y.
+reflexivity.
+Qed.
+
+Lemma BijectiveSigSig : forall (T : Type) (A B : Ensemble T), {f : {t : T | In T (Intersection T A B) t} -> {t0 : {t : T | In T A t} | In T B (proj1_sig t0)} | (forall (t0 : {t : T | In T (Intersection T A B) t}), proj1_sig t0 = proj1_sig (proj1_sig (f t0))) /\ Bijective f}.
+Proof.
+move=> T A B.
+suff: (forall (t0 : {t : T | In T (Intersection T A B) t}), In T A (proj1_sig t0)).
+move=> H1.
+suff: (forall (t0 : {t : T | In T (Intersection T A B) t}), In T B (proj1_sig t0)).
+move=> H2.
+exists (fun (t0 : {t : T | In T (Intersection T A B) t}) => exist (fun (a : {t : T | In T A t}) => In T B (proj1_sig a)) (exist A (proj1_sig t0) (H1 t0)) (H2 t0)).
+apply conj.
+move=> t0.
+reflexivity.
+suff: (forall (x : {t0 : {t : T | In T A t} | In T B (proj1_sig t0)}),In T (Intersection T A B) (proj1_sig (proj1_sig x))).
+move=> H3.
+exists (fun (x : {t0 : {t : T | In T A t} | In T B (proj1_sig t0)}) => exist (Intersection T A B) (proj1_sig (proj1_sig x)) (H3 x)).
+apply conj.
+move=> x.
+apply sig_map.
+reflexivity.
+move=> y.
+apply sig_map.
+apply sig_map.
+reflexivity.
+move=> x.
+apply (Intersection_intro T A B (proj1_sig (proj1_sig x))).
+apply (proj2_sig (proj1_sig x)).
+apply (proj2_sig x).
+move=> t0.
+elim (proj2_sig t0).
+move=> x H2 H3.
+apply H3.
+move=> t0.
+elim (proj2_sig t0).
+move=> x H2 H3.
+apply H2.
+Qed.
+
+Lemma BijectiveSigSigInv : forall (T : Type) (A B : Ensemble T), {f : {t0 : {t : T | In T A t} | In T B (proj1_sig t0)} -> {t : T | In T (Intersection T A B) t} | (forall (x : {t0 : {t : T | In T A t} | In T B (proj1_sig t0)}), proj1_sig (proj1_sig x) = proj1_sig (f x)) /\ Bijective f}.
+Proof.
+move=> T A B.
+suff: (forall (x : {t0 : {t : T | In T A t} | In T B (proj1_sig t0)}),In T (Intersection T A B) (proj1_sig (proj1_sig x))).
+move=> H1.
+exists (fun (x : {t0 : {t : T | In T A t} | In T B (proj1_sig t0)}) => exist (Intersection T A B) (proj1_sig (proj1_sig x)) (H1 x)).
+apply conj.
+move=> x.
+reflexivity.
+suff: (forall (t0 : {t : T | In T (Intersection T A B) t}), In T A (proj1_sig t0)).
+move=> H2.
+suff: (forall (t0 : {t : T | In T (Intersection T A B) t}), In T B (proj1_sig t0)).
+move=> H3.
+exists (fun (t0 : {t : T | In T (Intersection T A B) t}) => exist (fun (a : {t : T | In T A t}) => In T B (proj1_sig a)) (exist A (proj1_sig t0) (H2 t0)) (H3 t0)).
+apply conj.
+move=> x.
+apply sig_map.
+apply sig_map.
+reflexivity.
+move=> y.
+apply sig_map.
+reflexivity.
+move=> t0.
+elim (proj2_sig t0).
+move=> x H3 H4.
+apply H4.
+move=> t0.
+elim (proj2_sig t0).
+move=> x H3 H4.
+apply H3.
+move=> x.
+apply (Intersection_intro T A B (proj1_sig (proj1_sig x))).
+apply (proj2_sig (proj1_sig x)).
+apply (proj2_sig x).
+Qed.
+
+
+
+
