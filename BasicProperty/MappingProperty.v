@@ -3,6 +3,7 @@ Require Import ssreflect.
 Require Import Classical.
 Require Import Coq.Logic.Description.
 Require Import Coq.Logic.ClassicalDescription.
+Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Sets.Finite_sets_facts.
 Require Import Coq.Sets.Image.
 Require Import Coq.Arith.Le.
@@ -1046,6 +1047,58 @@ apply (proj2_sig (proj1_sig x)).
 apply (proj2_sig x).
 Qed.
 
+Lemma ForallSavesBijective_dep : forall (T : Type) (A : T -> Type) (B : T -> Type) (F : forall (t : T), (A t) -> (B t)), (forall (t : T), Bijective (F t)) -> Bijective (fun (x : forall (t : T), (A t)) (t0 : T) => (F t0 (x t0))).
+Proof.
+move=> T A B F H1.
+suff: (forall (t : T), {g : (B t) -> (A t) | (forall (x : A t), g ((F t) x) = x) /\ (forall (y : B t), (F t) (g y) = y)}).
+move=> H2.
+exists (fun (y : forall (t : T), B t) (t0 : T) => proj1_sig (H2 t0) (y t0)).
+apply conj.
+move=> x.
+apply functional_extensionality_dep.
+move=> t.
+apply (proj1 (proj2_sig (H2 t)) (x t)).
+move=> y.
+apply functional_extensionality_dep.
+move=> t.
+apply (proj2 (proj2_sig (H2 t)) (y t)).
+move=> t.
+apply constructive_definite_description.
+apply (proj1 (unique_existence (fun (g : B t -> A t) => (forall (x : A t), g (F t x) = x) /\ (forall y : B t, F t (g y) = y)))).
+apply conj.
+elim (H1 t).
+move=> g H2.
+exists g.
+apply H2.
+move=> g1 g2 H2 H3.
+apply functional_extensionality_dep.
+move=> y.
+rewrite - {1} (proj2 H3 y).
+apply (proj1 H2 (g2 y)).
+Qed.
 
+Lemma ForallSavesBijective : forall (T A B: Type) (F : T -> A -> B), (forall (t : T), Bijective (F t)) -> Bijective (fun (x : T -> A) (t0 : T) => (F t0 (x t0))).
+Proof.
+move=> T A B F.
+apply (ForallSavesBijective_dep T (fun (t : T) => A) (fun (t : T) => B) F).
+Qed.
 
+Lemma ForallSavesInjective_dep : forall (T : Type) (A : T -> Type) (B : T -> Type) (F : forall (t : T), (A t) -> (B t)), (forall (t : T), Injective (F t)) -> Injective (fun (x : forall (t : T), (A t)) (t0 : T) => (F t0 (x t0))).
+Proof.
+move=> T A B F H1 x1 x2 H2.
+apply functional_extensionality_dep.
+move=> t.
+apply (H1 t (x1 t) (x2 t)).
+suff: (F t (x1 t) = let temp := (fun t0 : T => F t0 (x1 t0)) in temp t).
+move=> H3.
+rewrite H3.
+rewrite H2.
+reflexivity.
+reflexivity.
+Qed.
 
+Lemma ForallSavesInjective : forall (T A B: Type) (F : T -> A -> B), (forall (t : T), Injective (F t)) -> Injective (fun (x : T -> A) (t0 : T) => (F t0 (x t0))).
+Proof.
+move=> T A B F.
+apply (ForallSavesInjective_dep T (fun (t : T) => A) (fun (t : T) => B) F).
+Qed.
