@@ -4339,4 +4339,243 @@ intros u H2.
 apply (Intersection_intro U (proj1_sig A) (proj1_sig B) u H2 (H1 u H2)).
 Qed.
 
+Lemma CountFinite : forall (N : nat), Finite (Count N) (Full_set (Count N)).
+Proof.
+intro N.
+apply EnsembleSetFinite.
+elim N.
+cut ((fun u : nat => (u < 0)%nat) = Empty_set nat).
+intro H1.
+rewrite H1.
+apply Empty_is_finite.
+apply Extensionality_Ensembles.
+apply conj.
+intros n H1.
+apply False_ind.
+apply (PeanoNat.Nat.nlt_0_r n H1).
+intros n H1.
+elim H1.
+intros n H1.
+cut ((fun u : nat => (u < S n)%nat) = Add nat (fun u : nat => (u < n)%nat) n).
+intro H2.
+rewrite H2.
+apply (Union_is_finite nat (fun u : nat => (u < n)%nat) H1 n).
+apply (lt_irrefl n).
+apply Extensionality_Ensembles.
+apply conj.
+intros m H2.
+elim (classic (m = n)).
+intro H3.
+right.
+rewrite H3.
+reflexivity.
+intro H3.
+left.
+elim (le_lt_or_eq (S m) (S n) H2).
+apply (lt_S_n m n).
+intro H4.
+apply False_ind.
+apply H3.
+apply (PeanoNat.Nat.succ_inj m n H4).
+intros m H2.
+elim H2.
+intros m1 H3.
+apply (le_S (S m1) n).
+apply H3.
+intros m1 H3.
+rewrite H3.
+apply (le_n (S m1)).
+Qed.
+
+Lemma CountFinite2 : forall (N : nat), Finite nat (fun (n : nat) => n < N).
+Proof.
+intro N.
+elim N.
+cut ((fun n : nat => n < 0) = Empty_set nat).
+intro H1.
+rewrite H1.
+apply (Empty_is_finite nat).
+apply Extensionality_Ensembles.
+apply conj.
+intros n H1.
+apply False_ind.
+apply (PeanoNat.Nat.nlt_0_r n H1).
+intros n H1.
+elim H1.
+intros n H1.
+cut ((fun n0 : nat => n0 < S n) = Add nat (fun n0 : nat => n0 < n) n).
+intro H2.
+rewrite H2.
+apply (Union_is_finite nat (fun n0 : nat => n0 < n) H1 n).
+apply (lt_irrefl n).
+apply Extensionality_Ensembles.
+apply conj.
+intros m H2.
+elim (le_lt_or_eq m n).
+intro H3.
+left.
+apply H3.
+intro H3.
+rewrite H3.
+right.
+apply (In_singleton nat n).
+apply (le_S_n m n H2).
+intros m H2.
+elim H2.
+intros k H3.
+apply (le_trans (S k) n (S n) H3 (le_S n n (le_n n))).
+intros k H3.
+elim H3.
+apply (le_n (S n)).
+Qed.
+
+Lemma MySumF2NSame : forall (N : nat) (CM : CommutativeMonoid) (F : nat -> CMT CM) (f : Count N -> CMT CM) (A : Ensemble nat), (forall (m : Count N), In nat A (proj1_sig m) -> F (proj1_sig m) = f m) -> (MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (m : Count N) => In nat A (proj1_sig m))) CM f) = (MySumF2 nat (FiniteIntersection nat (exist (Finite nat) (fun (m : nat) => m < N) (CountFinite2 N)) A) CM F).
+Proof.
+intros N CM F f A H1.
+cut (forall (u : Count N), proj1_sig (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun m : Count N => In nat A (proj1_sig m))) u -> proj1_sig (FiniteIntersection nat (exist (Finite nat) (fun m : nat => m < N) (CountFinite2 N)) A) (proj1_sig u)).
+intro H2.
+rewrite<- (MySumF2BijectiveSame (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun m : Count N => In nat A (proj1_sig m))) nat (FiniteIntersection nat (exist (Finite nat) (fun m : nat => m < N) (CountFinite2 N)) A) CM F (fun (m : Count N) => proj1_sig m) H2).
+apply (MySumF2Same (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun m : Count N => In nat A (proj1_sig m))) CM).
+intros u H3.
+rewrite (H1 u).
+reflexivity.
+elim H3.
+intros m H4 H5.
+apply H4.
+simpl.
+cut (forall (k : {u : nat | Intersection nat A (fun m : nat => m < N) u}), proj1_sig k < N).
+intro H3.
+cut (forall (k : {u : nat | Intersection nat A (fun m : nat => m < N) u}), In (Count N) (Intersection (Count N) (fun m : Count N => In nat A (proj1_sig m)) (Full_set (Count N))) (exist (fun (m : nat) => m < N) (proj1_sig k) (H3 k))).
+intro H4.
+exists (fun (k : {u : nat | Intersection nat A (fun m : nat => m < N) u}) => exist (Intersection (Count N) (fun m : Count N => In nat A (proj1_sig m)) (Full_set (Count N))) (exist (fun (m : nat) => m < N) (proj1_sig k) (H3 k)) (H4 k)).
+apply conj.
+intro x.
+apply sig_map.
+apply sig_map.
+reflexivity.
+intro y.
+apply sig_map.
+reflexivity.
+intro k.
+apply (Intersection_intro (Count N)).
+unfold In.
+elim (proj2_sig k).
+intros m H4 H5.
+apply H4.
+apply (Full_intro (Count N)).
+intro k.
+elim (proj2_sig k).
+intros m H3 H4.
+apply H4.
+intros u H2.
+apply (Intersection_intro nat).
+elim H2.
+intros m H3 H4.
+apply H3.
+apply (proj2_sig u).
+Qed.
+
+Lemma MySumF2Sn : forall (N : nat) (CM : CommutativeMonoid) (F : nat -> CMT CM), (MySumF2 nat (exist (Finite nat) (fun (m : nat) => m < S N) (CountFinite2 (S N))) CM F) = CMc CM (MySumF2 nat (exist (Finite nat) (fun (m : nat) => m < N) (CountFinite2 N)) CM F) (F N).
+Proof.
+intros N CM F.
+rewrite (MySumF2Included nat (exist (Finite nat) (fun m : nat => m < N) (CountFinite2 N)) (exist (Finite nat) (fun m : nat => m < S N) (CountFinite2 (S N))) CM F).
+simpl.
+cut ((FiniteIntersection nat (exist (Finite nat) (fun m : nat => m < S N) (CountFinite2 (S N))) (Complement nat (fun m : nat => m < N))) = FiniteSingleton nat N).
+intro H1.
+rewrite H1.
+rewrite MySumF2Singleton.
+reflexivity.
+apply sig_map.
+apply Extensionality_Ensembles.
+apply conj.
+intros n H1.
+cut (n = N).
+intro H2.
+rewrite H2.
+apply (In_singleton nat N).
+elim H1.
+intros m H2 H3.
+elim (le_lt_or_eq m N).
+intro H4.
+apply False_ind.
+apply H2.
+apply H4.
+intro H4.
+apply H4.
+apply (le_S_n m N H3).
+intros n H1.
+elim H1.
+apply (Intersection_intro nat).
+apply (lt_irrefl N).
+apply (le_n (S N)).
+intros n H1.
+apply (le_S (S n) N H1).
+Qed.
+
+Lemma MySumF2Sn2 : forall (N : nat) (H1 : forall (m : Count N), proj1_sig m < S N) (H2 : N < S N) (CM : CommutativeMonoid) (F : Count (S N) -> CMT CM), (MySumF2 (Count (S N)) (exist (Finite (Count (S N))) (Full_set (Count (S N))) (CountFinite (S N))) CM F) = CMc CM (MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) CM (fun (m : Count N) => F (exist (fun (n : nat) => n < S N) (proj1_sig m) (H1 m)))) (F (exist (fun (n : nat) => n < S N) N H2)).
+Proof.
+intros N H1 H2 CM F.
+rewrite (MySumF2Excluded (Count (S N)) CM F (exist (Finite (Count (S N))) (Full_set (Count (S N))) (CountFinite (S N))) (fun (m : Count (S N)) => proj1_sig m < N)).
+cut ((FiniteIntersection (Count (S N)) (exist (Finite (Count (S N))) (Full_set (Count (S N))) (CountFinite (S N))) (Complement (Count (S N)) (fun m : Count (S N) => proj1_sig m < N))) = (FiniteSingleton (Count (S N)) (exist (fun n : nat => n < S N) N H2))).
+intro H3.
+rewrite H3.
+rewrite MySumF2Singleton.
+cut (forall (u : Count N), proj1_sig (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) u -> proj1_sig (FiniteIntersection (Count (S N)) (exist (Finite (Count (S N))) (Full_set (Count (S N))) (CountFinite (S N))) (fun m : Count (S N) => proj1_sig m < N)) (exist (fun n : nat => n < S N) (proj1_sig u) (H1 u))).
+intro H4.
+rewrite<- (MySumF2BijectiveSame (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Count (S N)) (FiniteIntersection (Count (S N)) (exist (Finite (Count (S N))) (Full_set (Count (S N))) (CountFinite (S N))) (fun m : Count (S N) => proj1_sig m < N)) CM F (fun (m : Count N) => exist (fun n : nat => n < S N) (proj1_sig m) (H1 m)) H4).
+reflexivity.
+simpl.
+cut (forall (u0 : {u : Count (S N) | Intersection (Count (S N)) (fun m : Count (S N) => proj1_sig m < N) (Full_set (Count (S N))) u}), proj1_sig (proj1_sig u0) < N).
+intro H5.
+exists (fun (u0 : {u : Count (S N) | Intersection (Count (S N)) (fun m : Count (S N) => proj1_sig m < N) (Full_set (Count (S N))) u}) => exist (Full_set (Count N)) (exist (fun (n : nat) => n < N) (proj1_sig (proj1_sig u0)) (H5 u0)) (Full_intro (Count N) (exist (fun (n : nat) => n < N) (proj1_sig (proj1_sig u0)) (H5 u0)))).
+apply conj.
+intro x.
+apply sig_map.
+apply sig_map.
+reflexivity.
+intro y.
+apply sig_map.
+apply sig_map.
+reflexivity.
+intro u0.
+elim (proj2_sig u0).
+intros m H5 H6.
+apply H5.
+intros u H4.
+apply Intersection_intro.
+apply (proj2_sig u).
+apply (Full_intro (Count (S N))).
+apply sig_map.
+apply Extensionality_Ensembles.
+apply conj.
+intros u H3.
+elim H3.
+intros u0 H4 H5.
+cut (u0 = (exist (fun n : nat => n < S N) N H2)).
+intro H6.
+rewrite H6.
+apply (In_singleton (Count (S N))).
+apply sig_map.
+elim (le_lt_or_eq (proj1_sig u0) N).
+intro H6.
+apply False_ind.
+apply (H4 H6).
+intro H6.
+apply H6.
+apply (le_S_n (proj1_sig u0) N (proj2_sig u0)).
+intros u H3.
+elim H3.
+apply Intersection_intro.
+apply (lt_irrefl N).
+apply (Full_intro (Count (S N))).
+Qed.
+
+Lemma MySumF2Sn2_exists : forall (N : nat), exists (H1 : forall (m : Count N), proj1_sig m < S N) (H2 : N < S N), forall (CM : CommutativeMonoid) (F : Count (S N) -> CMT CM), (MySumF2 (Count (S N)) (exist (Finite (Count (S N))) (Full_set (Count (S N))) (CountFinite (S N))) CM F) = CMc CM (MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) CM (fun (m : Count N) => F (exist (fun (n : nat) => n < S N) (proj1_sig m) (H1 m)))) (F (exist (fun (n : nat) => n < S N) N H2)).
+Proof.
+intro N.
+exists (fun (m : Count N) => le_S (S (proj1_sig m)) N (proj2_sig m)).
+exists (le_n (S N)).
+apply (MySumF2Sn2 N (fun (m : Count N) => le_S (S (proj1_sig m)) N (proj2_sig m)) (le_n (S N))).
+Qed.
+
 End MySum.
