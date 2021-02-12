@@ -4713,6 +4713,478 @@ move=> t.
 reflexivity.
 Qed.
 
+Lemma Formula_P25 : forall (K : Field) (V : VectorSpace K) (N : nat) (F : {n : nat | n < N} -> VT K V) (H : forall (t : (forall (m : {n : nat | n < N}), {v : VT K V | exists (f : FT K), v = Vmul K V f (F m)})), In (VT K V) (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun (m : {n : nat | n < N}) => proj1_sig (t m)))), LinearlyIndependentVS K V {n : nat | n < N} F <-> ((Bijective (DirectProdVST K {n : nat | n < N} (fun (m : {n : nat | n < N}) => SubspaceMakeVS K V (fun (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m)) (SingleSubspaceVS K V (F m)))) {w : VT K V | SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m)) w} (fun (t : forall (m : {n : nat | n < N}), {v : VT K V | exists (f : FT K), v = Vmul K V f (F m)}) => exist (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun (m : {n : nat | n < N}) => proj1_sig (t m))) (H t))) /\ forall (m : {n : nat | n < N}), (F m) <> VO K V).
+Proof.
+move=> K V N F H1.
+elim (Formula_P23_exists K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) N (fun t : {n : nat | n < N} => exist (SpanVS K V {n : nat | n < N} F) (F t) (SpanContainSelfVS K V {n : nat | n < N} F t))).
+move=> H2 H3.
+suff: (Bijective (DirectProdVST K {n : nat | n < N} (fun m : {n : nat | n < N} => SubspaceMakeVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (fun v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) (SingleSubspaceVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))))) {w : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) | SumTEnsembleVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) w} (fun t : forall m : {n : nat | n < N}, {v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) | exists f : FT K,  v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))} => exist (SumTEnsembleVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m)))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) (fun m : {n : nat | n < N} => proj1_sig (t m))) (H2 t)) <-> Bijective (DirectProdVST K {n : nat | n < N} (fun m : {n : nat | n < N} => SubspaceMakeVS K V (fun v : VT K V => exists f : FT K, v = Vmul K V f (F m)) (SingleSubspaceVS K V (F m)))) {w : VT K V | SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m)) w} (fun t : forall m : {n : nat | n < N}, {v : VT K V | exists f : FT K, v = Vmul K V f (F m)} => exist (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun m : {n : nat | n < N} => proj1_sig (t m))) (H1 t))).
+move=> H4.
+apply conj.
+move=> H5.
+apply conj.
+apply (proj1 H4).
+apply (proj1 H3).
+apply H5.
+move=> m H6.
+apply (proj2 (proj2 (proj1 H3 H5)) m).
+apply sig_map.
+apply H6.
+move=> H5.
+apply (proj2 H3).
+apply conj.
+apply (proj2 H4).
+apply (proj1 H5).
+apply conj.
+apply Extensionality_Ensembles.
+apply conj.
+move=> x H6.
+apply Full_intro.
+move=> x H6.
+elim (proj2_sig x).
+move=> f H7.
+suff: (forall (t : {n : nat | n < N}), In (VT K V) (SpanVS K V {n : nat | n < N} F) (Vmul K V (proj1_sig f t) (F t))).
+move=> H8.
+suff: (forall (t : {n : nat | n < N}), exists f0 : FT K, (exist (SpanVS K V {n : nat | n < N} F) (Vmul K V (proj1_sig f t) (F t)) (H8 t)) = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f0 (exist (SpanVS K V {n : nat | n < N} F) (F t) (SpanContainSelfVS K V {n : nat | n < N} F t))).
+move=> H9.
+suff: (Finite {n : nat | n < N} (fun (t : {n : nat | n < N}) => (exist (SpanVS K V {n : nat | n < N} F) (Vmul K V (proj1_sig f t) (F t)) (H8 t)) <> (VO K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))))).
+move=> H10. 
+suff: (x = (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => exist (SpanVS K V {n : nat | n < N} F) (Vmul K V (proj1_sig f t) (F t)) (H8 t) <> VO K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) H10) (VSPCM K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) (fun t : {n : nat | n < N} => exist (SpanVS K V {n : nat | n < N} F) (Vmul K V (proj1_sig f t) (F t)) (H8 t)))).
+move=> H11.
+rewrite H11.
+apply (SumTEnsembleVS_intro K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f0 : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f0 (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) (fun (t : {n : nat | n < N}) => (exist (SpanVS K V {n : nat | n < N} F) (Vmul K V (proj1_sig f t) (F t)) (H8 t))) H10).
+move=> t.
+exists (proj1_sig f t).
+apply sig_map.
+reflexivity.
+apply sig_map.
+rewrite H7.
+rewrite (MySumF2Included {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => exist (SpanVS K V {n : nat | n < N} F) (Vmul K V (proj1_sig f t) (F t)) (H8 t) <> VO K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) H10) (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => proj1_sig f t <> FO K) (proj2_sig f))).
+rewrite (MySumF2O {n : nat | n < N} (FiniteIntersection {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => proj1_sig f t <> FO K) (proj2_sig f)) (Complement {n : nat | n < N} (proj1_sig (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => exist (SpanVS K V {n : nat | n < N} F) (Vmul K V (proj1_sig f t) (F t)) (H8 t) <> VO K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) H10))))).
+simpl.
+rewrite (Vadd_O_r K V).
+apply (FiniteSetInduction {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => exist (SpanVS K V {n : nat | n < N} F) (Vmul K V (proj1_sig f t) (F t)) (H8 t) <> SubspaceMakeVSVO K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) H10)).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H11 H12 H13 H14.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+simpl.
+rewrite H14.
+reflexivity.
+apply H13.
+apply H13.
+move=> u H11.
+elim H11.
+move=> u0 H12 H13.
+apply NNPP.
+move=> H14.
+apply H12.
+move=> H15.
+apply H14.
+suff: ((Vmul K V (proj1_sig f u0) (F u0)) = (proj1_sig (exist (SpanVS K V {n : nat | n < N} F) (Vmul K V (proj1_sig f u0) (F u0)) (H8 u0)))).
+move=> H16.
+rewrite H16.
+rewrite H15.
+reflexivity.
+reflexivity.
+move=> m H11 H12.
+apply H11.
+apply sig_map.
+simpl.
+rewrite H12.
+apply (Vmul_O_l K V).
+apply (Finite_downward_closed {n : nat | n < N} (Full_set {n : nat | n < N}) (CountFinite N)).
+move=> m H10.
+apply (Full_intro {n : nat | n < N} m).
+move=> t.
+exists (proj1_sig f t).
+apply sig_map.
+reflexivity.
+move=> t.
+apply (proj1 (proj2 (SpanSubspaceVS K V {n : nat | n < N} F))).
+apply (SpanContainSelfVS K V {n : nat | n < N} F).
+move=> m H6.
+apply (proj2 H5 m).
+suff: (F m = proj1_sig (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))).
+move=> H7.
+rewrite H7.
+rewrite H6.
+reflexivity.
+reflexivity.
+suff: (exists (g : (DirectProdVST K {n : nat | n < N} (fun m : {n : nat | n < N} => SubspaceMakeVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (fun v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) (SingleSubspaceVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))))) -> (DirectProdVST K {n : nat | n < N} (fun m : {n : nat | n < N} => SubspaceMakeVS K V (fun v : VT K V => exists f : FT K, v = Vmul K V f (F m)) (SingleSubspaceVS K V (F m))))) (h : {w : VT K V | SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m)) w} -> {w : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) | SumTEnsembleVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) w}), Bijective (DirectProdVST K {n : nat | n < N} (fun m : {n : nat | n < N} => SubspaceMakeVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (fun v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) (SingleSubspaceVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))))) (DirectProdVST K {n : nat | n < N} (fun m : {n : nat | n < N} => SubspaceMakeVS K V (fun v : VT K V => exists f : FT K, v = Vmul K V f (F m)) (SingleSubspaceVS K V (F m)))) g /\ Bijective {w : VT K V | SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m)) w} {w : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) | SumTEnsembleVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F)  (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) w} h /\ ((fun t : forall m : {n : nat | n < N}, {v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) | exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))} => exist (SumTEnsembleVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K,  v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m)))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) (fun m : {n : nat | n < N} => proj1_sig (t m))) (H2 t)) = compose (compose h (fun t : forall m : {n : nat | n < N}, {v : VT K V | exists f : FT K, v = Vmul K V f (F m)} => exist (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun m : {n : nat | n < N} => proj1_sig (t m))) (H1 t))) g)).
+elim.
+move=> g.
+elim.
+move=> h H5.
+apply conj.
+move=> H6.
+elim (proj1 H5).
+move=> ginv H7.
+elim (proj1 (proj2 H5)).
+move=> hinv H8.
+suff: ((fun t : forall m : {n : nat | n < N}, {v : VT K V | exists f : FT K, v = Vmul K V f (F m)} => exist (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun m : {n : nat | n < N} => proj1_sig (t m))) (H1 t)) = (compose hinv (compose (fun t : forall m : {n : nat | n < N}, {v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) | exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))} => exist (SumTEnsembleVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m)))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) (fun m : {n : nat | n < N} => proj1_sig (t m))) (H2 t)) ginv))).
+move=> H9.
+rewrite H9.
+apply BijChain.
+apply BijChain.
+exists g.
+apply conj.
+move=> x.
+apply (proj2 H7 x).
+move=> y.
+apply (proj1 H7 y).
+apply H6.
+exists h.
+apply conj.
+move=> x.
+apply (proj2 H8 x).
+move=> y.
+apply (proj1 H8 y).
+rewrite (proj2 (proj2 H5)).
+apply functional_extensionality.
+move=> x.
+unfold compose.
+rewrite (proj2 H7).
+rewrite (proj1 H8).
+reflexivity.
+move=> H6.
+rewrite (proj2 (proj2 H5)).
+apply BijChain.
+apply (proj1 H5).
+apply BijChain.
+apply H6.
+apply (proj1 (proj2 H5)).
+suff: (forall (m : {n : nat | n < N}), {gm : (VT K (SubspaceMakeVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (fun v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) (SingleSubspaceVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))))) -> (VT K (SubspaceMakeVS K V (fun v : VT K V => exists f : FT K, v = Vmul K V f (F m)) (SingleSubspaceVS K V (F m)))) | (forall (x : VT K (SubspaceMakeVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (fun v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) (SingleSubspaceVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))))), proj1_sig (proj1_sig x) = proj1_sig (gm x)) /\ Bijective (VT K (SubspaceMakeVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (fun v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) (SingleSubspaceVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))))) (VT K (SubspaceMakeVS K V (fun v : VT K V => exists f : FT K, v = Vmul K V f (F m)) (SingleSubspaceVS K V (F m)))) gm}).
+move=> H4.
+exists (fun (x : DirectProdVST K {n : nat | n < N} (fun m : {n : nat | n < N} => SubspaceMakeVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (fun v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) (SingleSubspaceVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))))) (m : {n : nat | n < N}) => proj1_sig (H4 m) (x m)).
+suff: {h : {w : VT K V | SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m)) w} -> {w : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) | SumTEnsembleVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) w} | (forall (x : {w : VT K V | SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m)) w}), proj1_sig x = proj1_sig (proj1_sig (h x))) /\ Bijective {w : VT K V | SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m)) w} {w : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) | SumTEnsembleVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) w} h}.
+move=> H5.
+exists (proj1_sig H5).
+apply conj.
+apply ForallSavesBijective_dep.
+move=> m.
+apply (proj2 (proj2_sig (H4 m))).
+apply conj.
+apply (proj2 (proj2_sig H5)).
+apply functional_extensionality_dep.
+move=> m.
+apply sig_map.
+apply sig_map.
+simpl.
+unfold compose.
+rewrite - (proj1 (proj2_sig H5)).
+simpl.
+apply (FiniteSetInduction {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H6 H7 H8 H9.
+simpl.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite - H9.
+rewrite - (proj1 (proj2_sig (H4 b))).
+reflexivity.
+apply H8.
+apply H8.
+suff: ((SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))) = (SpanVS K V {n : nat | n < N} F)).
+move=> H5.
+suff: (forall (w : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))), SumTEnsembleVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) w).
+move=> H6.
+exists (compose  (proj1_sig (BijectiveSigFull (VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) (SumTEnsembleVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m)))) H6 )) (proj1_sig (BijectiveSameSig (VT K V) (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))) (SpanVS K V {n : nat | n < N} F) H5)) ).
+apply conj.
+move=> x.
+unfold compose.
+rewrite - (proj1 (proj2_sig (BijectiveSigFull (VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) (SumTEnsembleVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m)))) H6))).
+apply (proj1 (proj2_sig (BijectiveSameSig (VT K V) (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))) (SpanVS K V {n : nat | n < N} F) H5))).
+apply BijChain.
+apply (proj2 (proj2_sig (BijectiveSameSig (VT K V) (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))) (SpanVS K V {n : nat | n < N} F) H5))).
+apply (proj2 (proj2_sig (BijectiveSigFull (VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) (SumTEnsembleVS K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m)))) H6))).
+move=> w.
+elim (proj2_sig w).
+move=> x H6.
+suff: (forall (m : {n : nat | n < N}), In (VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) (fun  (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) (Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (proj1_sig x m) (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) ).
+move=> H7.
+suff: (Finite {n : nat | n < N} (fun t : {n : nat | n < N} => Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (proj1_sig x t) (exist (SpanVS K V {n : nat | n < N} F) (F t) (SpanContainSelfVS K V {n : nat | n < N} F t)) <> VO K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)))).
+move=> H8.
+suff: (w = (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => Vmul K  (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (proj1_sig x t) (exist (SpanVS K V {n : nat | n < N} F) (F t) (SpanContainSelfVS K V {n : nat | n < N} F t)) <> VO K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) H8) (VSPCM K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) (fun m : {n : nat | n < N} => Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (proj1_sig x m) (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))))).
+move=> H9.
+rewrite H9.
+apply (SumTEnsembleVS_intro K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) => exists f : FT K, v = Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) (fun (m : {n : nat | n < N}) => (Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (proj1_sig x m) (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) )).
+move=> m.
+exists (proj1_sig x m).
+reflexivity.
+apply sig_map.
+rewrite H6.
+rewrite (MySumF2Included {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (proj1_sig x t) (exist (SpanVS K V {n : nat | n < N} F) (F t) (SpanContainSelfVS K V {n : nat | n < N} F t)) <> VO K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) H8) (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => proj1_sig x t <> FO K) (proj2_sig x))).
+rewrite (MySumF2O {n : nat | n < N} (FiniteIntersection {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => proj1_sig x t <> FO K) (proj2_sig x)) (Complement {n : nat | n < N} (proj1_sig (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (proj1_sig x t) (exist (SpanVS K V {n : nat | n < N} F) (F t) (SpanContainSelfVS K V {n : nat | n < N} F t)) <> VO K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) H8))))).
+rewrite (CM_O_r (VSPCM K V)).
+apply (FiniteSetInduction {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => Vmul K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F)) (proj1_sig x t) (exist (SpanVS K V {n : nat | n < N} F) (F t) (SpanContainSelfVS K V {n : nat | n < N} F t)) <> VO K (SubspaceMakeVS K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F))) H8)).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H9 H10 H11 H12.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H12.
+reflexivity.
+apply H11.
+apply H11.
+move=> u.
+elim.
+move=> m H9 H10.
+apply NNPP.
+move=> H11.
+apply H9.
+simpl.
+move=> H12.
+apply H11.
+suff: (Vmul K V (proj1_sig x m) (F m) = (proj1_sig (SubspaceMakeVSVmul K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F) (proj1_sig x m) (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))))).
+move=> H13.
+rewrite H13.
+rewrite H12.
+reflexivity.
+reflexivity.
+move=> m H9 H10.
+apply H9.
+rewrite H10.
+apply (Vmul_O_l K).
+apply (Finite_downward_closed {n : nat | n < N} (Full_set {n : nat | n < N}) (CountFinite N)).
+move=> m H8.
+apply (Full_intro {n : nat | n < N} m).
+move=> m.
+exists (proj1_sig x m).
+reflexivity.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
+elim.
+move=> a H5 H6.
+suff: (forall (t : {n : nat | n < N}), {f : FT K | a t = Vmul K V f (F t)}).
+move=> H7.
+suff: (Finite {n : nat | n < N} (fun (m : {n : nat | n < N}) => proj1_sig (H7 m) <> FO K)).
+move=> H8.
+exists (exist (fun (G : {n : nat | n < N} -> FT K) => Finite {n : nat | n < N} (fun (t : {n : nat | n < N}) => G t <> FO K)) (fun (m : {n : nat | n < N}) => proj1_sig (H7 m)) H8).
+simpl.
+suff: (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => a t <> VO K V) H5) (VSPCM K V) a = MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) a).
+move=> H9.
+rewrite H9.
+suff: (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => proj1_sig (H7 t) <> FO K) H8) (VSPCM K V) (fun t : {n : nat | n < N} => Vmul K V (proj1_sig (H7 t)) (F t)) = MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun t : {n : nat | n < N} => Vmul K V (proj1_sig (H7 t)) (F t))).
+move=> H10.
+rewrite H10.
+suff: (a = (fun t : {n : nat | n < N} => Vmul K V (proj1_sig (H7 t)) (F t))).
+move=> H11.
+rewrite - H11.
+reflexivity.
+apply functional_extensionality.
+move=> m.
+apply (proj2_sig (H7 m)).
+rewrite (MySumF2Included {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => proj1_sig (H7 t) <> FO K) H8) (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N))).
+rewrite (MySumF2O {n : nat | n < N} (FiniteIntersection {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (Complement {n : nat | n < N} (proj1_sig (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => proj1_sig (H7 t) <> FO K) H8))))).
+rewrite (CM_O_r (VSPCM K V)).
+reflexivity.
+move=> u.
+elim.
+move=> u0 H10 H11.
+suff: (proj1_sig (H7 u0) = FO K).
+move=> H12.
+rewrite H12.
+apply (Vmul_O_l K V (F u0)).
+apply NNPP.
+apply H10.
+move=> m H10.
+apply (Full_intro {n : nat | n < N} m).
+rewrite (MySumF2Included {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => a t <> VO K V) H5) (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N))).
+rewrite (MySumF2O {n : nat | n < N} (FiniteIntersection {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (Complement {n : nat | n < N} (proj1_sig (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => a t <> VO K V) H5))))).
+rewrite (CM_O_r (VSPCM K V)).
+reflexivity.
+move=> u.
+elim.
+move=> u0 H9 H10.
+apply NNPP.
+apply H9.
+move=> m H9.
+apply (Full_intro {n : nat | n < N} m).
+apply (Finite_downward_closed {n : nat | n < N} (Full_set {n : nat | n < N}) (CountFinite N)).
+move=> m H8.
+apply (Full_intro {n : nat | n < N} m).
+move=> m.
+elim (excluded_middle_informative (F m <> VO K V)).
+move=> H7.
+apply (constructive_definite_description (fun (f : FT K) => a m = Vmul K V f (F m))).
+apply (proj1 (unique_existence (fun (f : FT K) => a m = Vmul K V f (F m)))).
+apply conj.
+elim (H6 m).
+move=> f H8.
+exists f.
+apply H8.
+move=> f1 f2 H8 H9.
+apply (Vmul_eq_reg_r K V (F m) f1 f2).
+rewrite - H8.
+apply H9.
+apply H7.
+move=> H7.
+exists (FO K).
+elim (H6 m).
+move=> f H8.
+rewrite H8.
+suff: (F m = VO K V).
+move=> H9.
+rewrite H9.
+rewrite (Vmul_O_r K V f).
+rewrite (Vmul_O_r K V (FO K)).
+reflexivity.
+apply NNPP.
+apply H7.
+suff: (SubspaceVS K V (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m)))).
+move=> H5.
+suff: (forall (m : {n : nat | n < N}), In (VT K V) (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m))) (F m)).
+move=> H6 m.
+elim.
+move=> x H7.
+rewrite H7.
+apply (MySumF2Induction {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun t : {n : nat | n < N} => proj1_sig x t <> FO K) (proj2_sig x))).
+apply conj.
+apply (proj2 (proj2 H5)).
+move=> B b H8 H9.
+apply (proj1 H5 B (Vmul K V (proj1_sig x b) (F b)) H9 (proj1 (proj2 H5) (proj1_sig x b) (F b) (H6 b))).
+move=> m.
+elim (classic (F m = VO K V)).
+move=> H6.
+rewrite H6.
+apply (proj2 (proj2 H5)).
+move=> H6.
+suff: (Finite {n : nat | n < N} (fun (k : {n : nat | n < N}) => match excluded_middle_informative (k = m) with
+  | left _ => F m 
+  | right _ => VO K V
+end <> VO K V)).
+move=> H7.
+suff: (F m = (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (fun (k : {n : nat | n < N}) => match excluded_middle_informative (k = m) with
+  | left _ => F m 
+  | right _ => VO K V
+end <> VO K V) H7) (VSPCM K V) (fun k : {n : nat | n < N} => match excluded_middle_informative (k = m) with
+  | left _ => F m 
+  | right _ => VO K V
+end))).
+move=> H8.
+rewrite H8.
+apply (SumTEnsembleVS_intro K V {n : nat | n < N} (fun (m0 : {n : nat | n < N}) (v : VT K V) => exists f : FT K, v = Vmul K V f (F m0)) (fun (k : {n : nat | n < N}) => match excluded_middle_informative (k = m) with 
+  | left _ => F m
+  | right _ => VO K V
+end) H7).
+move=> k.
+elim (excluded_middle_informative (k = m)).
+move=> H9.
+rewrite H9.
+exists (FI K).
+rewrite (Vmul_I_l K V (F m)).
+reflexivity.
+move=> H9.
+exists (FO K).
+rewrite (Vmul_O_l K V (F k)).
+reflexivity.
+suff: ((exist (Finite {n : nat | n < N}) (fun k : {n : nat | n < N} => (match excluded_middle_informative (k = m) with
+  | left _ => F m 
+  | right _ => VO K V
+end) <> VO K V) H7) = FiniteSingleton {n : nat | n < N} m).
+move=> H8.
+rewrite H8.
+rewrite MySumF2Singleton.
+elim (excluded_middle_informative (m = m)).
+move=> H9.
+reflexivity.
+move=> H9.
+apply False_ind.
+apply H9.
+reflexivity.
+apply sig_map.
+apply Extensionality_Ensembles.
+apply conj.
+move=> k H8.
+suff: (k = m).
+move=> H9.
+rewrite H9.
+apply (In_singleton {n : nat | n < N} m).
+apply NNPP.
+move=> H9.
+apply H8.
+elim (excluded_middle_informative (k = m)).
+move=> H10.
+apply False_ind.
+apply (H9 H10).
+move=> H10.
+reflexivity.
+move=> k.
+elim.
+unfold In.
+simpl.
+elim (excluded_middle_informative (m = m)).
+move=> H8.
+apply H6.
+move=> H8.
+apply False_ind.
+apply H8.
+reflexivity.
+apply (Finite_downward_closed {n : nat | n < N} (Full_set {n : nat | n < N}) (CountFinite N)).
+move=> k H7.
+apply (Full_intro {n : nat | n < N} k).
+apply SumTSubspaceVS.
+move=> m.
+apply (SingleSubspaceVS K V).
+move=> m.
+elim (BijectiveSameSig {x : VT K V | In (VT K V) (SpanVS K V {n : nat | n < N} F) x} (fun v : {x : VT K V | In (VT K V) (SpanVS K V {n : nat | n < N} F) x} => exists f : FT K, v = SubspaceMakeVSVmul K V (SpanVS K V {n : nat | n < N} F) (SpanSubspaceVS K V {n : nat | n < N} F) f (exist (SpanVS K V {n : nat | n < N} F) (F m) (SpanContainSelfVS K V {n : nat | n < N} F m))) (fun v : {x : VT K V | In (VT K V) (SpanVS K V {n : nat | n < N} F) x} => exists f : FT K, proj1_sig v = Vmul K V f (F m))).
+move=> g1 H4.
+elim (BijectiveSigSigInv (VT K V) (SpanVS K V {n : nat | n < N} F) (fun v : VT K V => exists f : FT K, v = Vmul K V f (F m))).
+move=> g2 H5.
+elim (BijectiveSameSig (VT K V) (Intersection (VT K V) (SpanVS K V {n : nat | n < N} F) (fun v : VT K V => exists f : FT K, v = Vmul K V f (F m))) (fun v : VT K V => exists f : FT K, v = Vmul K V f (F m))).
+move=> g3 H6.
+exists (compose g3 (compose g2 g1)).
+apply conj.
+move=> x.
+rewrite - (proj1 H6).
+rewrite - (proj1 H5).
+rewrite - (proj1 H4).
+reflexivity.
+apply BijChain.
+apply BijChain.
+apply (proj2 H4).
+apply (proj2 H5).
+apply (proj2 H6).
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
+elim.
+move=> w H6 H7.
+apply H7.
+move=> v H6.
+apply Intersection_intro.
+elim H6.
+move=> f H7.
+rewrite H7.
+apply (proj1 (proj2 (SpanSubspaceVS K V {n : nat | n < N} F)) f (F m)).
+apply SpanContainSelfVS.
+apply H6.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
+elim.
+move=> f H4.
+exists f.
+rewrite H4.
+reflexivity.
+move=> v.
+elim.
+move=> f H4.
+exists f.
+apply sig_map.
+apply H4.
+Qed.
+
 Lemma Proposition_5_2 : forall (K : Field) (V : VectorSpace K) (N : nat) (H1 : forall (m : Count N), proj1_sig m < S N) (H2 : N < S N) (F : Count (S N) -> VT K V), (LinearlyIndependentVS K V (Count (S N)) F) <-> (LinearlyIndependentVS K V (Count N) (fun (m : Count N) => F (exist (fun (n : nat) => n < S N) (proj1_sig m) (H1 m))) /\ ~ (In (VT K V) (SpanVS K V (Count N) (fun (m : Count N) => F (exist (fun (n : nat) => n < S N) (proj1_sig m) (H1 m)))) (F (exist (fun (n : nat) => n < S N) N H2)))).
 Proof.
 move=> K V N H1 H2 F.
