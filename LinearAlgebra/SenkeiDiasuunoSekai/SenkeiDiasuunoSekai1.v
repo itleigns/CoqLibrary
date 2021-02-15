@@ -5252,6 +5252,23 @@ move=> t.
 reflexivity.
 Qed.
 
+Lemma SubspaceBasisLinearlyIndependentVS : forall (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) (T : Type) (F : T -> VT K V), BasisSubspaceVS K V W H T F -> LinearlyIndependentVS K V T F.
+Proof.
+move=> K V W H1 T F.
+elim.
+move=> H2 H3.
+apply (InjectiveSaveLinearlyIndependentVS2 K (SubspaceMakeVS K V W H1) V T (fun (t : T) => exist W (F t) (H2 t)) (fun (v : {w : VT K V | In (VT K V) W w}) => proj1_sig v)).
+apply conj.
+move=> v1 v2.
+apply sig_map.
+apply conj.
+move=> v1 v2.
+reflexivity.
+move=> c v.
+reflexivity.
+apply (proj2 (proj1 (BasisLIGeVS K (SubspaceMakeVS K V W H1) T (fun t : T => exist W (F t) (H2 t))) H3)).
+Qed.
+
 Lemma Formula_P25 : forall (K : Field) (V : VectorSpace K) (N : nat) (F : {n : nat | n < N} -> VT K V) (H : forall (t : (forall (m : {n : nat | n < N}), {v : VT K V | exists (f : FT K), v = Vmul K V f (F m)})), In (VT K V) (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun (m : {n : nat | n < N}) => proj1_sig (t m)))), LinearlyIndependentVS K V {n : nat | n < N} F <-> ((Bijective (DirectProdVST K {n : nat | n < N} (fun (m : {n : nat | n < N}) => SubspaceMakeVS K V (fun (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m)) (SingleSubspaceVS K V (F m)))) {w : VT K V | SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m)) w} (fun (t : forall (m : {n : nat | n < N}), {v : VT K V | exists (f : FT K), v = Vmul K V f (F m)}) => exist (SumTEnsembleVS K V {n : nat | n < N} (fun (m : {n : nat | n < N}) (v : VT K V) => exists (f : FT K), v = Vmul K V f (F m))) (MySumF2 {n : nat | n < N} (exist (Finite {n : nat | n < N}) (Full_set {n : nat | n < N}) (CountFinite N)) (VSPCM K V) (fun (m : {n : nat | n < N}) => proj1_sig (t m))) (H t))) /\ forall (m : {n : nat | n < N}), (F m) <> VO K V).
 Proof.
 move=> K V N F H1.
@@ -7658,6 +7675,662 @@ reflexivity.
 move=> y.
 apply sig_map.
 reflexivity.
+Qed.
+
+Definition FiniteDimensionVS (K : Field) (V : VectorSpace K) := exists (N : nat) (F : Count N -> VT K V), BasisVS K V (Count N) F.
+
+Lemma DimensionVSsub : forall (K : Field) (V : VectorSpace K), FiniteDimensionVS K V -> {N : nat | exists (F : Count N -> VT K V), BasisVS K V (Count N) F}.
+Proof.
+move=> K V H1.
+apply (constructive_definite_description (fun (N : nat) => exists (F : Count N -> VT K V), BasisVS K V (Count N) F)).
+apply (proj1 (unique_existence (fun (N : nat) => exists (F : Count N -> VT K V), BasisVS K V (Count N) F))).
+apply conj.
+apply H1.
+move=> N1 N2 H2 H3.
+elim H2.
+move=> F1 H4.
+elim H3.
+move=> F2 H5.
+apply (Theorem_5_4 K V N1 N2 F1 F2 H4 H5).
+Qed.
+
+Definition DimensionVS (K : Field) (V : VectorSpace K) (H : FiniteDimensionVS K V) := proj1_sig (DimensionVSsub K V H).
+
+Lemma DimensionVSNature : forall (K : Field) (V : VectorSpace K) (H : FiniteDimensionVS K V), exists (F : Count (DimensionVS K V H) -> VT K V), BasisVS K V (Count (DimensionVS K V H)) F.
+Proof.
+move=> K V H1.
+apply (proj2_sig (DimensionVSsub K V H1)).
+Qed.
+
+Lemma DimensionVSNature2 : forall (K : Field) (V : VectorSpace K) (H : FiniteDimensionVS K V) (N : nat) (F : Count N -> VT K V), BasisVS K V (Count N) F -> N = (DimensionVS K V H).
+Proof.
+move=> K V H1 N F H2.
+elim (DimensionVSNature K V H1).
+move=> G H3.
+apply (Theorem_5_4 K V N (DimensionVS K V H1) F G H2 H3).
+Qed.
+
+Definition DimensionSubspaceVS (K : Field) (V : VectorSpace K) (W : Ensemble (VT K V)) (H : SubspaceVS K V W) := DimensionVS K (SubspaceMakeVS K V W H).
+
+Lemma VODimensionVS : forall (K : Field) (V : VectorSpace K), exists (H : FiniteDimensionVS K (SubspaceMakeVS K V (Singleton (VT K V) (VO K V)) (VOSubspaceVS K V))), (DimensionSubspaceVS K V (Singleton (VT K V) (VO K V)) (VOSubspaceVS K V) H) = O.
+Proof.
+move=> K V.
+suff: (BasisVS K (SubspaceMakeVS K V (Singleton (VT K V) (VO K V)) (VOSubspaceVS K V)) (Count O) (fun (m : Count O) => SubspaceMakeVSVO K V (Singleton (VT K V) (VO K V)) (VOSubspaceVS K V))).
+move=> H1.
+suff: (FiniteDimensionVS K (SubspaceMakeVS K V (Singleton (VT K V) (VO K V)) (VOSubspaceVS K V))).
+move=> H2.
+exists H2.
+rewrite (DimensionVSNature2 K (SubspaceMakeVS K V (Singleton (VT K V) (VO K V)) (VOSubspaceVS K V)) H2 O (fun (m : Count O) => (SubspaceMakeVSVO K V (Singleton (VT K V) (VO K V)) (VOSubspaceVS K V))) H1).
+reflexivity.
+exists O.
+exists (fun (m : Count O) => SubspaceMakeVSVO K V (Singleton (VT K V) (VO K V)) (VOSubspaceVS K V)).
+apply H1.
+apply (proj2 (FiniteBasisVS K (SubspaceMakeVS K V (Singleton (VT K V) (VO K V)) (VOSubspaceVS K V)) O (fun (m : Count O) => SubspaceMakeVSVO K V (Singleton (VT K V) (VO K V)) (VOSubspaceVS K V)))).
+move=> v.
+exists (fun (m : Count O) => FO K).
+apply conj.
+apply sig_map.
+rewrite MySumF2O.
+elim (proj2_sig v).
+reflexivity.
+move=> m.
+apply False_ind.
+apply (PeanoNat.Nat.nlt_0_r (proj1_sig m) (proj2_sig m)).
+move=> v0 H1.
+apply functional_extensionality.
+move=> m.
+apply False_ind.
+apply (PeanoNat.Nat.nlt_0_r (proj1_sig m) (proj2_sig m)).
+Qed.
+
+Lemma Theorem_5_6_sub : forall (K : Field) (V : VectorSpace K) (N : nat) (F : Count N -> VT K V), GeneratingSystemVS K V (Count N) F -> BasisVS K V ({m : Count N | ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun (k : {n : Count N | proj1_sig n < proj1_sig m}) => F (proj1_sig k))) (F m)}) (fun (k : {m : Count N | ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)}) => F (proj1_sig k)).
+Proof.
+move=> K V N F H1.
+suff: (forall (l : nat), l <= N -> SpanVS K V {m : Count N | proj1_sig m < l /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} (fun k : {m : Count N | proj1_sig m < l /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)) = SpanVS K V {m : Count N | proj1_sig m < l} (fun k : {m : Count N | proj1_sig m < l} => F (proj1_sig k))).
+move=> H2.
+suff: (forall (l : nat), l <= N -> LinearlyIndependentVS K V {m : Count N | proj1_sig m < l /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} (fun k : {m : Count N | proj1_sig m < l /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k))).
+move=> H3.
+elim (BijectiveSameSig (Count N) (fun (m : Count N) => ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)) (fun (m : Count N) => proj1_sig m < N /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m))).
+move=> g H4.
+suff: ((fun k : {m : Count N | ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)) = (fun t : {t : Count N | In (Count N) (fun m : Count N => ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)) t} => F (proj1_sig (g t)))).
+move=> H5.
+rewrite H5.
+apply (BijectiveSaveBasisVS K V {t : Count N | In (Count N) (fun m : Count N => ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)) t} {t : Count N | In (Count N) (fun m : Count N => proj1_sig m < N /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)) t} g (fun k : {m : Count N | proj1_sig m < N /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)) (proj2 H4)).
+apply BasisLIGeVS.
+apply conj.
+unfold GeneratingSystemVS.
+rewrite H1.
+rewrite (H2 N (le_n N)).
+apply (BijectiveSaveSpanVS K V {m : Count N | proj1_sig m < N} (Count N) (fun (k : {m : Count N | proj1_sig m < N}) => proj1_sig k) F).
+exists (fun (m : Count N) => exist (fun (m : Count N) => proj1_sig m < N) m (proj2_sig m)).
+apply conj.
+move=> x.
+apply sig_map.
+reflexivity.
+move=> y.
+reflexivity.
+apply (H3 N (le_n N)).
+apply functional_extensionality.
+move=> k.
+rewrite (proj1 H4 k).
+reflexivity.
+apply Extensionality_Ensembles.
+apply conj.
+move=> m H4.
+apply conj.
+apply (proj2_sig m).
+apply H4.
+move=> m H4.
+apply (proj2 H4).
+elim.
+move=> H3.
+apply (LinearlyIndependentVSDef3 K V).
+move=> a A H4 k.
+apply False_ind.
+apply (PeanoNat.Nat.nlt_0_r (proj1_sig (proj1_sig k)) (proj1 (proj2_sig k))).
+move=> n H3 H4.
+elim (classic (In (VT K V) (SpanVS K V {k : Count N | proj1_sig k < n} (fun k : {k : Count N | proj1_sig k < n} => F (proj1_sig k))) (F (exist (fun (k : nat) => k < N) n H4)))).
+move=> H5.
+elim (BijectiveSameSig (Count N) (fun (m : Count N) => proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)) (fun (m : Count N) => proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m))).
+move=> g H6.
+suff: ((fun k : {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)) = (fun t : {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig (g t)))).
+move=> H7.
+rewrite H7.
+apply (BijectiveSaveLinearlyIndependentVS K V {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} g (fun k : {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k))).
+apply (proj2 H6).
+apply (H3 (le_trans n (S n) N (le_S n n (le_n n)) H4)).
+apply functional_extensionality.
+move=> k.
+rewrite (proj1 H6 k).
+reflexivity.
+apply Extensionality_Ensembles.
+apply conj.
+move=> m H6.
+apply conj.
+elim (le_lt_or_eq (proj1_sig m) n (le_S_n (proj1_sig m) n (proj1 H6))).
+apply.
+move=> H7.
+apply False_ind.
+apply (proj2 H6).
+rewrite H7.
+suff: (m = (exist (fun k : nat => k < N) n H4)).
+move=> H8.
+rewrite H8.
+apply H5.
+apply sig_map.
+apply H7.
+apply (proj2 H6).
+move=> m H6.
+apply conj.
+apply (le_S (S (proj1_sig m)) n (proj1 H6)).
+apply (proj2 H6).
+move=> H5.
+suff: (exists (M : nat) (f : {n : nat | n < M} -> {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)}), Bijective {n : nat | n < M} {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} f).
+elim.
+move=> M.
+elim.
+move=> f H6.
+suff: (proj1_sig (exist (fun k : nat => k < N) n H4) < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig (exist (fun k : nat => k < N) n H4)} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig (exist (fun k : nat => k < N) n H4)} => F (proj1_sig k))) (F (exist (fun k : nat => k < N) n H4))).
+move=> H7.
+elim H6.
+move=> g H9.
+suff: ((fun k : {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)) = (fun t : {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => match excluded_middle_informative (proj1_sig match excluded_middle_informative (proj1_sig (proj1_sig t) < n) with
+  | left H => exist (fun l : nat => l < S M) (proj1_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig t) (conj H (proj2 (proj2_sig t)))))) (PeanoNat.Nat.le_trans (S (proj1_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig t) (conj H (proj2 (proj2_sig t))))))) M (S M) (proj2_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k :  {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig t) (conj H (proj2 (proj2_sig t)))))) (le_S M M (le_n M)))
+  | right _ => exist (fun l : nat => l < S M) M (le_n (S M))
+end < M) with
+  | left H => F (proj1_sig (f (exist (fun k : nat => k < M) (proj1_sig match excluded_middle_informative (proj1_sig (proj1_sig t) < n) with
+    | left H0 => exist (fun l : nat => l < S M) (proj1_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig t) (conj H0 (proj2 (proj2_sig t)))))) (PeanoNat.Nat.le_trans (S (proj1_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig t) (conj H0 (proj2 (proj2_sig t))))))) M (S M) (proj2_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig t) (conj H0 (proj2 (proj2_sig t)))))) (le_S M M (le_n M)))
+    | right _ => exist (fun l : nat => l < S M) M (le_n (S M))
+  end) H)))
+  | right _ => F (exist (fun k : nat => k < N) n H4)
+end)).
+move=> H10.
+rewrite H10.
+apply (BijectiveSaveLinearlyIndependentVS K V {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} (Count (S M)) (fun (k : {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)}) => match excluded_middle_informative (proj1_sig (proj1_sig k) < n) with
+  | left H => exist (fun (l : nat) => l < S M) (proj1_sig (g (exist (fun (l : Count N) => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig k) (conj H (proj2 (proj2_sig k)))))) (le_trans (S (proj1_sig (g (exist (fun (l : Count N) => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig k) (conj H (proj2 (proj2_sig k))))))) M (S M) (proj2_sig (g (exist (fun (l : Count N) => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig k) (conj H (proj2 (proj2_sig k)))))) (le_S M M (le_n M)))
+  | right _ => exist (fun (l : nat) => l < S M) M (le_n (S M))
+end) (fun m : Count (S M) => match excluded_middle_informative (proj1_sig m < M) with
+  | left H => F (proj1_sig (f (exist (fun k : nat => k < M) (proj1_sig m) H)))
+  | right _ => F (exist (fun k : nat => k < N) n H4)
+end)).
+apply InjSurjBij.
+move=> l1 l2.
+elim (excluded_middle_informative (proj1_sig (proj1_sig l1) < n)).
+move=> H11.
+elim (excluded_middle_informative (proj1_sig (proj1_sig l2) < n)).
+move=> H12 H13.
+suff: ((exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig l1) (conj H11 (proj2 (proj2_sig l1)))) = (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig l2) (conj H12 (proj2 (proj2_sig l2))))).
+move=> H14.
+apply sig_map.
+suff: (proj1_sig l1 = proj1_sig (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig l1) (conj H11 (proj2 (proj2_sig l1))))).
+move=> H15.
+rewrite H15.
+rewrite H14.
+reflexivity.
+reflexivity.
+apply (BijInj {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} {n : nat | n < M} g).
+exists f.
+apply conj.
+apply (proj2 H9).
+apply (proj1 H9).
+suff: (proj1_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig l1) (conj H11 (proj2 (proj2_sig l1))))) = proj1_sig (exist (fun l : nat => l < S M) (proj1_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig l1) (conj H11 (proj2 (proj2_sig l1)))))) (PeanoNat.Nat.le_trans (S (proj1_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig l1) (conj H11 (proj2 (proj2_sig l1))))))) M (S M) (proj2_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig l1) (conj H11 (proj2 (proj2_sig l1)))))) (le_S M M (le_n M))))).
+move=> H14.
+apply sig_map.
+rewrite H14.
+rewrite H13.
+reflexivity.
+reflexivity.
+move=> H12 H13.
+apply False_ind.
+suff: (~ proj1_sig (exist (fun l : nat => l < S M) M (le_n (S M))) < M).
+move=> H14.
+apply H14.
+rewrite - H13.
+simpl.
+apply (proj2_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig l1) (conj H11 (proj2 (proj2_sig l1)))))).
+apply (lt_irrefl M).
+move=> H11.
+elim (excluded_middle_informative (proj1_sig (proj1_sig l2) < n)).
+move=> H12 H13.
+apply False_ind.
+suff: (~ proj1_sig (exist (fun l : nat => l < S M) M (le_n (S M))) < M).
+move=> H14.
+apply H14.
+rewrite H13.
+simpl.
+apply (proj2_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig l2) (conj H12 (proj2 (proj2_sig l2)))))).
+apply (lt_irrefl M).
+move=> H12 H13.
+apply sig_map.
+apply sig_map.
+suff: (proj1_sig (proj1_sig l1) = n).
+move=> H14.
+suff: (proj1_sig (proj1_sig l2) = n).
+move=> H15.
+rewrite H15.
+apply H14.
+elim (le_lt_or_eq (proj1_sig (proj1_sig l2)) n (le_S_n (proj1_sig (proj1_sig l2)) n (proj1 (proj2_sig l2)))).
+move=> H15.
+apply False_ind.
+apply (H12 H15).
+apply.
+elim (le_lt_or_eq (proj1_sig (proj1_sig l1)) n (le_S_n (proj1_sig (proj1_sig l1)) n (proj1 (proj2_sig l1)))).
+move=> H14.
+apply False_ind.
+apply (H11 H14).
+apply.
+move=> m.
+elim (classic (proj1_sig m < M)).
+move=> H11.
+suff: (proj1_sig (proj1_sig (f (exist (fun k : nat => k < M) (proj1_sig m) H11))) < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig (proj1_sig (f (exist (fun k : nat => k < M) (proj1_sig m) H11)))} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig (proj1_sig (f (exist (fun k : nat => k < M) (proj1_sig m) H11)))} => F (proj1_sig k))) (F (proj1_sig (f (exist (fun k : nat => k < M) (proj1_sig m) H11))))).
+move=> H12.
+exists (exist (fun (m : Count N) => proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)) (proj1_sig (f (exist (fun (k : nat) => k < M) (proj1_sig m) H11))) H12).
+simpl.
+elim (excluded_middle_informative (proj1_sig (proj1_sig (f (exist (fun k : nat => k < M) (proj1_sig m) H11))) < n)).
+move=> H13.
+simpl.
+suff: ((exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k))) (F l)) (proj1_sig (f (exist (fun k : nat => k < M) (proj1_sig m) H11))) (conj H13 (proj2 H12))) = (f (exist (fun k : nat => k < M) (proj1_sig m) H11))).
+move=> H14.
+rewrite H14.
+rewrite (proj1 H9).
+apply sig_map.
+reflexivity.
+apply sig_map.
+reflexivity.
+move=> H13.
+apply False_ind.
+apply H13.
+apply (proj1 (proj2_sig (f (exist (fun k : nat => k < M) (proj1_sig m) H11)))).
+apply conj.
+apply le_S.
+apply (proj1 (proj2_sig (f (exist (fun k : nat => k < M) (proj1_sig m) H11)))).
+apply (proj2 (proj2_sig (f (exist (fun k : nat => k < M) (proj1_sig m) H11)))).
+move=> H11.
+exists (exist (fun (m : Count N) => proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {l : Count N | proj1_sig l < proj1_sig m} (fun k : {l : Count N | proj1_sig l < proj1_sig m} => F (proj1_sig k))) (F m)) (exist (fun k : nat => k < N) n H4) (conj (le_n (S n)) H5)).
+simpl.
+elim (excluded_middle_informative (n < n)).
+move=> H12.
+apply False_ind.
+apply (lt_irrefl n H12).
+move=> H12.
+apply sig_map.
+elim (le_lt_or_eq (proj1_sig m) M (le_S_n (proj1_sig m) M (proj2_sig m))).
+move=> H13.
+apply False_ind.
+apply (H11 H13).
+move=> H13.
+rewrite H13.
+reflexivity.
+elim (Proposition_5_2_exists K V M).
+move=> H11.
+elim.
+move=> H12 H13.
+apply H13.
+apply conj.
+suff: ((fun m : Count M => match excluded_middle_informative (proj1_sig (exist (fun n0 : nat => n0 < S M) (proj1_sig m) (H11 m)) < M) with
+  | left H => F (proj1_sig (f (exist (fun k : nat => k < M) (proj1_sig (exist (fun n0 : nat => n0 < S M) (proj1_sig m) (H11 m))) H)))
+  | right _ => F (exist (fun k : nat => k < N) n H4)
+end) = (fun t : Count M => F (proj1_sig (f t)))).
+move=> H14.
+rewrite H14.
+apply (BijectiveSaveLinearlyIndependentVS K V (Count M) {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} f (fun k : {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k))).
+apply H6.
+apply H3.
+apply (le_trans n (S n) N (le_S n n (le_n n)) H4).
+apply functional_extensionality.
+move=> m.
+elim (excluded_middle_informative (proj1_sig (exist (fun n0 : nat => n0 < S M) (proj1_sig m) (H11 m)) < M)).
+move=> H14.
+suff: ((exist (fun k : nat => k < M) (proj1_sig (exist (fun n0 : nat => n0 < S M) (proj1_sig m) (H11 m))) H14) = m).
+move=> H15.
+rewrite H15.
+reflexivity.
+apply sig_map.
+reflexivity.
+move=> H14.
+apply False_ind.
+apply (H14 (proj2_sig m)).
+simpl.
+elim (excluded_middle_informative (M < M)).
+move=> H14.
+apply False_ind.
+apply (lt_irrefl M H14).
+move=> H14.
+suff: ((fun m : Count M => match excluded_middle_informative (proj1_sig m < M) with
+  | left H => F (proj1_sig (f (exist (fun k : nat => k < M) (proj1_sig m) H)))
+  | right _ => F (exist (fun k : nat => k < N) n H4)
+end) = (fun t : Count M => F (proj1_sig (f t)))).
+move=> H15.
+rewrite H15.
+rewrite - (BijectiveSaveSpanVS K V (Count M) {l : Count N | proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {m : Count N | proj1_sig m < proj1_sig l} (fun k : {m : Count N | proj1_sig m < proj1_sig l} => F (proj1_sig k))) (F l)} f (fun k : {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {l : Count N | proj1_sig l < proj1_sig m} (fun k : {l : Count N | proj1_sig l < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k))).
+rewrite (H2 n).
+apply H5.
+apply (le_trans n (S n) N (le_S n n (le_n n)) H4).
+apply H6.
+apply functional_extensionality.
+move=> m.
+elim (excluded_middle_informative (proj1_sig m < M)).
+move=> H15.
+suff: ((exist (fun k : nat => k < M) (proj1_sig m) H15) = m).
+move=> H16.
+rewrite H16.
+reflexivity.
+apply sig_map.
+reflexivity.
+move=> H15.
+apply False_ind.
+apply (H15 (proj2_sig m)).
+apply functional_extensionality.
+move=> k.
+elim (excluded_middle_informative (proj1_sig (proj1_sig k) < n)).
+move=> H10.
+simpl.
+elim (excluded_middle_informative (proj1_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k0 : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k0))) (F l)) (proj1_sig k) (conj H10 (proj2 (proj2_sig k))))) < M)).
+move=> H11.
+suff: ((exist (fun k0 : nat => k0 < M) (proj1_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k0 : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k0))) (F l)) (proj1_sig k) (conj H10 (proj2 (proj2_sig k)))))) H11) = (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k0 : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k0))) (F l)) (proj1_sig k) (conj H10 (proj2 (proj2_sig k)))))).
+move=> H12.
+rewrite H12.
+rewrite (proj2 H9).
+reflexivity.
+apply sig_map.
+reflexivity.
+move=> H11.
+apply False_ind.
+apply H11.
+apply (proj2_sig (g (exist (fun l : Count N => proj1_sig l < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig l} (fun k0 : {n0 : Count N | proj1_sig n0 < proj1_sig l} => F (proj1_sig k0))) (F l)) (proj1_sig k) (conj H10 (proj2 (proj2_sig k)))))).
+move=> H10.
+elim (excluded_middle_informative (proj1_sig (exist (fun l : nat => l < S M) M (le_n (S M))) < M)).
+move=> H11.
+apply False_ind.
+apply (lt_irrefl M H11).
+move=> H11.
+elim (le_lt_or_eq (proj1_sig (proj1_sig k)) n).
+move=> H12.
+apply False_ind.
+apply (H10 H12).
+move=> H12.
+suff: ((proj1_sig k) = (exist (fun k0 : nat => k0 < N) n H4)).
+move=> H13.
+rewrite H13.
+reflexivity.
+apply sig_map.
+apply H12.
+apply (le_S_n (proj1_sig (proj1_sig k)) n (proj1 (proj2_sig k))).
+apply conj.
+apply (le_n (S n)).
+apply H5.
+apply CountFiniteBijective.
+apply (FiniteSigSame (Count N)).
+apply (Finite_downward_closed (Count N) (Full_set (Count N)) (CountFinite N)).
+move=> m H6.
+apply (Full_intro (Count N) m).
+elim.
+move=> H2.
+elim (BijectiveSameSig (Count N) (fun (m : Count N) => proj1_sig m < O) (fun (m : Count N) => proj1_sig m < 0 /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m))).
+move=> G H3.
+suff: ((fun k : {m : Count N | proj1_sig m < 0} => F (proj1_sig k)) = (compose (fun k : {m : Count N | proj1_sig m < 0 /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)) G)).
+move=> H4.
+rewrite H4.
+apply (BijectiveSaveSpanVS K V {m : Count N | proj1_sig m < 0} {m : Count N | proj1_sig m < 0 /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} G).
+apply (proj2 H3).
+apply functional_extensionality.
+move=> k.
+unfold compose.
+rewrite (proj1 H3).
+reflexivity.
+apply Extensionality_Ensembles.
+apply conj.
+move=> m H3.
+apply False_ind.
+apply (PeanoNat.Nat.nlt_0_r (proj1_sig m) H3).
+move=> m H3.
+apply (proj1 H3).
+move=> n H2 H3.
+elim (classic (In (VT K V) (SpanVS K V {m : Count N | proj1_sig m < n} (fun k : {m : Count N | proj1_sig m < n} => F (proj1_sig k))) (F (exist (fun (k : nat) => k < N) n H3)))).
+move=> H4.
+suff: (SpanVS K V {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} (fun k : {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)) = SpanVS K V {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} (fun k : {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n : Count N | proj1_sig n < proj1_sig m} (fun k : {n : Count N | proj1_sig n < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k))).
+move=> H5.
+rewrite H5.
+rewrite H2.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
+elim.
+move=> x H6.
+rewrite H6.
+suff: (SubspaceVS K V (SpanVS K V {m : Count N | proj1_sig m < S n} (fun k : {m : Count N | proj1_sig m < S n} => F (proj1_sig k)))).
+move=> H7.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 H7)).
+move=> cm u H8 H9.
+apply (proj1 H7 cm (Vmul K V (proj1_sig x u) (F (proj1_sig u))) H9).
+apply (proj1 (proj2 H7) (proj1_sig x u)).
+suff: (proj1_sig u = proj1_sig (exist (fun (m : Count N) => proj1_sig m < S n) (proj1_sig u) (le_S (S (proj1_sig (proj1_sig u))) n (proj2_sig u)))).
+move=> H10.
+rewrite H10.
+apply (SpanContainSelfVS K V {m : Count N | proj1_sig m < S n} (fun k : {m : Count N | proj1_sig m < S n} => F (proj1_sig k)) (exist (fun m : Count N => proj1_sig m < S n) (proj1_sig u) (le_S (S (proj1_sig (proj1_sig u))) n (proj2_sig u)))).
+reflexivity.
+apply (SpanSubspaceVS K V).
+move=> v.
+elim.
+move=> x H6.
+rewrite H6.
+suff: (SubspaceVS K V (SpanVS K V {m : Count N | proj1_sig m < n} (fun k : {m : Count N | proj1_sig m < n} => F (proj1_sig k)))).
+move=> H7.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 H7)).
+move=> cm u H8 H9.
+apply (proj1 H7 cm (Vmul K V (proj1_sig x u) (F (proj1_sig u))) H9).
+apply (proj1 (proj2 H7) (proj1_sig x u)).
+elim (le_lt_or_eq (proj1_sig (proj1_sig u)) n).
+move=> H10.
+suff: (proj1_sig u = proj1_sig (exist (fun (m : Count N) => proj1_sig m < n) (proj1_sig u) H10)).
+move=> H11.
+rewrite H11.
+apply (SpanContainSelfVS K V {m : Count N | proj1_sig m < n} (fun k : {m : Count N | proj1_sig m < n} => F (proj1_sig k)) (exist (fun m : Count N => proj1_sig m < n) (proj1_sig u) H10)).
+reflexivity.
+move=> H10.
+suff: (proj1_sig u = (exist (fun k : nat => k < N) n H3)).
+move=> H11.
+rewrite H11.
+apply H4.
+apply sig_map.
+apply H10.
+apply (le_S_n (proj1_sig (proj1_sig u)) n (proj2_sig u)).
+apply (SpanSubspaceVS K V).
+apply (le_trans n (S n) N (le_S n n (le_n n)) H3).
+elim (BijectiveSameSig (Count N) (fun (m : Count N) => proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)) (fun (m : Count N) => proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m))).
+move=> G H5.
+suff: ((fun k : {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)) = (fun t : {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig (G t)))).
+move=> H6.
+rewrite H6.
+apply (BijectiveSaveSpanVS K V {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} G (fun k : {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k))).
+apply (proj2 H5).
+apply functional_extensionality.
+move=> k.
+rewrite (proj1 H5 k).
+reflexivity.
+apply Extensionality_Ensembles.
+apply conj.
+move=> m H5.
+apply conj.
+apply (le_S (S (proj1_sig m)) n (proj1 H5)).
+apply (proj2 H5).
+move=> m H5.
+apply conj.
+elim (le_lt_or_eq (proj1_sig m) n).
+apply.
+move=> H6.
+apply False_ind.
+apply (proj2 H5).
+rewrite H6.
+suff: (m = (exist (fun k : nat => k < N) n H3)).
+move=> H7.
+rewrite H7.
+apply H4.
+apply sig_map.
+apply H6.
+apply (le_S_n (proj1_sig m) n (proj1 H5)).
+apply (proj2 H5).
+move=> H4.
+suff: (SpanVS K V {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} (fun k : {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)) = SumEnsembleVS K V (SpanVS K V {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} (fun k : {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k))) (fun (v : VT K V) => exists (f : FT K), v = Vmul K V f (F (exist (fun (l : nat) => l < N) n H3)))).
+move=> H5.
+rewrite H5.
+rewrite H2.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
+elim.
+move=> v1 v2 H6 H7.
+suff: (SubspaceVS K V (SpanVS K V {m : Count N | proj1_sig m < S n} (fun k : {m : Count N | proj1_sig m < S n} => F (proj1_sig k)))).
+move=> H8.
+apply (proj1 H8 v1 v2).
+elim H6.
+move=> x H9.
+rewrite H9.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 H8)).
+move=> cm u H10 H11.
+apply (proj1 H8 cm).
+apply H11.
+apply (proj1 (proj2 H8)).
+suff: (proj1_sig u = proj1_sig (exist (fun (m : Count N) => proj1_sig m < S n) (proj1_sig u) (le_S (S (proj1_sig (proj1_sig u))) n (proj2_sig u)))).
+move=> H12.
+rewrite H12.
+apply (SpanContainSelfVS K V {m : Count N | proj1_sig m < S n} (fun k : {m : Count N | proj1_sig m < S n} => F (proj1_sig k)) (exist (fun (m : Count N) => proj1_sig m < S n) (proj1_sig u) (le_S (S (proj1_sig (proj1_sig u))) n (proj2_sig u)))).
+reflexivity.
+elim H7.
+move=> f H9.
+rewrite H9.
+apply (proj1 (proj2 H8)).
+suff: ((exist (fun l : nat => l < N) n H3) = proj1_sig (exist (fun (m : Count N) => proj1_sig m < S n) (exist (fun l : nat => l < N) n H3) (le_n (S n)))).
+move=> H10.
+rewrite H10.
+apply (SpanContainSelfVS K V {m : Count N | proj1_sig m < S n} (fun k : {m : Count N | proj1_sig m < S n} => F (proj1_sig k)) (exist (fun (m : Count N) => proj1_sig m < S n) (exist (fun l : nat => l < N) n H3) (le_n (S n)))).
+reflexivity.
+apply (SpanSubspaceVS K V).
+move=> v.
+elim.
+move=> x H6.
+rewrite H6.
+suff: (SubspaceVS K V (SumEnsembleVS K V (SpanVS K V {m : Count N | proj1_sig m < n} (fun k : {m : Count N | proj1_sig m < n} => F (proj1_sig k))) (fun v0 : VT K V => exists f : FT K, v0 = Vmul K V f (F (exist (fun l : nat => l < N) n H3))))).
+move=> H7.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 H7)).
+move=> cm u H8 H9.
+apply (proj1 H7).
+apply H9.
+apply (proj1 (proj2 H7)).
+elim (le_lt_or_eq (proj1_sig (proj1_sig u)) n).
+move=> H10.
+rewrite - (Vadd_O_r K V (F (proj1_sig u))).
+apply SumEnsembleVS_intro.
+suff: ((proj1_sig u) = proj1_sig (exist (fun (m : Count N) => proj1_sig m < n) (proj1_sig u) H10)).
+move=> H11.
+rewrite H11.
+apply (SpanContainSelfVS K V {m : Count N | proj1_sig m < n} (fun k : {m : Count N | proj1_sig m < n} => F (proj1_sig k)) (exist (fun (m : Count N) => proj1_sig m < n) (proj1_sig u) H10)).
+reflexivity.
+exists (FO K).
+rewrite (Vmul_O_l K V).
+reflexivity.
+move=> H10.
+rewrite - (Vadd_O_l K V (F (proj1_sig u))).
+apply SumEnsembleVS_intro.
+suff: (SubspaceVS K V (SpanVS K V {m : Count N | proj1_sig m < n} (fun k : {m : Count N | proj1_sig m < n} => F (proj1_sig k)))).
+move=> H11.
+apply (proj2 (proj2 H11)).
+apply (SpanSubspaceVS K V).
+exists (FI K).
+rewrite (Vmul_I_l K V (F (exist (fun l : nat => l < N) n H3))).
+suff: (proj1_sig u = (exist (fun l : nat => l < N) n H3)).
+move=> H11.
+rewrite H11.
+reflexivity.
+apply sig_map.
+apply H10.
+apply (le_S_n (proj1_sig (proj1_sig u)) n (proj2_sig u)).
+apply (SumSubspaceVS K V).
+apply (SpanSubspaceVS K V).
+apply (SingleSubspaceVS K V).
+apply (le_trans n (S n) N (le_S n n (le_n n)) H3).
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
+elim.
+move=> x H5.
+rewrite H5.
+suff: (SubspaceVS K V (SumEnsembleVS K V (SpanVS K V {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} (fun k : {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k))) (fun v0 : VT K V => exists f : FT K, v0 = Vmul K V f (F (exist (fun l : nat => l < N) n H3))))).
+move=> H6.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 H6)).
+move=> cm u H7 H8.
+apply (proj1 H6 cm).
+apply H8.
+apply (proj1 (proj2 H6) (proj1_sig x u) (F (proj1_sig u))).
+elim (le_lt_or_eq (proj1_sig (proj1_sig u)) n).
+move=> H9.
+rewrite - (Vadd_O_r K V (F (proj1_sig u))).
+apply SumEnsembleVS_intro.
+suff: ((proj1_sig u) = proj1_sig (exist (fun (m : Count N) => proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)) (proj1_sig u) (conj H9 (proj2 (proj2_sig u))))).
+move=> H10.
+rewrite H10.
+apply (SpanContainSelfVS K V {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} (fun k : {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)) (exist (fun (m : Count N) => proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)) (proj1_sig u) (conj H9 (proj2 (proj2_sig u))))).
+reflexivity.
+exists (FO K).
+rewrite (Vmul_O_l K V).
+reflexivity.
+move=> H9.
+rewrite - (Vadd_O_l K V (F (proj1_sig u))).
+apply SumEnsembleVS_intro.
+apply (proj2 (proj2 (SpanSubspaceVS K V {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} (fun k : {m : Count N | proj1_sig m < n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k))))).
+exists (FI K).
+rewrite (Vmul_I_l K V).
+suff: (proj1_sig u = exist (fun l : nat => l < N) n H3).
+move=> H10.
+rewrite H10.
+reflexivity.
+apply sig_map.
+apply H9.
+apply (le_S_n (proj1_sig (proj1_sig u)) n (proj1 (proj2_sig u))).
+apply (SumSubspaceVS K V).
+apply (SpanSubspaceVS K V).
+apply (SingleSubspaceVS K V).
+move=> v.
+elim.
+move=> v1 v2 H5 H6.
+suff: (SubspaceVS K V (SpanVS K V {m : Count N | proj1_sig m < S n /\  ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} (fun k : {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)))).
+move=> H7.
+apply (proj1 H7 v1 v2).
+elim H5.
+move=> x H8.
+rewrite H8.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 H7)).
+move=> cm u H9 H10.
+apply (proj1 H7 cm).
+apply H10.
+apply (proj1 (proj2 H7) (proj1_sig x u) (F (proj1_sig u))).
+suff: (proj1_sig u = proj1_sig (exist (fun (m : Count N) => proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)) (proj1_sig u) (conj (le_S (S (proj1_sig (proj1_sig u))) n (proj1 (proj2_sig u))) (proj2 (proj2_sig u))))).
+move=> H11.
+rewrite H11.
+apply (SpanContainSelfVS K V {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} (fun k : {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)) (exist (fun m : Count N => proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)) (proj1_sig u) (conj (le_S (S (proj1_sig (proj1_sig u))) n (proj1 (proj2_sig u))) (proj2 (proj2_sig u))))).
+reflexivity.
+elim H6.
+move=> f H8.
+rewrite H8.
+apply (proj1 (proj2 H7) f).
+suff: ((exist (fun l : nat => l < N) n H3) = proj1_sig (exist (fun (m : Count N) => proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)) (exist (fun l : nat => l < N) n H3) (conj (le_n (S n)) H4))).
+move=> H9.
+rewrite H9.
+apply (SpanContainSelfVS K V {m : Count N | proj1_sig m < S n /\ ~ In (VT K V)  (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} (fun k : {m : Count N | proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)} => F (proj1_sig k)) (exist (fun (m : Count N) => proj1_sig m < S n /\ ~ In (VT K V) (SpanVS K V {n0 : Count N | proj1_sig n0 < proj1_sig m} (fun k : {n0 : Count N | proj1_sig n0 < proj1_sig m} => F (proj1_sig k))) (F m)) (exist (fun l : nat => l < N) n H3) (conj (le_n (S n)) H4))).
+reflexivity.
+apply (SpanSubspaceVS K V).
 Qed.
 
 End Senkeidaisuunosekai1.
