@@ -1,6 +1,7 @@
 From mathcomp
 Require Import ssreflect.
 Require Import Classical.
+Require Import Coq.Program.Basics.
 Require Import Coq.Logic.Description.
 Require Import Coq.Logic.ClassicalDescription.
 Require Import Coq.Logic.FunctionalExtensionality.
@@ -57,7 +58,7 @@ exists (g b).
 apply (proj2 H1 b).
 Qed.
 
-Lemma BijChain : forall (A B C : Type) (f : A -> B) (g : B -> C), Bijective f -> Bijective g -> Bijective (fun (a : A) => g (f a)).
+Lemma BijChain : forall (A B C : Type) (f : A -> B) (g : B -> C), Bijective f -> Bijective g -> Bijective (compose g f).
 Proof.
 move=> A B C f g.
 elim.
@@ -70,11 +71,12 @@ move=> a.
 rewrite (proj1 H2 (f a)).
 apply (proj1 H1 a).
 move=> c.
+unfold compose.
 rewrite (proj2 H1 (gi c)).
 apply (proj2 H2 c).
 Qed.
 
-Lemma SurjChain : forall (A B C : Type) (f : A -> B) (g : B -> C), Surjective f -> Surjective g -> Surjective (fun (a : A) => g (f a)).
+Lemma SurjChain : forall (A B C : Type) (f : A -> B) (g : B -> C), Surjective f -> Surjective g -> Surjective (compose g f).
 Proof.
 move=> A B C f g H1 H2 c.
 elim (H2 c).
@@ -82,18 +84,19 @@ move=> b H3.
 elim (H1 b).
 move=> a H4.
 exists a.
+unfold compose.
 rewrite H4.
 apply H3.
 Qed.
 
-Lemma InjChain : forall (A B C : Type) (f : A -> B) (g : B -> C), Injective f -> Injective g -> Injective (fun (a : A) => g (f a)).
+Lemma InjChain : forall (A B C : Type) (f : A -> B) (g : B -> C), Injective f -> Injective g -> Injective (compose g f).
 Proof.
 move=> A B C f g H1 H2 a1 a2 H3.
 apply (H1 a1 a2).
 apply (H2 (f a1) (f a2) H3).
 Qed.
 
-Lemma ChainSurj : forall (A B C : Type) (f : A -> B) (g : B -> C), Surjective (fun (a : A) => g (f a)) -> Surjective g.
+Lemma ChainSurj : forall (A B C : Type) (f : A -> B) (g : B -> C), Surjective (compose g f) -> Surjective g.
 Proof.
 move=> A B C f g H1 c.
 elim (H1 c).
@@ -102,10 +105,11 @@ exists (f a).
 apply H2.
 Qed.
 
-Lemma ChainInj : forall (A B C : Type) (f : A -> B) (g : B -> C), Injective (fun (a : A) => g (f a)) -> Injective f.
+Lemma ChainInj : forall (A B C : Type) (f : A -> B) (g : B -> C), Injective (compose g f) -> Injective f.
 Proof.
 move=> A B C f g H1 a1 a2 H2.
 apply (H1 a1 a2).
+unfold compose.
 rewrite H2.
 reflexivity.
 Qed.
