@@ -2,6 +2,7 @@ Require Import Coq.Sets.Ensembles.
 Require Import Coq.Sets.Image.
 Require Import Coq.Sets.Finite_sets.
 Require Import Coq.Sets.Finite_sets_facts.
+Require Import Coq.Program.Basics.
 Require Import Coq.Logic.ProofIrrelevanceFacts.
 Require Import Coq.Logic.ClassicalDescription.
 Require Import Coq.Logic.FunctionalExtensionality.
@@ -3811,6 +3812,45 @@ reflexivity.
 Qed.
 
 Definition FiniteIm (U1 U2 : Type) (F : U1 -> U2) (A : {X : Ensemble U1 | Finite U1 X}):= (exist (Finite U2) (Im U1 U2 (proj1_sig A) F) (finite_image U1 U2 (proj1_sig A) F (proj2_sig A))).
+
+Lemma MySumF2BijectiveSame2 : forall (U1 U2 : Type) (A : {X : Ensemble U1 | Finite U1 X}) (G : U1 -> U2) (CM : CommutativeMonoid) (F : U2 -> CMT CM), (forall (u1 u2 : U1), In U1 (proj1_sig A) u1 -> In U1 (proj1_sig A) u2 -> G u1 = G u2 -> u1 = u2) -> (MySumF2 U1 A CM (compose F G)) = (MySumF2 U2 (FiniteIm U1 U2 G A) CM F).
+Proof.
+intros U1 U2 A G CM F H1.
+cut (forall (u : U1), proj1_sig A u -> (Im U1 U2 (proj1_sig A) G) (G u)).
+intro H2.
+apply (MySumF2BijectiveSame U1 A U2 (FiniteIm U1 U2 G A) CM F G H2).
+cut (forall (u2 : U2), In U2 (Im U1 U2 (proj1_sig A) G) u2 -> {u1 : U1 | In U1 (proj1_sig A) u1 /\ G u1 = u2}).
+intro H3.
+exists (fun (x : {u : U2 | proj1_sig (FiniteIm U1 U2 G A) u}) => exist (proj1_sig A) (proj1_sig (H3 (proj1_sig x) (proj2_sig x))) (proj1 (proj2_sig (H3 (proj1_sig x) (proj2_sig x))))).
+apply conj.
+intro x.
+apply sig_map.
+apply (H1 (proj1_sig (H3 (G (proj1_sig x)) (H2 (proj1_sig x) (proj2_sig x)))) (proj1_sig x)).
+apply (proj1 (proj2_sig (H3 (G (proj1_sig x)) (H2 (proj1_sig x) (proj2_sig x))))).
+apply (proj2_sig x).
+apply (proj2 (proj2_sig (H3 (G (proj1_sig x)) (H2 (proj1_sig x) (proj2_sig x))))).
+intro y.
+apply sig_map.
+apply (proj2 (proj2_sig (H3 (proj1_sig y) (proj2_sig y)))).
+intros u2 H3.
+apply constructive_definite_description.
+apply (proj1 (unique_existence (fun (x : U1) => In U1 (proj1_sig A) x /\ G x = u2))).
+apply conj.
+elim H3.
+intros x H4 y H5.
+exists x.
+apply conj.
+apply H4.
+rewrite H5.
+reflexivity.
+intros x1 x2 H4 H5.
+apply (H1 x1 x2 (proj1 H4) (proj1 H5)).
+rewrite (proj2 H5).
+apply (proj2 H4).
+intros u H2.
+apply (Im_intro U1 U2 (proj1_sig A) G u H2 (G u)).
+reflexivity.
+Qed.
 
 Lemma MySumF2ImageSum : forall (U1 U2 : Type) (A : {X : Ensemble U1 | Finite U1 X}) (CM : CommutativeMonoid) (F : U1 -> CMT CM) (G : U1 -> U2), (MySumF2 U1 A CM F) = (MySumF2 U2 (FiniteIm U1 U2 G A) CM (fun (u2 : U2) => MySumF2 U1 (FiniteIntersection U1 A (fun (u1 : U1) => G u1 = u2)) CM F)).
 Proof.
