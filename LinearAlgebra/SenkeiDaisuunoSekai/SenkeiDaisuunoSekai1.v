@@ -10341,6 +10341,439 @@ apply H7.
 apply H3.
 Qed.
 
+Lemma Proposition_5_9_1_1_subspace : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2), Included (VT K V) W1 W2 -> FiniteDimensionVS K (SubspaceMakeVS K V W2 H2) -> FiniteDimensionVS K (SubspaceMakeVS K V W1 H1). 
+Proof.
+move=> K V W1 W2 H1 H2 H3 H4.
+suff: (SubspaceVS K (SubspaceMakeVS K V W2 H2) (fun (v : (SubspaceMakeVST K V W2 H2)) => In (VT K V) W1 (proj1_sig v))).
+move=> H5.
+suff: (FiniteDimensionVS K (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H5)).
+apply (IsomorphicSaveFiniteDimensionVS K (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H5) (SubspaceMakeVS K V W1 H1) (fun (v : (SubspaceMakeVST K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H5)) => exist W1 (proj1_sig (proj1_sig v)) (proj2_sig v))).
+apply conj.
+exists (fun (v : (SubspaceMakeVST K V W1 H1)) => exist (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) (exist W2 (proj1_sig v) (H3 (proj1_sig v) (proj2_sig v))) (proj2_sig v)).
+apply conj.
+move=> x.
+apply sig_map.
+apply sig_map.
+reflexivity.
+move=> y.
+apply sig_map.
+reflexivity.
+apply conj.
+move=> x y.
+apply sig_map.
+reflexivity.
+move=> c x.
+apply sig_map.
+reflexivity.
+apply (Proposition_5_9_1_1 K (SubspaceMakeVS K V W2 H2) H4).
+apply conj.
+move=> v1 v2 H5 H6.
+apply (proj1 H1 (proj1_sig v1) (proj1_sig v2) H5 H6).
+apply conj.
+move=> c v H5.
+apply (proj1 (proj2 H1) c (proj1_sig v) H5).
+apply (proj2 (proj2 H1)).
+Qed.
+
+Lemma Proposition_5_9_1_2_subspace : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2), Included (VT K V) W1 W2 -> forall (H3 : FiniteDimensionVS K (SubspaceMakeVS K V W2 H2)) (H4 : FiniteDimensionVS K (SubspaceMakeVS K V W1 H1)), DimensionSubspaceVS K V W2 H2 H3 >= DimensionSubspaceVS K V W1 H1 H4.
+Proof.
+move=> K V W1 W2 H1 H2 H3 H5 H4.
+suff: (SubspaceVS K (SubspaceMakeVS K V W2 H2) (fun (v : (SubspaceMakeVST K V W2 H2)) => In (VT K V) W1 (proj1_sig v))).
+move=> H6.
+suff: (IsomorphicVS K (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6) (SubspaceMakeVS K V W1 H1) (fun v : SubspaceMakeVST K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6 => exist W1 (proj1_sig (proj1_sig v)) (proj2_sig v))).
+move=> H7.
+suff: (FiniteDimensionVS K (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6)).
+move=> H8.
+unfold DimensionSubspaceVS.
+rewrite - (IsomorphicSaveDimensionVS K (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6) (SubspaceMakeVS K V W1 H1) (fun v : SubspaceMakeVST K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6 => exist W1 (proj1_sig (proj1_sig v)) (proj2_sig v)) H8 H4 H7).
+apply (Proposition_5_9_1_2 K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6 H5 H8).
+apply (Proposition_5_9_1_1 K (SubspaceMakeVS K V W2 H2) H5).
+apply conj.
+exists (fun (v : (SubspaceMakeVST K V W1 H1)) => exist (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) (exist W2 (proj1_sig v) (H3 (proj1_sig v) (proj2_sig v))) (proj2_sig v)).
+apply conj.
+move=> x.
+apply sig_map.
+apply sig_map.
+reflexivity.
+move=> y.
+apply sig_map.
+reflexivity.
+apply conj.
+move=> x y.
+apply sig_map.
+reflexivity.
+move=> c x.
+apply sig_map.
+reflexivity.
+apply conj.
+move=> v1 v2 H6 H7.
+apply (proj1 H1 (proj1_sig v1) (proj1_sig v2) H6 H7).
+apply conj.
+move=> c v H6.
+apply (proj1 (proj2 H1) c (proj1_sig v) H6).
+apply (proj2 (proj2 H1)).
+Qed.
+
+Lemma Proposition_5_9_1_2_subspace_exists : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2), Included (VT K V) W1 W2 -> forall (H3 : FiniteDimensionVS K (SubspaceMakeVS K V W2 H2)), exists (H4 : FiniteDimensionVS K (SubspaceMakeVS K V W1 H1)), DimensionSubspaceVS K V W2 H2 H3 >= DimensionSubspaceVS K V W1 H1 H4.
+Proof.
+move=> K V W1 W2 H1 H2 H3 H4.
+suff: (FiniteDimensionVS K (SubspaceMakeVS K V W1 H1)).
+move=> H5.
+exists H5.
+apply (Proposition_5_9_1_2_subspace K V W1 W2 H1 H2 H3 H4 H5).
+apply (Proposition_5_9_1_1_subspace K V W1 W2 H1 H2 H3 H4).
+Qed.
+
+Lemma Proposition_5_9_1_3_subspace : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2), Included (VT K V) W1 W2 -> forall (H3 : FiniteDimensionVS K (SubspaceMakeVS K V W2 H2)) (H4 : FiniteDimensionVS K (SubspaceMakeVS K V W1 H1)), DimensionSubspaceVS K V W1 H1 H4 = DimensionSubspaceVS K V W2 H2 H3 <-> W1 = W2.
+Proof.
+move=> K V W1 W2 H1 H2 H3 H5 H4.
+suff: (SubspaceVS K (SubspaceMakeVS K V W2 H2) (fun (v : (SubspaceMakeVST K V W2 H2)) => In (VT K V) W1 (proj1_sig v))).
+move=> H6.
+suff: (IsomorphicVS K (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6) (SubspaceMakeVS K V W1 H1) (fun v : SubspaceMakeVST K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6 => exist W1 (proj1_sig (proj1_sig v)) (proj2_sig v))).
+move=> H7.
+suff: (FiniteDimensionVS K (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6)).
+move=> H8.
+unfold DimensionSubspaceVS.
+rewrite - (IsomorphicSaveDimensionVS K (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6) (SubspaceMakeVS K V W1 H1) (fun v : SubspaceMakeVST K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6 => exist W1 (proj1_sig (proj1_sig v)) (proj2_sig v)) H8 H4 H7).
+suff: (DimensionVS K (SubspaceMakeVS K V W2 H2) H5 = DimensionVS K (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6) H8 <-> (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) = Full_set (SubspaceMakeVST K V W2 H2)).
+move=> H9.
+apply conj.
+move=> H10.
+suff: ((fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) = Full_set (SubspaceMakeVST K V W2 H2)).
+move=> H11.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
+apply (H3 v).
+move=> v H12.
+suff: (In (SubspaceMakeVST K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) (exist W2 v H12)).
+apply.
+rewrite H11.
+apply (Full_intro (SubspaceMakeVST K V W2 H2)).
+apply (proj1 H9).
+rewrite H10.
+reflexivity.
+move=> H10.
+rewrite (proj2 H9).
+reflexivity.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v H11.
+apply (Full_intro (SubspaceMakeVST K V W2 H2) v).
+move=> v H11.
+rewrite H10.
+apply (proj2_sig v).
+apply (Proposition_5_9_1_3 K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H6 H5 H8).
+apply (Proposition_5_9_1_1 K (SubspaceMakeVS K V W2 H2) H5).
+apply conj.
+exists (fun (v : (SubspaceMakeVST K V W1 H1)) => exist (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) (exist W2 (proj1_sig v) (H3 (proj1_sig v) (proj2_sig v))) (proj2_sig v)).
+apply conj.
+move=> x.
+apply sig_map.
+apply sig_map.
+reflexivity.
+move=> y.
+apply sig_map.
+reflexivity.
+apply conj.
+move=> x y.
+apply sig_map.
+reflexivity.
+move=> c x.
+apply sig_map.
+reflexivity.
+apply conj.
+move=> v1 v2 H6 H7.
+apply (proj1 H1 (proj1_sig v1) (proj1_sig v2) H6 H7).
+apply conj.
+move=> c v H6.
+apply (proj1 (proj2 H1) c (proj1_sig v) H6).
+apply (proj2 (proj2 H1)).
+Qed.
+
+Lemma Proposition_5_9_1_3_subspace_exists : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2), Included (VT K V) W1 W2 -> forall (H3 : FiniteDimensionVS K (SubspaceMakeVS K V W2 H2)), exists (H4 : FiniteDimensionVS K (SubspaceMakeVS K V W1 H1)), DimensionSubspaceVS K V W1 H1 H4 = DimensionSubspaceVS K V W2 H2 H3 <-> W1 = W2.
+Proof.
+move=> K V W1 W2 H1 H2 H3 H4.
+suff: (FiniteDimensionVS K (SubspaceMakeVS K V W1 H1)).
+move=> H5.
+exists H5.
+apply (Proposition_5_9_1_3_subspace K V W1 W2 H1 H2 H3 H4 H5).
+apply (Proposition_5_9_1_1_subspace K V W1 W2 H1 H2 H3 H4).
+Qed.
+
+Lemma Proposition_5_9_2_subspace : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2) (H3 : FiniteDimensionVS K (SubspaceMakeVS K V W2 H2)), Included (VT K V) W1 W2 -> forall (M : nat) (F : Count M -> VT K V) (H4 : forall m : Count (DimensionSubspaceVS K V W2 H2 H3), ~ proj1_sig m < M -> proj1_sig m - M < DimensionSubspaceVS K V W2 H2 H3 - M), BasisSubspaceVS K V W1 H1 (Count M) F -> exists (G : Count (DimensionSubspaceVS K V W2 H2 H3 - M) -> VT K V), BasisSubspaceVS K V W2 H2 (Count (DimensionSubspaceVS K V W2 H2 H3)) (fun m : Count (DimensionSubspaceVS K V W2 H2 H3) => match excluded_middle_informative (proj1_sig m < M) with
+  | left H => F (exist (fun n : nat => n < M) (proj1_sig m) H)
+  | right H => G (exist (fun n : nat => n < DimensionSubspaceVS K V W2 H2 H3 - M) (proj1_sig m - M) (H4 m H))
+end).
+Proof.
+move=> K V W1 W2 H1 H2 H3 H4 M F H5 H6.
+suff: (SubspaceVS K (SubspaceMakeVS K V W2 H2) (fun (v : (SubspaceMakeVST K V W2 H2)) => In (VT K V) W1 (proj1_sig v))).
+move=> H7.
+suff: (IsomorphicVS K (SubspaceMakeVS K V W1 H1) (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H7) (fun (v : SubspaceMakeVST K V W1 H1) => exist (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) (exist W2 (proj1_sig v) (H4 (proj1_sig v) (proj2_sig v))) (proj2_sig v))).
+move=> H8.
+suff: (FiniteDimensionVS K (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H7)).
+move=> H9.
+suff: (forall (m : Count M), In (VT K V) W2 (F m)).
+move=> H10.
+elim (Proposition_5_9_2 K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H7 H3 M (fun (m : Count M) => exist W2 (F m) (H10 m)) H5).
+move=> G H11.
+exists (fun (m : Count (DimensionSubspaceVS K V W2 H2 H3 - M)) => proj1_sig (G m)).
+suff: (forall t : Count (DimensionSubspaceVS K V W2 H2 H3), In (VT K V) W2 match excluded_middle_informative (proj1_sig t < M) with
+  | left H => F (exist (fun n : nat => n < M) (proj1_sig t) H)
+  | right H => proj1_sig (G (exist (fun n : nat => n < DimensionSubspaceVS K V W2 H2 H3 - M) (proj1_sig t - M) (H5 t H)))
+end).
+move=> H12.
+exists H12.
+suff: ((fun t : Count (DimensionSubspaceVS K V W2 H2 H3) => exist W2 match excluded_middle_informative (proj1_sig t < M) with
+  | left H => F (exist (fun n : nat => n < M) (proj1_sig t) H)
+  | right H => proj1_sig (G (exist (fun n : nat => n < DimensionSubspaceVS K V W2 H2 H3 - M) (proj1_sig t - M) (H5 t H)))
+end (H12 t)) = (fun m : Count (DimensionVS K (SubspaceMakeVS K V W2 H2) H3) => match excluded_middle_informative (proj1_sig m < M) with
+  | left H => exist W2 (F (exist (fun n : nat => n < M) (proj1_sig m) H)) (H10 (exist (fun n : nat => n < M) (proj1_sig m) H))
+  | right H => G (exist (fun n : nat => n < DimensionVS K (SubspaceMakeVS K V W2 H2) H3 - M) (proj1_sig m - M) (H5 m H))
+end)).
+move=> H13.
+rewrite H13.
+apply H11.
+apply functional_extensionality.
+move=> m.
+apply sig_map.
+simpl.
+elim (excluded_middle_informative (lt (@proj1_sig nat (fun n : nat => lt n (DimensionVS K (SubspaceMakeVS K V W2 H2) H3)) m) M)).
+move=> H13.
+elim (excluded_middle_informative (proj1_sig m < M)).
+move=> H14.
+simpl.
+suff: (H14 = H13).
+move=> H15.
+rewrite H15.
+reflexivity.
+apply proof_irrelevance.
+move=> H14.
+apply False_ind.
+apply (H14 H13).
+move=> H13.
+elim (excluded_middle_informative (proj1_sig m < M)).
+move=> H14.
+apply False_ind.
+apply (H13 H14).
+move=> H14.
+suff: (H14 = H13).
+move=> H15.
+rewrite H15.
+reflexivity.
+apply proof_irrelevance.
+move=> m.
+elim (excluded_middle_informative (proj1_sig m < M)).
+move=> H12.
+apply (H4 (F (exist (fun n : nat => n < M) (proj1_sig m) H12))).
+elim H6.
+move=> H13 H14.
+apply (H13 (exist (fun n : nat => n < M) (proj1_sig m) H12)).
+move=> H12.
+apply (proj2_sig (G (exist (fun n : nat => n < DimensionSubspaceVS K V W2 H2 H3 - M) (proj1_sig m - M) (H5 m H12)))).
+elim H6.
+move=> H11 H12.
+exists H11.
+suff: ((fun t : Count M => exist (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) (exist W2 (F t) (H10 t)) (H11 t)) = (fun t : Count M => exist (fun v0 : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v0)) (exist W2 (proj1_sig (exist W1 (F t) (H11 t))) (H4 (proj1_sig (exist W1 (F t) (H11 t))) (proj2_sig (exist W1 (F t) (H11 t))))) (proj2_sig (exist W1 (F t) (H11 t))))).
+move=> H13.
+rewrite H13.
+apply (IsomorphicSaveBasisVS K (SubspaceMakeVS K V W1 H1) (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H7) (Count M) (fun t : Count M => exist W1 (F t) (H11 t)) (fun v : SubspaceMakeVST K V W1 H1 => exist (fun v0 : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v0)) (exist W2 (proj1_sig v) (H4 (proj1_sig v) (proj2_sig v))) (proj2_sig v)) H8 H12).
+apply functional_extensionality.
+move=> m.
+apply sig_map.
+apply sig_map.
+reflexivity.
+elim H6.
+move=> H10 H11 m.
+apply (H4 (F m) (H10 m)).
+apply (Proposition_5_9_1_1 K (SubspaceMakeVS K V W2 H2) H3 (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H7).
+apply conj.
+exists (fun (t : (SubspaceMakeVST K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H7)) => exist W1 (proj1_sig (proj1_sig t)) (proj2_sig t)).
+apply conj.
+move=> x.
+apply sig_map.
+reflexivity.
+move=> y.
+apply sig_map.
+apply sig_map.
+reflexivity.
+apply conj.
+move=> x y.
+apply sig_map.
+apply sig_map.
+reflexivity.
+move=> c x.
+apply sig_map.
+apply sig_map.
+reflexivity.
+apply conj.
+move=> x y H7 H8.
+apply (proj1 H1 (proj1_sig x) (proj1_sig y) H7 H8).
+apply conj.
+move=> f x H7.
+apply (proj1 (proj2 H1) f (proj1_sig x) H7).
+apply (proj2 (proj2 H1)).
+Qed.
+
+Lemma Proposition_5_9_2_subspace_exists : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2) (H3 : FiniteDimensionVS K (SubspaceMakeVS K V W2 H2)), Included (VT K V) W1 W2 -> forall (M : nat) (F : Count M -> VT K V), exists (H4 : forall m : Count (DimensionSubspaceVS K V W2 H2 H3), ~ proj1_sig m < M -> proj1_sig m - M < DimensionSubspaceVS K V W2 H2 H3 - M), BasisSubspaceVS K V W1 H1 (Count M) F -> exists (G : Count (DimensionSubspaceVS K V W2 H2 H3 - M) -> VT K V), BasisSubspaceVS K V W2 H2 (Count (DimensionSubspaceVS K V W2 H2 H3)) (fun m : Count (DimensionSubspaceVS K V W2 H2 H3) => match excluded_middle_informative (proj1_sig m < M) with
+  | left H => F (exist (fun n : nat => n < M) (proj1_sig m) H)
+  | right H => G (exist (fun n : nat => n < DimensionSubspaceVS K V W2 H2 H3 - M) (proj1_sig m - M) (H4 m H))
+end).
+Proof.
+move=> K V W1 W2 H1 H2 H3 H4 M F.
+suff: (forall m : Count (DimensionSubspaceVS K V W2 H2 H3), ~ proj1_sig m < M -> proj1_sig m - M < DimensionSubspaceVS K V W2 H2 H3 - M).
+move=> H5.
+exists H5.
+apply (Proposition_5_9_2_subspace K V W1 W2 H1 H2 H3 H4 M F H5).
+move=> m H5.
+apply (Plus.plus_lt_reg_l (proj1_sig m - M) (DimensionSubspaceVS K V W2 H2 H3 - M) M).
+suff: (M <= proj1_sig m).
+move=> H6.
+rewrite (Minus.le_plus_minus_r M (proj1_sig m) H6).
+rewrite (Minus.le_plus_minus_r M (DimensionSubspaceVS K V W2 H2 H3)).
+apply (proj2_sig m).
+apply (le_trans M (proj1_sig m) (DimensionSubspaceVS K V W2 H2 H3) H6 (lt_le_weak (proj1_sig m) (DimensionSubspaceVS K V W2 H2 H3) (proj2_sig m))).
+elim (le_or_lt M (proj1_sig m)).
+apply.
+move=> H6.
+apply False_ind.
+apply (H5 H6).
+Qed.
+
+Lemma Proposition_5_9_3_subspace : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)), SubspaceVS K V W1 -> forall (H1 : SubspaceVS K V W2) (H2 : FiniteDimensionVS K (SubspaceMakeVS K V W2 H1)), Included (VT K V) W1 W2 -> exists (W3 : Ensemble (VT K V)), SubspaceVS K V W3 /\ W2 = SumEnsembleVS K V W1 W3 /\ Singleton (VT K V) (VO K V) = Intersection (VT K V) W1 W3.
+Proof.
+move=> K V W1 W2 H1 H2 H3 H4.
+suff: (SubspaceVS K (SubspaceMakeVS K V W2 H2) (fun (v : (SubspaceMakeVST K V W2 H2)) => In (VT K V) W1 (proj1_sig v))).
+move=> H5.
+suff: (IsomorphicVS K (SubspaceMakeVS K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H5) (SubspaceMakeVS K V W1 H1) (fun v : SubspaceMakeVST K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) H5 => exist W1 (proj1_sig (proj1_sig v)) (proj2_sig v))).
+move=> H6.
+elim (Proposition_5_9_3 K (SubspaceMakeVS K V W2 H2) (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v))).
+move=> W3 H7.
+exists (fun (v : VT K V) => exists (w : SubspaceMakeVST K V W2 H2), v = proj1_sig w /\ In (SubspaceMakeVST K V W2 H2) W3 w).
+apply conj.
+apply conj.
+move=> v1 v2 H8 H9.
+elim H8.
+move=> w1 H10.
+elim H9.
+move=> w2 H11.
+exists (SubspaceMakeVSVadd K V W2 H2 w1 w2).
+apply conj.
+rewrite (proj1 H10).
+rewrite (proj1 H11).
+reflexivity.
+apply (proj1 (proj1 H7) w1 w2 (proj2 H10) (proj2 H11)).
+apply conj.
+move=> f v.
+elim.
+move=> w H8.
+exists (SubspaceMakeVSVmul K V W2 H2 f w).
+apply conj.
+rewrite (proj1 H8).
+reflexivity.
+apply (proj1 (proj2 (proj1 H7)) f w (proj2 H8)).
+exists (SubspaceMakeVSVO K V W2 H2).
+apply conj.
+reflexivity.
+apply (proj2 (proj2 (proj1 H7))).
+apply conj.
+apply Extensionality_Ensembles.
+apply conj.
+move=> w H8.
+suff: (In (SubspaceMakeVST K V W2 H2) (Full_set (VT K (SubspaceMakeVS K V W2 H2))) (exist W2 w H8)).
+rewrite (proj1 (proj2 H7)).
+suff: (w = proj1_sig (exist W2 w H8)).
+move=> H9.
+rewrite {2} H9.
+elim.
+move=> v1 v2 H10 H11.
+apply SumEnsembleVS_intro.
+apply H10.
+exists v2.
+apply conj.
+reflexivity.
+apply H11.
+reflexivity.
+apply Full_intro.
+move=> v.
+elim.
+move=> v1 v2 H8 H9.
+apply (proj1 H2 v1 v2 (H4 v1 H8)).
+elim H9.
+move=> w2 H10.
+rewrite (proj1 H10).
+apply (proj2_sig w2).
+apply Extensionality_Ensembles.
+apply conj.
+move=> w.
+elim.
+apply Intersection_intro.
+apply (proj2 (proj2 H1)).
+exists (SubspaceMakeVSVO K V W2 H2).
+apply conj.
+reflexivity.
+apply (proj2 (proj2 (proj1 H7))).
+move=> w H8.
+suff: (In (VT K V) W2 w).
+move=> H9.
+suff: (w = proj1_sig (exist W2 w H9)).
+move=> H10.
+rewrite H10.
+suff: (In (VT K (SubspaceMakeVS K V W2 H2)) (Singleton (VT K (SubspaceMakeVS K V W2 H2)) (VO K (SubspaceMakeVS K V W2 H2))) (exist W2 w H9)).
+elim.
+apply (In_singleton (VT K V) (VO K V)).
+rewrite (proj2 (proj2 H7)).
+apply Intersection_intro.
+suff: (In (VT K V) W1 w).
+apply.
+elim H8.
+move=> v H11 H12.
+apply H11.
+suff: (exists u : SubspaceMakeVST K V W2 H2, w = proj1_sig u /\ In (SubspaceMakeVST K V W2 H2) W3 u).
+elim.
+move=> u H11.
+suff: ((exist W2 w H9) = u).
+move=> H12.
+rewrite H12.
+apply (proj2 H11).
+apply sig_map.
+apply (proj1 H11).
+elim H8.
+move=> v H11 H12.
+apply H12.
+reflexivity.
+apply (H4 w).
+elim H8.
+move=> v H9 H10.
+apply H9.
+apply H5.
+apply H3.
+apply conj.
+exists (fun (v : SubspaceMakeVST K V W1 H1) => exist (fun v : SubspaceMakeVST K V W2 H2 => In (VT K V) W1 (proj1_sig v)) (exist W2 (proj1_sig v) (H4 (proj1_sig v) (proj2_sig v))) (proj2_sig v)).
+apply conj.
+move=> x.
+apply sig_map.
+apply sig_map.
+reflexivity.
+move=> y.
+apply sig_map.
+reflexivity.
+apply conj.
+move=> x y.
+apply sig_map.
+reflexivity.
+move=> c x.
+apply sig_map.
+reflexivity.
+apply conj.
+move=> v1 v2 H5 H6.
+apply (proj1 H1 (proj1_sig v1) (proj1_sig v2) H5 H6).
+apply conj.
+move=> f v H5.
+apply (proj1 (proj2 H1) f (proj1_sig v) H5).
+apply (proj2 (proj2 H1)).
+Qed.
+
 Lemma LinearlyIndependentSpanIntersectionVS : forall (K : Field) (V : VectorSpace K) (T : Type) (F : T -> VT K V) (A B : Ensemble T), LinearlyIndependentVS K V T F -> Intersection (VT K V) (SpanVS K V {t : T | In T A t} (fun (x : {t : T | In T A t}) => F (proj1_sig x))) (SpanVS K V {t : T | In T B t} (fun (x : {t : T | In T B t}) => F (proj1_sig x))) = (SpanVS K V {t : T | In T (Intersection T A B) t} (fun (x : {t : T | In T (Intersection T A B) t}) => F (proj1_sig x))).
 Proof.
 move=> K V T F A B H1.
@@ -11532,6 +11965,40 @@ apply (proj2 (proj2 H3)).
 apply H7.
 Qed.
 
+Lemma DimensionSumEnsembleVS_exists : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2), exists (H3 : SubspaceVS K V (Intersection (VT K V) W1 W2)) (H4 : SubspaceVS K V (SumEnsembleVS K V W1 W2)), forall (H5 : FiniteDimensionVS K (SubspaceMakeVS K V (SumEnsembleVS K V W1 W2) H4)), exists (H6 : FiniteDimensionVS K (SubspaceMakeVS K V (Intersection (VT K V) W1 W2) H3)) (H7 : FiniteDimensionVS K (SubspaceMakeVS K V W1 H1)) (H8 : FiniteDimensionVS K (SubspaceMakeVS K V W2 H2)), DimensionSubspaceVS K V (SumEnsembleVS K V W1 W2) H4 H5 + DimensionSubspaceVS K V (Intersection (VT K V) W1 W2) H3 H6 = DimensionSubspaceVS K V W1 H1 H7 + DimensionSubspaceVS K V W2 H2 H8.
+Proof.
+move=> K V W1 W2 H1 H2.
+exists (IntersectionSubspaceVS K V W1 W2 H1 H2).
+exists (SumSubspaceVS K V W1 W2 H1 H2).
+move=> H3.
+suff: (FiniteDimensionVS K (SubspaceMakeVS K V W1 H1)).
+move=> H4.
+suff: (FiniteDimensionVS K (SubspaceMakeVS K V W2 H2)).
+move=> H5.
+suff: (FiniteDimensionVS K (SubspaceMakeVS K V (Intersection (VT K V) W1 W2) (IntersectionSubspaceVS K V W1 W2 H1 H2))).
+move=> H6.
+exists H6.
+exists H4.
+exists H5.
+apply (DimensionSumEnsembleVS K V W1 W2 H1 H2 (IntersectionSubspaceVS K V W1 W2 H1 H2) (SumSubspaceVS K V W1 W2 H1 H2) H3 H6 H4 H5).
+apply (Proposition_5_9_1_1_subspace K V (Intersection (VT K V) W1 W2) W1 (IntersectionSubspaceVS K V W1 W2 H1 H2) H1).
+move=> v.
+elim.
+move=> w H6 H7.
+apply H6.
+apply H4.
+apply (Proposition_5_9_1_1_subspace K V W2 (SumEnsembleVS K V W1 W2) H2 (SumSubspaceVS K V W1 W2 H1 H2)).
+move=> w H5.
+rewrite - (Vadd_O_l K V w).
+apply (SumEnsembleVS_intro K V W1 W2 (VO K V) w (proj2 (proj2 H1)) H5).
+apply H3.
+apply (Proposition_5_9_1_1_subspace K V W1 (SumEnsembleVS K V W1 W2) H1 (SumSubspaceVS K V W1 W2 H1 H2)).
+move=> w H5.
+rewrite - (Vadd_O_r K V w).
+apply (SumEnsembleVS_intro K V W1 W2 w (VO K V) H5 (proj2 (proj2 H2))).
+apply H3.
+Qed.
+
 Lemma DimensionSumEnsembleVS2 : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2) (H3 : SubspaceVS K V (SumEnsembleVS K V W1 W2)) (H4 : FiniteDimensionVS K (SubspaceMakeVS K V (SumEnsembleVS K V W1 W2) H3)) (H5 : FiniteDimensionVS K (SubspaceMakeVS K V W1 H1)) (H6 : FiniteDimensionVS K (SubspaceMakeVS K V W2 H2)), Intersection (VT K V) W1 W2 = Singleton (VT K V) (VO K V) -> DimensionSubspaceVS K V (SumEnsembleVS K V W1 W2) H3 H4 = DimensionSubspaceVS K V W1 H1 H5 + DimensionSubspaceVS K V W2 H2 H6.
 Proof.
 move=> K V W1 W2 H1 H2 H3 H4 H5 H6 H7.
@@ -11579,6 +12046,31 @@ rewrite H12.
 reflexivity.
 apply proof_irrelevance.
 apply (IntersectionSubspaceVS K V W1 W2 H1 H2).
+Qed.
+
+Lemma DimensionSumEnsembleVS2_exists : forall (K : Field) (V : VectorSpace K) (W1 W2 : Ensemble (VT K V)) (H1 : SubspaceVS K V W1) (H2 : SubspaceVS K V W2), exists (H3 : SubspaceVS K V (SumEnsembleVS K V W1 W2)), forall (H4 : FiniteDimensionVS K (SubspaceMakeVS K V (SumEnsembleVS K V W1 W2) H3)), exists (H5 : FiniteDimensionVS K (SubspaceMakeVS K V W1 H1)) (H6 : FiniteDimensionVS K (SubspaceMakeVS K V W2 H2)), Intersection (VT K V) W1 W2 = Singleton (VT K V) (VO K V) -> DimensionSubspaceVS K V (SumEnsembleVS K V W1 W2) H3 H4 = DimensionSubspaceVS K V W1 H1 H5 + DimensionSubspaceVS K V W2 H2 H6.
+Proof.
+move=> K V W1 W2 H1 H2.
+exists (SumSubspaceVS K V W1 W2 H1 H2).
+move=> H3.
+suff: (FiniteDimensionVS K (SubspaceMakeVS K V W1 H1)).
+move=> H4.
+suff: (FiniteDimensionVS K (SubspaceMakeVS K V W2 H2)).
+move=> H5.
+exists H4.
+exists H5.
+move=> H6.
+apply (DimensionSumEnsembleVS2 K V W1 W2 H1 H2 (SumSubspaceVS K V W1 W2 H1 H2) H3 H4 H5 H6).
+apply (Proposition_5_9_1_1_subspace K V W2 (SumEnsembleVS K V W1 W2) H2 (SumSubspaceVS K V W1 W2 H1 H2)).
+move=> w H5.
+rewrite - (Vadd_O_l K V w).
+apply (SumEnsembleVS_intro K V W1 W2 (VO K V) w (proj2 (proj2 H1)) H5).
+apply H3.
+apply (Proposition_5_9_1_1_subspace K V W1 (SumEnsembleVS K V W1 W2) H1 (SumSubspaceVS K V W1 W2 H1 H2)).
+move=> w H5.
+rewrite - (Vadd_O_r K V w).
+apply (SumEnsembleVS_intro K V W1 W2 w (VO K V) H5 (proj2 (proj2 H2))).
+apply H3.
 Qed.
 
 End Senkeidaisuunosekai1.
