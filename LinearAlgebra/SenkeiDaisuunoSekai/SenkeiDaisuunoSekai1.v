@@ -30,7 +30,7 @@ Definition DirectSumField (K : Field) (T : Type) := {G : T -> FT K | Finite T (f
 
 Definition BasisVS (K : Field) (V : VectorSpace K) (T : Type) := fun (F : T -> VT K V) => Bijective (DirectSumField K T) (VT K V) (fun (g : DirectSumField K T) => MySumF2 T (exist (Finite T) (fun (t : T) => proj1_sig g t <> FO K) (proj2_sig g)) (VSPCM K V) (fun (t : T) => Vmul K V (proj1_sig g t) (F t))).
 
-Lemma BijectiveSaveBasisVS : forall (K : Field) (V : VectorSpace K) (T1 T2 : Type) (F : T1 -> T2) (G : T2 -> VT K V), Bijective T1 T2 F -> BasisVS K V T2 G -> BasisVS K V T1 (fun t : T1 => G (F t)).
+Lemma BijectiveSaveBasisVS : forall (K : Field) (V : VectorSpace K) (T1 T2 : Type) (F : T1 -> T2) (G : T2 -> VT K V), Bijective T1 T2 F -> BasisVS K V T2 G -> BasisVS K V T1 (compose G F).
 Proof.
 move=> K V T1 T2 F G H1 H2.
 elim H1.
@@ -140,7 +140,7 @@ rewrite (proj1 H3 t1).
 apply H4.
 Qed.
 
-Lemma IsomorphicSaveBasisVS : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), IsomorphicVS K V1 V2 G -> BasisVS K V1 T F -> BasisVS K V2 T (fun t : T => G (F t)).
+Lemma IsomorphicSaveBasisVS : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), IsomorphicVS K V1 V2 G -> BasisVS K V1 T F -> BasisVS K V2 T (compose G F).
 Proof.
 move=> K V1 V2 T F G H1 H2.
 unfold BasisVS.
@@ -2484,7 +2484,7 @@ Qed.
 
 Definition SpanVS (K : Field) (V : VectorSpace K) (T : Type) (x : T -> VT K V) := fun (v : VT K V) => exists (a : DirectSumField K T), v = MySumF2 T (exist (Finite T) (fun (t : T) => proj1_sig a t <> FO K) (proj2_sig a)) (VSPCM K V) (fun (t : T) => Vmul K V (proj1_sig a t) (x t)).
 
-Lemma BijectiveSaveSpanVS : forall (K : Field) (V : VectorSpace K) (T1 T2 : Type) (F : T1 -> T2) (G : T2 -> VT K V), Bijective T1 T2 F -> SpanVS K V T2 G = SpanVS K V T1 (fun t : T1 => G (F t)).
+Lemma BijectiveSaveSpanVS : forall (K : Field) (V : VectorSpace K) (T1 T2 : Type) (F : T1 -> T2) (G : T2 -> VT K V), Bijective T1 T2 F -> SpanVS K V T2 G = SpanVS K V T1 (compose G F).
 Proof.
 move=> K V T1 T2 F G H1.
 elim H1.
@@ -3075,7 +3075,7 @@ Qed.
 
 Definition GeneratingSystemVS (K : Field) (V : VectorSpace K) (T : Type) (F : T -> VT K V) := Full_set (VT K V) = SpanVS K V T F.
 
-Lemma BijectiveSaveGeneratingSystemVS : forall (K : Field) (V : VectorSpace K) (T1 T2 : Type) (F : T1 -> T2) (G : T2 -> VT K V), Bijective T1 T2 F -> GeneratingSystemVS K V T2 G -> GeneratingSystemVS K V T1 (fun t : T1 => G (F t)).
+Lemma BijectiveSaveGeneratingSystemVS : forall (K : Field) (V : VectorSpace K) (T1 T2 : Type) (F : T1 -> T2) (G : T2 -> VT K V), Bijective T1 T2 F -> GeneratingSystemVS K V T2 G -> GeneratingSystemVS K V T1 (compose G F).
 Proof.
 move=> K V T1 T2 F G H1 H2.
 suff: (SpanVS K V T1 (fun t : T1 => G (F t)) = SpanVS K V T2 G).
@@ -3087,7 +3087,7 @@ rewrite (BijectiveSaveSpanVS K V T1 T2 F G H1).
 reflexivity.
 Qed.
 
-Lemma IsomorphicSaveGeneratingSystemVS : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), IsomorphicVS K V1 V2 G -> GeneratingSystemVS K V1 T F -> GeneratingSystemVS K V2 T (fun t : T => G (F t)).
+Lemma IsomorphicSaveGeneratingSystemVS : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), IsomorphicVS K V1 V2 G -> GeneratingSystemVS K V1 T F -> GeneratingSystemVS K V2 T (compose G F).
 Proof.
 move=> K V1 V2 T F G H1 H2.
 apply Extensionality_Ensembles.
@@ -3126,7 +3126,7 @@ move=> v H3.
 apply (Full_intro (VT K V2) v).
 Qed.
 
-Lemma SurjectiveSaveGeneratingSystemVS : forall (K : Field) (V : VectorSpace K) (T1 T2 : Type) (F : T1 -> T2) (G : T2 -> VT K V), Surjective T1 T2 F -> GeneratingSystemVS K V T2 G -> GeneratingSystemVS K V T1 (fun t : T1 => G (F t)).
+Lemma SurjectiveSaveGeneratingSystemVS : forall (K : Field) (V : VectorSpace K) (T1 T2 : Type) (F : T1 -> T2) (G : T2 -> VT K V), Surjective T1 T2 F -> GeneratingSystemVS K V T2 G -> GeneratingSystemVS K V T1 (compose G F).
 Proof.
 move=> K V T1 T2 F G H1 H2.
 apply Extensionality_Ensembles.
@@ -3157,7 +3157,7 @@ move=> v H3.
 apply (Full_intro (VT K V) v).
 Qed.
 
-Lemma SurjectiveSaveGeneratingSystemVS2 : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), (Surjective (VT K V1) (VT K V2) G /\ (forall (x y : VT K V1), G (Vadd K V1 x y) = Vadd K V2 (G x) (G y)) /\ (forall (c : FT K) (x : VT K V1), G (Vmul K V1 c x) = Vmul K V2 c (G x))) -> GeneratingSystemVS K V1 T F -> GeneratingSystemVS K V2 T (fun t : T => G (F t)).
+Lemma SurjectiveSaveGeneratingSystemVS2 : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), (Surjective (VT K V1) (VT K V2) G /\ (forall (x y : VT K V1), G (Vadd K V1 x y) = Vadd K V2 (G x) (G y)) /\ (forall (c : FT K) (x : VT K V1), G (Vmul K V1 c x) = Vmul K V2 c (G x))) -> GeneratingSystemVS K V1 T F -> GeneratingSystemVS K V2 T (compose G F).
 Proof.
 move=> K V1 V2 T F G H1 H2.
 apply Extensionality_Ensembles.
@@ -4537,7 +4537,7 @@ Qed.
 
 Definition LinearlyIndependentVS (K : Field) (V : VectorSpace K) (T : Type) (F : T -> VT K V) := BasisVS K (SubspaceMakeVS K V (SpanVS K V T F) (SpanSubspaceVS K V T F)) T (fun (t : T) => exist (SpanVS K V T F) (F t) (SpanContainSelfVS K V T F t)).
 
-Lemma BijectiveSaveLinearlyIndependentVS : forall (K : Field) (V : VectorSpace K) (T1 T2 : Type) (F : T1 -> T2) (G : T2 -> VT K V), Bijective T1 T2 F -> LinearlyIndependentVS K V T2 G -> LinearlyIndependentVS K V T1 (fun t : T1 => G (F t)).
+Lemma BijectiveSaveLinearlyIndependentVS : forall (K : Field) (V : VectorSpace K) (T1 T2 : Type) (F : T1 -> T2) (G : T2 -> VT K V), Bijective T1 T2 F -> LinearlyIndependentVS K V T2 G -> LinearlyIndependentVS K V T1 (compose G F).
 Proof.
 move=> K V T1 T2 F G H1 H2.
 suff: (forall (x : T1 -> VT K V) (A1 A2 : Ensemble (VT K V)), A1 = A2 -> forall (H1 : SubspaceVS K V A1) (H2 : SubspaceVS K V A2) (H3 : forall (t : T1), In (VT K V) A1 (x t)) (H4 : forall (t : T1), In (VT K V) A2 (x t)), BasisVS K (SubspaceMakeVS K V A1 H1) T1 (fun t : T1 => exist A1 (x t) (H3 t)) -> BasisVS K (SubspaceMakeVS K V A2 H2) T1 (fun t : T1 => exist A2 (x t) (H4 t))).
@@ -4572,7 +4572,7 @@ apply proof_irrelevance.
 apply proof_irrelevance.
 Qed.
 
-Lemma IsomorphicSaveLinearlyIndependentVS : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), IsomorphicVS K V1 V2 G -> LinearlyIndependentVS K V1 T F -> LinearlyIndependentVS K V2 T (fun t : T => G (F t)).
+Lemma IsomorphicSaveLinearlyIndependentVS : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), IsomorphicVS K V1 V2 G -> LinearlyIndependentVS K V1 T F -> LinearlyIndependentVS K V2 T (compose G F).
 Proof.
 move=> K V1 V2 T F G H1 H2.
 unfold LinearlyIndependentVS.
@@ -4981,7 +4981,7 @@ apply.
 apply (H1 (proj1_sig a) (exist (Finite T) (fun t : T => proj1_sig a t <> FO K) (proj2_sig a)) H2).
 Qed.
 
-Lemma InjectiveSaveLinearlyIndependentVS : forall (K : Field) (V : VectorSpace K) (T1 T2 : Type) (F : T1 -> T2) (G : T2 -> VT K V), Injective T1 T2 F -> LinearlyIndependentVS K V T2 G -> LinearlyIndependentVS K V T1 (fun t : T1 => G (F t)).
+Lemma InjectiveSaveLinearlyIndependentVS : forall (K : Field) (V : VectorSpace K) (T1 T2 : Type) (F : T1 -> T2) (G : T2 -> VT K V), Injective T1 T2 F -> LinearlyIndependentVS K V T2 G -> LinearlyIndependentVS K V T1 (compose G F).
 Proof.
 move=> K V T1 T2 F G H1 H2.
 apply (proj2 (LinearlyIndependentVSDef3 K V T1 (fun t : T1 => G (F t)))).
@@ -5103,7 +5103,7 @@ rewrite H6.
 apply H5.
 Qed.
 
-Lemma InjectiveSaveLinearlyIndependentVS2 : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), (Injective (VT K V1) (VT K V2) G /\ (forall (x y : VT K V1), G (Vadd K V1 x y) = Vadd K V2 (G x) (G y)) /\ (forall (c : FT K) (x : VT K V1), G (Vmul K V1 c x) = Vmul K V2 c (G x))) -> LinearlyIndependentVS K V1 T F -> LinearlyIndependentVS K V2 T (fun t : T => G (F t)).
+Lemma InjectiveSaveLinearlyIndependentVS2 : forall (K : Field) (V1 V2 : VectorSpace K) (T : Type) (F : T -> VT K V1) (G : VT K V1 -> VT K V2), (Injective (VT K V1) (VT K V2) G /\ (forall (x y : VT K V1), G (Vadd K V1 x y) = Vadd K V2 (G x) (G y)) /\ (forall (c : FT K) (x : VT K V1), G (Vmul K V1 c x) = Vmul K V2 c (G x))) -> LinearlyIndependentVS K V1 T F -> LinearlyIndependentVS K V2 T (compose G F).
 Proof.
 move=> K V1 V2 T F G H1 H2.
 apply (proj2 (LinearlyIndependentVSDef3 K V2 T (fun t : T => G (F t)))).
@@ -6972,8 +6972,10 @@ rewrite H19.
 reflexivity.
 apply proof_irrelevance.
 exists (x (exist (fun n : nat => n < S (proj1_sig m)) (proj1_sig m) H17)).
+unfold compose.
 suff: ((exist (fun l : nat => l < N2) (proj1_sig (exist (fun n : nat => n < S (proj1_sig m)) (proj1_sig m) H17)) (H13 (exist (fun n : nat => n < S (proj1_sig m)) (proj1_sig m) H17))) = m).
 move=> H19.
+simpl.
 rewrite H19.
 reflexivity.
 apply sig_map.
@@ -7101,6 +7103,8 @@ apply proof_irrelevance.
 exists (x (exist (fun n : nat => n < S (proj1_sig m)) (proj1_sig m) H11)).
 suff: ((exist (fun l : nat => l < N1) (proj1_sig (exist (fun n : nat => n < S (proj1_sig m)) (proj1_sig m) H11)) (H7 (exist (fun n : nat => n < S (proj1_sig m)) (proj1_sig m) H11))) = m).
 move=> H13.
+unfold compose.
+simpl.
 rewrite H13.
 reflexivity.
 apply sig_map.
@@ -8530,6 +8534,7 @@ suff: (forall (k : (Count (S (proj1_sig m)))), proj1_sig k < N).
 move=> H10.
 suff: ((fun t : Count (proj1_sig m) => F (exist (fun l : nat => l < N) (proj1_sig t) (H6 t))) = (fun m0 : Count (proj1_sig m) => F (exist (fun l : nat => l < N) (proj1_sig (exist (fun n : nat => n < S (proj1_sig m)) (proj1_sig m0) (H7 m0))) (H10 (exist (fun n : nat => n < S (proj1_sig m)) (proj1_sig m0) (H7 m0)))))).
 move=> H11.
+unfold compose.
 rewrite H11.
 suff: (m = (exist (fun l : nat => l < N) (proj1_sig (exist (fun n : nat => n < S (proj1_sig m)) (proj1_sig m) H8)) (H10 (exist (fun n : nat => n < S (proj1_sig m)) (proj1_sig m) H8)))).
 move=> H12.
