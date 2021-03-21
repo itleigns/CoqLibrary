@@ -1,5 +1,4 @@
-From mathcomp
-Require Import ssreflect.
+From mathcomp Require Import ssreflect.
 Require Import Coq.Sets.Ensembles.
 
 Inductive IntersectionT (U : Type) (T : Type) (A : T -> Ensemble U) : Ensemble U :=
