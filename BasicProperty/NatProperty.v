@@ -1,5 +1,4 @@
-From mathcomp
-Require Import ssreflect.
+From mathcomp Require Import ssreflect.
 Require Import Classical.
 Require Import Coq.Logic.Description.
 Require Import Coq.Sets.Ensembles.
@@ -10,6 +9,7 @@ Require Import Coq.Arith.Le.
 Require Import Coq.Arith.Lt.
 
 Definition is_max_nat := fun (E : (Ensemble nat)) (m : nat) => (In nat E m) /\ forall x : nat, (In nat E x) -> (x <= m)%nat.
+
 Definition is_min_nat := fun (E : (Ensemble nat)) (m : nat) => (In nat E m) /\ forall x : nat, (In nat E x) -> (x >= m)%nat.
 
 Lemma is_max_nat_unique : forall (E : (Ensemble nat)) (m1 m2 : nat), is_max_nat E m1 -> is_max_nat E m2 -> m1 = m2.
@@ -236,4 +236,3 @@ apply H2.
 unfold uniqueness.
 apply (is_min_nat_unique U).
 Qed.
-

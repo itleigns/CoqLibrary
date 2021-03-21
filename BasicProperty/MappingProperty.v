@@ -1,5 +1,4 @@
-From mathcomp
-Require Import ssreflect.
+From mathcomp Require Import ssreflect.
 Require Import Classical.
 Require Import Coq.Program.Basics.
 Require Import Coq.Logic.Description.
@@ -52,7 +51,7 @@ Qed.
 Lemma BijSurj : forall (A B : Type) (f : A -> B), Bijective f -> Surjective f.
 Proof.
 move=> A B f.
-elim. 
+elim.
 move=> g H1 b.
 exists (g b).
 apply (proj2 H1 b).
@@ -536,8 +535,10 @@ move=> A H2.
 rewrite (cardinal_elim T A 0 H2).
 suff: (forall (n : nat), n < 0 -> False).
 move=> H3.
-exists (fun m : {n : nat | n < 0} => match (H3 (proj1_sig m) (proj2_sig m)) with end).
-exists (fun t0 : {t : T | Empty_set T t} => match (proj2_sig t0) with end).
+exists (fun m : {n : nat | n < 0} => match (H3 (proj1_sig m) (proj2_sig m)) with
+end).
+exists (fun t0 : {t : T | Empty_set T t} => match (proj2_sig t0) with
+end).
 apply conj.
 move=> m.
 apply False_ind.

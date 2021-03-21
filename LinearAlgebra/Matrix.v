@@ -2,8 +2,7 @@ Add LoadPath "MyAlgebraicStructure" as MyAlgebraicStructure.
 Add LoadPath "Tools" as Tools.
 Add LoadPath "BasicProperty" as BasicProperty.
 
-From mathcomp
-Require Import ssreflect.
+From mathcomp Require Import ssreflect.
 Require Import Coq.Sets.Ensembles.
 Require Export QArith_base.
 Require Import Classical.
@@ -33,7 +32,10 @@ Definition Mopp (f : Field) (M N : nat) := fun (A : Matrix f M N) (x : {n : nat|
 
 Definition MO (f : Field) (M N : nat) := fun (x : {n : nat| (n < M)%nat }) (y : {n : nat| (n < N)%nat }) => (FO f).
 
-Definition MI (f : Field) (N : nat) := fun (x : {n : nat| (n < N)%nat }) (y : {n : nat| (n < N)%nat }) => match (Nat.eq_dec (proj1_sig x) (proj1_sig y)) with | left _ => (FI f) | right _ => (FO f) end.
+Definition MI (f : Field) (N : nat) := fun (x : {n : nat| (n < N)%nat }) (y : {n : nat| (n < N)%nat }) => match (Nat.eq_dec (proj1_sig x) (proj1_sig y)) with
+  | left _ => (FI f)
+  | right _ => (FO f)
+end.
 
 Lemma Mplus_comm : forall (f : Field) (M N : nat) (A B : Matrix f M N), (Mplus f M N A B) = (Mplus f M N B A).
 Proof.
@@ -227,8 +229,7 @@ rewrite H2.
 reflexivity.
 apply functional_extensionality.
 move=> k.
-apply (FiniteSetInduction (Count K) (exist (Finite (Count K)) (Full_set {n0 : nat | (n0 < K)%nat})
-        (CountFinite K))).
+apply (FiniteSetInduction (Count K) (exist (Finite (Count K)) (Full_set {n0 : nat | (n0 < K)%nat}) (CountFinite K))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
@@ -470,9 +471,15 @@ rewrite (le_plus_minus_r m1 (proj1_sig x) H1).
 apply (proj2_sig x).
 Qed.
 
-Definition MBlockH := fun (f : Field) (M1 M2 N : nat) (A1 : Matrix f M1 N) (A2 : Matrix f M2 N) (x : {n : nat | (n < M1 + M2)%nat}) (y : {n : nat | (n < N)%nat}) => match (le_lt_dec M1 (proj1_sig x)) with | left a => A2 (proj1_sig (blockdividesub M1 M2 x a)) y | right b => A1 (exist (fun (n : nat) => (n < M1)%nat) (proj1_sig x) b) y end.
+Definition MBlockH := fun (f : Field) (M1 M2 N : nat) (A1 : Matrix f M1 N) (A2 : Matrix f M2 N) (x : {n : nat | (n < M1 + M2)%nat}) (y : {n : nat | (n < N)%nat}) => match (le_lt_dec M1 (proj1_sig x)) with
+  | left a => A2 (proj1_sig (blockdividesub M1 M2 x a)) y
+  | right b => A1 (exist (fun (n : nat) => (n < M1)%nat) (proj1_sig x) b) y
+end.
 
-Definition MBlockW := fun (f : Field) (M N1 N2 : nat) (A1 : Matrix f M N1) (A2 : Matrix f M N2) (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N1 + N2)%nat}) => match (le_lt_dec N1 (proj1_sig y)) with | left a => A2 x (proj1_sig (blockdividesub N1 N2 y a)) | right b => A1 x (exist (fun (n : nat) => (n < N1)%nat) (proj1_sig y) b) end.
+Definition MBlockW := fun (f : Field) (M N1 N2 : nat) (A1 : Matrix f M N1) (A2 : Matrix f M N2) (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N1 + N2)%nat}) => match (le_lt_dec N1 (proj1_sig y)) with
+  | left a => A2 x (proj1_sig (blockdividesub N1 N2 y a))
+  | right b => A1 x (exist (fun (n : nat) => (n < N1)%nat) (proj1_sig y) b)
+end.
 
 Lemma MBlockHPlus : forall (f : Field) (M1 M2 N : nat) (A1 B1 : Matrix f M1 N) (A2 B2 : Matrix f M2 N), Mplus f (M1 + M2)%nat N (MBlockH f M1 M2 N A1 A2) (MBlockH f M1 M2 N B1 B2) = MBlockH f M1 M2 N (Mplus f M1 N A1 B1) (Mplus f M2 N A2 B2).
 Proof.
@@ -582,27 +589,27 @@ unfold Mplus.
 unfold MBlockH.
 unfold MBlockW.
 rewrite (MySumF2Excluded {n : nat | (n < N1 + N2)%nat} (FPCM f) (fun n : Count (N1 + N2) => Fmul f match le_lt_dec N1 (proj1_sig n) with
- | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
- | right b => A1 x (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b)
+  | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
+  | right b => A1 x (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b)
 end match le_lt_dec N1 (proj1_sig n) with
- | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
- | right b => B1 (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b) y
+  | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
+  | right b => B1 (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b) y
 end) (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)%nat}) (CountFinite (N1 + N2))) (fun (m : {n : nat | (n < N1 + N2)%nat}) => (proj1_sig m < N1)%nat)).
 suff: ((MySumF2 {n : nat | (n < N1 + N2)%nat} (FiniteIntersection {n : nat | (n < N1 + N2)%nat} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)%nat}) (CountFinite (N1 + N2))) (fun m : {n : nat | (n < N1 + N2)%nat} => (proj1_sig m < N1)%nat)) (FPCM f) (fun n : Count (N1 + N2) => Fmul f match le_lt_dec N1 (proj1_sig n) with
- | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
- | right b => A1 x (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b)
+  | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
+  | right b => A1 x (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b)
 end match le_lt_dec N1 (proj1_sig n) with
- | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
- | right b => B1 (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b) y
+  | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
+  | right b => B1 (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b) y
 end)) = (MySumF2 {n : nat | (n < N1)%nat} (exist (Finite (Count N1)) (Full_set {n : nat | (n < N1)%nat}) (CountFinite N1)) (FPCM f) (fun n : Count N1 => Fmul f (A1 x n) (B1 n y)))).
 move=> H1.
 rewrite H1.
 suff: ((MySumF2 {n : nat | (n < N1 + N2)%nat} (FiniteIntersection {n : nat | (n < N1 + N2)%nat} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)%nat}) (CountFinite (N1 + N2))) (Complement {n : nat | (n < N1 + N2)%nat} (fun m : {n : nat | (n < N1 + N2)%nat} => (proj1_sig m < N1)%nat))) (FPCM f) (fun n : Count (N1 + N2) => Fmul f match le_lt_dec N1 (proj1_sig n) with
- | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
- | right b => A1 x (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b)
+  | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
+  | right b => A1 x (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b)
 end match le_lt_dec N1 (proj1_sig n) with
- | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
- | right b => B1 (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b) y
+  | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
+  | right b => B1 (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b) y
 end)) = (MySumF2 {n : nat | (n < N2)%nat} (exist (Finite (Count N2)) (Full_set {n : nat | (n < N2)%nat}) (CountFinite N2)) (FPCM f) (fun n : Count N2 => Fmul f (A2 x n) (B2 n y)))).
 move=> H2.
 rewrite H2.
@@ -612,11 +619,11 @@ move=> H2.
 suff: (forall (u : {n : nat | (n < N2)%nat}), proj1_sig (exist (Finite (Count N2)) (Full_set {n : nat | (n < N2)%nat}) (CountFinite N2)) u -> proj1_sig (FiniteIntersection {n : nat | (n < N1 + N2)%nat} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)%nat}) (CountFinite (N1 + N2))) (Complement {n : nat | (n < N1 + N2)%nat} (fun m : {n : nat | (n < N1 + N2)%nat} => (proj1_sig m < N1)%nat))) ((fun (u1 : {n : nat | (n < N2)%nat}) => (exist (fun (n : nat) => (n < N1 + N2)%nat) (N1 + proj1_sig u1)%nat (H2 u1))) u)).
 move=> H3.
 rewrite - (MySumF2BijectiveSame {n : nat | (n < N2)%nat} (exist (Finite (Count N2)) (Full_set {n : nat | (n < N2)%nat}) (CountFinite N2)) {n : nat | (n < N1 + N2)%nat} (FiniteIntersection {n : nat | (n < N1 + N2)%nat} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)%nat}) (CountFinite (N1 + N2))) (Complement {n : nat | (n < N1 + N2)%nat} (fun m : {n : nat | (n < N1 + N2)%nat} => (proj1_sig m < N1)%nat))) (FPCM f) (fun n : Count (N1 + N2) => Fmul f match le_lt_dec N1 (proj1_sig n) with
- | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
- | right b => A1 x (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b)
+  | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
+  | right b => A1 x (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b)
 end match le_lt_dec N1 (proj1_sig n) with
- | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
- | right b => B1 (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b) y
+  | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
+  | right b => B1 (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b) y
 end) (fun (u1 : {n : nat | (n < N2)%nat}) => (exist (fun (n : nat) => (n < N1 + N2)%nat) (N1 + proj1_sig u1)%nat (H2 u1))) H3).
 apply (MySumF2Same {n : nat | (n < N2)%nat} (exist (Finite (Count N2)) (Full_set {n : nat | (n < N2)%nat}) (CountFinite N2)) (FPCM f)).
 simpl.
@@ -690,11 +697,11 @@ move=> H1.
 suff: (forall (u : {n : nat | (n < N1)%nat}), proj1_sig (exist (Finite (Count N1)) (Full_set {n : nat | (n < N1)%nat}) (CountFinite N1)) u -> proj1_sig (FiniteIntersection {n : nat | (n < N1 + N2)%nat} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)%nat}) (CountFinite (N1 + N2))) (fun m : {n : nat | (n < N1 + N2)%nat} => (proj1_sig m < N1)%nat)) ((fun (u1 : {n : nat | (n < N1)%nat}) => (exist (fun (n : nat) => (n < N1 + N2)%nat) (proj1_sig u1)%nat (H1 u1))) u)).
 move=> H2.
 rewrite - (MySumF2BijectiveSame {n : nat | (n < N1)%nat} (exist (Finite (Count N1)) (Full_set {n : nat | (n < N1)%nat}) (CountFinite N1)) {n : nat | (n < N1 + N2)%nat} (FiniteIntersection {n : nat | (n < N1 + N2)%nat} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)%nat}) (CountFinite (N1 + N2))) (fun m : {n : nat | (n < N1 + N2)%nat} => (proj1_sig m < N1)%nat)) (FPCM f) (fun n : Count (N1 + N2) => Fmul f match le_lt_dec N1 (proj1_sig n) with
- | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
- | right b => A1 x (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b)
+  | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
+  | right b => A1 x (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b)
 end match le_lt_dec N1 (proj1_sig n) with
- | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
- | right b => B1 (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b) y
+  | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
+  | right b => B1 (exist (fun n0 : nat => (n0 < N1)%nat) (proj1_sig n) b) y
 end) (fun (u1 : {n : nat | (n < N1)%nat}) => (exist (fun (n : nat) => (n < N1 + N2)%nat) (proj1_sig u1)%nat (H1 u1))) H2).
 apply (MySumF2Same {n : nat | (n < N1)%nat} (exist (Finite (Count N1)) (Full_set {n : nat | (n < N1)%nat}) (CountFinite N1)) (FPCM f)).
 simpl.

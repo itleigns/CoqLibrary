@@ -1,7 +1,6 @@
 Add LoadPath "BasicProperty" as BasicProperty.
 
-From mathcomp
-Require Import ssreflect.
+From mathcomp Require Import ssreflect.
 Require Import Classical.
 Require Import Coq.Logic.ClassicalDescription.
 Require Import Coq.Sets.Ensembles.
@@ -83,6 +82,7 @@ by [].
 Qed.
 
 Lemma Fadd_eq_reg_l : forall (f : Field) (x y z : FT f), (Fadd f x y) = (Fadd f x z) -> y = z.
+Proof.
 move=> f x y z H1.
 rewrite - (Fadd_O_l f y).
 rewrite - (Fadd_O_l f z).
@@ -94,6 +94,7 @@ by [].
 Qed.
 
 Lemma Fadd_eq_reg_r : forall (f : Field) (x y z : FT f), (Fadd f y x) = (Fadd f z x) -> y = z.
+Proof.
 move=> f x y z H1.
 rewrite - (Fadd_O_r f y).
 rewrite - (Fadd_O_r f z).
@@ -136,6 +137,7 @@ by [].
 Qed.
 
 Lemma Fmul_O_r : forall (f : Field) (x : FT f), (Fmul f x (FO f)) = (FO f).
+Proof.
 move=> f x.
 apply (Fadd_O_r_uniq f (Fmul f x (FO f)) (Fmul f x (FO f))).
 rewrite - (Fmul_add_distr_l f x (FO f) (FO f)).
@@ -144,12 +146,14 @@ by [].
 Qed.
 
 Lemma Fmul_O_l : forall (f : Field) (x : FT f), (Fmul f (FO f) x) = (FO f).
+Proof.
 move=> f x.
 rewrite (Fmul_comm f (FO f) x).
 apply (Fmul_O_r f x).
 Qed.
 
 Lemma Fmul_ne : forall (f : Field) (x : FT f), (Fmul f x (FI f)) = x /\ (Fmul f (FI f) x) = x.
+Proof.
 move=> f x.
 apply conj.
 rewrite (Fmul_comm f x (FI f)).
@@ -307,12 +311,14 @@ apply (Fadd_opp_r f (FO f)).
 Qed.
 
 Lemma Fopp_eq_O_compat : forall (f : Field) (x : FT f), x = (FO f) -> (Fopp f x) = (FO f).
+Proof.
 move=> f x H1.
 rewrite H1.
 apply (Fopp_O f).
 Qed.
 
 Lemma Fopp_involutive : forall (f : Field) (x : FT f), (Fopp f (Fopp f x)) = x.
+Proof.
 move=> f x.
 suff: x = Fopp f (Fopp f x).
 move=> H1.
@@ -323,6 +329,7 @@ apply (Fadd_opp_l f x).
 Qed.
 
 Lemma Fopp_neq_O_compat : forall (f : Field) (x : FT f), x <> (FO f) -> (Fopp f x) <> (FO f).
+Proof.
 move=> f x H1.
 move=> H2.
 apply H1.

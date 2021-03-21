@@ -1,5 +1,4 @@
-From mathcomp
-Require Import ssreflect.
+From mathcomp Require Import ssreflect.
 Require Import Coq.Logic.ProofIrrelevance.
 Require Import Coq.Logic.JMeq.
 

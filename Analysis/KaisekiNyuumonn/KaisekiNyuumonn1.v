@@ -2,8 +2,7 @@ Add LoadPath "MyAlgebraicStructure" as MyAlgebraicStructure.
 Add LoadPath "Tools" as Tools.
 Add LoadPath "BasicProperty" as BasicProperty.
 
-From mathcomp
-Require Import ssreflect.
+From mathcomp Require Import ssreflect.
 Require Import Reals.
 Require Import Coq.Sets.Ensembles.
 Require Export QArith_base.
@@ -79,7 +78,7 @@ Qed.
 Lemma Problem_1_1_1_3 : forall r : R, - (- r) = r.
 Proof.
 move=> r.
-symmetry. 
+symmetry.
 apply (Problem_1_1_1_2 (- r) r).
 rewrite (Rplus_comm (- r) r).
 apply (Rplus_opp_r r).
@@ -107,13 +106,13 @@ rewrite - (Rmult_plus_distr_l r 1 (- 1)).
 rewrite (Rplus_opp_r 1).
 rewrite (Rmult_comm r 0).
 apply (Problem_1_1_1_4 r).
-Qed. 
+Qed.
 
 Lemma Problem_1_1_1_6 : (- 1) * (- 1) = 1.
 Proof.
 rewrite (Problem_1_1_1_5 (- 1)).
 apply (Problem_1_1_1_3 1).
-Qed. 
+Qed.
 
 Lemma Problem_1_1_1_7_l : forall r1 r2 : R, r1 * (- r2) = - (r1 * r2).
 Proof.
@@ -499,6 +498,7 @@ apply H1.
 Qed.
 
 Lemma Problem_1_1_2_5 : forall r1 r2 r3 r4 : R, r1 <= r2 /\ r3 <= r4 -> r1 + r3 <= r2 + r4.
+Proof.
 move=> r1 r2 r3 r4.
 case.
 move=> H1 H2.
@@ -530,6 +530,7 @@ by [].
 Qed.
 
 Lemma Problem_1_1_2_6 : forall r1 r2 r3 r4 : R, r1 <= r2 /\ r3 < r4 -> r1 + r3 < r2 + r4.
+Proof.
 move=> r1 r2 r3 r4.
 case.
 move=> H1 H2.
@@ -584,7 +585,6 @@ apply (Rlt_asym r2 r2).
 apply H2.
 apply H2.
 Qed.
-
 
 Lemma Proposition_1_1 : forall r1 r2 : R, r1 < r2 -> (exists r3 : R, (r1 < r3) /\ (r3 < r2)).
 Proof.
@@ -645,28 +645,22 @@ apply (H2 epsilon (proj1 H5)).
 apply.
 Qed.
 
-Definition is_max :=
-fun (E : (Ensemble R)) (m : R) => (In R E m) /\ forall x : R, (In R E x) -> x <= m.
+Definition is_max := fun (E : (Ensemble R)) (m : R) => (In R E m) /\ forall x : R, (In R E x) -> x <= m.
 
-Definition is_min :=
-fun (E : (Ensemble R)) (m : R) => (In R E m) /\ forall x : R, (In R E x) -> x >= m.
+Definition is_min := fun (E : (Ensemble R)) (m : R) => (In R E m) /\ forall x : R, (In R E x) -> x >= m.
 
-Definition my_lower_bound : Ensemble R -> Ensemble R :=
-fun (E : (Ensemble R)) => (fun (m : R) => forall x : R, (In R E x) -> x >= m).
+Definition my_lower_bound : Ensemble R -> Ensemble R := fun (E : (Ensemble R)) => (fun (m : R) => forall x : R, (In R E x) -> x >= m).
 
-Definition my_lower_bounded : Ensemble R -> Prop :=
-fun x => (Inhabited R (my_lower_bound x)).
+Definition my_lower_bounded : Ensemble R -> Prop := fun x => (Inhabited R (my_lower_bound x)).
 
-Definition my_upper_bound : Ensemble R -> Ensemble R :=
-fun (E : (Ensemble R)) => (fun (m : R) => forall x : R, (In R E x) -> x <= m).
+Definition my_upper_bound : Ensemble R -> Ensemble R := fun (E : (Ensemble R)) => (fun (m : R) => forall x : R, (In R E x) -> x <= m).
 
-Definition my_upper_bounded : Ensemble R -> Prop :=
-fun x => (Inhabited R (my_upper_bound x)).
+Definition my_upper_bounded : Ensemble R -> Prop := fun x => (Inhabited R (my_upper_bound x)).
 
-Definition my_bounded : Ensemble R -> Prop :=
-fun x => (Inhabited R (my_upper_bound x)) /\ (Inhabited R (my_lower_bound x)).
+Definition my_bounded : Ensemble R -> Prop := fun x => (Inhabited R (my_upper_bound x)) /\ (Inhabited R (my_lower_bound x)).
 
 Lemma bounded_abs : forall A : Ensemble R , (my_bounded A) <-> (my_upper_bounded (Image.Im R R A Rabs)).
+Proof.
 move=> A.
 apply conj.
 move=> H1.
@@ -830,8 +824,7 @@ apply (Rge_refl r1).
 apply H1.
 Qed.
 
-Definition my_abs (r : R) : R := 
-  let (a,_) := R_R_exist_max r (- r) in a.
+Definition my_abs (r : R) : R := let (a,_) := R_R_exist_max r (- r) in a.
 
 Lemma Formula_1_7 : (forall r : R, (r >= 0 -> my_abs(r) = r)) /\ (forall r : R, (r <= 0 -> my_abs(r) = -r)).
 Proof.
@@ -1020,6 +1013,7 @@ apply (Rplus_0_r r1).
 Qed.
 
 Lemma myabs_eq_abs : (forall r : R, my_abs(r) = Rabs(r)).
+Proof.
 move=> r.
 rewrite /Rabs.
 case (Rcase_abs r).
@@ -1028,8 +1022,7 @@ apply ((proj2 Formula_1_7) r (Rlt_le r 0 H1)).
 apply ((proj1 Formula_1_7) r).
 Qed.
 
-Lemma Formula_1_10 : (forall A : (Ensemble R) ,forall  r1 r2 : R, (In R (my_upper_bound A) r1) -> (r1 <= r2) -> (In R (my_upper_bound A) r2))
- /\ (forall A : (Ensemble R) ,forall  r1 r2 : R, (In R (my_lower_bound A) r1) -> (r2 <= r1) -> (In R (my_lower_bound A) r2)).
+Lemma Formula_1_10 : (forall A : (Ensemble R) ,forall r1 r2 : R, (In R (my_upper_bound A) r1) -> (r1 <= r2) -> (In R (my_upper_bound A) r2)) /\ (forall A : (Ensemble R) ,forall r1 r2 : R, (In R (my_lower_bound A) r1) -> (r2 <= r1) -> (In R (my_lower_bound A) r2)).
 Proof.
 apply conj.
 move=> A r1 r2.
@@ -1052,14 +1045,11 @@ apply ((H1 x) H3).
 apply (Rle_ge r2 r1 H2).
 Qed.
 
-Definition is_greatest_lower_bound := 
-fun (E : (Ensemble R)) (m : R) => (is_max (my_lower_bound E) m). 
+Definition is_greatest_lower_bound := fun (E : (Ensemble R)) (m : R) => (is_max (my_lower_bound E) m).
 
-Definition is_least_upper_bound := 
-fun (E : (Ensemble R)) (m : R) => (is_min (my_upper_bound E) m).
+Definition is_least_upper_bound := fun (E : (Ensemble R)) (m : R) => (is_min (my_upper_bound E) m).
 
-Lemma Proposition_1_3 : (forall (A : (Ensemble R)) (m : R),((forall (a : R), (In R A a) -> a <= m) /\ (forall (x : R), x < m ->  (exists (a : R), (In R A a) /\ x < a)) <-> (is_least_upper_bound A m)))
- /\ (forall (A : (Ensemble R)) (m : R),((forall (a : R), (In R A a) -> a >= m) /\ (forall (x : R), x > m ->  (exists (a : R), (In R A a) /\ x > a)) <-> (is_greatest_lower_bound A m))).
+Lemma Proposition_1_3 : (forall (A : (Ensemble R)) (m : R),((forall (a : R), (In R A a) -> a <= m) /\ (forall (x : R), x < m -> (exists (a : R), (In R A a) /\ x < a)) <-> (is_least_upper_bound A m))) /\ (forall (A : (Ensemble R)) (m : R),((forall (a : R), (In R A a) -> a >= m) /\ (forall (x : R), x > m -> (exists (a : R), (In R A a) /\ x > a)) <-> (is_greatest_lower_bound A m))).
 Proof.
 apply conj.
 move=> A m.
@@ -1074,7 +1064,7 @@ apply conj.
 move=> x H3.
 apply (H1 x H3).
 move=> x.
-move=> H3. 
+move=> H3.
 elim (Rge_gt_dec x m).
 apply.
 move=> H4.
@@ -1116,7 +1106,7 @@ apply conj.
 move=> x H3.
 apply (H1 x H3).
 move=> x.
-move=> H3. 
+move=> H3.
 elim (Rlt_le_dec m x).
 move=> H4.
 apply False_ind.
@@ -1254,8 +1244,7 @@ exists x.
 apply H3.
 Qed.
 
-Definition MinusER : Ensemble R -> Ensemble R :=
-fun (E : (Ensemble R)) => (fun (x : R) => (In R E (- x))).
+Definition MinusER : Ensemble R -> Ensemble R := fun (E : (Ensemble R)) => (fun (x : R) => (In R E (- x))).
 
 Lemma My_completeness_of_lower : (forall (A : (Ensemble R)), (Inhabited R A) /\ (my_lower_bounded A) -> ({x : R | is_greatest_lower_bound A x})).
 Proof.
@@ -1858,7 +1847,6 @@ move=> H2.
 apply (SqrtUnique r (MySqrt r) y H2 H1).
 Qed.
 
-
 (* Prop 1 4 の前半はMy_completeness_of_lowerに含まれている。*)
 Lemma Proposition_1_4 : forall (A : Ensemble R) (x : R),is_greatest_lower_bound A x <-> is_least_upper_bound (MinusER A) (- x).
 Proof.
@@ -1986,11 +1974,9 @@ apply (proj1 H3 z).
 apply (H1 z H4).
 Qed.
 
-Definition PlusER : Ensemble R -> Ensemble R -> Ensemble R :=
-fun (A B : (Ensemble R)) => (fun (x : R) => (exists (a b : R), (In R A a) /\ (In R B b) /\ x = a + b)).
+Definition PlusER : Ensemble R -> Ensemble R -> Ensemble R := fun (A B : (Ensemble R)) => (fun (x : R) => (exists (a b : R), (In R A a) /\ (In R B b) /\ x = a + b)).
 
-Definition MultER : Ensemble R -> Ensemble R -> Ensemble R :=
-fun (A B : (Ensemble R)) => (fun (x : R) => (exists (a b : R), (In R A a) /\ (In R B b) /\ x = a * b)).
+Definition MultER : Ensemble R -> Ensemble R -> Ensemble R := fun (A B : (Ensemble R)) => (fun (x : R) => (exists (a b : R), (In R A a) /\ (In R B b) /\ x = a * b)).
 
 Lemma Formula_1_13_1 : forall (A B : Ensemble R), (forall (a b : R), (is_least_upper_bound A a) -> (is_least_upper_bound B b) -> (is_least_upper_bound (PlusER A B) (a+b))).
 Proof.
@@ -2764,17 +2750,15 @@ apply (Rplus_gt_compat_l a 1 0).
 apply (Rlt_0_1).
 Qed.
 
-Definition RN : (Ensemble R) := 
-  (fun x:R => exists n:nat, INR n = x).
+Definition RN : (Ensemble R) := (fun x:R => exists n:nat, INR n = x).
 
-Fixpoint conv (n k:nat) : nat :=
-  match k with
-    | O => 1%nat
-    | S k => (match n with
-               | O => 0%nat
-               | S n => (conv n k) + (conv n (S k))%nat
-              end)
-  end.
+Fixpoint conv (n k:nat) : nat := match k with
+  | O => 1%nat
+  | S k => (match n with
+    | O => 0%nat
+    | S n => (conv n k) + (conv n (S k))%nat
+  end)
+end.
 
 Lemma conv_fact : forall (n:nat), (forall (k:nat),(n >= k)%nat -> ((conv n k) * (fact k) * (fact (n - k)) = (fact n))%nat) /\ forall (k:nat),(n < k)%nat -> ((conv n k) = 0%nat).
 Proof.
@@ -2839,8 +2823,8 @@ move=> H6.
 rewrite H6.
 rewrite (mult_comm (S (m - k0)) (fact (S m - S k0))).
 rewrite - (mult_assoc_reverse (fact (S k0)) (fact (S m - S k0)) (S (m - k0))).
-rewrite - (mult_assoc_reverse  (conv (S m) (S k0)) (fact (S k0) * fact (S m - S k0)) (S (m - k0))).
-rewrite - (mult_assoc_reverse  (conv (S m) (S k0)) (fact (S k0)) (fact (S m - S k0))).
+rewrite - (mult_assoc_reverse (conv (S m) (S k0)) (fact (S k0) * fact (S m - S k0)) (S (m - k0))).
+rewrite - (mult_assoc_reverse (conv (S m) (S k0)) (fact (S k0)) (fact (S m - S k0))).
 rewrite (proj1 H4 (S k0)).
 suff: (S (m - k0) = m - k0 + 1)%nat.
 move=> H7.
@@ -2890,8 +2874,7 @@ Qed.
 Lemma sigma_translation : forall (f : nat-> R) (n low high : nat),(high >= low /\ low >= n)%nat -> (sigma f low high) = (sigma (fun k:nat => f (k+n))%nat (low-n) (high-n)).
 Proof.
 move=> f.
-suff: forall n low high : nat,
-(high >= low)%nat /\ (low >= n)%nat -> (high - n - (low - n) = high - low)%nat.
+suff: forall n low high : nat, (high >= low)%nat /\ (low >= n)%nat -> (high - n - (low - n) = high - low)%nat.
 move=> H2.
 move=> n low high H1.
 rewrite /sigma.
@@ -3051,47 +3034,34 @@ rewrite H2.
 rewrite H1.
 rewrite - (Sigma_Mult (x + y) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ (n0 - k)) 0 n0).
 rewrite /RSequenceMultR.
-suff: (sigma
-  (fun k : nat => (x + y) * (INR (conv n0 k) * x ^ k * y ^ (n0 - k)))
-  0 n0) = (sigma
-  (fun k : nat => (INR (conv n0 k) * x ^ (S k) * y ^ (n0 - k)))
-  0 n0) + (sigma
-  (fun k : nat => (INR (conv n0 k) * x ^ k * y ^ (S n0 - k)))
-  0 n0).
+suff: (sigma (fun k : nat => (x + y) * (INR (conv n0 k) * x ^ k * y ^ (n0 - k))) 0 n0) = (sigma (fun k : nat => (INR (conv n0 k) * x ^ (S k) * y ^ (n0 - k))) 0 n0) + (sigma (fun k : nat => (INR (conv n0 k) * x ^ k * y ^ (S n0 - k))) 0 n0).
 move=> H3.
 rewrite H3.
 suff: sigma (fun k : nat => INR (conv n0 k) * x ^ S k * y ^ (n0 - k)) 0 n0 = sigma (fun k : nat => INR (conv n0 (k - 1)) * x ^ k * y ^ ((S n0 - k))) (S 0) (S n0).
 move=> H4.
 rewrite H4.
-suff: sigma (fun k : nat => INR (conv n0 (k - 1)) * x ^ k * y ^ (S n0 - k)) 1 (S n0) = 
-sigma (fun k : nat => match k with | O => 0
-| S k => INR (conv n0 k) * x ^ (S k) * y ^ (n0 - k) end) 0
-  (S n0).
+suff: sigma (fun k : nat => INR (conv n0 (k - 1)) * x ^ k * y ^ (S n0 - k)) 1 (S n0) = sigma (fun k : nat => match k with
+  | O => 0
+  | S k => INR (conv n0 k) * x ^ (S k) * y ^ (n0 - k)
+end) 0 (S n0).
 move=> H5.
 rewrite H5.
 suff: sigma (fun k : nat => INR (conv n0 k) * x ^ k * y ^ (S n0 - k)) 0 n0 = sigma (fun k : nat => INR (conv n0 k) * x ^ k * y ^ S (n0 - k)) 0 (S n0).
 move=> H6.
 rewrite H6.
-rewrite - (Sigma_Plus (fun k : nat =>
-   match k with
-   | 0%nat => 0
-   | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
-   end) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ S (n0 - k)) 0 (S n0)).
-suff: forall k:nat, (k <= (S n0))%nat -> ((RSequencePlus
-     (fun k : nat =>
-      match k with
-      | 0%nat => 0
-      | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
-      end) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ S (n0 - k))) k) = ((fun k : nat => INR (conv (S n0) k) * x ^ k * y ^ (S n0 - k)) k).
+rewrite - (Sigma_Plus (fun k : nat => match k with
+  | 0%nat => 0
+  | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
+end) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ S (n0 - k)) 0 (S n0)).
+suff: forall k:nat, (k <= (S n0))%nat -> ((RSequencePlus (fun k : nat => match k with
+  | 0%nat => 0
+  | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
+end) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ S (n0 - k))) k) = ((fun k : nat => INR (conv (S n0) k) * x ^ k * y ^ (S n0 - k)) k).
 move=> H7.
-apply (Sigma_Same (RSequencePlus
-     (fun k : nat =>
-      match k with
-      | 0%nat => 0
-      | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
-      end) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ S (n0 - k))) (fun k : nat => INR (conv (S n0) k) * x ^ k * y ^ (S n0 - k))
-0 (S n0)
-).
+apply (Sigma_Same (RSequencePlus (fun k : nat => match k with
+  | 0%nat => 0
+  | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
+end) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ S (n0 - k))) (fun k : nat => INR (conv (S n0) k) * x ^ k * y ^ (S n0 - k)) 0 (S n0) ).
 apply (le_0_n (S n0)).
 rewrite /RSequencePlus.
 move=> k H8.
@@ -3152,13 +3122,11 @@ rewrite (proj2 (conv_fact n0) (S n0)).
 simpl.
 rewrite (Rmult_0_l (x * x ^ n0)).
 rewrite (Rmult_0_l (y * y ^ (n0 - S n0))).
-rewrite (Rplus_0_l (sigma (fun k : nat => INR (conv n0 k) * x ^ k * (y * y ^ (n0 - k))) 0
-  n0)).
-rewrite (Sigma_Same (fun k : nat =>
-   INR (conv n0 k) * x ^ k * y ^ match k with
-                                 | O => S n0
-                                 | S l => n0 - l
-                                 end) (fun k : nat => INR (conv n0 k) * x ^ k * (y * y ^ (n0 - k))) 0 n0).
+rewrite (Rplus_0_l (sigma (fun k : nat => INR (conv n0 k) * x ^ k * (y * y ^ (n0 - k))) 0 n0)).
+rewrite (Sigma_Same (fun k : nat => INR (conv n0 k) * x ^ k * y ^ match k with
+  | O => S n0
+  | S l => n0 - l
+end) (fun k : nat => INR (conv n0 k) * x ^ k * (y * y ^ (n0 - k))) 0 n0).
 by [].
 apply (le_O_n n0).
 move=> k.
@@ -3175,33 +3143,28 @@ rewrite (minus_Sn_m n0 (S n1)).
 simpl.
 by [].
 apply (proj2 H7).
-by []. 
+by [].
 by [].
 apply (le_n_S 0 n0).
 apply (le_O_n n0).
-rewrite ((sigma_first (fun k : nat =>
-   match k with
-   | 0%nat => 0
-   | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
-   end)) 0%nat (S n0)).
-rewrite (Rplus_0_l (sigma
-  (fun k : nat =>
-   match k with
-   | 0%nat => 0
-   | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
-   end) 1 (S n0))).
+rewrite ((sigma_first (fun k : nat => match k with
+  | 0%nat => 0
+  | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
+end)) 0%nat (S n0)).
+rewrite (Rplus_0_l (sigma (fun k : nat => match k with
+  | 0%nat => 0
+  | S k0 => INR (conv n0 k0) * x ^ S k0 * y ^ (n0 - k0)
+end) 1 (S n0))).
 by [].
 apply (le_n_S 0 n0).
 apply (le_O_n n0).
 rewrite (sigma_translation (fun k : nat => INR (conv n0 (k - 1)) * x ^ k * y ^ (S n0 - k)) 1 1 (S n0)).
 simpl Nat.sub.
 rewrite - (minus_n_O n0).
-apply (Sigma_Same (fun k : nat => INR (conv n0 k) * x ^ S k * y ^ (n0 - k)) (fun k : nat =>
-   INR (conv n0 (k + 1 - 1)) * x ^ (k + 1) *
-   y ^ match (k + 1)%nat with
-       | O => S n0
-       | S l => n0 - l
-       end) 0 n0).
+apply (Sigma_Same (fun k : nat => INR (conv n0 k) * x ^ S k * y ^ (n0 - k)) (fun k : nat => INR (conv n0 (k + 1 - 1)) * x ^ (k + 1) * y ^ match (k + 1)%nat with
+  | O => S n0
+  | S l => n0 - l
+end) 0 n0).
 apply (le_O_n n0).
 move=> k H4.
 rewrite - (plus_Snm_nSm k 0).
@@ -3214,8 +3177,7 @@ apply (le_n_S 0 n0).
 apply (le_0_n n0).
 by [].
 rewrite - (Sigma_Plus (fun k : nat => INR (conv n0 k) * x ^ S k * y ^ (n0 - k)) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ (S n0 - k)) 0 n0).
-apply (Sigma_Same (fun k : nat => (x + y) * (INR (conv n0 k) * x ^ k * y ^ (n0 - k))) (RSequencePlus (fun k : nat => INR (conv n0 k) * x ^ S k * y ^ (n0 - k))
-     (fun k : nat => INR (conv n0 k) * x ^ k * y ^ (S n0 - k))) 0 n0).
+apply (Sigma_Same (fun k : nat => (x + y) * (INR (conv n0 k) * x ^ k * y ^ (n0 - k))) (RSequencePlus (fun k : nat => INR (conv n0 k) * x ^ S k * y ^ (n0 - k)) (fun k : nat => INR (conv n0 k) * x ^ k * y ^ (S n0 - k))) 0 n0).
 apply (le_0_n n0).
 move=> k H3.
 rewrite /RSequencePlus.
@@ -3238,14 +3200,12 @@ apply (proj2 H3).
 by [].
 Qed.
 
-Definition is_max_nat :=
-fun (E : (Ensemble nat)) (m : nat) => (In nat E m) /\ forall x : nat, (In nat E x) -> (x <= m)%nat.
+Definition is_max_nat := fun (E : (Ensemble nat)) (m : nat) => (In nat E m) /\ forall x : nat, (In nat E x) -> (x <= m)%nat.
 
-Definition is_min_nat :=
-fun (E : (Ensemble nat)) (m : nat) => (In nat E m) /\ forall x : nat, (In nat E x) -> (x >= m)%nat.
+Definition is_min_nat := fun (E : (Ensemble nat)) (m : nat) => (In nat E m) /\ forall x : nat, (In nat E x) -> (x >= m)%nat.
 
 Lemma Finite_max_R : forall (U : Ensemble R), (Finite R U) -> (Inhabited R U) -> exists m : R, (is_max U m).
-Proof. 
+Proof.
 move=> U H1.
 elim H1.
 move=> H2.
@@ -3298,7 +3258,7 @@ apply (In_singleton R x0).
 Qed.
 
 Lemma Finite_min_R : forall (U : Ensemble R), (Finite R U) -> (Inhabited R U) -> exists m : R, (is_min U m).
-Proof. 
+Proof.
 move=> U H1.
 elim H1.
 move=> H2.
@@ -3351,7 +3311,7 @@ apply (In_singleton R x0).
 Qed.
 
 Lemma Finite_max_nat : forall (U : Ensemble nat), (Finite nat U) -> (Inhabited nat U) -> exists m : nat, (is_max_nat U m).
-Proof. 
+Proof.
 move=> U H1.
 elim H1.
 move=> H2.
@@ -3869,10 +3829,7 @@ rewrite - {2}(eps2 (R_dist x y)).
 apply (Rle_lt_trans (R_dist x y) ((R_dist (An (Init.Nat.max n1 n2)) x) + (R_dist (An (Init.Nat.max n1 n2)) y)) (R_dist x y * / 2 + R_dist x y * / 2)).
 rewrite (R_dist_sym (An (Init.Nat.max n1 n2)) x).
 apply (R_dist_tri x y (An (Init.Nat.max n1 n2))).
-apply (Rplus_lt_compat (R_dist (An (Init.Nat.max n1 n2)) x)
-(R_dist x y * / 2)
-(R_dist (An (Init.Nat.max n1 n2)) y)
-(R_dist x y * / 2)).
+apply (Rplus_lt_compat (R_dist (An (Init.Nat.max n1 n2)) x) (R_dist x y * / 2) (R_dist (An (Init.Nat.max n1 n2)) y) (R_dist x y * / 2)).
 apply H4.
 apply (Nat.le_max_l n1 n2).
 apply H5.
@@ -3891,8 +3848,7 @@ move=> n H3.
 suff: (Finite R (fun x => exists (n0 : nat), (An n0) = x /\ (n0 <= n)%nat)).
 move=> H4.
 apply conj.
-elim (Finite_max_R (fun x : R =>
-        exists n0 : nat, An n0 = x /\ (n0 <= n)%nat) H4).
+elim (Finite_max_R (fun x : R => exists n0 : nat, An n0 = x /\ (n0 <= n)%nat) H4).
 move=> ma H5.
 exists (Rmax ma (a + 1)).
 move=> x H6.
@@ -3926,8 +3882,7 @@ exists n.
 apply conj.
 by [].
 by [].
-elim (Finite_min_R (fun x : R =>
-        exists n0 : nat, An n0 = x /\ (n0 <= n)%nat) H4).
+elim (Finite_min_R (fun x : R => exists n0 : nat, An n0 = x /\ (n0 <= n)%nat) H4).
 move=> mi H5.
 exists (Rmin mi (a - 1)).
 move=> x H6.
@@ -4102,7 +4057,7 @@ move=> ma H3.
 move=> eps H4.
 elim (H1 (eps * / 2 * / (ma + 1))).
 move=> n1 H5.
-elim (H2 (eps * / 2 * / ((Rabs a)  + 1))).
+elim (H2 (eps * / 2 * / ((Rabs a) + 1))).
 move=> n2 H6.
 exists (Nat.max n1 n2).
 move=> n H7.
@@ -4389,6 +4344,7 @@ apply (Rabs_pos_lt a H2).
 Qed.
 
 Lemma Theorem_2_5_1_div : forall (An Bn : nat -> R) (x y : R), (Un_cv An x) -> (Un_cv Bn y) -> (y <> 0) -> (Un_cv (RSequenceDiv An Bn) (x / y)).
+Proof.
 move=> An Bn x y H1 H2 H3.
 suff: Un_cv (RSequenceMult An (RSequenceInv Bn)) (x / y).
 apply (Same_Sequence_cv (RSequenceMult An (RSequenceInv Bn)) (RSequenceDiv An Bn)).
@@ -4720,11 +4676,9 @@ by [].
 apply H1.
 Qed.
 
-Definition Un_inf : ((nat -> R) -> Prop) := fun Un : (nat -> R) => forall M:R,
-      exists N : nat, (forall n:nat, (n >= N)%nat -> (Un n) > M).
+Definition Un_inf : ((nat -> R) -> Prop) := fun Un : (nat -> R) => forall M:R, exists N : nat, (forall n:nat, (n >= N)%nat -> (Un n) > M).
 
-Definition Un_minf : ((nat -> R) -> Prop) := fun Un : (nat -> R) => forall M:R,
-      exists N : nat, (forall n:nat, (n >= N)%nat -> (Un n) < M).
+Definition Un_minf : ((nat -> R) -> Prop) := fun Un : (nat -> R) => forall M:R, exists N : nat, (forall n:nat, (n >= N)%nat -> (Un n) < M).
 
 Lemma Same_Sequence_inf : forall (An Bn : nat -> R), (forall (n : nat), (An n) = (Bn n)) -> (Un_inf An) <-> (Un_inf Bn).
 Proof.
@@ -4848,6 +4802,7 @@ apply H6.
 Qed.
 
 Lemma Theorem_3_2 : forall (a b : R), (a > 0) -> (b > 0) -> exists (n : nat), (INR n) * a > b.
+Proof.
 move=> a b H1 H2.
 apply (NNPP (exists n : nat, INR n * a > b)).
 move=> H3.
@@ -4993,7 +4948,6 @@ apply H1.
 apply (Rlt_0_1).
 Qed.
 
-
 Lemma Formula_3_9_1 : (Un_inf (fun n : nat => (pow 2 n))).
 Proof.
 apply (le_Sequence_inf (fun n : nat => INR n) (fun n : nat => 2 ^ n)).
@@ -5089,12 +5043,9 @@ rewrite (Rmult_1_l (2 ^ n1)).
 apply (Rplus_lt_0_compat (2 ^ n1) (2 ^ n1) H4 H4).
 Qed.
 
-Inductive BoundedClosedSection (LR : {lr : (R * R) | (fst lr) <= (snd lr)}): Ensemble R := 
- BoundedClosedSection_intro : forall x:R, (fst (proj1_sig LR)) <= x -> x <= (snd (proj1_sig LR)) -> In R (BoundedClosedSection LR) x.
+Inductive BoundedClosedSection (LR : {lr : (R * R) | (fst lr) <= (snd lr)}): Ensemble R := BoundedClosedSection_intro : forall x:R, (fst (proj1_sig LR)) <= x -> x <= (snd (proj1_sig LR)) -> In R (BoundedClosedSection LR) x.
 
-Definition BoundedClosedSectionSet := {X : Ensemble R | 
-  exists LR : {lr : R * R | (fst lr) <= (snd lr)}, 
-  X = (BoundedClosedSection LR)}.
+Definition BoundedClosedSectionSet := {X : Ensemble R | exists LR : {lr : R * R | (fst lr) <= (snd lr)}, X = (BoundedClosedSection LR)}.
 
 Lemma shrinking_prop_ER : forall (IN : (nat -> (Ensemble R))) (n m : nat), (forall k : nat, Included R (IN (S k)) (IN k)) -> (n >= m)%nat -> Included R (IN n) (IN m).
 Proof.
@@ -5109,8 +5060,7 @@ apply (H1 n0 x).
 apply H4.
 Qed.
 
-Lemma BoundedClosedSectionUniqueExistsPair : 
-forall (A : BoundedClosedSectionSet), exists! LR : {lr : R * R | (fst lr) <= (snd lr)}, (proj1_sig A) = (BoundedClosedSection LR).
+Lemma BoundedClosedSectionUniqueExistsPair : forall (A : BoundedClosedSectionSet), exists! LR : {lr : R * R | (fst lr) <= (snd lr)}, (proj1_sig A) = (BoundedClosedSection LR).
 Proof.
 move=> A.
 elim (proj2_sig A).
@@ -5170,26 +5120,19 @@ apply (Req_le (snd (proj1_sig y))).
 by [].
 Qed.
 
-Definition BoundedClosedSectionToPair (A : BoundedClosedSectionSet) : ({lr : R * R | fst lr <= snd lr})
-:= proj1_sig (constructive_definite_description (fun X : {lr : R * R | fst lr <= snd lr} 
-=> (proj1_sig A) = (BoundedClosedSection X)) (BoundedClosedSectionUniqueExistsPair A)).
+Definition BoundedClosedSectionToPair (A : BoundedClosedSectionSet) : ({lr : R * R | fst lr <= snd lr}) := proj1_sig (constructive_definite_description (fun X : {lr : R * R | fst lr <= snd lr} => (proj1_sig A) = (BoundedClosedSection X)) (BoundedClosedSectionUniqueExistsPair A)).
 
-Definition BoundedClosedSectionToL (A : BoundedClosedSectionSet) : R
-:= fst (proj1_sig (BoundedClosedSectionToPair A)).
+Definition BoundedClosedSectionToL (A : BoundedClosedSectionSet) : R := fst (proj1_sig (BoundedClosedSectionToPair A)).
 
-Definition BoundedClosedSectionToR (A : BoundedClosedSectionSet) : R
-:= snd (proj1_sig (BoundedClosedSectionToPair A)).
+Definition BoundedClosedSectionToR (A : BoundedClosedSectionSet) : R := snd (proj1_sig (BoundedClosedSectionToPair A)).
 
-Definition BoundedClosedSectionToSize (A : BoundedClosedSectionSet) : R
-:= (BoundedClosedSectionToR A) - (BoundedClosedSectionToL A).
+Definition BoundedClosedSectionToSize (A : BoundedClosedSectionSet) : R := (BoundedClosedSectionToR A) - (BoundedClosedSectionToL A).
 
 Lemma BoundedClosedSectionEqual : forall A : BoundedClosedSectionSet, (proj1_sig A) = (BoundedClosedSection (BoundedClosedSectionToPair A)).
 Proof.
 move=> A.
 rewrite /BoundedClosedSectionToPair.
-elim (constructive_definite_description
-        (fun X : {lr : R * R | fst lr <= snd lr} => proj1_sig A = BoundedClosedSection X)
-        (BoundedClosedSectionUniqueExistsPair A)).
+elim (constructive_definite_description (fun X : {lr : R * R | fst lr <= snd lr} => proj1_sig A = BoundedClosedSection X) (BoundedClosedSectionUniqueExistsPair A)).
 move=> x xp.
 simpl.
 apply xp.
@@ -5203,26 +5146,11 @@ rewrite /BoundedClosedSectionToR.
 apply (proj2_sig (BoundedClosedSectionToPair A)).
 Qed.
 
-Lemma BoundedClosedSectionSetEqual : forall (LR : {lr : (R * R) | (fst lr) <= (snd lr)}), forall (P : (exists LR2 : {lr : (R * R) | (fst lr) <= (snd lr)}, (BoundedClosedSection LR) = (BoundedClosedSection LR2))),
-(BoundedClosedSectionToPair (exist (fun (A : Ensemble R) => (exists LR2 : {lr : R * R | (fst lr) <= (snd lr)}, A = (BoundedClosedSection LR2))) (BoundedClosedSection LR) P)) = LR.
+Lemma BoundedClosedSectionSetEqual : forall (LR : {lr : (R * R) | (fst lr) <= (snd lr)}), forall (P : (exists LR2 : {lr : (R * R) | (fst lr) <= (snd lr)}, (BoundedClosedSection LR) = (BoundedClosedSection LR2))), (BoundedClosedSectionToPair (exist (fun (A : Ensemble R) => (exists LR2 : {lr : R * R | (fst lr) <= (snd lr)}, A = (BoundedClosedSection LR2))) (BoundedClosedSection LR) P)) = LR.
 Proof.
 move=> LR H1.
 rewrite /BoundedClosedSectionToPair.
-elim (constructive_definite_description
-     (fun X : {lr : R * R | fst lr <= snd lr} =>
-      proj1_sig
-        (exist
-           (fun A : Ensemble R =>
-            exists LR2 : {lr : R * R | fst lr <= snd lr},
-              A = BoundedClosedSection LR2)
-           (BoundedClosedSection LR) H1) =
-      BoundedClosedSection X)
-     (BoundedClosedSectionUniqueExistsPair
-        (exist
-           (fun A : Ensemble R =>
-            exists LR2 : {lr : R * R | fst lr <= snd lr},
-              A = BoundedClosedSection LR2)
-           (BoundedClosedSection LR) H1))).
+elim (constructive_definite_description (fun X : {lr : R * R | fst lr <= snd lr} => proj1_sig (exist (fun A : Ensemble R => exists LR2 : {lr : R * R | fst lr <= snd lr}, A = BoundedClosedSection LR2) (BoundedClosedSection LR) H1) = BoundedClosedSection X) (BoundedClosedSectionUniqueExistsPair (exist (fun A : Ensemble R => exists LR2 : {lr : R * R | fst lr <= snd lr}, A = BoundedClosedSection LR2) (BoundedClosedSection LR) H1))).
 move=> x xp.
 simpl.
 suff: LR = x.
@@ -5231,17 +5159,7 @@ rewrite H2.
 by [].
 suff: BoundedClosedSection LR = BoundedClosedSection x.
 move=> H2.
-apply (let H3 := (BoundedClosedSectionUniqueExistsPair (exist 
-(fun (A : Ensemble R) => exists LR2 : {lr : R * R | fst lr <= snd lr},
-       A = BoundedClosedSection LR2) (BoundedClosedSection LR) H1)) in
-(proj2 (proj2 (unique_existence (fun (LR0 : {lr : R * R | fst lr <= snd lr}) =>
-    proj1_sig
-      (exist
-         (fun A : Ensemble R =>
-          exists LR2 : {lr : R * R | fst lr <= snd lr},
-            A = BoundedClosedSection LR2)
-         (BoundedClosedSection LR) H1) =
-    BoundedClosedSection LR0)) H3))).
+apply (let H3 := (BoundedClosedSectionUniqueExistsPair (exist (fun (A : Ensemble R) => exists LR2 : {lr : R * R | fst lr <= snd lr}, A = BoundedClosedSection LR2) (BoundedClosedSection LR) H1)) in (proj2 (proj2 (unique_existence (fun (LR0 : {lr : R * R | fst lr <= snd lr}) => proj1_sig (exist (fun A : Ensemble R => exists LR2 : {lr : R * R | fst lr <= snd lr}, A = BoundedClosedSection LR2) (BoundedClosedSection LR) H1) = BoundedClosedSection LR0)) H3))).
 by [].
 rewrite - H2.
 by [].
@@ -5427,18 +5345,14 @@ rewrite - (BoundedClosedSectionEqual (IN n)).
 apply (H12 n).
 apply (Rminus_diag_uniq_sym a b).
 apply (Proposition_2_3 (fun m : nat => BoundedClosedSectionToR (IN m) - BoundedClosedSectionToL (IN m))).
-suff: (fun m : nat =>
-   BoundedClosedSectionToR (IN m) - BoundedClosedSectionToL (IN m)) 
-   = (RSequencePlus (fun m : nat => BoundedClosedSectionToR (IN m)) (RSequenceOpp (fun m : nat => BoundedClosedSectionToL (IN m)))).
+suff: (fun m : nat => BoundedClosedSectionToR (IN m) - BoundedClosedSectionToL (IN m)) = (RSequencePlus (fun m : nat => BoundedClosedSectionToR (IN m)) (RSequenceOpp (fun m : nat => BoundedClosedSectionToL (IN m)))).
 move=> H11.
 rewrite H11.
-apply (Theorem_2_5_1_plus (fun m : nat => BoundedClosedSectionToR (IN m)) (RSequenceOpp
-        (fun m : nat => BoundedClosedSectionToL (IN m))) b (- a)).
+apply (Theorem_2_5_1_plus (fun m : nat => BoundedClosedSectionToR (IN m)) (RSequenceOpp (fun m : nat => BoundedClosedSectionToL (IN m))) b (- a)).
 apply H9.
 apply (Theorem_2_5_1_opp (fun m : nat => BoundedClosedSectionToL (IN m)) a).
 apply H5.
-apply (functional_extensionality (fun m : nat => BoundedClosedSectionToR (IN m) - BoundedClosedSectionToL (IN m)) 
-(RSequencePlus (fun m : nat => BoundedClosedSectionToR (IN m)) (RSequenceOpp (fun m : nat => BoundedClosedSectionToL (IN m))))).
+apply (functional_extensionality (fun m : nat => BoundedClosedSectionToR (IN m) - BoundedClosedSectionToL (IN m)) (RSequencePlus (fun m : nat => BoundedClosedSectionToR (IN m)) (RSequenceOpp (fun m : nat => BoundedClosedSectionToL (IN m))))).
 move=> n.
 rewrite /RSequencePlus.
 rewrite /RSequenceOpp.
@@ -5508,8 +5422,7 @@ by [].
 apply (proj2_sig (BoundedClosedSectionToPair (IN (S n)))).
 Qed.
 
-Definition Subsequence (T : Type) (ABn An : nat -> T) : Prop :=
-exists (Bn : nat -> nat), (forall (n : nat),(Bn n) < (Bn (S n)))%nat /\ (forall (n : nat),(ABn n) = (An (Bn n))).
+Definition Subsequence (T : Type) (ABn An : nat -> T) : Prop := exists (Bn : nat -> nat), (forall (n : nat),(Bn n) < (Bn (S n)))%nat /\ (forall (n : nat),(ABn n) = (An (Bn n))).
 
 Lemma Formula_3_17 : forall (An : nat -> nat), (forall (n : nat),(An n) < (An (S n)))%nat -> (forall (n : nat),(An n) >= n)%nat.
 Proof.
@@ -5590,18 +5503,12 @@ right.
 by [].
 Qed.
 
-Lemma  Iminv_Infinite_Or_Infinite : forall (V U : Type), forall (F : V -> U), exists (f : ((Ensemble U) * (Ensemble U)) -> (Ensemble U)), forall (AB : ((Ensemble U) * (Ensemble U))), (~ Finite V (fun v : V => (In U (Union U (fst AB) (snd AB)) (F v))) -> (~ Finite V (fun v : V => In U (f AB) (F v)))) /\ ((f AB) = (fst AB) \/ (f AB) = (snd AB)).
+Lemma Iminv_Infinite_Or_Infinite : forall (V U : Type), forall (F : V -> U), exists (f : ((Ensemble U) * (Ensemble U)) -> (Ensemble U)), forall (AB : ((Ensemble U) * (Ensemble U))), (~ Finite V (fun v : V => (In U (Union U (fst AB) (snd AB)) (F v))) -> (~ Finite V (fun v : V => In U (f AB) (F v)))) /\ ((f AB) = (fst AB) \/ (f AB) = (snd AB)).
 Proof.
 move=> V U F.
-apply (functional_choice (fun (AB : ((Ensemble U) * (Ensemble U))) (X : Ensemble U) =>  (~
-   Finite V
-     (fun v : V => In U (Union U (fst AB) (snd AB)) (F v)) ->
-   ~ Finite V (fun v : V => In U X (F v))) /\
-  (X = fst AB \/ X = snd AB)
-)).
+apply (functional_choice (fun (AB : ((Ensemble U) * (Ensemble U))) (X : Ensemble U) => (~ Finite V (fun v : V => In U (Union U (fst AB) (snd AB)) (F v)) -> ~ Finite V (fun v : V => In U X (F v))) /\ (X = fst AB \/ X = snd AB) )).
 move=> x.
-elim (classic (Finite V
-    (fun v : V => In U (Union U (fst x) (snd x)) (F v)))).
+elim (classic (Finite V (fun v : V => In U (Union U (fst x) (snd x)) (F v)))).
 move=> H1.
 exists (fst x).
 apply conj.
@@ -5630,21 +5537,16 @@ right.
 by [].
 rewrite - H2.
 apply H1.
-apply (Extensionality_Ensembles V (fun v : V => In U (Union U (fst x) (snd x)) (F v))
-(Union V (fun v : V => In U (fst x) (F v))
-  (fun v : V => In U (snd x) (F v)))).
+apply (Extensionality_Ensembles V (fun v : V => In U (Union U (fst x) (snd x)) (F v)) (Union V (fun v : V => In U (fst x) (F v)) (fun v : V => In U (snd x) (F v)))).
 apply conj.
 move=> y H2.
-suff: ((fun v : V => In U (fst x) (F v)) y) \/
-     ((fun v : V => In U (snd x) (F v)) y).
+suff: ((fun v : V => In U (fst x) (F v)) y) \/ ((fun v : V => In U (snd x) (F v)) y).
 case.
 move=> H3.
-apply (Union_introl V (fun v : V => In U (fst x) (F v))
-     (fun v : V => In U (snd x) (F v))).
+apply (Union_introl V (fun v : V => In U (fst x) (F v)) (fun v : V => In U (snd x) (F v))).
 apply H3.
 move=> H3.
-apply (Union_intror V (fun v : V => In U (fst x) (F v))
-     (fun v : V => In U (snd x) (F v))).
+apply (Union_intror V (fun v : V => In U (fst x) (F v)) (fun v : V => In U (snd x) (F v))).
 apply H3.
 elim H2.
 move=> z.
@@ -5678,6 +5580,7 @@ by [].
 Qed.
 
 Lemma Two_Gt_Zero : 2 > 0.
+Proof.
 rewrite /2.
 rewrite - (INR_IPR 2).
 simpl.
@@ -5687,10 +5590,12 @@ apply (Rlt_plus_1 1).
 Qed.
 
 Lemma Two_Neq_Zero : 2 <> 0.
+Proof.
 apply (Rgt_not_eq 2 0 Two_Gt_Zero).
 Qed.
 
 Lemma Two_Pow_Gt_Zero : forall n : nat, 2 ^ n > 0.
+Proof.
 elim.
 simpl.
 apply (Rlt_0_1).
@@ -5702,6 +5607,7 @@ apply H1.
 Qed.
 
 Lemma Two_Pow_Neq_Zero : forall n : nat, 2 ^ n <> 0.
+Proof.
 move=> n.
 apply (Rgt_not_eq (2 ^ n) 0 (Two_Pow_Gt_Zero n)).
 Qed.
@@ -5724,14 +5630,12 @@ move=> H6.
 suff: exists (G : nat -> nat -> nat), forall (n m : nat), (is_min_nat (fun k : nat => (In R (proj1_sig (IN n)) (An k)) /\ (k >= m)%nat) (G n m)).
 elim.
 move=> G H7.
-exists (fun (k : nat) => An ((fix Bn (n : nat) : nat := 
-match n with 
+exists (fun (k : nat) => An ((fix Bn (n : nat) : nat := match n with
   | O => (G O O)
   | S n0 => (G (S n0) (S (Bn n0)))
 end) k)).
 apply conj.
-exists (fix Bn (n : nat) : nat := 
-match n with 
+exists (fix Bn (n : nat) : nat := match n with
   | O => (G O O)
   | S n0 => (G (S n0) (S (Bn n0)))
 end).
@@ -5739,15 +5643,10 @@ apply conj.
 elim.
 apply (proj2 (proj1 (H7 1%nat (S (G O O))))).
 move=> n0 H8.
-apply (proj2 (proj1 (H7 (S (S n0))
-   (S
-      (G (S n0)
-         (S
-            ((fix Bn (n : nat) : nat :=
-                match n with
-                | 0 => G 0 0
-                | S n1 => G (S n1) (S (Bn n1))
-                end) n0)))))%nat)).
+apply (proj2 (proj1 (H7 (S (S n0)) (S (G (S n0) (S ((fix Bn (n : nat) : nat := match n with
+  | 0 => G 0 0
+  | S n1 => G (S n1) (S (Bn n1))
+end) n0)))))%nat)).
 by [].
 suff: (exists! x : R, (forall n : nat, In R (proj1_sig (IN n)) x)) /\ (forall x : R, (forall n : nat, In R (proj1_sig (IN n)) x) -> (Un_cv (fun m : nat => BoundedClosedSectionToL (IN m)) x) /\ (Un_cv (fun m : nat => BoundedClosedSectionToR (IN m)) x)).
 move=> H8.
@@ -5755,20 +5654,15 @@ suff: exists x : R, (forall n : nat, In R (proj1_sig (IN n)) x).
 elim.
 move=> x H9.
 exists x.
-apply (Proposition_2_7 (fun m : nat => BoundedClosedSectionToL (IN m)) (fun m : nat => BoundedClosedSectionToR (IN m)) x (proj1 (proj2 H8 x H9)) (proj2 (proj2 H8 x H9)) (fun k : nat =>
-   An
-     ((fix Bn (n : nat) : nat :=
-         match n with
-         | 0%nat => G 0%nat 0%nat
-         | S n0 => G (S n0) (S (Bn n0))
-         end) k))).
+apply (Proposition_2_7 (fun m : nat => BoundedClosedSectionToL (IN m)) (fun m : nat => BoundedClosedSectionToR (IN m)) x (proj1 (proj2 H8 x H9)) (proj2 (proj2 H8 x H9)) (fun k : nat => An ((fix Bn (n : nat) : nat := match n with
+  | 0%nat => G 0%nat 0%nat
+  | S n0 => G (S n0) (S (Bn n0))
+end) k))).
 move=> n.
-suff: In R (BoundedClosedSection (BoundedClosedSectionToPair (IN n))) (An
-  ((fix Bn (n0 : nat) : nat :=
-      match n0 with
-      | 0%nat => G 0%nat 0%nat
-      | S n1 => G (S n1) (S (Bn n1))
-      end) n)).
+suff: In R (BoundedClosedSection (BoundedClosedSectionToPair (IN n))) (An ((fix Bn (n0 : nat) : nat := match n0 with
+  | 0%nat => G 0%nat 0%nat
+  | S n1 => G (S n1) (S (Bn n1))
+end) n)).
 move=> H10.
 case H10.
 by [].
@@ -5776,13 +5670,10 @@ rewrite - (BoundedClosedSectionEqual (IN n)).
 elim n.
 apply (proj1 (proj1 (H7 O O))).
 move=> n0 H12.
-apply (proj1 (proj1 (H7 (S n0)
-        (S
-           ((fix Bn (n1 : nat) : nat :=
-               match n1 with
-               | 0%nat => G 0%nat 0%nat
-               | S n2 => G (S n2) (S (Bn n2))
-               end) n0))))).
+apply (proj1 (proj1 (H7 (S n0) (S ((fix Bn (n1 : nat) : nat := match n1 with
+  | 0%nat => G 0%nat 0%nat
+  | S n2 => G (S n2) (S (Bn n2))
+end) n0))))).
 apply (proj1 ((proj2 (unique_existence (fun x : R => forall n : nat, In R (proj1_sig (IN n)) x))) (proj1 H8))).
 apply (Theorem_3_3_2 IN).
 move=> n.
@@ -5801,8 +5692,7 @@ move=> n H11.
 rewrite (R_dist_eq (b - a)).
 apply H10.
 apply Formula_3_9_2.
-apply (functional_extensionality (fun n : nat => (b - a) / 2 ^ n) (RSequenceMult (fun _ : nat => b - a)
-  (fun n : nat => 1 / 2 ^ n))).
+apply (functional_extensionality (fun n : nat => (b - a) / 2 ^ n) (RSequenceMult (fun _ : nat => b - a) (fun n : nat => 1 / 2 ^ n))).
 move=> n.
 rewrite /Rdiv.
 rewrite - (Rmult_1_l (/ 2 ^ n)).
@@ -5811,28 +5701,18 @@ apply (functional_extensionality (fun m : nat => BoundedClosedSectionToR (IN m) 
 move=> n.
 rewrite - (proj1 (H6 n)).
 by [].
-suff: forall (n m : nat), (exists ! x : nat,
-     is_min_nat
-       (fun k : nat => In R (proj1_sig (IN n)) (An k) /\ (k >= m)%nat) x).
+suff: forall (n m : nat), (exists ! x : nat, is_min_nat (fun k : nat => In R (proj1_sig (IN n)) (An k) /\ (k >= m)%nat) x).
 move=> H7.
-exists (fun (n m : nat) => proj1_sig (constructive_definite_description (fun (l : nat) => is_min_nat
-    (fun k : nat => In R (proj1_sig (IN n)) (An k) /\ (k >= m)%nat) l) (H7 n m))).
+exists (fun (n m : nat) => proj1_sig (constructive_definite_description (fun (l : nat) => is_min_nat (fun k : nat => In R (proj1_sig (IN n)) (An k) /\ (k >= m)%nat) l) (H7 n m))).
 move=> n m.
-elim (constructive_definite_description
-        (fun l : nat =>
-         is_min_nat
-           (fun k : nat =>
-            In R (proj1_sig (IN n)) (An k) /\ (k >= m)%nat) l)
-        (H7 n m)).
+elim (constructive_definite_description (fun l : nat => is_min_nat (fun k : nat => In R (proj1_sig (IN n)) (An k) /\ (k >= m)%nat) l) (H7 n m)).
 simpl.
 by [].
 move=> n m.
-apply (unique_existence (fun x : nat => is_min_nat
-    (fun k : nat => In R (proj1_sig (IN n)) (An k) /\ (k >= m)%nat) x)).
+apply (unique_existence (fun x : nat => is_min_nat (fun k : nat => In R (proj1_sig (IN n)) (An k) /\ (k >= m)%nat) x)).
 apply conj.
 apply (Exist_min_nat (fun k : nat => In R (proj1_sig (IN n)) (An k) /\ (k >= m)%nat)).
-apply (NNPP (Inhabited nat
-  (fun k : nat => In R (proj1_sig (IN n)) (An k) /\ (k >= m)%nat))).
+apply (NNPP (Inhabited nat (fun k : nat => In R (proj1_sig (IN n)) (An k) /\ (k >= m)%nat))).
 move=> H7.
 apply (proj1 (proj2 (H6 n))).
 apply (Finite_Set_Included nat (fun k : nat => In R (proj1_sig (IN n)) (An k)) (fun k : nat => (k < m)%nat)).
@@ -5856,37 +5736,16 @@ suff: forall (I : BoundedClosedSectionSet), (BoundedClosedSectionToL I) <= ((Bou
 move=> H6.
 suff: forall (I : BoundedClosedSectionSet), ((BoundedClosedSectionToL I) + (BoundedClosedSectionToR I)) / 2 <= (BoundedClosedSectionToR I).
 move=> H7.
-suff: forall (I : BoundedClosedSectionSet), exists LR : {lr : R * R | fst lr <= snd lr}, 
-(F (
-BoundedClosedSection (exist (fun x : R * R => (fst x) <= (snd x)) ((BoundedClosedSectionToL I) , ((BoundedClosedSectionToL I) + (BoundedClosedSectionToR I)) / 2) (H6 I))
-,BoundedClosedSection (exist (fun x : R * R => (fst x) <= (snd x)) (((BoundedClosedSectionToL I) + (BoundedClosedSectionToR I)) / 2, (BoundedClosedSectionToR I)) (H7 I))
-)) = BoundedClosedSection LR.
+suff: forall (I : BoundedClosedSectionSet), exists LR : {lr : R * R | fst lr <= snd lr}, (F ( BoundedClosedSection (exist (fun x : R * R => (fst x) <= (snd x)) ((BoundedClosedSectionToL I) , ((BoundedClosedSectionToL I) + (BoundedClosedSectionToR I)) / 2) (H6 I)) ,BoundedClosedSection (exist (fun x : R * R => (fst x) <= (snd x)) (((BoundedClosedSectionToL I) + (BoundedClosedSectionToR I)) / 2, (BoundedClosedSectionToR I)) (H7 I)) )) = BoundedClosedSection LR.
 move=> H8.
-suff: forall (I : BoundedClosedSectionSet),
-Included R (F (
-BoundedClosedSection (exist (fun x : R * R => (fst x) <= (snd x)) ((BoundedClosedSectionToL I) , ((BoundedClosedSectionToL I) + (BoundedClosedSectionToR I)) / 2) (H6 I))
-,BoundedClosedSection (exist (fun x : R * R => (fst x) <= (snd x)) (((BoundedClosedSectionToL I) + (BoundedClosedSectionToR I)) / 2, (BoundedClosedSectionToR I)) (H7 I))
-)) (proj1_sig I).
+suff: forall (I : BoundedClosedSectionSet), Included R (F ( BoundedClosedSection (exist (fun x : R * R => (fst x) <= (snd x)) ((BoundedClosedSectionToL I) , ((BoundedClosedSectionToL I) + (BoundedClosedSectionToR I)) / 2) (H6 I)) ,BoundedClosedSection (exist (fun x : R * R => (fst x) <= (snd x)) (((BoundedClosedSectionToL I) + (BoundedClosedSectionToR I)) / 2, (BoundedClosedSectionToR I)) (H7 I)) )) (proj1_sig I).
 move=> H9.
 suff: exists LR : {lr : R * R | fst lr <= snd lr}, BoundedClosedSection (exist (fun lr : (R * R) => (fst lr) <= (snd lr)) (a,b) H4) = BoundedClosedSection LR.
 move=> H10.
-suff: (let IN := (fix IN (n : nat) : BoundedClosedSectionSet := 
-match n with
-  | O => exist (fun X : (Ensemble R) => exists LR : {lr : R * R | (fst lr) <= (snd lr)}, 
-  X = (BoundedClosedSection LR)) (BoundedClosedSection (exist (fun lr : (R * R) => (fst lr) <= (snd lr)) (a,b) H4)) H10
-  | S n0 => exist (fun X : (Ensemble R) => exists LR : {lr : R * R | (fst lr) <= (snd lr)}, 
-  X = (BoundedClosedSection LR)) (F (
-BoundedClosedSection (exist (fun x : R * R => (fst x) <= (snd x)) ((BoundedClosedSectionToL (IN n0)) , ((BoundedClosedSectionToL (IN n0)) + (BoundedClosedSectionToR (IN n0))) / 2) (H6 (IN n0)))
-,BoundedClosedSection (exist (fun x : R * R => (fst x) <= (snd x)) (((BoundedClosedSectionToL (IN n0)) + (BoundedClosedSectionToR (IN n0))) / 2, (BoundedClosedSectionToR (IN n0))) (H7 (IN n0)))
-))
- (H8 (IN n0))
-end) in (exists IN : nat -> BoundedClosedSectionSet,
-  forall n : nat,
-  BoundedClosedSectionToSize (IN n) = (b - a) / 2 ^ n /\
-  ~
-  Finite nat
-    (fun m : nat => In R (proj1_sig (IN n)) (An m)) /\
-  Included R (proj1_sig (IN (S n))) (proj1_sig (IN n)))).
+suff: (let IN := (fix IN (n : nat) : BoundedClosedSectionSet := match n with
+  | O => exist (fun X : (Ensemble R) => exists LR : {lr : R * R | (fst lr) <= (snd lr)}, X = (BoundedClosedSection LR)) (BoundedClosedSection (exist (fun lr : (R * R) => (fst lr) <= (snd lr)) (a,b) H4)) H10
+  | S n0 => exist (fun X : (Ensemble R) => exists LR : {lr : R * R | (fst lr) <= (snd lr)}, X = (BoundedClosedSection LR)) (F ( BoundedClosedSection (exist (fun x : R * R => (fst x) <= (snd x)) ((BoundedClosedSectionToL (IN n0)) , ((BoundedClosedSectionToL (IN n0)) + (BoundedClosedSectionToR (IN n0))) / 2) (H6 (IN n0))) ,BoundedClosedSection (exist (fun x : R * R => (fst x) <= (snd x)) (((BoundedClosedSectionToL (IN n0)) + (BoundedClosedSectionToR (IN n0))) / 2, (BoundedClosedSectionToR (IN n0))) (H7 (IN n0))) )) (H8 (IN n0))
+end) in (exists IN : nat -> BoundedClosedSectionSet, forall n : nat, BoundedClosedSectionToSize (IN n) = (b - a) / 2 ^ n /\ ~ Finite nat (fun m : nat => In R (proj1_sig (IN n)) (An m)) /\ Included R (proj1_sig (IN (S n))) (proj1_sig (IN n)))).
 by [].
 move=> IN.
 exists IN.
@@ -5896,8 +5755,7 @@ apply conj.
 rewrite /BoundedClosedSectionToSize.
 rewrite /BoundedClosedSectionToR.
 rewrite /BoundedClosedSectionToL.
-rewrite (BoundedClosedSectionSetEqual (exist (fun lr : R * R => fst lr <= snd lr)
-                 (a, b) H4) H10).
+rewrite (BoundedClosedSectionSetEqual (exist (fun lr : R * R => fst lr <= snd lr) (a, b) H4) H10).
 simpl.
 rewrite /Rdiv.
 rewrite (Rinv_1).
@@ -5913,8 +5771,7 @@ move=> H12.
 rewrite (BoundedClosedSectionEqual (IN O)).
 apply (BoundedClosedSection_intro (BoundedClosedSectionToPair (IN 0%nat))).
 rewrite /IN.
-rewrite (BoundedClosedSectionSetEqual (exist (fun lr : R * R => fst lr <= snd lr)
-                 (a, b) H4) H10).
+rewrite (BoundedClosedSectionSetEqual (exist (fun lr : R * R => fst lr <= snd lr) (a, b) H4) H10).
 simpl.
 apply (Rge_le (An m) a).
 apply (H3 (An m)).
@@ -5922,8 +5779,7 @@ apply (Im_intro nat R (Full_set nat) An m).
 by [].
 by [].
 rewrite /IN.
-rewrite (BoundedClosedSectionSetEqual (exist (fun lr : R * R => fst lr <= snd lr)
-                 (a, b) H4) H10).
+rewrite (BoundedClosedSectionSetEqual (exist (fun lr : R * R => fst lr <= snd lr) (a, b) H4) H10).
 simpl.
 apply (H2 (An m)).
 apply (Im_intro nat R (Full_set nat) An m).
@@ -5932,62 +5788,17 @@ by [].
 apply (H9 (IN O)).
 move=> n0 H11.
 simpl.
-case (proj2 (H5 (
-BoundedClosedSection
-         (exist (fun (lr : R * R) => fst lr <= snd lr) (BoundedClosedSectionToL (IN n0),
-         (BoundedClosedSectionToL (IN n0) +
-          BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0))),
-BoundedClosedSection
-        (exist (fun (lr : R * R) => fst lr <= snd lr) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2,
-        BoundedClosedSectionToR (IN n0)) (H7 (IN n0)))
-))).
+case (proj2 (H5 ( BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0))), BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))) ))).
 simpl.
 move=> H12.
 apply conj.
-suff:exists LR : {lr : R * R | fst lr <= snd lr}, 
- (BoundedClosedSection
-        (exist (fun lr : R * R => fst lr <= snd lr)
-           (BoundedClosedSectionToL (IN n0),
-           (BoundedClosedSectionToL (IN n0) +
-            BoundedClosedSectionToR (IN n0)) / 2)
-           (H6 (IN n0)))) = BoundedClosedSection LR.
+suff:exists LR : {lr : R * R | fst lr <= snd lr}, (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0)))) = BoundedClosedSection LR.
 move=> H13.
-rewrite (sig_map (fun X : Ensemble R =>
-      exists LR : {lr : R * R | fst lr <= snd lr},
-        X = BoundedClosedSection LR) 
-(exist
-     (fun X : Ensemble R =>
-      exists LR : {lr : R * R | fst lr <= snd lr},
-        X = BoundedClosedSection LR)
-     (F
-        (BoundedClosedSection
-           (exist (fun x : R * R => fst x <= snd x)
-              (BoundedClosedSectionToL (IN n0),
-              (BoundedClosedSectionToL (IN n0) +
-               BoundedClosedSectionToR (IN n0)) / 2)
-              (H6 (IN n0))),
-        BoundedClosedSection
-          (exist (fun x : R * R => fst x <= snd x)
-             ((BoundedClosedSectionToL (IN n0) +
-               BoundedClosedSectionToR (IN n0)) / 2,
-             BoundedClosedSectionToR (IN n0)) 
-             (H7 (IN n0)))))
-     (H8 (IN n0)))
-(exist (fun X : Ensemble R =>
-      exists LR : {lr : R * R | fst lr <= snd lr},
-        X = BoundedClosedSection LR)
-(BoundedClosedSection
-        (exist (fun lr : R * R => fst lr <= snd lr)
-           (BoundedClosedSectionToL (IN n0),
-           (BoundedClosedSectionToL (IN n0) +
-            BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0))))
-H13)).
+rewrite (sig_map (fun X : Ensemble R => exists LR : {lr : R * R | fst lr <= snd lr}, X = BoundedClosedSection LR) (exist (fun X : Ensemble R => exists LR : {lr : R * R | fst lr <= snd lr}, X = BoundedClosedSection LR) (F (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0))), BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))))) (H8 (IN n0))) (exist (fun X : Ensemble R => exists LR : {lr : R * R | fst lr <= snd lr}, X = BoundedClosedSection LR) (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0)))) H13)).
 rewrite /BoundedClosedSectionToSize.
 rewrite /BoundedClosedSectionToR.
 rewrite /BoundedClosedSectionToL.
-rewrite (BoundedClosedSectionSetEqual (exist (fun lr : R * R => fst lr <= snd lr)
-                 (BoundedClosedSectionToL (IN n0) , (BoundedClosedSectionToL (IN n0) +
-          BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0))) H13).
+rewrite (BoundedClosedSectionSetEqual (exist (fun lr : R * R => fst lr <= snd lr) (BoundedClosedSectionToL (IN n0) , (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0))) H13).
 simpl.
 rewrite - {2}(eps2 (BoundedClosedSectionToL (IN n0))).
 rewrite /Rdiv.
@@ -6014,48 +5825,13 @@ rewrite - H12.
 apply (H8 (IN n0)).
 apply conj.
 move=> H13.
-apply (proj1 (H5 (BoundedClosedSection
-           (exist (fun x : R * R => fst x <= snd x)
-              (BoundedClosedSectionToL (IN n0),
-              (BoundedClosedSectionToL (IN n0) +
-               BoundedClosedSectionToR (IN n0)) / 2)
-              (H6 (IN n0))),
-        BoundedClosedSection
-          (exist (fun x : R * R => fst x <= snd x)
-             ((BoundedClosedSectionToL (IN n0) +
-               BoundedClosedSectionToR (IN n0)) / 2,
-             BoundedClosedSectionToR (IN n0)) 
-             (H7 (IN n0)))))).
+apply (proj1 (H5 (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0))), BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0)))))).
 simpl.
-suff: (Union R
-        (BoundedClosedSection
-           (exist (fun x : R * R => fst x <= snd x)
-              (BoundedClosedSectionToL (IN n0),
-              (BoundedClosedSectionToL (IN n0) +
-               BoundedClosedSectionToR (IN n0)) / 2)
-              (H6 (IN n0))))
-        (BoundedClosedSection
-           (exist (fun x : R * R => fst x <= snd x)
-              ((BoundedClosedSectionToL (IN n0) +
-                BoundedClosedSectionToR (IN n0)) / 2,
-              BoundedClosedSectionToR (IN n0))
-              (H7 (IN n0))))) = (proj1_sig (IN n0)).
+suff: (Union R (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0)))) (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))))) = (proj1_sig (IN n0)).
 move=> H14.
 rewrite H14.
 apply (proj1 (proj2 H11)).
-apply (Extensionality_Ensembles R (Union R
-  (BoundedClosedSection
-     (exist (fun x : R * R => fst x <= snd x)
-        (BoundedClosedSectionToL (IN n0),
-        (BoundedClosedSectionToL (IN n0) +
-         BoundedClosedSectionToR (IN n0)) / 2)
-        (H6 (IN n0))))
-  (BoundedClosedSection
-     (exist (fun x : R * R => fst x <= snd x)
-        ((BoundedClosedSectionToL (IN n0) +
-          BoundedClosedSectionToR (IN n0)) / 2,
-        BoundedClosedSectionToR (IN n0)) 
-        (H7 (IN n0))))) (proj1_sig (IN n0))).
+apply (Extensionality_Ensembles R (Union R (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0)))) (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))))) (proj1_sig (IN n0))).
 apply conj.
 move=> x.
 case.
@@ -6077,8 +5853,7 @@ simpl.
 move=> H14 H15.
 rewrite (BoundedClosedSectionEqual (IN n0)).
 apply (BoundedClosedSection_intro (BoundedClosedSectionToPair (IN n0))).
-apply (Rle_trans (fst (proj1_sig (BoundedClosedSectionToPair (IN n0)))) ((BoundedClosedSectionToL (IN n0) +
-       BoundedClosedSectionToR (IN n0)) / 2) x1).
+apply (Rle_trans (fst (proj1_sig (BoundedClosedSectionToPair (IN n0)))) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) x1).
 apply (H6 (IN n0)).
 apply H14.
 apply H15.
@@ -6088,48 +5863,15 @@ case.
 move=> x0 H14 H15.
 case (Rle_lt_dec x0 ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2)).
 move=> H16.
-apply (Union_introl R
-     (BoundedClosedSection
-        (exist (fun x1 : R * R => fst x1 <= snd x1)
-           (BoundedClosedSectionToL (IN n0),
-           (BoundedClosedSectionToL (IN n0) +
-            BoundedClosedSectionToR (IN n0)) / 2)
-           (H6 (IN n0))))
-     (BoundedClosedSection
-        (exist (fun x1 : R * R => fst x1 <= snd x1)
-           ((BoundedClosedSectionToL (IN n0) +
-             BoundedClosedSectionToR (IN n0)) / 2,
-           BoundedClosedSectionToR (IN n0)) 
-           (H7 (IN n0))))).
-apply (BoundedClosedSection_intro (exist (fun x1 : R * R => fst x1 <= snd x1)
-        (BoundedClosedSectionToL (IN n0),
-        (BoundedClosedSectionToL (IN n0) +
-         BoundedClosedSectionToR (IN n0)) / 2)
-        (H6 (IN n0)))).
+apply (Union_introl R (BoundedClosedSection (exist (fun x1 : R * R => fst x1 <= snd x1) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0)))) (BoundedClosedSection (exist (fun x1 : R * R => fst x1 <= snd x1) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))))).
+apply (BoundedClosedSection_intro (exist (fun x1 : R * R => fst x1 <= snd x1) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0)))).
 apply H14.
 apply H16.
 move=> H16.
-apply (Union_intror R
-     (BoundedClosedSection
-        (exist (fun x1 : R * R => fst x1 <= snd x1)
-           (BoundedClosedSectionToL (IN n0),
-           (BoundedClosedSectionToL (IN n0) +
-            BoundedClosedSectionToR (IN n0)) / 2)
-           (H6 (IN n0))))
-     (BoundedClosedSection
-        (exist (fun x1 : R * R => fst x1 <= snd x1)
-           ((BoundedClosedSectionToL (IN n0) +
-             BoundedClosedSectionToR (IN n0)) / 2,
-           BoundedClosedSectionToR (IN n0)) 
-           (H7 (IN n0))))).
-apply (BoundedClosedSection_intro (exist (fun x1 : R * R => fst x1 <= snd x1)
-        ((BoundedClosedSectionToL (IN n0) +
-          BoundedClosedSectionToR (IN n0)) / 2,
-        BoundedClosedSectionToR (IN n0)) 
-        (H7 (IN n0)))).
+apply (Union_intror R (BoundedClosedSection (exist (fun x1 : R * R => fst x1 <= snd x1) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0)))) (BoundedClosedSection (exist (fun x1 : R * R => fst x1 <= snd x1) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))))).
+apply (BoundedClosedSection_intro (exist (fun x1 : R * R => fst x1 <= snd x1) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0)))).
 simpl.
-apply (Rlt_le ((BoundedClosedSectionToL (IN n0) +
-       BoundedClosedSectionToR (IN n0)) / 2) x0 H16).
+apply (Rlt_le ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) x0 H16).
 simpl.
 apply H15.
 apply H13.
@@ -6137,50 +5879,13 @@ simpl.
 apply (H9 (IN (S n0))).
 move=> H12.
 apply conj.
-suff:exists LR : {lr : R * R | fst lr <= snd lr}, 
- (BoundedClosedSection
-        (exist (fun lr : R * R => fst lr <= snd lr)
-           ((BoundedClosedSectionToL (IN n0) +
-            BoundedClosedSectionToR (IN n0)) / 2,
-            BoundedClosedSectionToR (IN n0))
-           (H7 (IN n0)))) = BoundedClosedSection LR.
+suff:exists LR : {lr : R * R | fst lr <= snd lr}, (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0)))) = BoundedClosedSection LR.
 move=> H13.
-rewrite (sig_map (fun X : Ensemble R =>
-      exists LR : {lr : R * R | fst lr <= snd lr},
-        X = BoundedClosedSection LR) 
-(exist
-     (fun X : Ensemble R =>
-      exists LR : {lr : R * R | fst lr <= snd lr},
-        X = BoundedClosedSection LR)
-     (F
-        (BoundedClosedSection
-           (exist (fun x : R * R => fst x <= snd x)
-              (BoundedClosedSectionToL (IN n0),
-              (BoundedClosedSectionToL (IN n0) +
-               BoundedClosedSectionToR (IN n0)) / 2)
-              (H6 (IN n0))),
-        BoundedClosedSection
-          (exist (fun x : R * R => fst x <= snd x)
-             ((BoundedClosedSectionToL (IN n0) +
-               BoundedClosedSectionToR (IN n0)) / 2,
-             BoundedClosedSectionToR (IN n0)) 
-             (H7 (IN n0)))))
-     (H8 (IN n0)))
-(exist (fun X : Ensemble R =>
-      exists LR : {lr : R * R | fst lr <= snd lr},
-        X = BoundedClosedSection LR)
-(BoundedClosedSection
-        (exist (fun lr : R * R => fst lr <= snd lr)
-           ((BoundedClosedSectionToL (IN n0) +
-            BoundedClosedSectionToR (IN n0)) / 2,
-            BoundedClosedSectionToR (IN n0)) (H7 (IN n0))))
-H13)).
+rewrite (sig_map (fun X : Ensemble R => exists LR : {lr : R * R | fst lr <= snd lr}, X = BoundedClosedSection LR) (exist (fun X : Ensemble R => exists LR : {lr : R * R | fst lr <= snd lr}, X = BoundedClosedSection LR) (F (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0))), BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))))) (H8 (IN n0))) (exist (fun X : Ensemble R => exists LR : {lr : R * R | fst lr <= snd lr}, X = BoundedClosedSection LR) (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0)))) H13)).
 rewrite /BoundedClosedSectionToSize.
 rewrite /BoundedClosedSectionToR.
 rewrite /BoundedClosedSectionToL.
-rewrite (BoundedClosedSectionSetEqual (exist (fun lr : R * R => fst lr <= snd lr)
-                 ((BoundedClosedSectionToL (IN n0) +
-          BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))) H13).
+rewrite (BoundedClosedSectionSetEqual (exist (fun lr : R * R => fst lr <= snd lr) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))) H13).
 simpl.
 rewrite - {1}(eps2 (BoundedClosedSectionToR (IN n0))).
 rewrite /Rdiv.
@@ -6207,48 +5912,13 @@ simpl in H12.
 rewrite - H12.
 apply (H8 (IN n0)).
 apply conj.
-apply (proj1 (H5 (BoundedClosedSection
-           (exist (fun x : R * R => fst x <= snd x)
-              (BoundedClosedSectionToL (IN n0),
-              (BoundedClosedSectionToL (IN n0) +
-               BoundedClosedSectionToR (IN n0)) / 2)
-              (H6 (IN n0))),
-        BoundedClosedSection
-          (exist (fun x : R * R => fst x <= snd x)
-             ((BoundedClosedSectionToL (IN n0) +
-               BoundedClosedSectionToR (IN n0)) / 2,
-             BoundedClosedSectionToR (IN n0)) 
-             (H7 (IN n0)))))).
+apply (proj1 (H5 (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0))), BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0)))))).
 simpl.
-suff: (Union R
-        (BoundedClosedSection
-           (exist (fun x : R * R => fst x <= snd x)
-              (BoundedClosedSectionToL (IN n0),
-              (BoundedClosedSectionToL (IN n0) +
-               BoundedClosedSectionToR (IN n0)) / 2)
-              (H6 (IN n0))))
-        (BoundedClosedSection
-           (exist (fun x : R * R => fst x <= snd x)
-              ((BoundedClosedSectionToL (IN n0) +
-                BoundedClosedSectionToR (IN n0)) / 2,
-              BoundedClosedSectionToR (IN n0))
-              (H7 (IN n0))))) = (proj1_sig (IN n0)).
+suff: (Union R (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0)))) (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))))) = (proj1_sig (IN n0)).
 move=> H14.
 rewrite H14.
 apply (proj1 (proj2 H11)).
-apply (Extensionality_Ensembles R (Union R
-  (BoundedClosedSection
-     (exist (fun x : R * R => fst x <= snd x)
-        (BoundedClosedSectionToL (IN n0),
-        (BoundedClosedSectionToL (IN n0) +
-         BoundedClosedSectionToR (IN n0)) / 2)
-        (H6 (IN n0))))
-  (BoundedClosedSection
-     (exist (fun x : R * R => fst x <= snd x)
-        ((BoundedClosedSectionToL (IN n0) +
-          BoundedClosedSectionToR (IN n0)) / 2,
-        BoundedClosedSectionToR (IN n0)) 
-        (H7 (IN n0))))) (proj1_sig (IN n0))).
+apply (Extensionality_Ensembles R (Union R (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0)))) (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))))) (proj1_sig (IN n0))).
 apply conj.
 move=> x.
 case.
@@ -6270,8 +5940,7 @@ simpl.
 move=> H14 H15.
 rewrite (BoundedClosedSectionEqual (IN n0)).
 apply (BoundedClosedSection_intro (BoundedClosedSectionToPair (IN n0))).
-apply (Rle_trans (fst (proj1_sig (BoundedClosedSectionToPair (IN n0)))) ((BoundedClosedSectionToL (IN n0) +
-       BoundedClosedSectionToR (IN n0)) / 2) x1).
+apply (Rle_trans (fst (proj1_sig (BoundedClosedSectionToPair (IN n0)))) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) x1).
 apply (H6 (IN n0)).
 apply H14.
 apply H15.
@@ -6281,65 +5950,22 @@ case.
 move=> x0 H14 H15.
 case (Rle_lt_dec x0 ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2)).
 move=> H16.
-apply (Union_introl R
-     (BoundedClosedSection
-        (exist (fun x1 : R * R => fst x1 <= snd x1)
-           (BoundedClosedSectionToL (IN n0),
-           (BoundedClosedSectionToL (IN n0) +
-            BoundedClosedSectionToR (IN n0)) / 2)
-           (H6 (IN n0))))
-     (BoundedClosedSection
-        (exist (fun x1 : R * R => fst x1 <= snd x1)
-           ((BoundedClosedSectionToL (IN n0) +
-             BoundedClosedSectionToR (IN n0)) / 2,
-           BoundedClosedSectionToR (IN n0)) 
-           (H7 (IN n0))))).
-apply (BoundedClosedSection_intro (exist (fun x1 : R * R => fst x1 <= snd x1)
-        (BoundedClosedSectionToL (IN n0),
-        (BoundedClosedSectionToL (IN n0) +
-         BoundedClosedSectionToR (IN n0)) / 2)
-        (H6 (IN n0)))).
+apply (Union_introl R (BoundedClosedSection (exist (fun x1 : R * R => fst x1 <= snd x1) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0)))) (BoundedClosedSection (exist (fun x1 : R * R => fst x1 <= snd x1) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))))).
+apply (BoundedClosedSection_intro (exist (fun x1 : R * R => fst x1 <= snd x1) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0)))).
 apply H14.
 apply H16.
 move=> H16.
-apply (Union_intror R
-     (BoundedClosedSection
-        (exist (fun x1 : R * R => fst x1 <= snd x1)
-           (BoundedClosedSectionToL (IN n0),
-           (BoundedClosedSectionToL (IN n0) +
-            BoundedClosedSectionToR (IN n0)) / 2)
-           (H6 (IN n0))))
-     (BoundedClosedSection
-        (exist (fun x1 : R * R => fst x1 <= snd x1)
-           ((BoundedClosedSectionToL (IN n0) +
-             BoundedClosedSectionToR (IN n0)) / 2,
-           BoundedClosedSectionToR (IN n0)) 
-           (H7 (IN n0))))).
-apply (BoundedClosedSection_intro (exist (fun x1 : R * R => fst x1 <= snd x1)
-        ((BoundedClosedSectionToL (IN n0) +
-          BoundedClosedSectionToR (IN n0)) / 2,
-        BoundedClosedSectionToR (IN n0)) 
-        (H7 (IN n0)))).
+apply (Union_intror R (BoundedClosedSection (exist (fun x1 : R * R => fst x1 <= snd x1) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) (H6 (IN n0)))) (BoundedClosedSection (exist (fun x1 : R * R => fst x1 <= snd x1) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0))))).
+apply (BoundedClosedSection_intro (exist (fun x1 : R * R => fst x1 <= snd x1) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2, BoundedClosedSectionToR (IN n0)) (H7 (IN n0)))).
 simpl.
-apply (Rlt_le ((BoundedClosedSectionToL (IN n0) +
-       BoundedClosedSectionToR (IN n0)) / 2) x0 H16).
+apply (Rlt_le ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2) x0 H16).
 simpl.
 apply H15.
 apply (H9 (IN (S n0))).
 exists (exist (fun lr : R * R => fst lr <= snd lr) (a, b) H4).
 by [].
 move=> I.
-case (proj2 (H5 (BoundedClosedSection
-        (exist (fun x : R * R => fst x <= snd x)
-           (BoundedClosedSectionToL I,
-           (BoundedClosedSectionToL I +
-            BoundedClosedSectionToR I) / 2) 
-           (H6 I)),
-     BoundedClosedSection
-       (exist (fun x : R * R => fst x <= snd x)
-          ((BoundedClosedSectionToL I +
-            BoundedClosedSectionToR I) / 2,
-          BoundedClosedSectionToR I) (H7 I))))).
+case (proj2 (H5 (BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) (BoundedClosedSectionToL I, (BoundedClosedSectionToL I + BoundedClosedSectionToR I) / 2) (H6 I)), BoundedClosedSection (exist (fun x : R * R => fst x <= snd x) ((BoundedClosedSectionToL I + BoundedClosedSectionToR I) / 2, BoundedClosedSectionToR I) (H7 I))))).
 move=> H9.
 rewrite H9.
 simpl.
@@ -6349,13 +5975,7 @@ case.
 move=> x0 H10 H11.
 apply (BoundedClosedSection_intro (BoundedClosedSectionToPair I)).
 apply H10.
-apply (Rle_trans x0 (snd
-        (proj1_sig
-           (exist (fun x : R * R => fst x <= snd x)
-              (BoundedClosedSectionToL I,
-              (BoundedClosedSectionToL I +
-               BoundedClosedSectionToR I) / 2) 
-              (H6 I)))) (snd (proj1_sig (BoundedClosedSectionToPair I)))).
+apply (Rle_trans x0 (snd (proj1_sig (exist (fun x : R * R => fst x <= snd x) (BoundedClosedSectionToL I, (BoundedClosedSectionToL I + BoundedClosedSectionToR I) / 2) (H6 I)))) (snd (proj1_sig (BoundedClosedSectionToPair I)))).
 apply H11.
 apply (H7 I).
 move=> H9.
@@ -6366,39 +5986,21 @@ move=> x.
 case.
 move=> x0 H10 H11.
 apply (BoundedClosedSection_intro (BoundedClosedSectionToPair I)).
-apply (Rle_trans (fst (proj1_sig (BoundedClosedSectionToPair I))) ((BoundedClosedSectionToL I +
-               BoundedClosedSectionToR I) / 2) x0).
+apply (Rle_trans (fst (proj1_sig (BoundedClosedSectionToPair I))) ((BoundedClosedSectionToL I + BoundedClosedSectionToR I) / 2) x0).
 apply (H6 I).
 apply H10.
 apply H11.
 move=> x.
-case (proj2 (H5 (BoundedClosedSection
-       (exist (fun x0 : R * R => fst x0 <= snd x0)
-          (BoundedClosedSectionToL x,
-          (BoundedClosedSectionToL x +
-           BoundedClosedSectionToR x) / 2) 
-          (H6 x)),
-    BoundedClosedSection
-      (exist (fun x0 : R * R => fst x0 <= snd x0)
-         ((BoundedClosedSectionToL x +
-           BoundedClosedSectionToR x) / 2,
-         BoundedClosedSectionToR x) (H7 x))))).
+case (proj2 (H5 (BoundedClosedSection (exist (fun x0 : R * R => fst x0 <= snd x0) (BoundedClosedSectionToL x, (BoundedClosedSectionToL x + BoundedClosedSectionToR x) / 2) (H6 x)), BoundedClosedSection (exist (fun x0 : R * R => fst x0 <= snd x0) ((BoundedClosedSectionToL x + BoundedClosedSectionToR x) / 2, BoundedClosedSectionToR x) (H7 x))))).
 move=> H8.
 rewrite H8.
 simpl.
-exists (exist (fun x0 : R * R => fst x0 <= snd x0)
-       (BoundedClosedSectionToL x,
-       (BoundedClosedSectionToL x +
-        BoundedClosedSectionToR x) / 2) 
-       (H6 x)).
+exists (exist (fun x0 : R * R => fst x0 <= snd x0) (BoundedClosedSectionToL x, (BoundedClosedSectionToL x + BoundedClosedSectionToR x) / 2) (H6 x)).
 by [].
 move=> H8.
 rewrite H8.
 simpl.
-exists (exist (fun x0 : R * R => fst x0 <= snd x0)
-       ((BoundedClosedSectionToL x +
-         BoundedClosedSectionToR x) / 2,
-       BoundedClosedSectionToR x) (H7 x)).
+exists (exist (fun x0 : R * R => fst x0 <= snd x0) ((BoundedClosedSectionToL x + BoundedClosedSectionToR x) / 2, BoundedClosedSectionToR x) (H7 x)).
 by [].
 move=> I.
 rewrite - {2}(eps2 (BoundedClosedSectionToR I)).
@@ -6433,14 +6035,14 @@ by [].
 Qed.
 
 Lemma Proposition_3_5_1 : forall An : (nat -> R), (Cauchy_crit An) -> (my_bounded (fun x:R => (EUn An x))).
+Proof.
 move=> An H1.
 elim (H1 1 Rlt_0_1).
 move => N H2.
 suff: (Finite R (fun x => exists (n0 : nat), (Rabs (An n0)) = x /\ (n0 <= N)%nat)).
 move=> H3.
 apply (proj2 (bounded_abs (fun x : R => EUn An x))).
-elim (Finite_max_R (fun x : R =>
-        exists n0 : nat, (Rabs (An n0)) = x /\ (n0 <= N)%nat) H3).
+elim (Finite_max_R (fun x : R => exists n0 : nat, (Rabs (An n0)) = x /\ (n0 <= N)%nat) H3).
 move=> ma H4.
 exists (Rmax ma ((Rabs (An N)) + 1)).
 move=> x H5.
@@ -6476,19 +6078,16 @@ apply (le_S n n).
 apply (le_n n).
 apply H9.
 apply (Rmax_l ma (Rabs (An N) + 1)).
-apply (Inhabited_intro R (fun x : R =>
-   exists n0 : nat, Rabs (An n0) = x /\ (n0 <= N)%nat) (Rabs (An N))).
+apply (Inhabited_intro R (fun x : R => exists n0 : nat, Rabs (An n0) = x /\ (n0 <= N)%nat) (Rabs (An N))).
 exists N.
 by [].
-suff: (Im nat R (fun x : nat => (x < (S N))%nat) (fun n : nat => (Rabs (An n)))) = (fun x : R =>
-   exists n0 : nat, Rabs (An n0) = x /\ (n0 <= N)%nat).
+suff: (Im nat R (fun x : nat => (x < (S N))%nat) (fun n : nat => (Rabs (An n)))) = (fun x : R => exists n0 : nat, Rabs (An n0) = x /\ (n0 <= N)%nat).
 move=> H3.
 rewrite - H3.
 apply (finite_image nat R (fun x : nat => (x < (S N))%nat) (fun n : nat => (Rabs (An n)))).
 apply (cardinal_finite nat (fun x : nat => (x < S N)%nat) (S N)).
 apply (nat_cardinal (S N)).
-apply (Extensionality_Ensembles R (Im nat R (fun x : nat => (x < S N)%nat) (fun n : nat => (Rabs (An n)))) (fun x : R =>
- exists n0 : nat, Rabs (An n0) = x /\ (n0 <= N)%nat)).
+apply (Extensionality_Ensembles R (Im nat R (fun x : nat => (x < S N)%nat) (fun n : nat => (Rabs (An n)))) (fun x : R => exists n0 : nat, Rabs (An n0) = x /\ (n0 <= N)%nat)).
 apply conj.
 move=> x.
 elim.
@@ -6511,6 +6110,7 @@ by [].
 Qed.
 
 Lemma Proposition_3_5_2 : forall An : (nat -> R), (Cauchy_crit An) -> forall (Bn : nat -> R), ((Subsequence R Bn An) -> (forall a : R, (Un_cv Bn a) -> (Un_cv An a))).
+Proof.
 move=> An H1 Bn H2 a H3.
 elim H2.
 move=> F H4.
@@ -6680,16 +6280,12 @@ apply (H2 n).
 by [].
 Qed.
 
-Definition Floor (r : R) := proj1_sig (constructive_definite_description
-        (fun n : Z => (IZR n) <= r < (IZR (n+1)%Z))
-        (Theorem_3_7 r)).
+Definition Floor (r : R) := proj1_sig (constructive_definite_description (fun n : Z => (IZR n) <= r < (IZR (n+1)%Z)) (Theorem_3_7 r)).
 
 Lemma Floor_inequality : forall (r : R), (IZR (Floor r)) <= r < (IZR ((Floor r)+1)%Z).
 Proof.
 move=> r.
-apply (proj2_sig (constructive_definite_description
-        (fun n : Z => (IZR n) <= r < (IZR (n+1)%Z))
-        (Theorem_3_7 r))).
+apply (proj2_sig (constructive_definite_description (fun n : Z => (IZR n) <= r < (IZR (n+1)%Z)) (Theorem_3_7 r))).
 Qed.
 
 Lemma Floor_unique : forall (r : R), forall (n : Z), (IZR n) <= r < (IZR (n+1)%Z) -> n = (Floor r).
@@ -6723,8 +6319,7 @@ apply (Rplus_lt_compat_r (IZR n) r (IZR (Floor r + 1))).
 apply (proj2 (Floor_inequality r)).
 Qed.
 
-Definition RQ : (Ensemble R) := 
-  (fun x:R => exists q:Q, QArith.Qreals.Q2R q = x).
+Definition RQ : (Ensemble R) := (fun x:R => exists q:Q, QArith.Qreals.Q2R q = x).
 
 Lemma Theorem_3_8 : forall (a b : R),(a < b)%R -> exists (x : Q), a < (QArith.Qreals.Q2R x) < b.
 Proof.
@@ -6806,25 +6401,19 @@ apply (Rlt_Rminus a b H1).
 apply Rlt_0_1.
 Qed.
 
-Lemma Theorem_3_9_sub : forall m : nat, (m > S O)%nat -> (forall x : R, exists (an : (nat -> {num : nat | (num < m) % nat})), 
-let An := fun n : nat => (match n with
-| O => (IZR (Floor x))
-| S n1 => INR (proj1_sig (an n1)) / (pow (INR m) (S n1))
+Lemma Theorem_3_9_sub : forall m : nat, (m > S O)%nat -> (forall x : R, exists (an : (nat -> {num : nat | (num < m) % nat})), let An := fun n : nat => (match n with
+  | O => (IZR (Floor x))
+  | S n1 => INR (proj1_sig (an n1)) / (pow (INR m) (S n1))
 end) in (Un_cv (fun n : nat => (sum_f_R0 An n)) x)).
 Proof.
 move=> m H1 x.
-suff: let Bn := fix Bn (n : nat) : (R * Z) :=
-match n with
-| O => (x - IZR (Floor x) , 0%Z)
-| S n1 => (((fst (Bn n1)) * (INR m)) - IZR (Floor (((fst (Bn n1)) * (INR m)))) , Floor ((fst (Bn n1)) * (INR m)))
-end in exists an : nat -> {num : nat | (num < m)%nat},
-  let An :=
-    fun n : nat =>
-    match n with
-    | 0%nat => IZR (Floor x)
-    | S n1 => INR (proj1_sig (an n1)) / INR m ^ S n1
-    end in
-  Un_cv (fun n : nat => sum_f_R0 An n) x.
+suff: let Bn := fix Bn (n : nat) : (R * Z) := match n with
+  | O => (x - IZR (Floor x) , 0%Z)
+  | S n1 => (((fst (Bn n1)) * (INR m)) - IZR (Floor (((fst (Bn n1)) * (INR m)))) , Floor ((fst (Bn n1)) * (INR m)))
+end in exists an : nat -> {num : nat | (num < m)%nat}, let An := fun n : nat => match n with
+  | 0%nat => IZR (Floor x)
+  | S n1 => INR (proj1_sig (an n1)) / INR m ^ S n1
+end in Un_cv (fun n : nat => sum_f_R0 An n) x.
 by [].
 move=> Bn.
 suff: forall n : nat, (0 <= (fst (Bn n)) < 1).
@@ -6973,9 +6562,7 @@ rewrite (Ropp_plus_distr (sum_f_R0 An n) (INR (Z.to_nat (snd (Bn (S n)))) / (INR
 rewrite - (Rplus_assoc x (- sum_f_R0 An n) (- (INR (Z.to_nat (snd (Bn (S n)))) / (INR m * INR m ^ n)))).
 rewrite /Rminus in H6.
 rewrite H6.
-apply (Rmult_eq_reg_r (INR m * INR m ^ n) (fst (Bn n) / INR m ^ n +
-- (INR (Z.to_nat (snd (Bn (S n)))) / (INR m * INR m ^ n))) ((fst (Bn n) * INR m + - IZR (Floor (fst (Bn n) * INR m))) /
-(INR m * INR m ^ n))).
+apply (Rmult_eq_reg_r (INR m * INR m ^ n) (fst (Bn n) / INR m ^ n + - (INR (Z.to_nat (snd (Bn (S n)))) / (INR m * INR m ^ n))) ((fst (Bn n) * INR m + - IZR (Floor (fst (Bn n) * INR m))) / (INR m * INR m ^ n))).
 rewrite /Rdiv.
 rewrite (Rmult_assoc ((fst (Bn n) * INR m + - IZR (Floor (fst (Bn n) * INR m)))) (/ (INR m * INR m ^ n)) (INR m * INR m ^ n)).
 rewrite - (Rinv_l_sym (INR m * INR m ^ n)).
@@ -7073,10 +6660,9 @@ rewrite - (plus_IZR (Floor y) 1).
 apply (proj2 (Floor_inequality y)).
 Qed.
 
-Lemma Theorem_3_9 : forall x : R, exists (an : (nat -> {num : nat | (num < 10) % nat})), 
-let An := fun n : nat => (match n with
-| O => (IZR (Floor x))
-| S n1 => INR (proj1_sig (an n1)) / (pow 10 (S n1))
+Lemma Theorem_3_9 : forall x : R, exists (an : (nat -> {num : nat | (num < 10) % nat})), let An := fun n : nat => (match n with
+  | O => (IZR (Floor x))
+  | S n1 => INR (proj1_sig (an n1)) / (pow 10 (S n1))
 end) in (Un_cv (fun n : nat => (sum_f_R0 An n)) x).
 Proof.
 suff: 10 = (INR 10).
@@ -7103,12 +6689,10 @@ suff: ((S (S O)) > (S O))%nat.
 move=> H1.
 elim (Theorem_3_9_sub 2 H1 x).
 move=> bn H2.
-suff: let An :=
-       fun n : nat =>
-       match n with
-       | 0%nat => IZR (Floor x)
-       | S n1 => INR (proj1_sig (bn n1)) / INR 2 ^ S n1
-       end in exists an : nat -> {q : R | RQ q}, Un_cv (fun n : nat => proj1_sig (an n)) x.
+suff: let An := fun n : nat => match n with
+  | 0%nat => IZR (Floor x)
+  | S n1 => INR (proj1_sig (bn n1)) / INR 2 ^ S n1
+end in exists an : nat -> {q : R | RQ q}, Un_cv (fun n : nat => proj1_sig (an n)) x.
 by [].
 move=> An.
 suff: forall n:nat, (RQ (sum_f_R0 An n)).
@@ -7202,7 +6786,10 @@ Definition Rfield := mkField R 0 1 Rplus Rmult Ropp Rinv Rplus_assoc Rmult_assoc
 
 Definition RnO (N : nat) := (fun (x : {n : nat| (n < N)%nat }) => 0).
 
-Definition UnwrapRn (N : nat) := fun (f : (Rn N)) (n : nat) => match (excluded_middle_informative (n < N)%nat) with | left a => (f (exist (fun (n0 : nat) => (n0 < N)%nat) n a)) | right _ => 0 end.
+Definition UnwrapRn (N : nat) := fun (f : (Rn N)) (n : nat) => match (excluded_middle_informative (n < N)%nat) with
+  | left a => (f (exist (fun (n0 : nat) => (n0 < N)%nat) n a))
+  | right _ => 0
+end.
 
 Lemma Rnplus_comm : forall (N : nat) (x y : Rn N), (Rnplus N x y) = (Rnplus N y x).
 Proof.
@@ -7272,12 +6859,10 @@ Qed.
 
 Definition RnVS (N : nat) := mkVectorSpace Rfield (Rn N) (RnO N) (Rnplus N) (Rnmult N) (Rnopp N) (Rnplus_comm N) (Rnplus_assoc N) (Rnplus_O_l N) (Rnplus_opp_r N) (Rnmult_plus_distr_l N) (Rnmult_plus_distr_r N) (Rnmult_assoc N) (Rnmult_I_l N).
 
-Definition my_sum_f_R := 
-fix my_sum_f_R (f : nat -> R) (N : nat) {struct N} : R :=
-  match N with
+Definition my_sum_f_R := fix my_sum_f_R (f : nat -> R) (N : nat) {struct N} : R := match N with
   | 0%nat => 0
   | S i => (my_sum_f_R f i) + (f i)
-  end.
+end.
 
 Definition RnInnerProduct (N : nat) := fun (a b : Rn N) => (my_sum_f_R (fun (n : nat) => ((UnwrapRn N a) n) * ((UnwrapRn N b) n)) N).
 
@@ -7285,7 +6870,7 @@ Lemma Proposition_4_2_1_1 : forall (N : nat) (x y z : Rn N),(RnInnerProduct N (R
 Proof.
 move=> N x y z.
 unfold RnInnerProduct.
-suff: (forall (N0:nat), (N0 <= N)%nat -> my_sum_f_R (fun n : nat => UnwrapRn N (Rnplus N x y) n * UnwrapRn N z n) N0 = my_sum_f_R (fun n : nat => UnwrapRn N x n * UnwrapRn N z n) N0 + my_sum_f_R (fun n : nat => UnwrapRn N y n * UnwrapRn N z n)  N0).
+suff: (forall (N0:nat), (N0 <= N)%nat -> my_sum_f_R (fun n : nat => UnwrapRn N (Rnplus N x y) n * UnwrapRn N z n) N0 = my_sum_f_R (fun n : nat => UnwrapRn N x n * UnwrapRn N z n) N0 + my_sum_f_R (fun n : nat => UnwrapRn N y n * UnwrapRn N z n) N0).
 move=> H1.
 apply (H1 N).
 apply (le_n N).
@@ -7321,7 +6906,7 @@ Lemma Proposition_4_2_1_2 : forall (N : nat) (x y z : Rn N),(RnInnerProduct N x 
 Proof.
 move=> N x y z.
 unfold RnInnerProduct.
-suff: (forall (N0:nat), (N0 <= N)%nat -> my_sum_f_R (fun n : nat => UnwrapRn N x n * UnwrapRn N (Rnplus N y z) n) N0 = my_sum_f_R (fun n : nat => UnwrapRn N x n * UnwrapRn N y n) N0 + my_sum_f_R (fun n : nat => UnwrapRn N x n * UnwrapRn N z n)  N0).
+suff: (forall (N0:nat), (N0 <= N)%nat -> my_sum_f_R (fun n : nat => UnwrapRn N x n * UnwrapRn N (Rnplus N y z) n) N0 = my_sum_f_R (fun n : nat => UnwrapRn N x n * UnwrapRn N y n) N0 + my_sum_f_R (fun n : nat => UnwrapRn N x n * UnwrapRn N z n) N0).
 move=> H1.
 apply (H1 N).
 apply (le_n N).
@@ -8034,8 +7619,7 @@ apply Two_Neq_Zero.
 apply Two_Neq_Zero.
 Qed.
 
-Lemma Proposition_4_3_1 : forall (N : nat) (x y : Rn N), Rabs (RnInnerProduct
- N x y) <= (RnNorm N x) * (RnNorm N y).
+Lemma Proposition_4_3_1 : forall (N : nat) (x y : Rn N), Rabs (RnInnerProduct N x y) <= (RnNorm N x) * (RnNorm N y).
 Proof.
 move=> N x y.
 elim (classic ((RnInnerProduct N x x) = 0)).
@@ -8215,8 +7799,7 @@ rewrite - (proj2 (RnNormNature N x)).
 apply H2.
 Qed.
 
-Lemma Proposition_4_3_2 : forall (N : nat) (x y : Rn N), Rabs (RnInnerProduct
- N x y) = (RnNorm N x) * (RnNorm N y) -> (exists (k : R), x = (Rnmult N k y) \/ y = (Rnmult N k x)).
+Lemma Proposition_4_3_2 : forall (N : nat) (x y : Rn N), Rabs (RnInnerProduct N x y) = (RnNorm N x) * (RnNorm N y) -> (exists (k : R), x = (Rnmult N k y) \/ y = (Rnmult N k x)).
 Proof.
 move=> N x y H1.
 elim (classic ((RnInnerProduct N x x) = 0)).
@@ -8465,8 +8048,7 @@ apply (Rle_abs (RnInnerProduct N x y)).
 apply (Proposition_4_3_1 N x y).
 Qed.
 
-Lemma Proposition_4_3_3 : forall (N : nat) (x y : Rn N), (exists (k : R), x = (Rnmult N k y) \/ y = (Rnmult N k x)) -> Rabs (RnInnerProduct
- N x y) = (RnNorm N x) * (RnNorm N y).
+Lemma Proposition_4_3_3 : forall (N : nat) (x y : Rn N), (exists (k : R), x = (Rnmult N k y) \/ y = (Rnmult N k x)) -> Rabs (RnInnerProduct N x y) = (RnNorm N x) * (RnNorm N y).
 Proof.
 move=> N x y.
 elim.
@@ -8910,8 +8492,7 @@ exists (max N1 N2).
 move=> n2 H8.
 simpl.
 rewrite<- (eps2 eps).
-apply (Rplus_lt_compat (my_sum_f_R (fun n : nat => UnwrapRn N (Rnminus N (An n2) a) n * UnwrapRn N (Rnminus N (An n2) a) n) n1) (eps * / 2) (UnwrapRn N (Rnminus N (An n2) a) n1 *
-UnwrapRn N (Rnminus N (An n2) a) n1) (eps * / 2)).
+apply (Rplus_lt_compat (my_sum_f_R (fun n : nat => UnwrapRn N (Rnminus N (An n2) a) n * UnwrapRn N (Rnminus N (An n2) a) n) n1) (eps * / 2) (UnwrapRn N (Rnminus N (An n2) a) n1 * UnwrapRn N (Rnminus N (An n2) a) n1) (eps * / 2)).
 apply (H4 n2).
 apply (le_trans N1 (max N1 N2) n2).
 apply (Nat.le_max_l N1 N2).
@@ -9431,8 +9012,8 @@ apply (proj2_sig n).
 Qed.
 
 Definition Cmake (r1 r2 : R) := fun (n : Count 2) => match CReorCIm n with
-| left _ => r1
-| right _ => r2
+  | left _ => r1
+  | right _ => r2
 end.
 
 Lemma CmakeRe : forall (r1 r2 : R), Cmake r1 r2 CRe = r1.
@@ -9660,7 +9241,6 @@ rewrite Rplus_opp_l.
 rewrite Rmult_0_l.
 apply Rmult_0_l.
 Qed.
-
 
 Lemma Cmult_plus_distr_l : forall (c1 c2 c3 : C), (Cmult c1 (Cplus c2 c3)) = (Cplus (Cmult c1 c2) (Cmult c1 c3)).
 Proof.
@@ -9912,9 +9492,7 @@ Lemma Proposition_4_8_3 : forall (c : C), IRC ((Cnorm c) * (Cnorm c)) = (Cmult c
 Proof.
 move=> c.
 rewrite CnormDefinition.
-rewrite<- (proj2 (MySqrtNature (exist (fun r : R => r >= 0)
-        (c CRe * c CRe + c CIm * c CIm) 
-        (CnormSqrtSub c)))).
+rewrite<- (proj2 (MySqrtNature (exist (fun r : R => r >= 0) (c CRe * c CRe + c CIm * c CIm) (CnormSqrtSub c)))).
 simpl.
 unfold Cmult.
 unfold IRC.
@@ -10006,7 +9584,7 @@ reflexivity.
 reflexivity.
 Qed.
 
-Lemma Proposition_4_9_mult : forall (an bn  : nat -> C) (a b : C), Un_cv_met (Rn_met 2) an a -> Un_cv_met (Rn_met 2) bn b -> Un_cv_met (Rn_met 2) (fun (n : nat) => Cmult (an n) (bn n)) (Cmult a b).
+Lemma Proposition_4_9_mult : forall (an bn : nat -> C) (a b : C), Un_cv_met (Rn_met 2) an a -> Un_cv_met (Rn_met 2) bn b -> Un_cv_met (Rn_met 2) (fun (n : nat) => Cmult (an n) (bn n)) (Cmult a b).
 Proof.
 move=> an bn a b H1 H2.
 apply Theorem_4_5_1.
@@ -10054,7 +9632,7 @@ apply Theorem_4_5_1.
 apply H2.
 Qed.
 
-Lemma Proposition_4_9_inv : forall (an  : nat -> C) (a : C), a <> CO -> Un_cv_met (Rn_met 2) an a -> Un_cv_met (Rn_met 2) (fun (n : nat) => Cinv (an n)) (Cinv a).
+Lemma Proposition_4_9_inv : forall (an : nat -> C) (a : C), a <> CO -> Un_cv_met (Rn_met 2) an a -> Un_cv_met (Rn_met 2) (fun (n : nat) => Cinv (an n)) (Cinv a).
 Proof.
 move=> an a H1 H2.
 suff: (a CRe * a CRe + a CIm * a CIm <> 0).
@@ -10146,7 +9724,7 @@ apply (Formula_1_3_3 (a CIm)).
 apply H5.
 Qed.
 
-Lemma Proposition_4_9_div : forall (an bn  : nat -> C) (a b : C), b <> CO -> Un_cv_met (Rn_met 2) an a -> Un_cv_met (Rn_met 2) bn b -> Un_cv_met (Rn_met 2) (fun (n : nat) => Cmult (an n) (Cinv (bn n))) (Cmult a (Cinv b)).
+Lemma Proposition_4_9_div : forall (an bn : nat -> C) (a b : C), b <> CO -> Un_cv_met (Rn_met 2) an a -> Un_cv_met (Rn_met 2) bn b -> Un_cv_met (Rn_met 2) (fun (n : nat) => Cmult (an n) (Cinv (bn n))) (Cmult a (Cinv b)).
 Proof.
 move=> an bn a b H1 H2 H3.
 suff: (Un_cv_met (Rn_met 2) (fun n : nat => Cinv (bn n)) (Cinv b)).
@@ -10357,10 +9935,9 @@ apply H2.
 apply H1.
 Qed.
 
-Fixpoint sum_f_Rn (N : nat) (f : nat -> Rn N) (n : nat) : Rn N := 
-match n with 
-| O => f 0%nat
-| S n0 => Rnplus N (sum_f_Rn N f n0) (f (S n0))
+Fixpoint sum_f_Rn (N : nat) (f : nat -> Rn N) (n : nat) : Rn N := match n with
+  | O => f 0%nat
+  | S n0 => Rnplus N (sum_f_Rn N f n0) (f (S n0))
 end.
 
 Definition sigma_Rn (N : nat) (f : nat -> Rn N) (a b : nat) : Rn N := sum_f_Rn N (fun (k : nat) => f (a + k)%nat) (b - a).
@@ -11127,7 +10704,10 @@ apply H2.
 apply H1.
 Qed.
 
-Lemma Proposition_5_3_2 : forall (N : nat) (an : nat -> Rn N) (bn : nat -> nat) (s : Rn N), (forall (n : nat),(bn n) < (bn (S n)))%nat -> (Un_cv_met (Rn_met N) (sum_f_Rn N an) s) -> (Un_cv_met (Rn_met N) (sum_f_Rn N (fun (n : nat) => (match n with | O => sigma_Rn N an O (bn O) | S n0 => sigma_Rn N an (S (bn n0)) (bn (S n0)) end))) s).
+Lemma Proposition_5_3_2 : forall (N : nat) (an : nat -> Rn N) (bn : nat -> nat) (s : Rn N), (forall (n : nat),(bn n) < (bn (S n)))%nat -> (Un_cv_met (Rn_met N) (sum_f_Rn N an) s) -> (Un_cv_met (Rn_met N) (sum_f_Rn N (fun (n : nat) => (match n with
+  | O => sigma_Rn N an O (bn O)
+  | S n0 => sigma_Rn N an (S (bn n0)) (bn (S n0))
+end))) s).
 Proof.
 move=> N an bn s H1.
 apply Theorem_4_5_4.
@@ -11211,7 +10791,10 @@ apply H1.
 apply H1.
 Qed.
 
-Lemma Proposition_5_3_2_R : forall (an : nat -> R) (bn : nat -> nat) (s : R), (forall (n : nat),(bn n) < (bn (S n)))%nat -> (Un_cv (sum_f_R0 an) s) -> (Un_cv (sum_f_R0 (fun (n : nat) => (match n with | O => sigma an O (bn O) | S n0 => sigma an (S (bn n0)) (bn (S n0)) end))) s).
+Lemma Proposition_5_3_2_R : forall (an : nat -> R) (bn : nat -> nat) (s : R), (forall (n : nat),(bn n) < (bn (S n)))%nat -> (Un_cv (sum_f_R0 an) s) -> (Un_cv (sum_f_R0 (fun (n : nat) => (match n with
+  | O => sigma an O (bn O)
+  | S n0 => sigma an (S (bn n0)) (bn (S n0))
+end))) s).
 Proof.
 move=> an bn s H1.
 apply Formula_3_18.
@@ -12041,7 +11624,10 @@ apply Rmult_0_l.
 move=> H9.
 suff: (/ x - 1 > 0).
 move=> H2.
-apply (Proposition_2_7 (fun _ => 0) (fun (n : nat) => match n with | O => 1 | S _ => (/ ((INR n) * (/ x - 1))) end)).
+apply (Proposition_2_7 (fun _ => 0) (fun (n : nat) => match n with
+  | O => 1
+  | S _ => (/ ((INR n) * (/ x - 1)))
+end)).
 move=> eps H3.
 exists O.
 move=> n H4.
@@ -12055,7 +11641,7 @@ move=> n H5.
 suff: (match n with
   | 0%nat => 1
   | S _ => / (INR n * (/ x - 1))
-  end = / (INR n * (/ x - 1))).
+end = / (INR n * (/ x - 1))).
 move=> H10.
 rewrite H10.
 unfold R_dist.
@@ -12119,7 +11705,7 @@ apply Req_le.
 reflexivity.
 apply H1.
 apply H3.
-suff: forall (n : nat), (x ^ n =  / ((/ x) ^ n)).
+suff: forall (n : nat), (x ^ n = / ((/ x) ^ n)).
 move=> H3.
 rewrite H3.
 elim n.
@@ -12175,8 +11761,9 @@ suff: ((conv n0 O + conv n0 1%nat)%nat = S n0).
 move=> H7.
 rewrite H7.
 rewrite - {1} (Rplus_0_l (match n0 with
-| 0%nat => 1
-| S _ => INR n0 + 1 end * (/ x - 1))).
+  | 0%nat => 1
+  | S _ => INR n0 + 1
+end * (/ x - 1))).
 simpl.
 apply Rplus_lt_compat_r.
 apply Rlt_0_1.
@@ -12343,7 +11930,6 @@ rewrite H2.
 reflexivity.
 apply H1.
 Qed.
-
 
 Lemma Example_5_2 : forall (k : R), (Rabs k) < 1 -> (Un_cv (sum_f_R0 (pow k)) (1 / (1 - k))).
 Proof.
@@ -13516,11 +13102,11 @@ apply H6.
 apply eps2_Rgt_R0.
 apply eps2_Rgt_R0.
 apply H6.
-suff: (forall (n : nat), Finite (nat * nat) (fun (nm : (nat * nat)) => (fst nm + snd nm <= n + n)%nat /\  (fst nm > n)%nat)).
+suff: (forall (n : nat), Finite (nat * nat) (fun (nm : (nat * nat)) => (fst nm + snd nm <= n + n)%nat /\ (fst nm > n)%nat)).
 move=> H5.
-suff: (forall (n : nat), Finite (nat * nat) (fun (nm : (nat * nat)) => (fst nm + snd nm <= n + n)%nat /\  (snd nm > n)%nat)).
+suff: (forall (n : nat), Finite (nat * nat) (fun (nm : (nat * nat)) => (fst nm + snd nm <= n + n)%nat /\ (snd nm > n)%nat)).
 move=> H6.
-suff: (forall (n : nat),(sum_f_R0 (fun n0 : nat => sum_f_R0 (fun m : nat => an m * bn (n0 - m)%nat) n0) (n + n) - sum_f_R0 an n * sum_f_R0 bn n) = MySumF2 (nat * nat) (FiniteUnion (nat * nat) (exist (Finite (nat * nat)) (fun (nm : (nat * nat)) => (fst nm + snd nm <= n + n)%nat /\  (fst nm > n)%nat) (H5 n)) (exist (Finite (nat * nat)) (fun (nm : (nat * nat)) => (fst nm + snd nm <= n + n)%nat /\  (snd nm > n)%nat) (H6 n))) RPCM (fun (nm : (nat * nat)) => an (fst nm) * bn (snd nm))).
+suff: (forall (n : nat),(sum_f_R0 (fun n0 : nat => sum_f_R0 (fun m : nat => an m * bn (n0 - m)%nat) n0) (n + n) - sum_f_R0 an n * sum_f_R0 bn n) = MySumF2 (nat * nat) (FiniteUnion (nat * nat) (exist (Finite (nat * nat)) (fun (nm : (nat * nat)) => (fst nm + snd nm <= n + n)%nat /\ (fst nm > n)%nat) (H5 n)) (exist (Finite (nat * nat)) (fun (nm : (nat * nat)) => (fst nm + snd nm <= n + n)%nat /\ (snd nm > n)%nat) (H6 n))) RPCM (fun (nm : (nat * nat)) => an (fst nm) * bn (snd nm))).
 move=> H7.
 suff: (PositiveSequence (fun m : nat => Rabs (an m))).
 move=> H8.
@@ -13538,7 +13124,7 @@ move=> M2 H14.
 exists (S (max M1 M2)).
 move=> n H15.
 rewrite (H7 n).
-apply (Rle_lt_trans (Rabs (MySumF2 (nat * nat) (FiniteUnion (nat * nat) (exist (Finite (nat * nat)) (fun nm : nat * nat => (fst nm + snd nm <= n + n)%nat /\ (fst nm > n)%nat) (H5 n)) (exist (Finite (nat * nat)) (fun nm : nat * nat => (fst nm + snd nm <= n + n)%nat /\ (snd nm > n)%nat)  (H6 n))) RPCM (fun nm : nat * nat => an (fst nm) * bn (snd nm)))) (MySumF2 (nat * nat) (FiniteUnion (nat * nat) (exist (Finite (nat * nat)) (fun nm : nat * nat => (fst nm + snd nm <= n + n)%nat /\ (fst nm > n)%nat) (H5 n)) (exist (Finite (nat * nat)) (fun nm : nat * nat => (fst nm + snd nm <= n + n)%nat /\ (snd nm > n)%nat) (H6 n))) RPCM (fun nm : nat * nat => Rabs (an (fst nm) * bn (snd nm)))) eps).
+apply (Rle_lt_trans (Rabs (MySumF2 (nat * nat) (FiniteUnion (nat * nat) (exist (Finite (nat * nat)) (fun nm : nat * nat => (fst nm + snd nm <= n + n)%nat /\ (fst nm > n)%nat) (H5 n)) (exist (Finite (nat * nat)) (fun nm : nat * nat => (fst nm + snd nm <= n + n)%nat /\ (snd nm > n)%nat) (H6 n))) RPCM (fun nm : nat * nat => an (fst nm) * bn (snd nm)))) (MySumF2 (nat * nat) (FiniteUnion (nat * nat) (exist (Finite (nat * nat)) (fun nm : nat * nat => (fst nm + snd nm <= n + n)%nat /\ (fst nm > n)%nat) (H5 n)) (exist (Finite (nat * nat)) (fun nm : nat * nat => (fst nm + snd nm <= n + n)%nat /\ (snd nm > n)%nat) (H6 n))) RPCM (fun nm : nat * nat => Rabs (an (fst nm) * bn (snd nm)))) eps).
 apply MySumF2Rtriangle.
 rewrite MySumF2Union.
 rewrite - (eps2 eps).
@@ -14150,32 +13736,10 @@ apply Rplus_le_compat.
 apply H23.
 apply (H22 (S n0)).
 move=> m.
-apply (Rle_trans (RnNorm 2
-  (sum_f_Rn 2
-     (fun m0 : nat =>
-      Cmult (an m0) (bn (m - m0)%nat)) m)) (Rabs ((sum_f_Rn 2
-     (fun m0 : nat =>
-      Cmult (an m0) (bn (m - m0)%nat)) m) CRe) + Rabs (((sum_f_Rn 2
-     (fun m0 : nat =>
-      Cmult (an m0) (bn (m - m0)%nat)) m)) CIm))).
+apply (Rle_trans (RnNorm 2 (sum_f_Rn 2 (fun m0 : nat => Cmult (an m0) (bn (m - m0)%nat)) m)) (Rabs ((sum_f_Rn 2 (fun m0 : nat => Cmult (an m0) (bn (m - m0)%nat)) m) CRe) + Rabs (((sum_f_Rn 2 (fun m0 : nat => Cmult (an m0) (bn (m - m0)%nat)) m)) CIm))).
 apply H2.
 rewrite sum_f_Rn_component.
-rewrite (Rplus_comm (Rabs
-  (sum_f_R0
-     (fun m0 : nat =>
-      an m0 CRe * bn (m - m0)%nat CRe) m) +
-Rabs
-  (sum_f_R0
-     (fun m0 : nat =>
-      an m0 CRe * bn (m - m0)%nat CIm) m) +
-Rabs
-  (sum_f_R0
-     (fun m0 : nat =>
-      an m0 CIm * bn (m - m0)%nat CRe) m)) (Rabs
-  (sum_f_R0
-     (fun m0 : nat =>
-      an m0 CIm * bn (m - m0)%nat CIm) m)
-)).
+rewrite (Rplus_comm (Rabs (sum_f_R0 (fun m0 : nat => an m0 CRe * bn (m - m0)%nat CRe) m) + Rabs (sum_f_R0 (fun m0 : nat => an m0 CRe * bn (m - m0)%nat CIm) m) + Rabs (sum_f_R0 (fun m0 : nat => an m0 CIm * bn (m - m0)%nat CRe) m)) (Rabs (sum_f_R0 (fun m0 : nat => an m0 CIm * bn (m - m0)%nat CIm) m) )).
 rewrite Rplus_assoc.
 rewrite - Rplus_assoc.
 apply Rplus_le_compat.
@@ -14976,8 +14540,7 @@ suff: (forall (n : nat), exists (m : nat), (m >= n)%nat /\ (A m)).
 move=> H2.
 suff: (forall (m : nat), {k : nat | is_min_nat (fun (n : nat) => (A n) /\ (m < n)%nat) k}).
 move=> H3.
-exists ((fix a (n : nat) : nat := 
-match n with 
+exists ((fix a (n : nat) : nat := match n with
   | O => (proj1_sig (H3 O))
   | S n0 => (proj1_sig (H3 (a n0)))
 end)).
@@ -14985,18 +14548,15 @@ apply conj.
 elim.
 apply (proj2_sig (H3 O)).
 move=> n H4.
-apply (proj2_sig (H3 ((fix a (n0 : nat) : nat :=
-            match n0 with
-            | 0%nat => proj1_sig (H3 0%nat)
-            | S n1 => proj1_sig (H3 (a n1))
-            end) n))).
+apply (proj2_sig (H3 ((fix a (n0 : nat) : nat := match n0 with
+  | 0%nat => proj1_sig (H3 0%nat)
+  | S n1 => proj1_sig (H3 (a n1))
+end) n))).
 move=> n.
-apply (proj2 (proj1 (proj2_sig (H3
-      ((fix a (n0 : nat) : nat :=
-          match n0 with
-          | O => proj1_sig (H3 O)
-          | S n1 => proj1_sig (H3 (a n1))
-          end) n))))).
+apply (proj2 (proj1 (proj2_sig (H3 ((fix a (n0 : nat) : nat := match n0 with
+  | O => proj1_sig (H3 O)
+  | S n1 => proj1_sig (H3 (a n1))
+end) n))))).
 move=> m.
 apply constructive_definite_description.
 apply (unique_existence (fun (x : nat) => is_min_nat (fun n : nat => A n /\ (m < n)%nat) x)).
@@ -15242,20 +14802,19 @@ move=> y H4.
 exists y.
 apply Theorem_6_2.
 move=> xn H5.
-suff: (Un_cv_met M2 
-(fun (n : nat) => match (even_odd_dec n) with 
-| left a => f (proj1_sig (xn (proj1_sig (even_2n n a)))) 
-| right a => f (proj1_sig (exist B (xm (proj1_sig (odd_S2n n a))) (proj1 H3 (proj1_sig (odd_S2n n a)))))
- end) y).
-move=> H6.
-move=> eps H7.
+suff: (Un_cv_met M2 (fun (n : nat) => match (even_odd_dec n) with
+  | left a => f (proj1_sig (xn (proj1_sig (even_2n n a))))
+  | right a => f (proj1_sig (exist B (xm (proj1_sig (odd_S2n n a))) (proj1 H3 (proj1_sig (odd_S2n n a)))))
+end) y).
+move=> H6 eps H7.
 elim (H6 eps H7).
 move=> k H8.
 exists k.
-move=> n H9. 
+move=> n H9.
 suff: ((f (proj1_sig (xn n))) = (match even_odd_dec (double n) with
-       | left a => f (proj1_sig (xn (proj1_sig (even_2n (double n) a))))
-       | right a => f (proj1_sig (exist B (xm (proj1_sig (odd_S2n (double n) a))) (proj1 H3 (proj1_sig (odd_S2n (double n) a))))) end)).
+  | left a => f (proj1_sig (xn (proj1_sig (even_2n (double n) a))))
+  | right a => f (proj1_sig (exist B (xm (proj1_sig (odd_S2n (double n) a))) (proj1 H3 (proj1_sig (odd_S2n (double n) a)))))
+end)).
 move=> H10.
 rewrite H10.
 apply (H8 (double n)).
@@ -15312,8 +14871,9 @@ rewrite {2} Nat.double_twice.
 rewrite div2_double.
 reflexivity.
 suff: (exists (y : Base M2), Un_cv_met M2 (fun n : nat => match even_odd_dec n with
-   | left a => f (proj1_sig (xn (proj1_sig (even_2n n a))))
-   | right a => f (proj1_sig (exist B (xm (proj1_sig (odd_S2n n a))) (proj1 H3 (proj1_sig (odd_S2n n a))))) end) y).
+  | left a => f (proj1_sig (xn (proj1_sig (even_2n n a))))
+  | right a => f (proj1_sig (exist B (xm (proj1_sig (odd_S2n n a))) (proj1 H3 (proj1_sig (odd_S2n n a)))))
+end) y).
 elim.
 move=> y0 H6.
 suff: (y = y0).
@@ -15337,9 +14897,9 @@ apply Rplus_lt_compat.
 apply (H10 (max k1 k2)).
 apply (Nat.le_max_r k1 k2).
 suff: ((f (proj1_sig (exist B (xm (max k1 k2)) (proj1 H3 (max k1 k2))))) = match even_odd_dec (S (double (max k1 k2))) with
-        | left a => f (proj1_sig (xn (proj1_sig (even_2n (S (double (max k1 k2))) a))))
-        | right a => f (proj1_sig (exist B (xm (proj1_sig (odd_S2n (S (double (max k1 k2))) a))) (proj1 H3 (proj1_sig (odd_S2n (S (double (max k1 k2))) a)))))
-        end). 
+  | left a => f (proj1_sig (xn (proj1_sig (even_2n (S (double (max k1 k2))) a))))
+  | right a => f (proj1_sig (exist B (xm (proj1_sig (odd_S2n (S (double (max k1 k2))) a))) (proj1 H3 (proj1_sig (odd_S2n (S (double (max k1 k2))) a)))))
+end).
 move=> H11.
 rewrite H11.
 apply (H9 (S (double (max k1 k2)))).
@@ -15408,11 +14968,12 @@ apply False_ind.
 apply H7.
 apply (proj1 (dist_refl M2 y y0) H8).
 suff: ((fun n : nat => match even_odd_dec n with
-     | left a => f (proj1_sig (xn (proj1_sig (even_2n n a))))
-     | right a => f (proj1_sig (exist B (xm (proj1_sig (odd_S2n n a))) (proj1 H3 (proj1_sig (odd_S2n n a)))))
-     end) = (fun n : nat => f (proj1_sig ((fun (m : nat) => match even_odd_dec m with
-     | left a => xn (proj1_sig (even_2n m a))
-     | right a => (exist B (xm (proj1_sig (odd_S2n m a))) (proj1 H3 (proj1_sig (odd_S2n m a)))) end) n)))).
+  | left a => f (proj1_sig (xn (proj1_sig (even_2n n a))))
+  | right a => f (proj1_sig (exist B (xm (proj1_sig (odd_S2n n a))) (proj1 H3 (proj1_sig (odd_S2n n a)))))
+end) = (fun n : nat => f (proj1_sig ((fun (m : nat) => match even_odd_dec m with
+  | left a => xn (proj1_sig (even_2n m a))
+  | right a => (exist B (xm (proj1_sig (odd_S2n m a))) (proj1 H3 (proj1_sig (odd_S2n m a))))
+end) n)))).
 move=> H6.
 rewrite H6.
 apply H2.
@@ -15544,9 +15105,9 @@ apply H4.
 apply (proj1 (dist_refl M2 y1 y2) H5).
 Qed.
 
-Lemma Proposition_2_3_met : forall (M : Metric_Space) (an : nat -> Base M)  (x y : Base M), (Un_cv_met M an x) -> (Un_cv_met M an y) -> x = y.
+Lemma Proposition_2_3_met : forall (M : Metric_Space) (an : nat -> Base M) (x y : Base M), (Un_cv_met M an x) -> (Un_cv_met M an y) -> x = y.
 Proof.
-move=> M an a b H1 H2. 
+move=> M an a b H1 H2.
 apply NNPP.
 move=> H3.
 suff: (dist M a b / 2 > 0).
@@ -15573,7 +15134,6 @@ apply False_ind.
 apply H3.
 apply (proj1 (dist_refl M a b) H4).
 Qed.
-
 
 Definition BoundedMet (M : Metric_Space) (A : Ensemble (Base M)) := exists (x : Base M) (r : R), Included (Base M) A (NeighborhoodMet M x r).
 
@@ -15993,7 +15553,7 @@ move=> M1 f g B x fx gx H1 H2 H3.
 elim.
 move=> eps H4.
 elim (proj1 (Proposition_6_1_1 M1 B x) H1).
-move=> an H5. 
+move=> an H5.
 apply (Theorem_2_6_2 (fun (n : nat) => f (an n)) (fun (n : nat) => g (an n)) fx gx).
 apply (proj1 (Theorem_6_2 M1 R_met f B x fx) H2 (fun (n : nat) => exist B (an n) (proj1 H5 n))).
 suff: ((fun n : nat => proj1_sig (exist B (an n) (proj1 H5 n))) = an).
@@ -16110,7 +15670,6 @@ Qed.
 Definition limit_inf_R (M : Metric_Space) (f : (Base M) -> R) (B : Ensemble (Base M)) (x : Base M) := forall (m : R), exists (alp : R), alp > 0 /\ (forall x0 : Base M, B x0 /\ dist M x0 x < alp -> (f x0) > m).
 
 Definition limit_minf_R (M : Metric_Space) (f : (Base M) -> R) (B : Ensemble (Base M)) (x : Base M) := forall (m : R), exists (alp : R), alp > 0 /\ (forall x0 : Base M, B x0 /\ dist M x0 x < alp -> (f x0) < m).
-
 
 Lemma Proposition_6_9_1 : forall (M1 : Metric_Space) (f g : Base M1 -> R) (B : Ensemble (Base M1)) (x : Base M1), limit_inf_R M1 f B x -> (exists (c : R), forall (y : Base M1), In (Base M1) B y -> g y >= c) -> limit_inf_R M1 (fun (r : Base M1) => (f r) + (g r)) B x.
 Proof.
@@ -16337,13 +15896,13 @@ Definition limit_R_minf (M : Metric_Space) (f : R -> Base M) (B : Ensemble R) (x
 
 Lemma Rextendmetfunsub : {f : R -> R | (forall (x : R), - (1) < f x < 1) /\ (forall (x y : R), (x < y) -> (f x < f y)) /\ (forall (x : R), ContinuousMet R_met R_met f (Full_set R) x) /\ (forall (x : R) (eps : R), eps > 0 -> exists (dlt : R), dlt > 0 /\ (forall (x0 : R), dist R_met (f x0) (f x) < dlt -> dist R_met x0 x < eps)) /\ (limit_R_inf R_met f (Full_set R) 1) /\ (limit_R_minf R_met f (Full_set R) (- (1))) /\ (forall (x : R), - (1) < x < 1 -> exists (y : R), f y = x)}.
 Proof.
-exists (fun (r : R) => match (Rlt_le_dec 0 r) with 
-| left _ => 1 - / (r + 1)
-| right _ => - (1) - / (r - 1)
+exists (fun (r : R) => match (Rlt_le_dec 0 r) with
+  | left _ => 1 - / (r + 1)
+  | right _ => - (1) - / (r - 1)
 end).
-have: (forall x : R, - (1) < ((fun (r : R) => match (Rlt_le_dec 0 r) with 
-| left _ => 1 - / (r + 1)
-| right _ => - (1) - / (r - 1)
+have: (forall x : R, - (1) < ((fun (r : R) => match (Rlt_le_dec 0 r) with
+  | left _ => 1 - / (r + 1)
+  | right _ => - (1) - / (r - 1)
 end) x) < 1).
 move=> x.
 elim (Rlt_le_dec 0 x).
@@ -16688,36 +16247,28 @@ rewrite (Rplus_opp_r 1).
 rewrite (Rplus_0_r x0).
 reflexivity.
 apply conj.
-suff: (let g := fun (x : R) => match (Rlt_le_dec 0 x) with 
-| left _ => / - (x - 1) - 1
-| right _ => / - (x + 1) + 1
-end in forall x eps : R,
-eps > 0 ->
-exists dlt : R,
-  dlt > 0 /\
-  (forall x0 : R,
-   dist R_met
-     ((fun (r : R) => match (Rlt_le_dec 0 r) with 
-| left _ => 1 - / (r + 1)
-| right _ => - (1) - / (r - 1)
-end) x0)
-     ((fun (r : R) => match (Rlt_le_dec 0 r) with 
-| left _ => 1 - / (r + 1)
-| right _ => - (1) - / (r - 1)
-end) x) < dlt ->
-   dist R_met x0 x < eps)).
+suff: (let g := fun (x : R) => match (Rlt_le_dec 0 x) with
+  | left _ => / - (x - 1) - 1
+  | right _ => / - (x + 1) + 1
+end in forall x eps : R, eps > 0 -> exists dlt : R, dlt > 0 /\ (forall x0 : R, dist R_met ((fun (r : R) => match (Rlt_le_dec 0 r) with
+  | left _ => 1 - / (r + 1)
+  | right _ => - (1) - / (r - 1)
+end) x0) ((fun (r : R) => match (Rlt_le_dec 0 r) with
+  | left _ => 1 - / (r + 1)
+  | right _ => - (1) - / (r - 1)
+end) x) < dlt -> dist R_met x0 x < eps)).
 apply.
 move=> g.
-suff: (forall (x : R), g ((fun (r : R) => match (Rlt_le_dec 0 r) with 
-| left _ => 1 - / (r + 1)
-| right _ => - (1) - / (r - 1)
+suff: (forall (x : R), g ((fun (r : R) => match (Rlt_le_dec 0 r) with
+  | left _ => 1 - / (r + 1)
+  | right _ => - (1) - / (r - 1)
 end) x) = x).
 move=> H1.
 suff: (forall (x : R), (- (1) < x < 1) -> ContinuousMet R_met R_met g (Full_set R) x).
 move=> H2 x eps H3.
-elim (H2 ((fun (r : R) => match (Rlt_le_dec 0 r) with 
-| left _ => 1 - / (r + 1)
-| right _ => - (1) - / (r - 1)
+elim (H2 ((fun (r : R) => match (Rlt_le_dec 0 r) with
+  | left _ => 1 - / (r + 1)
+  | right _ => - (1) - / (r - 1)
 end) x) (H0 x) eps H3).
 move=> dlt H4.
 exists dlt.
@@ -17189,29 +16740,29 @@ rewrite - (Rplus_opp_l 1).
 apply (Rplus_lt_compat_r 1 (- (1)) x (proj1 H1)).
 Qed.
 
-Inductive Rextend : Set := 
+Inductive Rextend : Set :=
   | Rinf : Rextend
   | Rminf : Rextend
   | Rval : R -> Rextend.
 
 Definition Rextendlt := (fun (r1 r2 : Rextend) => match r1 with
   | Rinf => False
-  | Rminf => match r2 with 
-               | Rinf => True
-               | Rminf => False
-               | Rval _ => True
-             end
+  | Rminf => match r2 with
+    | Rinf => True
+    | Rminf => False
+    | Rval _ => True
+  end
   | Rval v1 => match r2 with
-                 | Rinf => True
-                 | Rminf => False
-                 | Rval v2 => v1 < v2
-               end
+    | Rinf => True
+    | Rminf => False
+    | Rval v2 => v1 < v2
+  end
 end).
 
 Definition Rextendmetfun := (fun (r : Rextend) => match r with
   | Rinf => 1
   | Rminf => -1
-  | Rval v => proj1_sig (Rextendmetfunsub) v 
+  | Rval v => proj1_sig (Rextendmetfunsub) v
 end).
 
 Definition Rextendmetdist := fun (r1 r2 : Rextend) => R_dist (Rextendmetfun r1) (Rextendmetfun r2).
@@ -17623,7 +17174,7 @@ move=> dlt H4.
 elim (H2 dlt).
 move=> alp H5.
 exists (1 - (proj1_sig Rextendmetfunsub alp)).
-apply conj. 
+apply conj.
 apply (Rgt_minus 1 (proj1_sig Rextendmetfunsub alp)).
 apply (proj2 (proj1 (proj2_sig Rextendmetfunsub) alp)).
 move=> x H6.
@@ -17700,7 +17251,7 @@ move=> dlt H4.
 elim (H2 dlt).
 move=> alp H5.
 exists (1 - (proj1_sig Rextendmetfunsub alp)).
-apply conj. 
+apply conj.
 apply (Rgt_minus 1 (proj1_sig Rextendmetfunsub alp)).
 apply (proj2 (proj1 (proj2_sig Rextendmetfunsub) alp)).
 move=> x H6.
@@ -17848,7 +17399,7 @@ move=> dlt H4.
 elim (H2 dlt).
 move=> alp H5.
 exists ((proj1_sig Rextendmetfunsub alp) - - (1)).
-apply conj. 
+apply conj.
 apply (Rgt_minus (proj1_sig Rextendmetfunsub alp) (- (1))).
 apply (proj1 (proj1 (proj2_sig Rextendmetfunsub) alp)).
 move=> x H6.
@@ -18123,7 +17674,7 @@ move=> x H7.
 apply.
 elim H5.
 move=> x H7 H8.
-apply H7. 
+apply H7.
 apply (H4 z2).
 apply conj.
 elim H6.
@@ -18133,18 +17684,18 @@ elim H6.
 move=> x H7 H8.
 apply H7.
 move=> H2.
-suff: (exists y : Base M2, limit_in Rextend_met M2 (fun (r : Rextend) => match r with 
-| Rinf => (f 0)
-| Rminf => (f 0)
-| Rval r => (f r)
+suff: (exists y : Base M2, limit_in Rextend_met M2 (fun (r : Rextend) => match r with
+  | Rinf => (f 0)
+  | Rminf => (f 0)
+  | Rval r => (f r)
 end) (fun r : Rextend => exists l : R, In R B l /\ r = Rval l) Rinf y).
 elim.
 move=> y H3.
 exists y.
-apply (limit_R_inf_extend_same M2 f (fun (r : Rextend) => match r with 
-| Rinf => (f 0)
-| Rminf => (f 0)
-| Rval r => (f r)
+apply (limit_R_inf_extend_same M2 f (fun (r : Rextend) => match r with
+  | Rinf => (f 0)
+  | Rminf => (f 0)
+  | Rval r => (f r)
 end) B y).
 move=> r.
 reflexivity.
@@ -18226,7 +17777,7 @@ move=> x H7.
 apply.
 elim H5.
 move=> x H7 H8.
-apply H7. 
+apply H7.
 apply (H4 z2).
 apply conj.
 elim H6.
@@ -18236,18 +17787,18 @@ elim H6.
 move=> x H7 H8.
 apply H7.
 move=> H2.
-suff: (exists y : Base M2, limit_in Rextend_met M2 (fun (r : Rextend) => match r with 
-| Rinf => (f 0)
-| Rminf => (f 0)
-| Rval r => (f r)
+suff: (exists y : Base M2, limit_in Rextend_met M2 (fun (r : Rextend) => match r with
+  | Rinf => (f 0)
+  | Rminf => (f 0)
+  | Rval r => (f r)
 end) (fun r : Rextend => exists l : R, In R B l /\ r = Rval l) Rminf y).
 elim.
 move=> y H3.
 exists y.
-apply (limit_R_minf_extend_same M2 f (fun (r : Rextend) => match r with 
-| Rinf => (f 0)
-| Rminf => (f 0)
-| Rval r => (f r)
+apply (limit_R_minf_extend_same M2 f (fun (r : Rextend) => match r with
+  | Rinf => (f 0)
+  | Rminf => (f 0)
+  | Rval r => (f r)
 end) B y).
 move=> r.
 reflexivity.
@@ -18335,10 +17886,9 @@ Qed.
 
 Definition RFPCM (T : Type) : CommutativeMonoid := mkCommutativeMonoid (T -> R) (fun (r : T) => 0) (RFplus T) (RFplus_comm T) (RFplus_0_r T) (RFplus_assoc T).
 
-Fixpoint sum_f_RF (T : Type) (f : nat -> (T -> R)) (n : nat) : (T -> R) := 
-match n with 
-| O => f O
-| S n0 => RFplus T (sum_f_RF T f n0) (f (S n0))
+Fixpoint sum_f_RF (T : Type) (f : nat -> (T -> R)) (n : nat) : (T -> R) := match n with
+  | O => f O
+  | S n0 => RFplus T (sum_f_RF T f n0) (f (S n0))
 end.
 
 Lemma MySumEqsum_f_RF : forall (T : Type) (f : nat -> (T -> R)) (N : nat), sum_f_RF T f N = MySumF2 nat (exist (Finite nat) (fun (m : nat) => (O <= m <= N)%nat) (natSectionFinite O N)) (RFPCM T) f.
@@ -18436,10 +17986,9 @@ Qed.
 
 Definition RnFPCM (T : Type) (N : nat) : CommutativeMonoid := mkCommutativeMonoid (T -> Rn N) (fun (r : T) => RnO N) (RnFplus T N) (RnFplus_comm T N) (RnFplus_0_r T N) (RnFplus_assoc T N).
 
-Fixpoint sum_f_RnF (T : Type) (N : nat) (f : nat -> (T -> Rn N)) (n : nat) : (T -> Rn N) := 
-match n with 
-| O => f O
-| S n0 => RnFplus T N (sum_f_RnF T N f n0) (f (S n0))
+Fixpoint sum_f_RnF (T : Type) (N : nat) (f : nat -> (T -> Rn N)) (n : nat) : (T -> Rn N) := match n with
+  | O => f O
+  | S n0 => RnFplus T N (sum_f_RnF T N f n0) (f (S n0))
 end.
 
 Lemma MySumEqsum_f_RnF : forall (T : Type) (d : nat) (f : nat -> (T -> Rn d)) (N : nat), sum_f_RnF T d f N = MySumF2 nat (exist (Finite nat) (fun (m : nat) => (O <= m <= N)%nat) (natSectionFinite O N)) (RnFPCM T d) f.
@@ -18515,8 +18064,8 @@ move=> M1 N f B C Mn H1 H2 H3 H4.
 suff: (forall (x : Base M1), (In (Base M1) B x) -> {Fx : Rn N | Un_cv_met (Rn_met N) (fun n : nat => sum_f_RnF (Base M1) N f n x) Fx}).
 move=> H6.
 exists (fun (x : Base M1) => match (excluded_middle_informative (In (Base M1) B x)) with
-| left a => proj1_sig (H6 x a)
-| right _ => RnO N
+  | left a => proj1_sig (H6 x a)
+  | right _ => RnO N
 end).
 apply conj.
 move=> x H7.
@@ -19656,8 +19205,7 @@ move=> H18.
 rewrite (Rmult_opp_opp (y (exist (fun n3 : nat => (n3 < N)%nat) n H16) + - x (exist (fun n3 : nat => (n3 < N)%nat) n H16)) (y (exist (fun n3 : nat => (n3 < N)%nat) n H16) + - x (exist (fun n3 : nat => (n3 < N)%nat) n H16))).
 reflexivity.
 reflexivity.
-suff: (forall (x y : Rn N), In (Rn N) (fun x0 : Rn N => forall m : {n0 : nat | (n0 < N)%nat}, In R (proj1_sig (D n2 m)) (x0 m)) x -> In (Rn N) (fun x0 : Rn N => forall m : {n0 : nat | (n0 < N)%nat}, In R (proj1_sig (D n2 m)) (x0 m)) y -> (y (exist (fun n3 : nat => (n3 < N)%nat) n H16) + - x (exist (fun n3 : nat => (n3 < N)%nat) n H16)) < 
-Rmin (eps0 / 2) 1).
+suff: (forall (x y : Rn N), In (Rn N) (fun x0 : Rn N => forall m : {n0 : nat | (n0 < N)%nat}, In R (proj1_sig (D n2 m)) (x0 m)) x -> In (Rn N) (fun x0 : Rn N => forall m : {n0 : nat | (n0 < N)%nat}, In R (proj1_sig (D n2 m)) (x0 m)) y -> (y (exist (fun n3 : nat => (n3 < N)%nat) n H16) + - x (exist (fun n3 : nat => (n3 < N)%nat) n H16)) < Rmin (eps0 / 2) 1).
 move=> H17.
 unfold Rabs.
 elim (Rcase_abs (y (exist (fun n3 : nat => (n3 < N)%nat) n H16) + - x (exist (fun n3 : nat => (n3 < N)%nat) n H16))).
@@ -19733,8 +19281,7 @@ move=> F H5.
 suff: (exists (d0 : {n : nat | (n < N)%nat} -> BoundedClosedSectionSet), infiniteCoverTemp (fun x : Rn N => forall m : {n0 : nat | (n0 < N)%nat}, In R (proj1_sig (d0 m)) (x m))).
 elim.
 move=> d0 H6.
-suff: (let D := (fix D (n : nat) : ({n : nat | (n < N)%nat} -> BoundedClosedSectionSet) := 
-match n with 
+suff: (let D := (fix D (n : nat) : ({n : nat | (n < N)%nat} -> BoundedClosedSectionSet) := match n with
   | O => d0
   | S n0 => F (D n0)
 end) in exists D : nat -> {n : nat | (n < N)%nat} -> BoundedClosedSectionSet, (forall n : nat, infiniteCoverTemp (fun x : Rn N => forall m : {n0 : nat | (n0 < N)%nat}, In R (proj1_sig (D n m)) (x m))) /\ (forall m : {n : nat | (n < N)%nat}, Un_cv (fun n : nat => BoundedClosedSectionToR (D n m) - BoundedClosedSectionToL (D n m)) 0) /\ (forall (m : {n : nat | (n < N)%nat}) (n : nat), Included R (proj1_sig (D (S n) m)) (proj1_sig (D n m)))).
@@ -19843,7 +19390,7 @@ move=> H12.
 rewrite H12.
 rewrite - (Rplus_0_r (a m * a m)).
 rewrite (RnInnerProductDefinition N a a).
-rewrite (MySumF2Excluded (Count N) RPCM (fun n1 : Count N =>  a n1 * a n1) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Singleton (Count N) m)).
+rewrite (MySumF2Excluded (Count N) RPCM (fun n1 : Count N => a n1 * a n1) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Singleton (Count N) m)).
 simpl.
 suff: ((FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Singleton (Count N) m)) = (exist (Finite (Count N)) (Singleton (Count N) m) (Singleton_is_finite (Count N) m))).
 move=> H13.
@@ -20023,20 +19570,20 @@ move=> H7.
 suff: (forall (LR : BoundedClosedSectionSet), exists (LR0 : {lr : R * R | fst lr <= snd lr}), BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) ((BoundedClosedSectionToL LR + BoundedClosedSectionToR LR) * / 2, BoundedClosedSectionToR LR) (H6 LR)) = BoundedClosedSection LR0).
 move=> H8.
 suff: (let leftG := fun (G : ({n : nat | (n < N)%nat} -> BoundedClosedSectionSet)) (k : {n : nat | (n < N)%nat}) => (fun (m : {n : nat | (n < N)%nat}) => match (excluded_middle_informative (proj1_sig m = proj1_sig k)) with
-| left _ => exist (fun (X : Ensemble R) => exists (LR : {lr : R * R | fst lr <= snd lr}), X = BoundedClosedSection LR) (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (BoundedClosedSectionToL (G m), (BoundedClosedSectionToL (G m) + BoundedClosedSectionToR (G m)) * / 2) (H5 (G m)))) (H7 (G m))
-| right _ => G m
+  | left _ => exist (fun (X : Ensemble R) => exists (LR : {lr : R * R | fst lr <= snd lr}), X = BoundedClosedSection LR) (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (BoundedClosedSectionToL (G m), (BoundedClosedSectionToL (G m) + BoundedClosedSectionToR (G m)) * / 2) (H5 (G m)))) (H7 (G m))
+  | right _ => G m
 end) in (exists (G : ({n : nat | (n < N)%nat} -> BoundedClosedSectionSet) -> {n : nat | (n < N)%nat} -> {n : nat | (n < N)%nat} -> BoundedClosedSectionSet), forall (d : {n : nat | (n < N)%nat} -> BoundedClosedSectionSet) (k : {n : nat | (n < N)%nat}), (infiniteCoverTemp (fun x : Rn N => forall m : {n0 : nat | (n0 < N)%nat}, In R (proj1_sig (d m)) (x m)) -> infiniteCoverTemp (fun x : Rn N => forall m : {n0 : nat | (n0 < N)%nat}, In R (proj1_sig (G d k m)) (x m))) /\ (forall m : {n : nat | (n < N)%nat}, m <> k -> BoundedClosedSectionToR (d m) - BoundedClosedSectionToL (d m) = BoundedClosedSectionToR (G d k m) - BoundedClosedSectionToL (G d k m)) /\ (BoundedClosedSectionToR (d k) - BoundedClosedSectionToL (d k)) * / 2 = BoundedClosedSectionToR (G d k k) - BoundedClosedSectionToL (G d k k) /\ (forall m : {n : nat | (n < N)%nat}, Included R (proj1_sig (G d k m)) (proj1_sig (d m))))).
 apply.
 move=> leftG.
 suff: (let rightG := fun (G : ({n : nat | (n < N)%nat} -> BoundedClosedSectionSet)) (k : {n : nat | (n < N)%nat}) => (fun (m : {n : nat | (n < N)%nat}) => match (excluded_middle_informative (proj1_sig m = proj1_sig k)) with
-| left _ => exist (fun (X : Ensemble R) => exists (LR : {lr : R * R | fst lr <= snd lr}), X = BoundedClosedSection LR) (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) ((BoundedClosedSectionToL (G m) + BoundedClosedSectionToR (G m)) * / 2, BoundedClosedSectionToR (G m)) (H6 (G m)))) (H8 (G m))
-| right _ => G m
+  | left _ => exist (fun (X : Ensemble R) => exists (LR : {lr : R * R | fst lr <= snd lr}), X = BoundedClosedSection LR) (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) ((BoundedClosedSectionToL (G m) + BoundedClosedSectionToR (G m)) * / 2, BoundedClosedSectionToR (G m)) (H6 (G m)))) (H8 (G m))
+  | right _ => G m
 end) in (exists (G : ({n : nat | (n < N)%nat} -> BoundedClosedSectionSet) -> {n : nat | (n < N)%nat} -> {n : nat | (n < N)%nat} -> BoundedClosedSectionSet), forall (d : {n : nat | (n < N)%nat} -> BoundedClosedSectionSet) (k : {n : nat | (n < N)%nat}), (infiniteCoverTemp (fun x : Rn N => forall m : {n0 : nat | (n0 < N)%nat}, In R (proj1_sig (d m)) (x m)) -> infiniteCoverTemp (fun x : Rn N => forall m : {n0 : nat | (n0 < N)%nat}, In R (proj1_sig (G d k m)) (x m))) /\ (forall m : {n : nat | (n < N)%nat}, m <> k -> BoundedClosedSectionToR (d m) - BoundedClosedSectionToL (d m) = BoundedClosedSectionToR (G d k m) - BoundedClosedSectionToL (G d k m)) /\ (BoundedClosedSectionToR (d k) - BoundedClosedSectionToL (d k)) * / 2 = BoundedClosedSectionToR (G d k k) - BoundedClosedSectionToL (G d k k) /\ (forall m : {n : nat | (n < N)%nat}, Included R (proj1_sig (G d k m)) (proj1_sig (d m))))).
 apply.
 move=> rightG.
-exists (fun (d : ({n : nat | (n < N)%nat} -> BoundedClosedSectionSet)) (k : {n : nat | (n < N)%nat}) => match (excluded_middle_informative (infiniteCoverTemp (fun (x : Rn N) => forall (m : {n0 : nat | (n0 < N)%nat}), In R (proj1_sig (leftG d k m)) (x m)))) with 
-|left _ => leftG d k 
-|right _ => rightG d k
+exists (fun (d : ({n : nat | (n < N)%nat} -> BoundedClosedSectionSet)) (k : {n : nat | (n < N)%nat}) => match (excluded_middle_informative (infiniteCoverTemp (fun (x : Rn N) => forall (m : {n0 : nat | (n0 < N)%nat}), In R (proj1_sig (leftG d k m)) (x m)))) with
+  | left _ => leftG d k
+  | right _ => rightG d k
 end).
 move=> d k.
 apply conj.
@@ -20060,7 +19607,7 @@ apply (Union_preserves_Finite T ns1 ns2 (proj1 H12) (proj1 H13)).
 move=> a.
 elim.
 move=> a0 H14 H15.
-elim (classic ((a0 k) <= (BoundedClosedSectionToL (d k) + BoundedClosedSectionToR (d k)) *  / 2)).
+elim (classic ((a0 k) <= (BoundedClosedSectionToL (d k) + BoundedClosedSectionToR (d k)) * / 2)).
 move=> H16.
 elim (proj2 H12 a0).
 move=> t H17.
@@ -20511,13 +20058,12 @@ move=> H7.
 suff: (forall (LR : BoundedClosedSectionSet), exists (LR0 : {lr : R * R | fst lr <= snd lr}), BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) ((BoundedClosedSectionToL LR + BoundedClosedSectionToR LR) * / 2, BoundedClosedSectionToR LR) (H6 LR)) = BoundedClosedSection LR0).
 move=> H8.
 suff: (let IN := fix IN (n : nat) : BoundedClosedSectionSet := match n with
-| O => exist (fun (X : Ensemble R) => exists (LR : {lr : R * R | fst lr <= snd lr}),
-    X = BoundedClosedSection LR) (BoundedClosedSection
-        (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) H4
-| S n0 => match (Rle_lt_dec (f (((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2))) y) with
-          | left a => exist (fun (X : Ensemble R) => exists (LR : {lr : R * R | fst lr <= snd lr}), X = BoundedClosedSection LR) (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) * / 2, BoundedClosedSectionToR (IN n0)) (H6 (IN n0)))) (H8 (IN n0))
-          | right b => exist (fun (X : Ensemble R) => exists (LR : {lr : R * R | fst lr <= snd lr}), X = BoundedClosedSection LR) (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) * / 2) (H5 (IN n0)))) (H7 (IN n0))
-end end in exists (IN : nat -> BoundedClosedSectionSet), (forall (n : nat), Included R (proj1_sig (IN (S n))) (proj1_sig (IN n))) /\ Un_cv (fun (m : nat) => BoundedClosedSectionToR (IN m) - BoundedClosedSectionToL (IN m)) 0 /\ (forall (n : nat), f (BoundedClosedSectionToL (IN n)) <= y <= f (BoundedClosedSectionToR (IN n))) /\ (forall (n : nat), Included R (proj1_sig (IN n)) (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)))).
+  | O => exist (fun (X : Ensemble R) => exists (LR : {lr : R * R | fst lr <= snd lr}), X = BoundedClosedSection LR) (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) H4
+  | S n0 => match (Rle_lt_dec (f (((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) / 2))) y) with
+    | left a => exist (fun (X : Ensemble R) => exists (LR : {lr : R * R | fst lr <= snd lr}), X = BoundedClosedSection LR) (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) ((BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) * / 2, BoundedClosedSectionToR (IN n0)) (H6 (IN n0)))) (H8 (IN n0))
+    | right b => exist (fun (X : Ensemble R) => exists (LR : {lr : R * R | fst lr <= snd lr}), X = BoundedClosedSection LR) (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (BoundedClosedSectionToL (IN n0), (BoundedClosedSectionToL (IN n0) + BoundedClosedSectionToR (IN n0)) * / 2) (H5 (IN n0)))) (H7 (IN n0))
+  end
+end in exists (IN : nat -> BoundedClosedSectionSet), (forall (n : nat), Included R (proj1_sig (IN (S n))) (proj1_sig (IN n))) /\ Un_cv (fun (m : nat) => BoundedClosedSectionToR (IN m) - BoundedClosedSectionToL (IN m)) 0 /\ (forall (n : nat), f (BoundedClosedSectionToL (IN n)) <= y <= f (BoundedClosedSectionToR (IN n))) /\ (forall (n : nat), Included R (proj1_sig (IN n)) (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)))).
 apply.
 move=> IN.
 exists IN.
@@ -20548,9 +20094,7 @@ reflexivity.
 apply (Rgt_not_eq 1 0 Rlt_0_1).
 move=> n.
 move=> H10.
-suff: (BoundedClosedSectionToR (IN (S n)) -
-BoundedClosedSectionToL (IN (S n)) = (BoundedClosedSectionToR (IN n) -
-BoundedClosedSectionToL (IN n)) * / 2).
+suff: (BoundedClosedSectionToR (IN (S n)) - BoundedClosedSectionToL (IN (S n)) = (BoundedClosedSectionToR (IN n) - BoundedClosedSectionToL (IN n)) * / 2).
 move=> H11.
 rewrite H11.
 rewrite H10.
@@ -20926,24 +20470,34 @@ Lemma Theorem_8_1_corollary_3_sub : forall (f : R -> R) (a b : Rextend), (Rexten
 Proof.
 suff: (forall (f : R -> R) (a b : Rextend), Rextendlt a b -> (forall (x : R), Rextendlt a (Rval x) -> Rextendlt (Rval x) b -> ContinuousMet R_met R_met f (Full_set R) x) -> forall (m M : Rextend), limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rextend => Rextendlt a r) a m -> limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rextend => Rextendlt r b) b M -> forall (y : R), Rextendlt m (Rval y) /\ Rextendlt (Rval y) M -> exists (x : R), Rextendlt a (Rval x) /\ Rextendlt (Rval x) b /\ y = f x).
 move => H1.
-suff: (forall (f : R -> R) (A : Ensemble Rextend) (x : Rextend) (y : Rextend), limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) A x y -> limit_in Rextend_met Rextend_met
-  (RextendFunUnWrapRextend (fun r : R => - f r))
-  A x match y with
+suff: (forall (f : R -> R) (A : Ensemble Rextend) (x : Rextend) (y : Rextend), limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) A x y -> limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend (fun r : R => - f r)) A x match y with
   | Rinf => Rminf
   | Rminf => Rinf
   | Rval r => Rval (- r)
-  end).
+end).
 move=> H2 f a b H3 H4 m M H5 H6 y.
 elim.
 apply (H1 f a b H3 H4 m M H5 H6 y).
 move=> H7.
-suff: (limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend (fun (r : R) => - f r)) (fun r : Rextend => Rextendlt a r) a (match m with Rinf => Rminf | Rminf => Rinf | Rval r => Rval (- r) end)).
+suff: (limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend (fun (r : R) => - f r)) (fun r : Rextend => Rextendlt a r) a (match m with Rinf => Rminf
+  | Rminf => Rinf
+  | Rval r => Rval (- r)
+end)).
 move=> H8.
-suff: (limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend (fun (r : R) => - f r)) (fun r : Rextend => Rextendlt r b) b (match M with Rinf => Rminf | Rminf => Rinf | Rval r => Rval (- r) end)).
+suff: (limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend (fun (r : R) => - f r)) (fun r : Rextend => Rextendlt r b) b (match M with Rinf => Rminf
+  | Rminf => Rinf
+  | Rval r => Rval (- r)
+end)).
 move=> H9.
 suff: (forall x : R, Rextendlt a (Rval x) -> Rextendlt (Rval x) b -> ContinuousMet R_met R_met (fun r : R => - f r) (Full_set R) x).
 move=> H10.
-elim (H1 (fun (r : R) => - f r) a b H3 H10 (match m with Rinf => Rminf | Rminf => Rinf | Rval r => Rval (- r) end) (match M with Rinf => Rminf | Rminf => Rinf | Rval r => Rval (- r) end) H8 H9 (- y)).
+elim (H1 (fun (r : R) => - f r) a b H3 H10 (match m with Rinf => Rminf
+  | Rminf => Rinf
+  | Rval r => Rval (- r)
+end) (match M with Rinf => Rminf
+  | Rminf => Rinf
+  | Rval r => Rval (- r)
+end) H8 H9 (- y)).
 move=> x H11.
 exists x.
 apply conj.
@@ -21449,7 +21003,7 @@ unfold R_dist.
 rewrite (Rabs_minus_sym (f (Rmax m0 (br - dlt * / 2))) Mr).
 apply (Rle_abs (Mr + - f (Rmax m0 (br - dlt * / 2)))).
 apply (proj2 H11 (Rmax m0 (br - dlt * / 2))).
-apply  conj.
+apply conj.
 unfold Rmax.
 elim (Rle_dec m0 (br - dlt * / 2)).
 move=> H12.
@@ -21600,8 +21154,8 @@ apply (proj2 (limit_R_minf_extend_same R_met f (fun (r : Rextend) => (match r wi
   | Rval r => f r
 end)) (Full_set R) ar H9)).
 apply (proj2 (limit_in_R_R_extend_same_2 Rextend_met (fun r : Rextend => match r with
-| Rval r0 => f r0
-| _ => 0
+  | Rval r0 => f r0
+  | _ => 0
 end) (fun r : Rextend => exists l : R, In R (Full_set R) l /\ r = Rval l) Rminf ar)).
 move=> eps H10.
 elim (H7 eps H10).
@@ -21705,8 +21259,8 @@ apply (proj2 (limit_R_minf_extend_same R_met f (fun (r : Rextend) => (match r wi
   | Rval r => f r
 end)) (Full_set R) mr H9)).
 apply (proj2 (limit_in_R_R_extend_same_2 Rextend_met (fun r : Rextend => match r with
-| Rval r0 => f r0
-| _ => 0
+  | Rval r0 => f r0
+  | _ => 0
 end) (fun r : Rextend => exists l : R, In R (Full_set R) l /\ r = Rval l) Rminf mr)).
 move=> eps H10.
 elim (H7 eps H10).
