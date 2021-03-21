@@ -7,8 +7,7 @@ Require Import Coq.Logic.ProofIrrelevanceFacts.
 Require Import Coq.Logic.ClassicalDescription.
 Require Import Coq.Logic.FunctionalExtensionality.
 
-Lemma sig_map : forall {T : Type} (P : T -> Prop) (x : {x : T | P x}) (y : {x : T | P x}),
-proj1_sig x = proj1_sig y -> x = y.
+Lemma sig_map : forall {T : Type} (P : T -> Prop) (x : {x : T | P x}) (y : {x : T | P x}), proj1_sig x = proj1_sig y -> x = y.
 Proof.
 intros A P x y.
 case x.
@@ -36,15 +35,14 @@ CM_assoc : forall (x y z : CMT), (CMc (CMc x y) z) = (CMc x (CMc y z))
 
 Definition Count (N : nat) := {n : nat | n < N}.
 
-Definition UnwrapF (CM : CommutativeMonoid) (N : nat) (F : (Count N) -> (CMT CM)) := 
-fun (n : nat) => match (excluded_middle_informative (n < N)) with 
-| left a => (F (exist (fun (n0 : nat) => (n0 < N)%nat) n a)) 
-| right _ => CMe CM end.
+Definition UnwrapF (CM : CommutativeMonoid) (N : nat) (F : (Count N) -> (CMT CM)) := fun (n : nat) => match (excluded_middle_informative (n < N)) with
+  | left a => (F (exist (fun (n0 : nat) => (n0 < N)%nat) n a))
+  | right _ => CMe CM
+end.
 
-Definition SumFSub (CM : CommutativeMonoid) (N : nat)
-:= fix SumFSub (F : (Count N) -> (CMT CM)) (n : nat) {struct n} : (CMT CM) := match n with
-| O => CMe CM
-| S n0 => CMc CM (SumFSub F n0) (UnwrapF CM N F n0)
+Definition SumFSub (CM : CommutativeMonoid) (N : nat) := fix SumFSub (F : (Count N) -> (CMT CM)) (n : nat) {struct n} : (CMT CM) := match n with
+  | O => CMe CM
+  | S n0 => CMc CM (SumFSub F n0) (UnwrapF CM N F n0)
 end.
 
 Definition SumF (CM : CommutativeMonoid) (N : nat) := fun (F : (Count N) -> (CMT CM)) => SumFSub CM N F N.
@@ -65,14 +63,12 @@ intros m H4.
 apply False_ind.
 apply (le_not_lt N (proj1_sig m) H4 (proj2_sig m)).
 cut (forall (F : Count N -> CMT CM), (forall (m1 m2 : Count N) , (proj1_sig m1 < proj1_sig m2) -> let Fsub := fun (n : Count N) => match (excluded_middle_informative (n = m1)) with
-| left _ => F m2
-| right _ => 
-  match (excluded_middle_informative (n = m2)) with
-  | left _ => F m1
-  | right _ => F n
+  | left _ => F m2
+  | right _ => match (excluded_middle_informative (n = m2)) with
+    | left _ => F m1
+    | right _ => F n
   end
-end
-in SumF CM N F = SumF CM N Fsub)).
+end in SumF CM N F = SumF CM N Fsub)).
 intro H3.
 intro m.
 elim m.
@@ -114,10 +110,10 @@ intro H8.
 apply H8.
 intros a b H8.
 cut (let F2sub := fun (n : Count N) => match (excluded_middle_informative (n = a)) with
-| left _ => F2 b
-| right _ => match (excluded_middle_informative (n = b)) with
-  | left _ => F2 a
-  | right _ => F2 n
+  | left _ => F2 b
+  | right _ => match (excluded_middle_informative (n = b)) with
+    | left _ => F2 a
+    | right _ => F2 n
   end
 end in SumF CM N F1 = SumF CM N F2).
 intro H9.
@@ -134,8 +130,7 @@ apply H10.
 apply (H3 F2 a b H9).
 apply (H4 F1 F2sub).
 apply H1.
-exists (fun (x : CMT CM) => if excluded_middle_informative (G2 x = a) then b
-         else if excluded_middle_informative (G2 x = b) then a else G2 x).
+exists (fun (x : CMT CM) => if excluded_middle_informative (G2 x = a) then b else if excluded_middle_informative (G2 x = b) then a else G2 x).
 apply conj.
 intro x.
 elim (excluded_middle_informative (G2 (F2sub x) = a)).
@@ -325,17 +320,7 @@ apply H5.
 apply (PeanoNat.Nat.le_lt_trans n (proj1_sig m0) N).
 apply H9.
 apply (proj2_sig m0).
-cut (forall (diff : nat) (F : Count N -> CMT CM) (m1 m2 : Count N),
-proj1_sig m2 = proj1_sig m1 + diff ->
-let Fsub :=
-  fun n : Count N =>
-  if excluded_middle_informative (n = m1)
-  then F m2
-  else
-   if excluded_middle_informative (n = m2)
-   then F m1
-   else F n in
-SumF CM N F = SumF CM N Fsub).
+cut (forall (diff : nat) (F : Count N -> CMT CM) (m1 m2 : Count N), proj1_sig m2 = proj1_sig m1 + diff -> let Fsub := fun n : Count N => if excluded_middle_informative (n = m1) then F m2 else if excluded_middle_informative (n = m2) then F m1 else F n in SumF CM N F = SumF CM N Fsub).
 intro H1.
 intros F m1 m2 H3.
 apply (H1 (proj1_sig m2 - proj1_sig m1) F m1 m2).
@@ -346,14 +331,12 @@ apply (le_S (proj1_sig m1) (proj1_sig m1)).
 apply (le_n (proj1_sig m1)).
 apply H3.
 cut (forall (F : Count N -> CMT CM), (forall (m : nat) (H1 : m < N) (H2 : S m < N), let Fsub := fun (n : Count N) => match (excluded_middle_informative (proj1_sig n = m)) with
-| left _ => F (exist (fun (n0 : nat) => n0 < N) (S m) H2)
-| right _ => 
-  match (excluded_middle_informative (proj1_sig n = S m)) with
-  | left _ => F (exist (fun (n0 : nat) => n0 < N) m H1)
-  | right _ => F n
+  | left _ => F (exist (fun (n0 : nat) => n0 < N) (S m) H2)
+  | right _ => match (excluded_middle_informative (proj1_sig n = S m)) with
+    | left _ => F (exist (fun (n0 : nat) => n0 < N) m H1)
+    | right _ => F n
   end
-end
-in SumF CM N F = SumF CM N Fsub)).
+end in SumF CM N F = SumF CM N Fsub)).
 intros H1 diff.
 elim diff.
 intros F m1 m2 H3 Fsub.
@@ -390,13 +373,11 @@ cut (let m2 := (exist (fun (n : nat) => n < N) (proj1_sig m1 + dif) H5) in SumF 
 intro H6.
 apply H6.
 intro m2.
-cut (let Fsub1 := fun n : Count N => if excluded_middle_informative (n = m1) then F m2 else
-         if excluded_middle_informative (n = m2) then F m1 else F n in SumF CM N F = SumF CM N Fsub).
+cut (let Fsub1 := fun n : Count N => if excluded_middle_informative (n = m1) then F m2 else if excluded_middle_informative (n = m2) then F m1 else F n in SumF CM N F = SumF CM N Fsub).
 intro H6.
 apply H6.
 intro Fsub1.
-cut (let Fsub2 := fun n : Count N => if excluded_middle_informative (n = m1) then Fsub m2 else
-         if excluded_middle_informative (n = m2) then Fsub m1 else Fsub n in SumF CM N F = SumF CM N Fsub).
+cut (let Fsub2 := fun n : Count N => if excluded_middle_informative (n = m1) then Fsub m2 else if excluded_middle_informative (n = m2) then Fsub m1 else Fsub n in SumF CM N F = SumF CM N Fsub).
 intro H6.
 apply H6.
 intro Fsub2.
@@ -415,10 +396,7 @@ apply (H2 F m1 m2).
 reflexivity.
 cut (S (proj1_sig m1 + dif) < N).
 intro H6.
-cut (let Fsub3 := fun n : Count N => if excluded_middle_informative (proj1_sig n = proj1_sig m1 + dif) then
-     Fsub1 (exist (fun n0 : nat => n0 < N) (S (proj1_sig m1 + dif)) H6) else
-     if excluded_middle_informative (proj1_sig n = S (proj1_sig m1 + dif)) then
-      Fsub1 (exist (fun n1 : nat => n1 < N) (proj1_sig m1 + dif) H5) else Fsub1 n in SumF CM N Fsub1 = SumF CM N Fsub2).
+cut (let Fsub3 := fun n : Count N => if excluded_middle_informative (proj1_sig n = proj1_sig m1 + dif) then Fsub1 (exist (fun n0 : nat => n0 < N) (S (proj1_sig m1 + dif)) H6) else if excluded_middle_informative (proj1_sig n = S (proj1_sig m1 + dif)) then Fsub1 (exist (fun n1 : nat => n1 < N) (proj1_sig m1 + dif) H5) else Fsub1 n in SumF CM N Fsub1 = SumF CM N Fsub2).
 intro H7.
 apply H7.
 intro Fsub3.
@@ -811,11 +789,13 @@ intro H2.
 cut (Count 0 = {n : nat | Empty_set nat n}).
 intro H3.
 rewrite H3.
-exists (fun (x : {n0 : nat | Empty_set nat n0}) => match (proj2_sig x) with end).
+exists (fun (x : {n0 : nat | Empty_set nat n0}) => match (proj2_sig x) with
+end).
 cut (A = Empty_set U).
 intro H4.
 rewrite H4.
-exists (fun (x : {u : U | Empty_set U u}) => match (proj2_sig x) with end).
+exists (fun (x : {u : U | Empty_set U u}) => match (proj2_sig x) with
+end).
 apply conj.
 intro x.
 elim (proj2_sig x).
@@ -844,9 +824,9 @@ cut (forall (x : U), (A0 x) -> (A x)).
 intro H6.
 cut (A a).
 intro H7.
-exists (fun (x : Count (S n0)) => match (excluded_middle_informative (proj1_sig x < n0)) with 
-| left H8 => (exist A (proj1_sig (F (exist (fun (m : nat) => m < n0) (proj1_sig x) H8))) (H6 (proj1_sig (F (exist (fun (m : nat) => m < n0) (proj1_sig x) H8))) (proj2_sig (F (exist (fun (m : nat) => m < n0) (proj1_sig x) H8)))))
-| right _ => (exist A a H7)
+exists (fun (x : Count (S n0)) => match (excluded_middle_informative (proj1_sig x < n0)) with
+  | left H8 => (exist A (proj1_sig (F (exist (fun (m : nat) => m < n0) (proj1_sig x) H8))) (H6 (proj1_sig (F (exist (fun (m : nat) => m < n0) (proj1_sig x) H8))) (proj2_sig (F (exist (fun (m : nat) => m < n0) (proj1_sig x) H8)))))
+  | right _ => (exist A a H7)
 end).
 cut (forall (x : U), (A x) -> {A0 x} + {a = x}).
 intro H8.
@@ -854,9 +834,9 @@ elim H5.
 intros G H9.
 cut (forall (m : nat), m < n0 -> m < S n0).
 intro H10.
-exists (fun (y : {x : U | A x}) => match (H8 (proj1_sig y) (proj2_sig y)) with 
-| left H11 => exist (fun (m : nat) => m < (S n0)) (proj1_sig (G (exist A0 (proj1_sig y) H11))) (H10 (proj1_sig (G (exist A0 (proj1_sig y) H11))) (proj2_sig (G (exist A0 (proj1_sig y) H11))))
-| right _ => exist (fun (m : nat) => m < (S n0)) n0 (le_n (S n0))
+exists (fun (y : {x : U | A x}) => match (H8 (proj1_sig y) (proj2_sig y)) with
+  | left H11 => exist (fun (m : nat) => m < (S n0)) (proj1_sig (G (exist A0 (proj1_sig y) H11))) (H10 (proj1_sig (G (exist A0 (proj1_sig y) H11))) (proj2_sig (G (exist A0 (proj1_sig y) H11))))
+  | right _ => exist (fun (m : nat) => m < (S n0)) n0 (le_n (S n0))
 end).
 apply conj.
 intro m.
@@ -931,8 +911,8 @@ apply H11.
 intro m.
 apply (le_S (S m) n0).
 cut (Add U A0 a = fun (u : U) => match (excluded_middle_informative (A0 u)) with
-|left _ => True
-|right _ => a = u
+  |left _ => True
+  |right _ => a = u
 end).
 intro H8.
 rewrite (proj1 H4).
@@ -995,14 +975,12 @@ intros m H4.
 apply False_ind.
 apply (le_not_lt N (proj1_sig m) H4 (proj2_sig m)).
 cut (forall (F : Count N -> {x : CMT CM | A x}), (forall (m1 m2 : Count N) , (proj1_sig m1 < proj1_sig m2) -> let Fsub := fun (n : Count N) => match (excluded_middle_informative (n = m1)) with
-| left _ => F m2
-| right _ => 
-  match (excluded_middle_informative (n = m2)) with
-  | left _ => F m1
-  | right _ => F n
+  | left _ => F m2
+  | right _ => match (excluded_middle_informative (n = m2)) with
+    | left _ => F m1
+    | right _ => F n
   end
-end
-in SumF CM N (fun x : Count N => proj1_sig (F x)) = SumF CM N (fun x : Count N => proj1_sig (Fsub x)))).
+end in SumF CM N (fun x : Count N => proj1_sig (F x)) = SumF CM N (fun x : Count N => proj1_sig (Fsub x)))).
 intro H3.
 intro m.
 elim m.
@@ -1044,10 +1022,10 @@ intro H8.
 apply H8.
 intros a b H8.
 cut (let F2sub := fun (n : Count N) => match (excluded_middle_informative (n = a)) with
-| left _ => F2 b
-| right _ => match (excluded_middle_informative (n = b)) with
-  | left _ => F2 a
-  | right _ => F2 n
+  | left _ => F2 b
+  | right _ => match (excluded_middle_informative (n = b)) with
+    | left _ => F2 a
+    | right _ => F2 n
   end
 end in SumF CM N (fun x : Count N => proj1_sig (F1 x)) = SumF CM N (fun x : Count N => proj1_sig (F2 x))).
 intro H9.
@@ -1064,8 +1042,7 @@ apply H10.
 apply (H3 F2 a b H9).
 apply (H4 F1 F2sub).
 apply H1.
-exists (fun (x : {x : CMT CM | A x}) => if excluded_middle_informative (G2 x = a) then b
-         else if excluded_middle_informative (G2 x = b) then a else G2 x).
+exists (fun (x : {x : CMT CM | A x}) => if excluded_middle_informative (G2 x = a) then b else if excluded_middle_informative (G2 x = b) then a else G2 x).
 apply conj.
 intro x.
 elim (excluded_middle_informative (G2 (F2sub x) = a)).
@@ -1255,17 +1232,7 @@ apply H5.
 apply (PeanoNat.Nat.le_lt_trans n (proj1_sig m0) N).
 apply H9.
 apply (proj2_sig m0).
-cut (forall (diff : nat) (F : Count N -> {x : CMT CM | A x}) (m1 m2 : Count N),
-proj1_sig m2 = proj1_sig m1 + diff ->
-let Fsub :=
-  fun n : Count N =>
-  if excluded_middle_informative (n = m1)
-  then F m2
-  else
-   if excluded_middle_informative (n = m2)
-   then F m1
-   else F n in
-SumF CM N (fun x : Count N => proj1_sig (F x)) = SumF CM N (fun x : Count N => proj1_sig (Fsub x))).
+cut (forall (diff : nat) (F : Count N -> {x : CMT CM | A x}) (m1 m2 : Count N), proj1_sig m2 = proj1_sig m1 + diff -> let Fsub := fun n : Count N => if excluded_middle_informative (n = m1) then F m2 else if excluded_middle_informative (n = m2) then F m1 else F n in SumF CM N (fun x : Count N => proj1_sig (F x)) = SumF CM N (fun x : Count N => proj1_sig (Fsub x))).
 intro H1.
 intros F m1 m2 H3.
 apply (H1 (proj1_sig m2 - proj1_sig m1) F m1 m2).
@@ -1276,14 +1243,12 @@ apply (le_S (proj1_sig m1) (proj1_sig m1)).
 apply (le_n (proj1_sig m1)).
 apply H3.
 cut (forall (F : Count N -> {x : CMT CM | A x}), (forall (m : nat) (H1 : m < N) (H2 : S m < N), let Fsub := fun (n : Count N) => match (excluded_middle_informative (proj1_sig n = m)) with
-| left _ => F (exist (fun (n0 : nat) => n0 < N) (S m) H2)
-| right _ => 
-  match (excluded_middle_informative (proj1_sig n = S m)) with
-  | left _ => F (exist (fun (n0 : nat) => n0 < N) m H1)
-  | right _ => F n
+  | left _ => F (exist (fun (n0 : nat) => n0 < N) (S m) H2)
+  | right _ => match (excluded_middle_informative (proj1_sig n = S m)) with
+    | left _ => F (exist (fun (n0 : nat) => n0 < N) m H1)
+    | right _ => F n
   end
-end
-in SumF CM N (fun x : Count N => proj1_sig (F x)) = SumF CM N (fun x : Count N => proj1_sig (Fsub x)))).
+end in SumF CM N (fun x : Count N => proj1_sig (F x)) = SumF CM N (fun x : Count N => proj1_sig (Fsub x)))).
 intros H1 diff.
 elim diff.
 intros F m1 m2 H3 Fsub.
@@ -1320,13 +1285,11 @@ cut (let m2 := (exist (fun (n : nat) => n < N) (proj1_sig m1 + dif) H5) in SumF 
 intro H6.
 apply H6.
 intro m2.
-cut (let Fsub1 := fun n : Count N => if excluded_middle_informative (n = m1) then F m2 else
-         if excluded_middle_informative (n = m2) then F m1 else F n in SumF CM N (fun x : Count N => proj1_sig (F x)) = SumF CM N (fun x : Count N => proj1_sig (Fsub x))).
+cut (let Fsub1 := fun n : Count N => if excluded_middle_informative (n = m1) then F m2 else if excluded_middle_informative (n = m2) then F m1 else F n in SumF CM N (fun x : Count N => proj1_sig (F x)) = SumF CM N (fun x : Count N => proj1_sig (Fsub x))).
 intro H6.
 apply H6.
 intro Fsub1.
-cut (let Fsub2 := fun n : Count N => if excluded_middle_informative (n = m1) then Fsub m2 else
-         if excluded_middle_informative (n = m2) then Fsub m1 else Fsub n in SumF CM N (fun x : Count N => proj1_sig (F x)) = SumF CM N (fun x : Count N => proj1_sig (Fsub x))).
+cut (let Fsub2 := fun n : Count N => if excluded_middle_informative (n = m1) then Fsub m2 else if excluded_middle_informative (n = m2) then Fsub m1 else Fsub n in SumF CM N (fun x : Count N => proj1_sig (F x)) = SumF CM N (fun x : Count N => proj1_sig (Fsub x))).
 intro H6.
 apply H6.
 intro Fsub2.
@@ -1345,10 +1308,7 @@ apply (H2 F m1 m2).
 reflexivity.
 cut (S (proj1_sig m1 + dif) < N).
 intro H6.
-cut (let Fsub3 := fun n : Count N => if excluded_middle_informative (proj1_sig n = proj1_sig m1 + dif) then
-     Fsub1 (exist (fun n0 : nat => n0 < N) (S (proj1_sig m1 + dif)) H6) else
-     if excluded_middle_informative (proj1_sig n = S (proj1_sig m1 + dif)) then
-      Fsub1 (exist (fun n1 : nat => n1 < N) (proj1_sig m1 + dif) H5) else Fsub1 n in SumF CM N (fun x : Count N => proj1_sig (Fsub1 x)) = SumF CM N (fun x : Count N => proj1_sig (Fsub2 x))).
+cut (let Fsub3 := fun n : Count N => if excluded_middle_informative (proj1_sig n = proj1_sig m1 + dif) then Fsub1 (exist (fun n0 : nat => n0 < N) (S (proj1_sig m1 + dif)) H6) else if excluded_middle_informative (proj1_sig n = S (proj1_sig m1 + dif)) then Fsub1 (exist (fun n1 : nat => n1 < N) (proj1_sig m1 + dif) H5) else Fsub1 n in SumF CM N (fun x : Count N => proj1_sig (Fsub1 x)) = SumF CM N (fun x : Count N => proj1_sig (Fsub2 x))).
 intro H7.
 apply H7.
 intro Fsub3.
@@ -1742,18 +1702,17 @@ Qed.
 
 Definition FiniteType (U : Type) := Finite U (Full_set U).
 
-Definition UnwrapGF (U : Type) (CM : CommutativeMonoid) (N : nat) (G : (Count N) -> U) (F : U -> (CMT CM)) := 
-fun (n : nat) => match (excluded_middle_informative (n < N)) with 
-| left a => (F (G (exist (fun (n0 : nat) => (n0 < N)%nat) n a))) 
-| right _ => CMe CM end.
-
-Definition SumGFSub (U : Type) (CM : CommutativeMonoid) (N : nat)
-:= fix SumGFSub (G : (Count N) -> U) (F : U -> (CMT CM)) (n : nat) {struct n} : (CMT CM) := match n with
-| O => CMe CM
-| S n0 => CMc CM (SumGFSub G F n0) (UnwrapGF U CM N G F n0)
+Definition UnwrapGF (U : Type) (CM : CommutativeMonoid) (N : nat) (G : (Count N) -> U) (F : U -> (CMT CM)) := fun (n : nat) => match (excluded_middle_informative (n < N)) with
+  | left a => (F (G (exist (fun (n0 : nat) => (n0 < N)%nat) n a)))
+  | right _ => CMe CM
 end.
 
-Definition SumGF (U : Type) (CM : CommutativeMonoid) (N : nat) :=  fun (G : (Count N) -> U) (F : U -> (CMT CM)) => SumGFSub U CM N G F N.
+Definition SumGFSub (U : Type) (CM : CommutativeMonoid) (N : nat) := fix SumGFSub (G : (Count N) -> U) (F : U -> (CMT CM)) (n : nat) {struct n} : (CMT CM) := match n with
+  | O => CMe CM
+  | S n0 => CMc CM (SumGFSub G F n0) (UnwrapGF U CM N G F n0)
+end.
+
+Definition SumGF (U : Type) (CM : CommutativeMonoid) (N : nat) := fun (G : (Count N) -> U) (F : U -> (CMT CM)) => SumGFSub U CM N G F N.
 
 Lemma SumFWellDefinedSub : forall (U : Type) (CM : CommutativeMonoid) (N : nat) (G1 G2 : (Count N) -> U) (F : U -> (CMT CM)), (Bijective (Count N) U G1) -> (Bijective (Count N) U G2) -> ((SumGF U CM N G1 F) = (SumGF U CM N G2 F)).
 Proof.
@@ -1765,14 +1724,12 @@ intros m H4.
 apply False_ind.
 apply (le_not_lt N (proj1_sig m) H4 (proj2_sig m)).
 cut (forall (G : Count N -> U) (F : U -> CMT CM), (forall (m1 m2 : Count N) , (proj1_sig m1 < proj1_sig m2) -> let Gsub := fun (n : Count N) => match (excluded_middle_informative (n = m1)) with
-| left _ => G m2
-| right _ => 
-  match (excluded_middle_informative (n = m2)) with
-  | left _ => G m1
-  | right _ => G n
+  | left _ => G m2
+  | right _ => match (excluded_middle_informative (n = m2)) with
+    | left _ => G m1
+    | right _ => G n
   end
-end
-in SumGF U CM N G F = SumGF U CM N Gsub F)).
+end in SumGF U CM N G F = SumGF U CM N Gsub F)).
 intro H3.
 intro m.
 elim m.
@@ -1814,10 +1771,10 @@ intro H8.
 apply H8.
 intros a b H8.
 cut (let G2sub := fun (n : Count N) => match (excluded_middle_informative (n = a)) with
-| left _ => G2 b
-| right _ => match (excluded_middle_informative (n = b)) with
-  | left _ => G2 a
-  | right _ => G2 n
+  | left _ => G2 b
+  | right _ => match (excluded_middle_informative (n = b)) with
+    | left _ => G2 a
+    | right _ => G2 n
   end
 end in SumGF U CM N G1 F = SumGF U CM N G2 F).
 intro H9.
@@ -1834,8 +1791,7 @@ apply H10.
 apply (H3 G2 F a b H9).
 apply (H4 G1 G2sub).
 apply H1.
-exists (fun (x : U) => if excluded_middle_informative (GI2 x = a) then b
-         else if excluded_middle_informative (GI2 x = b) then a else GI2 x).
+exists (fun (x : U) => if excluded_middle_informative (GI2 x = a) then b else if excluded_middle_informative (GI2 x = b) then a else GI2 x).
 apply conj.
 intro x.
 elim (excluded_middle_informative (GI2 (G2sub x) = a)).
@@ -2025,17 +1981,7 @@ apply H5.
 apply (PeanoNat.Nat.le_lt_trans n (proj1_sig m0) N).
 apply H9.
 apply (proj2_sig m0).
-cut (forall (diff : nat) (G : Count N -> U) (F : U -> CMT CM) (m1 m2 : Count N),
-proj1_sig m2 = proj1_sig m1 + diff ->
-let Gsub :=
-  fun n : Count N =>
-  if excluded_middle_informative (n = m1)
-  then G m2
-  else
-   if excluded_middle_informative (n = m2)
-   then G m1
-   else G n in
-SumGF U CM N G F = SumGF U CM N Gsub F).
+cut (forall (diff : nat) (G : Count N -> U) (F : U -> CMT CM) (m1 m2 : Count N), proj1_sig m2 = proj1_sig m1 + diff -> let Gsub := fun n : Count N => if excluded_middle_informative (n = m1) then G m2 else if excluded_middle_informative (n = m2) then G m1 else G n in SumGF U CM N G F = SumGF U CM N Gsub F).
 intro H1.
 intros G F m1 m2 H3.
 apply (H1 (proj1_sig m2 - proj1_sig m1) G F m1 m2).
@@ -2046,14 +1992,12 @@ apply (le_S (proj1_sig m1) (proj1_sig m1)).
 apply (le_n (proj1_sig m1)).
 apply H3.
 cut (forall (G : Count N -> U) (F : U -> CMT CM), (forall (m : nat) (H1 : m < N) (H2 : S m < N), let Gsub := fun (n : Count N) => match (excluded_middle_informative (proj1_sig n = m)) with
-| left _ => G (exist (fun (n0 : nat) => n0 < N) (S m) H2)
-| right _ => 
-  match (excluded_middle_informative (proj1_sig n = S m)) with
-  | left _ => G (exist (fun (n0 : nat) => n0 < N) m H1)
-  | right _ => G n
+  | left _ => G (exist (fun (n0 : nat) => n0 < N) (S m) H2)
+  | right _ => match (excluded_middle_informative (proj1_sig n = S m)) with
+    | left _ => G (exist (fun (n0 : nat) => n0 < N) m H1)
+    | right _ => G n
   end
-end
-in SumGF U CM N G F = SumGF U CM N Gsub F)).
+end in SumGF U CM N G F = SumGF U CM N Gsub F)).
 intros H1 diff.
 elim diff.
 intros G F m1 m2 H3 Gsub.
@@ -2090,13 +2034,11 @@ cut (let m2 := (exist (fun (n : nat) => n < N) (proj1_sig m1 + dif) H5) in SumGF
 intro H6.
 apply H6.
 intro m2.
-cut (let Gsub1 := fun n : Count N => if excluded_middle_informative (n = m1) then G m2 else
-         if excluded_middle_informative (n = m2) then G m1 else G n in SumGF U CM N G F = SumGF U CM N Gsub F).
+cut (let Gsub1 := fun n : Count N => if excluded_middle_informative (n = m1) then G m2 else if excluded_middle_informative (n = m2) then G m1 else G n in SumGF U CM N G F = SumGF U CM N Gsub F).
 intro H6.
 apply H6.
 intro Gsub1.
-cut (let Gsub2 := fun n : Count N => if excluded_middle_informative (n = m1) then Gsub m2 else
-         if excluded_middle_informative (n = m2) then Gsub m1 else Gsub n in SumGF U CM N G F = SumGF U CM N Gsub F).
+cut (let Gsub2 := fun n : Count N => if excluded_middle_informative (n = m1) then Gsub m2 else if excluded_middle_informative (n = m2) then Gsub m1 else Gsub n in SumGF U CM N G F = SumGF U CM N Gsub F).
 intro H6.
 apply H6.
 intro Gsub2.
@@ -2115,10 +2057,7 @@ apply (H2 G F m1 m2).
 reflexivity.
 cut (S (proj1_sig m1 + dif) < N).
 intro H6.
-cut (let Gsub3 := fun n : Count N => if excluded_middle_informative (proj1_sig n = proj1_sig m1 + dif) then
-     Gsub1 (exist (fun n0 : nat => n0 < N) (S (proj1_sig m1 + dif)) H6) else
-     if excluded_middle_informative (proj1_sig n = S (proj1_sig m1 + dif)) then
-      Gsub1 (exist (fun n1 : nat => n1 < N) (proj1_sig m1 + dif) H5) else Gsub1 n in SumGF U CM N Gsub1 F = SumGF U CM N Gsub2 F).
+cut (let Gsub3 := fun n : Count N => if excluded_middle_informative (proj1_sig n = proj1_sig m1 + dif) then Gsub1 (exist (fun n0 : nat => n0 < N) (S (proj1_sig m1 + dif)) H6) else if excluded_middle_informative (proj1_sig n = S (proj1_sig m1 + dif)) then Gsub1 (exist (fun n1 : nat => n1 < N) (proj1_sig m1 + dif) H5) else Gsub1 n in SumGF U CM N Gsub1 F = SumGF U CM N Gsub2 F).
 intro H7.
 apply H7.
 intro Gsub3.
@@ -2490,15 +2429,7 @@ apply constructive_definite_description.
 apply (proj1 (unique_existence (fun (x : (CMT CM)) => forall G : Count (CounterType U H1) -> U,Bijective (Count (CounterType U H1)) U G -> SumGF U CM (CounterType U H1) G F = x))).
 elim (CountExistBijectiveFunction U (CounterType U H1) (Full_set U)).
 intros g H2.
-cut (let G := fun (x : Count (CounterType U H1)) => proj1_sig (g x) in (exists x : CMT CM,
-   forall G : Count (CounterType U H1) -> U,
-   Bijective (Count (CounterType U H1)) U G ->
-   SumGF U CM (CounterType U H1) G F = x) /\
-uniqueness
-  (fun x : CMT CM =>
-   forall G : Count (CounterType U H1) -> U,
-   Bijective (Count (CounterType U H1)) U G ->
-   SumGF U CM (CounterType U H1) G F = x)).
+cut (let G := fun (x : Count (CounterType U H1)) => proj1_sig (g x) in (exists x : CMT CM, forall G : Count (CounterType U H1) -> U, Bijective (Count (CounterType U H1)) U G -> SumGF U CM (CounterType U H1) G F = x) /\ uniqueness (fun x : CMT CM => forall G : Count (CounterType U H1) -> U, Bijective (Count (CounterType U H1)) U G -> SumGF U CM (CounterType U H1) G F = x)).
 intro H3.
 apply H3.
 intro G.
@@ -2686,8 +2617,8 @@ elim H5.
 intros uu H6 H7.
 cut (In {u : U | A u} (Add {u : U | A u} AB0 ab) (exist A uu H6)).
 cut ((Add {u : U | A u} AB0 ab) = (fun (x : {u : U | A u}) => (match (excluded_middle_informative (AB0 x)) with
-| left _ => True
-| right _ => x = ab
+  | left _ => True
+  | right _ => x = ab
 end))).
 intro H8.
 rewrite H8.
@@ -2931,6 +2862,7 @@ reflexivity.
 Qed.
 
 Lemma ExistBijectiveFunctionCount : forall (U : Type) (n : nat) (A : Ensemble U), (exists (F : (Count n) -> {x : U | A x}), Bijective (Count n) {x : U | A x} F) -> (cardinal U A n).
+Proof.
 intros U n.
 elim n.
 intros A H1.
@@ -2974,14 +2906,7 @@ apply conj.
 intros n3.
 apply sig_map.
 simpl.
-cut ((exist A (proj1_sig (F (exist (fun m : nat => m < S n0) (proj1_sig n3) (H4 n3))))
-        (H8
-           (exist
-              (fun x : U =>
-               exists n1 : Count n0,
-                 x = proj1_sig (F (exist (fun m : nat => m < S n0) (proj1_sig n1) (H4 n1))))
-              (proj1_sig (F (exist (fun m : nat => m < S n0) (proj1_sig n3) (H4 n3)))) 
-              (H6 n3)))) = (F (exist (fun m : nat => m < S n0) (proj1_sig n3) (H4 n3)))).
+cut ((exist A (proj1_sig (F (exist (fun m : nat => m < S n0) (proj1_sig n3) (H4 n3)))) (H8 (exist (fun x : U => exists n1 : Count n0, x = proj1_sig (F (exist (fun m : nat => m < S n0) (proj1_sig n1) (H4 n1)))) (proj1_sig (F (exist (fun m : nat => m < S n0) (proj1_sig n3) (H4 n3)))) (H6 n3)))) = (F (exist (fun m : nat => m < S n0) (proj1_sig n3) (H4 n3)))).
 intro H10.
 rewrite H10.
 rewrite (proj1 H7 (exist (fun m : nat => m < S n0) (proj1_sig n3) (H4 n3))).
@@ -3100,14 +3025,9 @@ Qed.
 
 Lemma MySumF2Nature2 : forall (U : Type) (A : {X : Ensemble U | Finite U X}) (CM : CommutativeMonoid) (F : U -> (CMT CM)) (N : nat) (G : (Count N) -> U) (H1 : forall (n : Count N), proj1_sig A (G n)), Bijective (Count N) {u : U | proj1_sig A u} (fun x : Count N => exist (proj1_sig A) (G x) (H1 x)) -> (SumGF U CM N G F) = (MySumF2 U A CM F).
 Proof.
-cut (forall (U : Type) (A : {X : Ensemble U | Finite U X}) (CM : CommutativeMonoid) (F : U -> CMT CM) 
-  (N : nat), (exists (G1 : Count N -> U), (forall n0 : Count N, proj1_sig A (G1 n0)) /\ (forall (H1 : forall n : Count N, proj1_sig A (G1 n)), (Bijective (Count N) {u : U | proj1_sig A u} (fun x : Count N => exist (proj1_sig A) (G1 x) (H1 x))))) -> forall (G : Count N -> U) (H1 : forall n : Count N, proj1_sig A (G n)),
-Bijective (Count N) {u : U | proj1_sig A u} (fun x : Count N => exist (proj1_sig A) (G x) (H1 x)) ->
-SumGF U CM N G F = MySumF2 U A CM F).
+cut (forall (U : Type) (A : {X : Ensemble U | Finite U X}) (CM : CommutativeMonoid) (F : U -> CMT CM) (N : nat), (exists (G1 : Count N -> U), (forall n0 : Count N, proj1_sig A (G1 n0)) /\ (forall (H1 : forall n : Count N, proj1_sig A (G1 n)), (Bijective (Count N) {u : U | proj1_sig A u} (fun x : Count N => exist (proj1_sig A) (G1 x) (H1 x))))) -> forall (G : Count N -> U) (H1 : forall n : Count N, proj1_sig A (G n)), Bijective (Count N) {u : U | proj1_sig A u} (fun x : Count N => exist (proj1_sig A) (G x) (H1 x)) -> SumGF U CM N G F = MySumF2 U A CM F).
 intros H1 U A CM F N G H2 H3.
-cut (exists G1 : Count N -> U,
-       (forall n0 : Count N, proj1_sig A (G1 n0)) /\ (forall H1 : forall n0 : Count N, proj1_sig A (G1 n0),
-       Bijective (Count N) {u : U | proj1_sig A u} (fun x : Count N => exist (proj1_sig A) (G1 x) (H1 x)))).
+cut (exists G1 : Count N -> U, (forall n0 : Count N, proj1_sig A (G1 n0)) /\ (forall H1 : forall n0 : Count N, proj1_sig A (G1 n0), Bijective (Count N) {u : U | proj1_sig A u} (fun x : Count N => exist (proj1_sig A) (G1 x) (H1 x)))).
 intro H4.
 apply (H1 U A CM F N H4 G H2 H3).
 exists G.
@@ -3171,7 +3091,8 @@ intro H6.
 rewrite H6.
 cut (forall (u : Count 0), (Empty_set nat) (proj1_sig u)).
 intro H7.
-cut (let G : ((Count 0) -> U) := (fun (n : Count 0) => match (H7 n) with end) in MySumF2 U (exist (Finite U) (Empty_set U) H5) CM F = CMe CM).
+cut (let G : ((Count 0) -> U) := (fun (n : Count 0) => match (H7 n) with
+end) in MySumF2 U (exist (Finite U) (Empty_set U) H5) CM F = CMe CM).
 intro H8.
 apply H8.
 intro G.
@@ -3182,7 +3103,8 @@ unfold SumGF.
 unfold SumGFSub.
 reflexivity.
 simpl.
-exists (fun (u : {u : U | Empty_set U u}) => match (proj2_sig u) with end).
+exists (fun (u : {u : U | Empty_set U u}) => match (proj2_sig u) with
+end).
 apply conj.
 intro n.
 apply False_ind.
@@ -3323,9 +3245,9 @@ intros G H2.
 cut (forall (n : (Count (Counter U A))), (proj1_sig A (proj1_sig (G n)))).
 intro H3.
 rewrite<- (MySumF2Nature U A CM F (fun (n : (Count (Counter U A))) => (proj1_sig (G n))) H3).
-cut (let G2 := (fun (n : (Count (S (Counter U A)))) => match excluded_middle_informative (proj1_sig n < Counter U A) with 
-| left a => proj1_sig (G (exist (fun (n1 : nat) => n1 < (Counter U A)) (proj1_sig n) a))
-| right _ => u
+cut (let G2 := (fun (n : (Count (S (Counter U A)))) => match excluded_middle_informative (proj1_sig n < Counter U A) with
+  | left a => proj1_sig (G (exist (fun (n1 : nat) => n1 < (Counter U A)) (proj1_sig n) a))
+  | right _ => u
 end) in MySumF2 U (exist (Finite U) (Add U (proj1_sig A) u) (Add_preserves_Finite U (proj1_sig A) u (proj2_sig A))) CM F = CMc CM (SumGF U CM (Counter U A) (fun n : Count (Counter U A) => proj1_sig (G n)) F) (F u)).
 intro H4.
 apply H4.
@@ -3409,8 +3331,8 @@ intros GI H5.
 cut (forall (n : Count (Counter U A)), proj1_sig n < (S (Counter U A))).
 intro H6.
 exists (fun (u1 : {u0 : U | Add U (proj1_sig A) u u0}) => match excluded_middle_informative (proj1_sig A (proj1_sig u1)) with
-| left a => exist (fun (n : nat) => n < (S (Counter U A))) (proj1_sig (GI (exist (proj1_sig A) (proj1_sig u1) a))) (H6 (GI (exist (proj1_sig A) (proj1_sig u1) a)))
-| right _ => exist (fun (n : nat) => n < (S (Counter U A))) (Counter U A) (le_n (S (Counter U A)))
+  | left a => exist (fun (n : nat) => n < (S (Counter U A))) (proj1_sig (GI (exist (proj1_sig A) (proj1_sig u1) a))) (H6 (GI (exist (proj1_sig A) (proj1_sig u1) a)))
+  | right _ => exist (fun (n : nat) => n < (S (Counter U A))) (Counter U A) (le_n (S (Counter U A)))
 end).
 apply conj.
 intro n.
@@ -3650,14 +3572,17 @@ Proof.
 intros U CM F.
 cut (forall (n : Count 0), False).
 intro H1.
-cut (forall (n1 : Count 0), (proj1_sig (exist (Finite U) (Empty_set U) (Empty_is_finite U))) ((fun (n : Count 0) => match (H1 n) with end) n1)).
+cut (forall (n1 : Count 0), (proj1_sig (exist (Finite U) (Empty_set U) (Empty_is_finite U))) ((fun (n : Count 0) => match (H1 n) with
+end) n1)).
 intro H2.
-rewrite<- (MySumF2Nature2 U (FiniteEmpty U) CM F 0 (fun (n : Count 0) => match (H1 n) with end) H2).
+rewrite<- (MySumF2Nature2 U (FiniteEmpty U) CM F 0 (fun (n : Count 0) => match (H1 n) with
+end) H2).
 unfold SumGF.
 simpl.
 reflexivity.
 simpl.
-exists (fun (u : {u : U | Empty_set U u}) => match (proj2_sig u) with end).
+exists (fun (u : {u : U | Empty_set U u}) => match (proj2_sig u) with
+end).
 apply conj.
 intro n.
 apply False_ind.
@@ -4324,7 +4249,7 @@ right.
 reflexivity.
 Qed.
 
-Lemma MySumF2Same : forall (U : Type) (A : {X : Ensemble U | Finite U X}) (CM : CommutativeMonoid) (F1 F2 : U -> CMT CM), (forall (u : U), proj1_sig A u -> F1 u = F2 u)  -> (MySumF2 U A CM F1) = (MySumF2 U A CM F2).
+Lemma MySumF2Same : forall (U : Type) (A : {X : Ensemble U | Finite U X}) (CM : CommutativeMonoid) (F1 F2 : U -> CMT CM), (forall (u : U), proj1_sig A u -> F1 u = F2 u) -> (MySumF2 U A CM F1) = (MySumF2 U A CM F2).
 Proof.
 intros U A CM F1 F2 H1.
 apply (FiniteSetInduction U A).
@@ -4343,7 +4268,7 @@ apply H4.
 apply H4.
 Qed.
 
-Lemma MySumF2O : forall (U : Type) (A : {X : Ensemble U | Finite U X}) (CM : CommutativeMonoid) (F : U -> CMT CM), (forall (u : U), proj1_sig A u -> F u = CMe CM)  -> (MySumF2 U A CM F) = CMe CM.
+Lemma MySumF2O : forall (U : Type) (A : {X : Ensemble U | Finite U X}) (CM : CommutativeMonoid) (F : U -> CMT CM), (forall (u : U), proj1_sig A u -> F u = CMe CM) -> (MySumF2 U A CM F) = CMe CM.
 Proof.
 intros U A CM F H1.
 apply (FiniteSetInduction U A).
@@ -4359,7 +4284,7 @@ apply H3.
 apply H4.
 Qed.
 
-Lemma MySumF2Included : forall (U : Type) (A B : {X : Ensemble U | Finite U X}) (CM : CommutativeMonoid) (F : U -> CMT CM), (Included U (proj1_sig A) (proj1_sig B))  -> (MySumF2 U B CM F) = CMc CM (MySumF2 U A CM F) (MySumF2 U (FiniteIntersection U B (Ensembles.Complement U (proj1_sig A))) CM F).
+Lemma MySumF2Included : forall (U : Type) (A B : {X : Ensemble U | Finite U X}) (CM : CommutativeMonoid) (F : U -> CMT CM), (Included U (proj1_sig A) (proj1_sig B)) -> (MySumF2 U B CM F) = CMc CM (MySumF2 U A CM F) (MySumF2 U (FiniteIntersection U B (Ensembles.Complement U (proj1_sig A))) CM F).
 Proof.
 intros U A B CM F H1.
 rewrite (MySumF2Excluded U CM F B (proj1_sig A)).

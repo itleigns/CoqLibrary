@@ -1,8 +1,7 @@
 Add LoadPath "MyAlgebraicStructure" as MyAlgebraicStructure.
 Add LoadPath "BasicProperty" as BasicProperty.
 
-From mathcomp
-Require Import ssreflect.
+From mathcomp Require Import ssreflect.
 Require Import Classical.
 Require Import MyAlgebraicStructure.MyField.
 Require Import BasicProperty.MappingProperty.
