@@ -17,6 +17,26 @@ Require Import BasicNotation.Parity.
 
 Definition Permutation (N : nat) := {f : {n : nat | n < N} -> {n : nat | n < N} | Bijective f}.
 
+Lemma PermutationFinite : forall (N : nat), Finite (Permutation N) (Full_set (Permutation N)).
+Proof.
+move=> N.
+apply (FiniteSigSame ({n : nat | n < N} -> {n : nat | n < N})).
+apply (Finite_downward_closed ({n : nat | n < N} -> {n : nat | n < N}) (Full_set ({n : nat | n < N} -> {n : nat | n < N}))).
+apply (CountFiniteBijective ({n : nat | n < N} -> {n : nat | n < N})).
+exists (PeanoNat.Nat.pow N N).
+elim (CountPow N N).
+move=> f.
+elim.
+move=> g H1.
+exists g.
+exists f.
+apply conj.
+apply (proj2 H1).
+apply (proj1 H1).
+move=> f H1.
+apply (Full_intro ({n : nat | n < N} -> {n : nat | n < N}) f).
+Qed.
+
 Definition PermutationCompose (N : nat) (f g : Permutation N) := exist (fun (h : {n : nat | n < N} -> {n : nat | n < N}) => Bijective h) (compose (proj1_sig f) (proj1_sig g)) (BijChain {n : nat | n < N} {n : nat | n < N} {n : nat | n < N} (proj1_sig g) (proj1_sig f) (proj2_sig g) (proj2_sig f)).
 
 Lemma PermutationIDSub : forall (N : nat), Bijective (fun (k : {n : nat | n < N}) => k).
