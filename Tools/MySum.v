@@ -4554,9 +4554,9 @@ exists (le_n (S N)).
 apply (MySumF2Sn2 N (fun (m : Count N) => le_S (S (proj1_sig m)) N (proj2_sig m)) (le_n (S N))).
 Qed.
 
-Lemma MySumF2Distr : forall (U : Type) (CM : CommutativeMonoid) (F G FG : U -> CMT CM) (A : {X : Ensemble U | Finite U X}), (forall (u : U), In U (proj1_sig A) u -> FG u = CMc CM (F u) (G u)) -> MySumF2 U A CM FG = CMc CM (MySumF2 U A CM F) (MySumF2 U A CM G).
+Lemma MySumF2Distr : forall (U : Type) (CM : CommutativeMonoid) (A : {X : Ensemble U | Finite U X}) (F G FG : U -> CMT CM), (forall (u : U), In U (proj1_sig A) u -> FG u = CMc CM (F u) (G u)) -> MySumF2 U A CM FG = CMc CM (MySumF2 U A CM F) (MySumF2 U A CM G).
 Proof.
-intros U CM F G FG A H1.
+intros U CM A F G FG H1.
 apply (FiniteSetInduction U A).
 apply conj.
 rewrite MySumF2Empty.
