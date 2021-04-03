@@ -1,6 +1,7 @@
 Add LoadPath "MyAlgebraicStructure" as MyAlgebraicStructure.
 Add LoadPath "Tools" as Tools.
 Add LoadPath "BasicProperty" as BasicProperty.
+Add LoadPath "BasicNotation" as BasicNotation.
 
 From mathcomp Require Import ssreflect.
 Require Import Coq.Sets.Ensembles.
@@ -17,16 +18,21 @@ Require Import Coq.Arith.Compare_dec.
 Require Import MyAlgebraicStructure.MyField.
 Require Import MyAlgebraicStructure.MyVectorSpace.
 Require Import Tools.MySum.
+Require Import BasicProperty.MappingProperty.
+Require Import BasicNotation.Parity.
+Require Import BasicNotation.Permutation.
 
 Section Matrix.
 
 Definition FPCM (f : Field) := mkCommutativeMonoid (FT f) (FO f) (Fadd f) (Fadd_comm f) (Fadd_O_r f) (Fadd_assoc f).
 
+Definition FMCM (f : Field) := mkCommutativeMonoid (FT f) (FI f) (Fmul f) (Fmul_comm f) (Fmul_I_r f) (Fmul_assoc f).
+
 Definition Matrix (f : Field) (M N : nat) := {n : nat| (n < M)%nat } -> {n : nat| (n < N)%nat } -> (FT f).
 
 Definition Mplus (f : Field) (M N : nat) := fun (A B : Matrix f M N) (x : {n : nat| (n < M)%nat }) (y : {n : nat| (n < N)%nat }) => (Fadd f (A x y) (B x y)).
 
-Definition Mmult (f : Field) (M N K : nat) := fun (A : Matrix f M N) (B : Matrix f N K) (x : {n : nat| (n < M)%nat }) (y : {n : nat| (n < K)%nat }) => MySumF2 {n : nat| (n < N)%nat } (exist (Finite (Count N)) (Full_set {n : nat| (n < N)%nat }) (CountFinite N)) (FPCM f) (fun (n : Count N) => Fmul f (A x n) (B n y)).
+Definition Mmult (f : Field) (M N K : nat) := fun (A : Matrix f M N) (B : Matrix f N K) (x : {n : nat| (n < M)%nat }) (y : {n : nat| (n < K)%nat }) => MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat| (n < N) %nat}) (CountFinite N)) (FPCM f) (fun (n : Count N) => Fmul f (A x n) (B n y)).
 
 Definition Mopp (f : Field) (M N : nat) := fun (A : Matrix f M N) (x : {n : nat| (n < M)%nat }) (y : {n : nat| (n < N)%nat }) => (Fopp f (A x y)).
 
@@ -804,6 +810,920 @@ move=> x.
 apply functional_extensionality.
 move=> y.
 reflexivity.
+Qed.
+
+Definition Determinant (f : Field) (N : nat) (A : Matrix f N N) := MySumF2 (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) (FPCM f) (fun (P : Permutation N) => Fmul f (match PermutationParity N P with
+  | OFF => (FI f)
+  | ON => Fopp f (FI f)
+end) (MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat| (n < N) %nat}) (CountFinite N)) (FMCM f) (fun (k : {n : nat | (n < N)%nat}) => A k (proj1_sig P k)))).
+
+Lemma DeterminantI : forall (f : Field) (N : nat), Determinant f N (MI f N) = FI f.
+Proof.
+move=> f N.
+unfold Determinant.
+rewrite (MySumF2Included (Permutation N) (FiniteSingleton (Permutation N) (PermutationID N)) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) (FPCM f)).
+rewrite MySumF2Singleton.
+rewrite (PermutationIDParity N).
+rewrite (MySumF2O (Permutation N)).
+rewrite (CM_O_r (FPCM f)).
+rewrite (Fmul_I_l f).
+apply MySumF2Induction.
+apply conj.
+reflexivity.
+move=> cm u H1 H2.
+rewrite H2.
+unfold PermutationID.
+simpl.
+unfold MI.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig u)).
+move=> H3.
+apply (Fmul_I_l f (FI f)).
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> u H1.
+suff: (exists (k : {n : nat | (n < N)%nat}), k <> proj1_sig u k).
+elim.
+move=> k H2.
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} k) (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f)).
+rewrite MySumF2Singleton.
+unfold MI.
+elim (Nat.eq_dec (proj1_sig k) (proj1_sig (proj1_sig u k))).
+move=> H3.
+apply False_ind.
+apply H2.
+apply sig_map.
+apply H3.
+move=> H3.
+simpl.
+rewrite (Fmul_O_l f).
+apply (Fmul_O_r f).
+move=> l H3.
+apply (Full_intro {n : nat | (n < N)%nat} l).
+elim H1.
+move=> p H2 H3.
+apply NNPP.
+move=> H4.
+apply H2.
+suff: (p = PermutationID N).
+move=> H5.
+rewrite H5.
+apply In_singleton.
+apply sig_map.
+apply functional_extensionality.
+move=> l.
+apply NNPP.
+move=> H5.
+apply H4.
+exists l.
+move=> H6.
+apply H5.
+rewrite - H6.
+reflexivity.
+move=> p H1.
+apply (Full_intro (Permutation N) p).
+Qed.
+
+Lemma DeterminantO : forall (f : Field) (N : nat), N <> O -> Determinant f N (MO f N N) = FO f.
+Proof.
+move=> f N H1.
+unfold Determinant.
+apply (MySumF2O (Permutation N)).
+move=> u H2.
+suff: ((N > O)%nat).
+move=> H3.
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} (exist (fun (k : nat) => (k < N)%nat) O H3))).
+rewrite MySumF2Singleton.
+unfold MO.
+simpl.
+rewrite (Fmul_O_l f).
+apply (Fmul_O_r f).
+move=> k H4.
+apply (Full_intro {n : nat | (n < N)%nat} k).
+elim (le_lt_or_eq O N (le_0_n N)).
+apply.
+move=> H3.
+apply False_ind.
+apply H1.
+rewrite H3.
+reflexivity.
+Qed.
+
+Lemma DeterminantTrans : forall (f : Field) (N : nat) (A : Matrix f N N), Determinant f N (MTranspose f N N A) = Determinant f N A.
+Proof.
+move=> f N A.
+unfold Determinant.
+suff: ((exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) = FiniteIm (Permutation N) (Permutation N) (PermutationInv N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N))).
+move=> H1.
+rewrite {1} H1.
+rewrite - (MySumF2BijectiveSame2 (Permutation N) (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N))).
+unfold Basics.compose.
+suff: ((fun P : Permutation N => Fmul f match PermutationParity N P with
+  | ON => Fopp f (FI f)
+  | OFF => FI f
+end (MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => A k (proj1_sig P k)))) = (fun x : Permutation N => Fmul f match PermutationParity N (PermutationInv N x) with
+  | ON => Fopp f (FI f)
+  | OFF => FI f
+end (MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => MTranspose f N N A k (proj1_sig (PermutationInv N x) k))))).
+move=> H2.
+rewrite H2.
+reflexivity.
+apply functional_extensionality.
+move=> k.
+unfold MTranspose.
+rewrite (PermutationInvParity N k).
+suff: ((exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) = FiniteIm {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig (PermutationInv N k)) (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N))).
+move=> H2.
+rewrite {1} H2.
+rewrite - (MySumF2BijectiveSame2 {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (proj1_sig (PermutationInv N k))).
+unfold Basics.compose.
+suff: ((fun (l : {n : nat | (n < N)%nat}) => A (proj1_sig (PermutationInv N k) l) (proj1_sig k (proj1_sig (PermutationInv N k) l))) = (fun (l : {n : nat | (n < N)%nat}) => A (proj1_sig (PermutationInv N k) l) l)).
+move=> H3.
+rewrite H3.
+reflexivity.
+apply functional_extensionality.
+move=> l.
+unfold PermutationInv at 2.
+simpl.
+rewrite (proj2 (proj2_sig (BijectiveInvExist {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig k) (proj2_sig k))) l).
+reflexivity.
+move=> u1 u2 H3 H4.
+apply (BijInj {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig (PermutationInv N k)) (proj2_sig (PermutationInv N k))).
+apply sig_map.
+apply Extensionality_Ensembles.
+apply conj.
+move=> m H2.
+apply (Im_intro {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (Full_set {n : nat | (n < N)%nat}) (proj1_sig (PermutationInv N k)) (proj1_sig k m)).
+apply (Full_intro {n : nat | (n < N)%nat} (proj1_sig k m)).
+unfold PermutationInv.
+simpl.
+rewrite (proj1 (proj2_sig (BijectiveInvExist {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig k) (proj2_sig k))) m).
+reflexivity.
+move=> m H2.
+apply (Full_intro {n : nat | (n < N)%nat} m).
+unfold PermutationInv.
+move=> u1 u2 H2 H3 H4.
+apply sig_map.
+apply functional_extensionality.
+move=> l.
+apply (BijInj {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig (BijectiveInvExist {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig u1) (proj2_sig u1)))).
+apply (PermutationInvSub N u1).
+rewrite (proj1 (proj2_sig (BijectiveInvExist {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig u1) (proj2_sig u1))) l).
+suff: (proj1_sig (BijectiveInvExist {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig u1) (proj2_sig u1)) = proj1_sig (exist (fun f : {n : nat | (n < N)%nat} -> {n : nat | (n < N)%nat} => Bijective f) (proj1_sig (BijectiveInvExist {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig u1) (proj2_sig u1))) (PermutationInvSub N u1))).
+move=> H5.
+rewrite H5.
+rewrite H4.
+simpl.
+rewrite (proj1 (proj2_sig (BijectiveInvExist {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig u2) (proj2_sig u2))) l).
+reflexivity.
+reflexivity.
+apply sig_map.
+apply Extensionality_Ensembles.
+apply conj.
+move=> p H1.
+apply (Im_intro (Permutation N) (Permutation N) (Full_set (Permutation N)) (PermutationInv N) (PermutationInv N p)).
+apply (Full_intro (Permutation N) (PermutationInv N p)).
+apply sig_map.
+apply (InvUnique {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig (PermutationInv N p))).
+apply conj.
+apply (proj2 (proj2_sig (BijectiveInvExist {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig p) (proj2_sig p)))).
+apply (proj1 (proj2_sig (BijectiveInvExist {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig p) (proj2_sig p)))).
+apply (proj2_sig (BijectiveInvExist {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig (exist (fun f0 : {n : nat | (n < N)%nat} -> {n : nat | (n < N)%nat} => Bijective f0) (proj1_sig (BijectiveInvExist {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (proj1_sig p) (proj2_sig p))) (PermutationInvSub N p))) (proj2_sig (PermutationInv N p)))).
+move=> k H1.
+apply (Full_intro (Permutation N) k).
+Qed.
+
+Lemma DeterminantMultiLinearityHPlus : forall (f : Field) (N : nat) (A : Matrix f N N) (p : {n : nat | (n < N)%nat}) (b : {n : nat | (n < N)%nat} -> FT f), Determinant f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fadd f (A x y) (b y)
+  | right _ => A x y
+end) = Fadd f (Determinant f N A) (Determinant f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => (b y)
+  | right _ => A x y
+end)).
+Proof.
+move=> f N A p b.
+unfold Determinant.
+apply (MySumF2Distr (Permutation N) (FPCM f)).
+move=> u H1.
+simpl.
+suff: ((MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => match Nat.eq_dec (proj1_sig k) (proj1_sig p) with
+  | left _ => Fadd f (A k (proj1_sig u k)) (b (proj1_sig u k))
+  | right _ => A k (proj1_sig u k)
+end)) = Fadd f (MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => A k (proj1_sig u k))) (MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => match Nat.eq_dec (proj1_sig k) (proj1_sig p) with
+  | left _ => b (proj1_sig u k)
+  | right _ => A k (proj1_sig u k)
+end))).
+move=> H2.
+rewrite H2.
+apply (Fmul_add_distr_l f).
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} p) (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N))).
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} p) (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N))).
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} p) (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N))).
+rewrite MySumF2Singleton.
+rewrite MySumF2Singleton.
+rewrite MySumF2Singleton.
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
+move=> H2.
+simpl.
+suff: ((MySumF2 {n : nat | (n < N)%nat} (FiniteIntersection {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (Complement {n : nat | (n < N)%nat} (Singleton {n : nat | (n < N)%nat} p))) (FMCM f) (fun (k : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig k) (proj1_sig p) with
+  | left _ => Fadd f (A k (proj1_sig u k)) (b (proj1_sig u k))
+  | right _ => A k (proj1_sig u k)
+end)) = (MySumF2 {n : nat | (n < N)%nat} (FiniteIntersection {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (Complement {n : nat | (n < N)%nat} (Singleton {n : nat | (n < N)%nat} p))) (FMCM f) (fun (k : {n : nat | (n < N)%nat}) => A k (proj1_sig u k)))).
+move=> H3.
+rewrite H3.
+suff: ((MySumF2 {n : nat | (n < N)%nat} (FiniteIntersection {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (Complement {n : nat | (n < N)%nat} (Singleton {n : nat | (n < N)%nat} p))) (FMCM f) (fun (k : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig k) (proj1_sig p) with
+  | left _ => b (proj1_sig u k)
+  | right _ => A k (proj1_sig u k)
+end)) = (MySumF2 {n : nat | (n < N)%nat} (FiniteIntersection {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (Complement {n : nat | (n < N)%nat} (Singleton {n : nat | (n < N)%nat} p))) (FMCM f) (fun (k : {n : nat | (n < N)%nat}) => A k (proj1_sig u k)))).
+move=> H4.
+rewrite H4.
+apply (Fmul_add_distr_r f).
+apply MySumF2Same.
+move=> u0 H4.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig p)).
+elim H4.
+move=> u1 H5 H6 H7.
+apply False_ind.
+apply H5.
+suff: (u1 = p).
+move=> H8.
+rewrite H8.
+apply In_singleton.
+apply sig_map.
+apply H7.
+move=> H5.
+reflexivity.
+apply MySumF2Same.
+move=> u0 H3.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig p)).
+elim H3.
+move=> u1 H4 H5 H6.
+apply False_ind.
+apply H4.
+suff: (u1 = p).
+move=> H7.
+rewrite H7.
+apply In_singleton.
+apply sig_map.
+apply H6.
+move=> H4.
+reflexivity.
+move=> H2.
+apply False_ind.
+apply H2.
+reflexivity.
+move=> k H2.
+apply (Full_intro {n : nat | (n < N)%nat} k).
+move=> k H2.
+apply (Full_intro {n : nat | (n < N)%nat} k).
+move=> k H2.
+apply (Full_intro {n : nat | (n < N)%nat} k).
+Qed.
+
+Lemma DeterminantMultiLinearityWPlus : forall (f : Field) (N : nat) (A : Matrix f N N) (p : {n : nat | (n < N)%nat}) (b : {n : nat | (n < N)%nat} -> FT f), Determinant f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+  | left _ => Fadd f (A x y) (b x)
+  | right _ => A x y
+end) = Fadd f (Determinant f N A) (Determinant f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+  | left _ => b x
+  | right _ => A x y
+end)).
+Proof.
+move=> f N A p b.
+rewrite - (DeterminantTrans f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+  | left _ => Fadd f (A x y) (b x)
+  | right _ => A x y
+end)).
+rewrite - (DeterminantTrans f N A).
+rewrite - (DeterminantTrans f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+  | left _ => b x
+  | right _ => A x y
+end)).
+apply (DeterminantMultiLinearityHPlus f N (MTranspose f N N A) p b).
+Qed.
+
+Lemma DeterminantMultiLinearityHMult : forall (f : Field) (N : nat) (A : Matrix f N N) (p : {n : nat | (n < N)%nat}) (c : FT f), Determinant f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end) = Fmul f c (Determinant f N A).
+Proof.
+move=> f N A p c.
+unfold Determinant.
+apply (FiniteSetInduction (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N))).
+suff: (forall (b : Permutation N), (Fmul f match PermutationParity N b with
+  | ON => Fopp f (FI f)
+  | OFF => FI f
+end (MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => match Nat.eq_dec (proj1_sig k) (proj1_sig p) with
+  | left _ => Fmul f c (A k (proj1_sig b k))
+  | right _ => A k (proj1_sig b k)
+end))) = Fmul f c (Fmul f match PermutationParity N b with
+  | ON => Fopp f (FI f)
+  | OFF => FI f
+end (MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => A k (proj1_sig b k))))).
+move=> H1.
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+rewrite (Fmul_O_r f).
+reflexivity.
+move=> B b H2 H3 H4 H5.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H5.
+rewrite H1.
+rewrite (Fmul_add_distr_l f).
+reflexivity.
+apply H4.
+apply H4.
+move=> b.
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} p) (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N))).
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} p) (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N))).
+rewrite MySumF2Singleton.
+rewrite MySumF2Singleton.
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
+move=> H1.
+simpl.
+rewrite (Fmul_assoc f c (A p (proj1_sig b p))).
+rewrite - (Fmul_assoc f (match PermutationParity N b with
+  | ON => Fopp f (FI f)
+  | OFF => FI f
+end) c).
+rewrite - (Fmul_assoc f c (match PermutationParity N b with
+  | ON => Fopp f (FI f)
+  | OFF => FI f
+end)).
+rewrite (Fmul_comm f c (match PermutationParity N b with
+  | ON => Fopp f (FI f)
+  | OFF => FI f
+end)).
+rewrite (MySumF2Same {n : nat | (n < N)%nat} (FiniteIntersection {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (Complement {n : nat | (n < N)%nat} (Singleton {n : nat | (n < N)%nat} p))) (FMCM f) (fun (k : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig k) (proj1_sig p) with
+  | left _ => Fmul f c (A k (proj1_sig b k))
+  | right _ => A k (proj1_sig b k)
+end) (fun (k : {n : nat | (n < N)%nat}) => A k (proj1_sig b k))).
+reflexivity.
+move=> u H2.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
+elim H2.
+move=> u0 H3 H4 H5.
+apply False_ind.
+apply H3.
+suff: (u0 = p).
+move=> H6.
+rewrite H6.
+apply In_singleton.
+apply sig_map.
+apply H5.
+move=> H3.
+reflexivity.
+move=> H1.
+apply False_ind.
+apply H1.
+reflexivity.
+move=> k H1.
+apply (Full_intro {n : nat | (n < N)%nat} k).
+move=> k H1.
+apply (Full_intro {n : nat | (n < N)%nat} k).
+Qed.
+
+Lemma DeterminantMultiLinearityWMult : forall (f : Field) (N : nat) (A : Matrix f N N) (p : {n : nat | (n < N)%nat}) (c : FT f), Determinant f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end) = Fmul f c (Determinant f N A).
+Proof.
+move=> f N A p c.
+rewrite - (DeterminantTrans f N (fun x y : {n : nat | (n < N)%nat} => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end)).
+rewrite - (DeterminantTrans f N A).
+apply (DeterminantMultiLinearityHMult f N (MTranspose f N N A) p c).
+Qed.
+
+Lemma DeterminantSwapH : forall (f : Field) (N : nat) (A : Matrix f N N) (p q : {n : nat | (n < N)%nat}), proj1_sig p <> proj1_sig q -> Determinant f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) = Fopp f (Determinant f N A).
+Proof.
+move=> f N A p q H1.
+unfold Determinant.
+suff: ((exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) = FiniteIm (Permutation N) (Permutation N) (fun (r : Permutation N) => PermutationCompose N r (PermutationSwap N p q)) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N))).
+move=> H2.
+rewrite {2} H2.
+rewrite - (MySumF2BijectiveSame2 (Permutation N) (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N))).
+unfold Basics.compose.
+apply (FiniteSetInduction (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+rewrite (Fopp_O f).
+reflexivity.
+move=> B b H3 H4 H5 H6.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H6.
+suff: ((Fmul f match PermutationParity N b with
+  | ON => Fopp f (FI f)
+  | OFF => FI f
+end (MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => match Nat.eq_dec (proj1_sig k) (proj1_sig p) with
+  | left _ => A q (proj1_sig b k)
+  | right _ => match Nat.eq_dec (proj1_sig k) (proj1_sig q) with
+    | left _ => A p (proj1_sig b k)
+    | right _ => A k (proj1_sig b k)
+  end
+end))) = Fopp f (Fmul f match PermutationParity N (PermutationCompose N b (PermutationSwap N p q)) with
+  | ON => Fopp f (FI f)
+  | OFF => FI f
+end (MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => A k (proj1_sig (PermutationCompose N b (PermutationSwap N p q)) k))))).
+move=> H7.
+rewrite H7.
+rewrite (Fopp_add_distr f).
+reflexivity.
+suff: ((MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => match Nat.eq_dec (proj1_sig k) (proj1_sig p) with
+  | left _ => A q (proj1_sig b k)
+  | right _ => match Nat.eq_dec (proj1_sig k) (proj1_sig q) with
+    | left _ => A p (proj1_sig b k)
+    | right _ => A k (proj1_sig b k)
+  end
+end)) = (MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => A k (proj1_sig (PermutationCompose N b (PermutationSwap N p q)) k)))).
+move=> H7.
+rewrite H7.
+rewrite (PermutationComposeParity N b (PermutationSwap N p q)).
+rewrite (PermutationSwapParity N p q).
+elim (PermutationParity N b).
+simpl.
+apply (Fopp_mul_distr_l_reverse f).
+simpl.
+rewrite (Fopp_mul_distr_l f).
+rewrite (Fopp_involutive f (FI f)).
+reflexivity.
+move=> H8.
+apply H1.
+rewrite H8.
+reflexivity.
+unfold PermutationCompose.
+unfold PermutationSwap.
+simpl.
+unfold Basics.compose.
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteUnion {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} p) (FiniteSingleton {n : nat | (n < N)%nat} q)) (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f)).
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteUnion {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} p) (FiniteSingleton {n : nat | (n < N)%nat} q)) (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f)).
+rewrite (MySumF2Same {n : nat | (n < N)%nat} (FiniteIntersection {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (Complement {n : nat | (n < N)%nat} (proj1_sig (FiniteUnion {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} p) (FiniteSingleton {n : nat | (n < N)%nat} q))))) (FMCM f) (fun k : {n : nat | (n < N)%nat} => match Nat.eq_dec (proj1_sig k) (proj1_sig p) with
+  | left _ => A q (proj1_sig b k)
+  | right _ => match Nat.eq_dec (proj1_sig k) (proj1_sig q) with
+    | left _ => A p (proj1_sig b k)
+    | right _ => A k (proj1_sig b k)
+  end
+end) (fun k : {n : nat | (n < N)%nat} => A k (proj1_sig b (match excluded_middle_informative (k = p) with
+  | left _ => q
+  | right _ => match excluded_middle_informative (k = q) with
+    | left _ => p
+    | right _ => k
+  end
+end)))).
+apply (Fmul_eq_compat_r f).
+rewrite MySumF2Union.
+rewrite MySumF2Union.
+rewrite MySumF2Singleton.
+rewrite MySumF2Singleton.
+rewrite MySumF2Singleton.
+rewrite MySumF2Singleton.
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
+elim (excluded_middle_informative (p = p)).
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig p)).
+move=> H7.
+apply False_ind.
+apply H1.
+rewrite H7.
+reflexivity.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
+elim (excluded_middle_informative (q = p)).
+move=> H7.
+apply False_ind.
+apply H1.
+rewrite H7.
+reflexivity.
+elim (excluded_middle_informative (q = q)).
+move=> H7 H8 H9 H10 H11 H12.
+apply (Fmul_comm f).
+move=> H7.
+apply False_ind.
+apply H7.
+reflexivity.
+move=> H7.
+apply False_ind.
+apply H7.
+reflexivity.
+move=> H7.
+apply False_ind.
+apply H7.
+reflexivity.
+move=> H7.
+apply False_ind.
+apply H7.
+reflexivity.
+move=> u.
+elim.
+move=> H7.
+apply H1.
+elim H7.
+reflexivity.
+move=> u.
+elim.
+move=> H7.
+apply H1.
+elim H7.
+reflexivity.
+move=> u H7.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
+elim H7.
+move=> u0 H8 H9 H10.
+apply False_ind.
+apply H8.
+left.
+suff: (u0 = p).
+move=> H11.
+rewrite H11.
+apply In_singleton.
+apply sig_map.
+apply H10.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
+elim H7.
+move=> u0 H8 H9 H10.
+apply False_ind.
+apply H8.
+right.
+suff: (u0 = q).
+move=> H11.
+rewrite H11.
+apply In_singleton.
+apply sig_map.
+apply H10.
+elim (excluded_middle_informative (u = p)).
+elim H7.
+move=> u0 H8 H9 H10.
+apply False_ind.
+apply H8.
+left.
+rewrite H10.
+apply In_singleton.
+elim (excluded_middle_informative (u = q)).
+elim H7.
+move=> u0 H8 H9 H10.
+apply False_ind.
+apply H8.
+right.
+rewrite H10.
+apply In_singleton.
+move=> H8 H9 H10 H11.
+reflexivity.
+move=> k H7.
+apply (Full_intro {n : nat | (n < N)%nat} k).
+move=> k H7.
+apply (Full_intro {n : nat | (n < N)%nat} k).
+apply H5.
+apply H5.
+move=> u1 u2 H3 H4 H5.
+suff: (u1 = PermutationCompose N (PermutationCompose N u1 (PermutationSwap N p q)) (PermutationInv N (PermutationSwap N p q))).
+move=> H6.
+rewrite H6.
+rewrite H5.
+rewrite (PermutationCompose_assoc N).
+rewrite (PermutationCompose_inv_r N).
+apply (PermutationCompose_O_r N).
+rewrite (PermutationCompose_assoc N).
+rewrite (PermutationCompose_inv_r N).
+rewrite (PermutationCompose_O_r N).
+reflexivity.
+apply sig_map.
+apply Extensionality_Ensembles.
+apply conj.
+move=> r H2.
+apply (Im_intro (Permutation N) (Permutation N) (Full_set (Permutation N)) (fun (s : Permutation N) => PermutationCompose N s (PermutationSwap N p q)) (PermutationCompose N r (PermutationInv N (PermutationSwap N p q)))).
+apply (Full_intro (Permutation N)).
+rewrite PermutationCompose_assoc.
+rewrite (PermutationCompose_inv_l N).
+rewrite (PermutationCompose_O_r N).
+reflexivity.
+move=> r H2.
+apply (Full_intro (Permutation N) r).
+Qed.
+
+Lemma DeterminantSwapW : forall (f : Field) (N : nat) (A : Matrix f N N) (p q : {n : nat | (n < N)%nat}), proj1_sig p <> proj1_sig q -> Determinant f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+  | left _ => A x q
+  | right _ => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
+    | left _ => A x p
+    | right _ => A x y
+  end
+end) = Fopp f (Determinant f N A).
+Proof.
+move=> f N A p q H1.
+rewrite - (DeterminantTrans f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+  | left _ => A x q
+  | right _ => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
+    | left _ => A x p
+    | right _ => A x y
+  end
+end)).
+rewrite - (DeterminantTrans f N A).
+apply (DeterminantSwapH f N (MTranspose f N N A) p q H1).
+Qed.
+
+Lemma DeterminantDuplicateH : forall (f : Field) (N : nat) (A : Matrix f N N) (p q : {n : nat | (n < N)%nat}), proj1_sig p <> proj1_sig q -> A p = A q -> Determinant f N A = FO f.
+Proof.
+move=> f N A p q H1 H2.
+unfold Determinant.
+suff: ((exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) = (FiniteUnion (Permutation N) (FiniteIntersection (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) (fun (r : Permutation N) => PermutationParity N r = OFF)) (FiniteIntersection (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) (fun (r : Permutation N) => PermutationParity N r = ON)))).
+move=> H3.
+rewrite H3.
+rewrite MySumF2Union.
+suff: ((FiniteIntersection (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) (fun r : Permutation N => PermutationParity N r = OFF)) = (FiniteIm (Permutation N) (Permutation N) (fun (r : Permutation N) => PermutationCompose N r (PermutationSwap N p q)) (FiniteIntersection (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) (fun r : Permutation N => PermutationParity N r = ON)))).
+move=> H4.
+rewrite H4.
+rewrite - (MySumF2BijectiveSame2 (Permutation N) (Permutation N)).
+unfold Basics.compose.
+apply (FiniteSetInduction (Permutation N) (FiniteIntersection (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) (fun r : Permutation N => PermutationParity N r = ON))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+apply (Fadd_O_r f (FO f)).
+move=> B b H5 H6 H7 H8.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite (CM_comm_assoc (FPCM f)).
+rewrite H8.
+rewrite (PermutationComposeParity N).
+rewrite (PermutationSwapParity N p q).
+suff: ((MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => A k (proj1_sig (PermutationCompose N b (PermutationSwap N p q)) k))) = (MySumF2 {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (FMCM f) (fun k : {n : nat | (n < N)%nat} => A k (proj1_sig b k)))).
+move=> H9.
+rewrite H9.
+elim (PermutationParity N b).
+simpl.
+rewrite - (Fmul_add_distr_r f).
+rewrite (Fadd_opp_r f (FI f)).
+rewrite (Fmul_O_l f).
+apply (Fadd_O_r f).
+simpl.
+rewrite - (Fmul_add_distr_r f).
+rewrite (Fadd_opp_l f (FI f)).
+rewrite (Fmul_O_l f).
+apply (Fadd_O_r f).
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteUnion {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} p) (FiniteSingleton {n : nat | (n < N)%nat} q)) (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N))).
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteUnion {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} p) (FiniteSingleton {n : nat | (n < N)%nat} q)) (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N))).
+rewrite MySumF2Union.
+rewrite MySumF2Union.
+suff: ((MySumF2 {n : nat | (n < N)%nat} (FiniteIntersection {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (Complement {n : nat | (n < N)%nat} (proj1_sig (FiniteUnion {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} p) (FiniteSingleton {n : nat | (n < N)%nat} q))))) (FMCM f) (fun (k : {n : nat | (n < N)%nat}) => A k (proj1_sig (PermutationCompose N b (PermutationSwap N p q)) k))) = (MySumF2 {n : nat | (n < N)%nat} (FiniteIntersection {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N)) (Complement {n : nat | (n < N)%nat} (proj1_sig (FiniteUnion {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} p) (FiniteSingleton {n : nat | (n < N)%nat} q))))) (FMCM f) (fun (k : {n : nat | (n < N)%nat}) => A k (proj1_sig b k)))).
+move=> H9.
+rewrite H9.
+apply (Fmul_eq_compat_r f).
+rewrite MySumF2Singleton.
+rewrite MySumF2Singleton.
+rewrite MySumF2Singleton.
+rewrite MySumF2Singleton.
+unfold PermutationSwap.
+unfold PermutationCompose.
+unfold Basics.compose.
+simpl.
+elim (excluded_middle_informative (p = p)).
+move=> H10.
+elim (excluded_middle_informative (q = p)).
+move=> H11.
+apply False_ind.
+apply H1.
+rewrite H11.
+reflexivity.
+elim (excluded_middle_informative (q = q)).
+move=> H11 H12.
+rewrite - {1} H2.
+rewrite {1} H2.
+apply (Fmul_comm f).
+move=> H11.
+apply False_ind.
+apply H11.
+reflexivity.
+move=> H10.
+apply False_ind.
+apply H10.
+reflexivity.
+apply MySumF2Same.
+move=> u H9.
+unfold PermutationSwap.
+unfold PermutationCompose.
+unfold Basics.compose.
+simpl.
+elim (excluded_middle_informative (u = p)).
+elim H9.
+move=> u0 H10 H11 H12.
+apply False_ind.
+apply H10.
+left.
+rewrite H12.
+apply In_singleton.
+elim (excluded_middle_informative (u = q)).
+elim H9.
+move=> u0 H10 H11 H12.
+apply False_ind.
+apply H10.
+right.
+rewrite H12.
+apply In_singleton.
+move=> H10 H11.
+reflexivity.
+move=> u.
+elim.
+move=> H9.
+apply H1.
+elim H9.
+reflexivity.
+move=> u.
+elim.
+move=> H9.
+apply H1.
+elim H9.
+reflexivity.
+move=> k H9.
+apply (Full_intro {n : nat | (n < N)%nat}).
+move=> k H9.
+apply (Full_intro {n : nat | (n < N)%nat}).
+move=> H9.
+apply H1.
+rewrite H9.
+reflexivity.
+apply H7.
+apply H7.
+move=> u1 u2 H5 H6 H7.
+rewrite - (PermutationCompose_O_r N u1).
+rewrite - (PermutationCompose_inv_r N (PermutationSwap N p q)).
+rewrite - (PermutationCompose_assoc N u1).
+rewrite H7.
+rewrite (PermutationCompose_assoc N u2).
+rewrite (PermutationCompose_inv_r N (PermutationSwap N p q)).
+apply (PermutationCompose_O_r N u2).
+apply sig_map.
+apply Extensionality_Ensembles.
+apply conj.
+move=> r H4.
+apply (Im_intro (Permutation N) (Permutation N) (Intersection (Permutation N) (fun (s : Permutation N) => PermutationParity N s = ON) (Full_set (Permutation N))) (fun (s : Permutation N) => PermutationCompose N s (PermutationSwap N p q)) (PermutationCompose N r (PermutationInv N (PermutationSwap N p q)))).
+apply Intersection_intro.
+unfold In.
+rewrite (PermutationComposeParity N).
+rewrite (PermutationInvParity N).
+rewrite (PermutationSwapParity N p q).
+elim H4.
+move=> r0 H5 H6.
+rewrite H5.
+reflexivity.
+move=> H5.
+apply H1.
+rewrite H5.
+reflexivity.
+apply (Full_intro (Permutation N)).
+rewrite (PermutationCompose_assoc N r).
+rewrite (PermutationCompose_inv_l N (PermutationSwap N p q)).
+rewrite (PermutationCompose_O_r N r).
+reflexivity.
+move=> r.
+elim.
+move=> s H4 y H5.
+rewrite H5.
+apply Intersection_intro.
+unfold In.
+rewrite (PermutationComposeParity N).
+rewrite (PermutationSwapParity N p q).
+elim H4.
+move=> s0 H6 H7.
+rewrite H6.
+reflexivity.
+move=> H6.
+apply H1.
+rewrite H6.
+reflexivity.
+apply (Full_intro (Permutation N)).
+move=> u H4 H5.
+suff: (match PermutationParity N u with
+  | OFF => False
+  | ON => True
+end).
+elim H5.
+move=> u0 H6 H7.
+rewrite H6.
+apply.
+suff: (PermutationParity N u = ON).
+move=> H6.
+rewrite H6.
+apply I.
+elim H4.
+move=> u0 H6 H7.
+apply H6.
+apply sig_map.
+apply Extensionality_Ensembles.
+apply conj.
+move=> r H3.
+suff: (PermutationParity N r = ON \/ PermutationParity N r = OFF).
+elim.
+move=> H4.
+right.
+apply Intersection_intro.
+apply H4.
+apply (Full_intro (Permutation N)).
+move=> H4.
+left.
+apply Intersection_intro.
+apply H4.
+apply (Full_intro (Permutation N)).
+elim (PermutationParity N r).
+left.
+reflexivity.
+right.
+reflexivity.
+move=> r H3.
+apply (Full_intro (Permutation N) r).
+Qed.
+
+Lemma DeterminantDuplicateW : forall (f : Field) (N : nat) (A : Matrix f N N) (p q : {n : nat | (n < N)%nat}), proj1_sig p <> proj1_sig q -> (forall (k : {n : nat | (n < N)%nat}), A k p = A k q) -> Determinant f N A = FO f.
+Proof.
+move=> f N A p q H1 H2.
+rewrite - (DeterminantTrans f N A).
+apply (DeterminantDuplicateH f N (MTranspose f N N A) p q H1).
+apply functional_extensionality.
+move=> k.
+apply (H2 k).
+Qed.
+
+Lemma DeterminantAddTransformH : forall (f : Field) (N : nat) (A : Matrix f N N) (p q : {n : nat | (n < N)%nat}) (c : FT f), proj1_sig p <> proj1_sig q -> Determinant f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+  | left _ => Fadd f (A x y) (Fmul f c (A p y))
+  | right _ => A x y
+end) = Determinant f N A.
+Proof.
+move=> f N A p q c H1.
+rewrite (DeterminantMultiLinearityHPlus f N A q (fun (k : {n : nat | (n < N)%nat}) => Fmul f c (A p k))).
+suff: ((fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+  | left _ => Fmul f c (A p y)
+  | right _ => A x y
+end) = (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+  | left _ => Fmul f c ((fun (x0 y0 : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig x0) (proj1_sig q) with
+    | left _ => A p y0
+    | right _ => A x0 y0
+  end) x y)
+  | right _ => (fun (x0 y0 : {n0 : nat | (n0 < N)%nat}) => match Nat.eq_dec (proj1_sig x0) (proj1_sig q) with
+    | left _ => A p y0
+    | right _ => A x0 y0
+  end) x y
+end)).
+move=> H2.
+rewrite H2.
+rewrite (DeterminantMultiLinearityHMult f N (fun x y : {n : nat | (n < N)%nat} => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+  | left _ => A p y
+  | right _ => A x y
+end) q c).
+rewrite (DeterminantDuplicateH f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+  | left _ => A p y
+  | right _ => A x y
+end) p q).
+rewrite (Fmul_O_r f c).
+apply (Fadd_O_r f (Determinant f N A)).
+apply H1.
+apply functional_extensionality.
+move=> x.
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig q)).
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
+move=> H3 H4.
+reflexivity.
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
+move=> H3 H4.
+reflexivity.
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
+move=> H2.
+reflexivity.
+move=> H2.
+reflexivity.
+Qed.
+
+Lemma DeterminantAddTransformW : forall (f : Field) (N : nat) (A : Matrix f N N) (p q : {n : nat | (n < N)%nat}) (c : FT f), proj1_sig p <> proj1_sig q -> Determinant f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
+  | left _ => Fadd f (A x y) (Fmul f c (A x p))
+  | right _ => A x y
+end) = Determinant f N A.
+Proof.
+move=> f N A p q c H1.
+rewrite - (DeterminantTrans f N (fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
+  | left _ => Fadd f (A x y) (Fmul f c (A x p))
+  | right _ => A x y
+end)).
+rewrite - (DeterminantTrans f N A).
+apply (DeterminantAddTransformH f N (MTranspose f N N A) p q c H1).
 Qed.
 
 End Matrix.
