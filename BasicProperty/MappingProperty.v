@@ -1419,3 +1419,141 @@ move=> H4.
 apply False_ind.
 apply (H4 (proj2_sig k)).
 Qed.
+
+Lemma CountPowFinite : forall (N M : nat), Finite ({n : nat | (n < N)%nat} -> {n : nat | (n < M)%nat}) (Full_set ({n : nat | (n < N)%nat} -> {n : nat | (n < M)%nat})).
+Proof.
+move=> N M.
+apply (cardinal_finite ({n : nat | (n < N)%nat} -> {n : nat | (n < M)%nat}) (Full_set ({n : nat | (n < N)%nat} -> {n : nat | (n < M)%nat})) (M ^ N)).
+apply (proj1 (CountCardinalBijective ({n : nat | (n < N)%nat} -> {n : nat | (n < M)%nat}) (M ^ N))).
+elim (proj2_sig (CountPow N M)).
+move=> g H1.
+exists g.
+exists (proj1_sig (CountPow N M)).
+apply conj.
+apply (proj2 H1).
+apply (proj1 H1).
+Qed.
+
+Lemma CountInjBij : forall (N : nat) (f : {n : nat | (n < N)%nat} -> {n : nat | (n < N)%nat}), Injective f -> Bijective f.
+Proof.
+move=> N f H1.
+apply InjSurjBij.
+apply H1.
+suff: (Im {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (Full_set {n : nat | (n < N)%nat}) f = (Full_set {n : nat | (n < N)%nat})).
+move=> H2 k.
+suff: (In {n : nat | (n < N)%nat} (Im {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (Full_set {n : nat | (n < N)%nat}) f) k).
+elim.
+move=> x H3 y H4.
+exists x.
+rewrite H4.
+reflexivity.
+rewrite H2.
+apply (Full_intro {n : nat | (n < N)%nat} k).
+suff: (cardinal {n : nat | (n < N)%nat} (Im {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (Full_set {n : nat | (n < N)%nat}) f) N).
+move=> H2.
+apply Extensionality_Ensembles.
+apply conj.
+move=> k H3.
+apply (Full_intro {n : nat | (n < N)%nat} k).
+move=> k H3.
+apply NNPP.
+move=> H4.
+apply (lt_irrefl N).
+apply (incl_card_le {n : nat | (n < N)%nat} (Add {n : nat | (n < N)%nat} (Im {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (Full_set {n : nat | (n < N)%nat}) f) k) (Full_set {n : nat | (n < N)%nat}) (S N) N).
+apply (card_add {n : nat | (n < N)%nat}).
+apply H2.
+apply H4.
+apply CountCardinalBijective.
+exists (fun (k : {n : nat | (n < N)%nat}) => k).
+exists (fun (k : {n : nat | (n < N)%nat}) => k).
+apply conj.
+move=> l.
+reflexivity.
+move=> l.
+reflexivity.
+move=> l H5.
+apply (Full_intro {n : nat | (n < N)%nat} l).
+suff: (forall (m : nat), (m <= N)%nat -> cardinal {n : nat | (n < N)%nat} (Im {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (fun (k : {n : nat | (n < N)%nat}) => (proj1_sig k < m)%nat) f) m).
+move=> H2.
+suff: ((Full_set {n : nat | (n < N)%nat}) = (fun (k : {n : nat | (n < N)%nat}) => (proj1_sig k < N)%nat)).
+move=> H3.
+rewrite H3.
+apply (H2 N).
+apply (le_n N).
+apply Extensionality_Ensembles.
+apply conj.
+move=> k H3.
+apply (proj2_sig k).
+move=> k H3.
+apply (Full_intro {n : nat | (n < N)%nat} k).
+elim.
+move=> H2.
+suff: ((Im {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (fun (k : {n : nat | (n < N)%nat}) => (proj1_sig k < O)%nat) f) = Empty_set {n : nat | (n < N)%nat}).
+move=> H3.
+rewrite H3.
+apply card_empty.
+apply Extensionality_Ensembles.
+apply conj.
+move=> k.
+elim.
+move=> x H3.
+apply False_ind.
+apply (le_not_lt O (proj1_sig x) (le_0_n (proj1_sig x)) H3).
+move=> k.
+elim.
+move=> m H2 H3.
+suff: ((Im {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (fun k : {n : nat | (n < N)%nat} => (proj1_sig k < S m)%nat) f) = Add {n : nat | (n < N)%nat} (Im {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (fun k : {n : nat | (n < N)%nat} => (proj1_sig k < m)%nat) f) (f (exist (fun (n : nat) => (n < N)%nat) m H3))).
+move=> H4.
+rewrite H4.
+apply card_add.
+apply (H2 (le_trans m (S m) N (le_S m m (le_n m)) H3)).
+move=> H5.
+suff: (forall (k : {n : nat | (n < N)%nat}), (proj1_sig k < m)%nat -> f k <> f (exist (fun n : nat => (n < N)%nat) m H3)).
+elim H5.
+move=> x H6 y H7 H8.
+apply (H8 x H6).
+rewrite H7.
+reflexivity.
+move=> k H6 H7.
+apply (lt_irrefl (proj1_sig k)).
+suff: (k = (exist (fun n : nat => (n < N)%nat) m H3)).
+move=> H8.
+rewrite {2} H8.
+apply H6.
+apply H1.
+apply H7.
+apply Extensionality_Ensembles.
+apply conj.
+move=> k.
+elim.
+move=> x H4 y H5.
+rewrite H5.
+elim (le_lt_or_eq (proj1_sig x) m).
+move=> H6.
+left.
+apply (Im_intro {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (fun (k : {n : nat | (n < N)%nat}) => (proj1_sig k < m)%nat) f x H6).
+reflexivity.
+move=> H6.
+right.
+suff: (x = (exist (fun n : nat => (n < N)%nat) m H3)).
+move=> H7.
+rewrite H7.
+apply In_singleton.
+apply sig_map.
+apply H6.
+apply le_S_n.
+apply H4.
+move=> k.
+elim.
+move=> k0.
+elim.
+move=> x H4 y H5.
+apply (Im_intro {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (fun (k : {n : nat | (n < N)%nat}) => (proj1_sig k < S m)%nat) f x).
+apply (le_trans (S (proj1_sig x)) m (S m) H4 (le_S m m (le_n m))).
+apply H5.
+move=> x.
+elim.
+apply (Im_intro {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (fun (k : {n : nat | (n < N)%nat}) => (proj1_sig k < S m)%nat) f (exist (fun n : nat => (n < N)%nat) m H3)).
+apply (le_n (S m)).
+reflexivity.
+Qed.

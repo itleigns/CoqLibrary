@@ -621,6 +621,11 @@ rewrite (Fmul_I_l f (Finv f y)).
 reflexivity.
 Qed.
 
+Fixpoint PowF (f : Field) (x : FT f) (N : nat) := match N with
+  | O => FI f
+  | S n => Fmul f (PowF f x n) x
+end.
+
 Definition NatCorrespondField := fun (f : Field) => (fix NatCorrespond (n : nat) : FT f := match n with
   | O => FO f
   | S n0 => (Fadd f (NatCorrespond n0) (FI f))
