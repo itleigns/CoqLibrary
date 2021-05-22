@@ -1,4 +1,4 @@
-all:  BasicTools.vo NatProperty.vo MappingProperty.vo MySum.vo DatatypesExtension.vo EnsemblesExtension.vo MyField.vo MyVectorSpace.vo SenkeiDaisuunoSekai1.vo Matrix.vo ShuugouIsouNyuumonn1.vo ShuugouIsouNyuumonn1AC.vo KaisekiNyuumonn1.vo
+all:  BasicTools.vo NatProperty.vo MappingProperty.vo MySum.vo Parity.vo Permutation.vo DatatypesExtension.vo EnsemblesExtension.vo MyField.vo MyVectorSpace.vo SenkeiDaisuunoSekai1.vo Matrix.vo ShuugouIsouNyuumonn1.vo ShuugouIsouNyuumonn1AC.vo KaisekiNyuumonn1.vo
 
 BasicTools.vo: Tools/BasicTools.v
 	coqc -Q Tools Tools Tools/BasicTools.v
@@ -11,6 +11,12 @@ MappingProperty.vo: BasicProperty/MappingProperty.v
 
 MySum.vo: Tools/MySum.v
 	coqc -Q Tools Tools Tools/MySum.v
+
+Parity.vo: BasicNotation/Parity.v MySum.vo
+	coqc -Q BasicNotation BasicNotation BasicNotation/Parity.v
+
+Permutation.vo: BasicNotation/Permutation.v Parity.vo MySum.vo
+	coqc -Q BasicNotation BasicNotation BasicNotation/Permutation.v
 
 DatatypesExtension.vo: LibraryExtension/DatatypesExtension.v
 	coqc -Q LibraryExtension LibraryExtension LibraryExtension/DatatypesExtension.v

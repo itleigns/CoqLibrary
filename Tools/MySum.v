@@ -3062,6 +3062,17 @@ exists ((fun x : Count N => exist (proj1_sig A) (G x) (proj1 H2 x))).
 apply (proj2 H2 (proj1 H2)).
 Qed.
 
+Lemma CM_comm_assoc : forall (CM : CommutativeMonoid) (x y z w : CMT CM), CMc CM (CMc CM x y) (CMc CM z w) = CMc CM (CMc CM x z) (CMc CM y w).
+Proof.
+intros CM x y z w.
+rewrite (CM_assoc CM x y (CMc CM z w)).
+rewrite<- (CM_assoc CM y z w).
+rewrite (CM_comm CM y z).
+rewrite (CM_assoc CM z y w).
+rewrite<- (CM_assoc CM x z (CMc CM y w)).
+reflexivity.
+Qed.
+
 Definition FiniteUnion (U : Type) (A B : {X : Ensemble U | Finite U X}) := (exist (Finite U) (Union U (proj1_sig A) (proj1_sig B)) (Union_preserves_Finite U (proj1_sig A) (proj1_sig B) (proj2_sig A) (proj2_sig B))).
 
 Lemma MySumF2Union : forall (U : Type) (CM : CommutativeMonoid) (F : U -> CMT CM) (A : {X : Ensemble U | Finite U X}) (B : {X : Ensemble U | Finite U X}), (forall (u : U), In U (proj1_sig B) u -> ~ In U (proj1_sig A) u) -> (MySumF2 U (FiniteUnion U A B) CM F) = (CMc CM (MySumF2 U A CM F) (MySumF2 U B CM F)).
@@ -4541,6 +4552,29 @@ intro N.
 exists (fun (m : Count N) => le_S (S (proj1_sig m)) N (proj2_sig m)).
 exists (le_n (S N)).
 apply (MySumF2Sn2 N (fun (m : Count N) => le_S (S (proj1_sig m)) N (proj2_sig m)) (le_n (S N))).
+Qed.
+
+Lemma MySumF2Distr : forall (U : Type) (CM : CommutativeMonoid) (A : {X : Ensemble U | Finite U X}) (F G FG : U -> CMT CM), (forall (u : U), In U (proj1_sig A) u -> FG u = CMc CM (F u) (G u)) -> MySumF2 U A CM FG = CMc CM (MySumF2 U A CM F) (MySumF2 U A CM G).
+Proof.
+intros U CM A F G FG H1.
+apply (FiniteSetInduction U A).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+rewrite (CM_O_r CM (CMe CM)).
+reflexivity.
+intros B b H2 H3 H4 H5.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite (CM_comm_assoc CM).
+rewrite (H1 b H3).
+rewrite H5.
+reflexivity.
+apply H4.
+apply H4.
+apply H4.
 Qed.
 
 End MySum.
