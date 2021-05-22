@@ -1385,7 +1385,7 @@ apply conj.
 move=> u H2.
 suff: (proj1_sig (let temp := (fun (u : U) => match excluded_middle_informative (In U u1 u) with
   | left _ => exist (fun n : nat => n < 2) 1 (le_n 2)
-  | right _ => exist (fun n0 : nat => n0 < 2) 0 (le_S 1 1 (le_n 1)) 
+  | right _ => exist (fun n0 : nat => n0 < 2) 0 (le_S 1 1 (le_n 1))
 end) in temp u) = 1).
 rewrite H1.
 simpl.
@@ -1407,7 +1407,7 @@ apply (H3 H2).
 move=> u H2.
 suff: (proj1_sig (let temp := (fun (u : U) => match excluded_middle_informative (In U u2 u) with
   | left _ => exist (fun n : nat => n < 2) 1 (le_n 2)
-  | right _ => exist (fun n0 : nat => n0 < 2) 0 (le_S 1 1 (le_n 1)) 
+  | right _ => exist (fun n0 : nat => n0 < 2) 0 (le_S 1 1 (le_n 1))
 end) in temp u) = 1).
 rewrite - H1.
 simpl.
@@ -2073,7 +2073,7 @@ apply H3.
 apply conj.
 apply H4.
 apply H5.
-move=> t. 
+move=> t.
 elim.
 move=> Y H5.
 suff: (X = Y).
