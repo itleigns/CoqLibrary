@@ -2,6 +2,7 @@ Add LoadPath "MyAlgebraicStructure" as MyAlgebraicStructure.
 Add LoadPath "Tools" as Tools.
 Add LoadPath "BasicProperty" as BasicProperty.
 Add LoadPath "BasicNotation" as BasicNotation.
+Add LoadPath "LibraryExtension" as LibraryExtension.
 
 From mathcomp Require Import ssreflect.
 Require Import Coq.Sets.Ensembles.
@@ -24,6 +25,7 @@ Require Import BasicProperty.MappingProperty.
 Require Import BasicProperty.NatProperty.
 Require Import BasicNotation.Parity.
 Require Import BasicNotation.Permutation.
+Require Import LibraryExtension.DatatypesExtension.
 
 Section Matrix.
 
@@ -467,27 +469,14 @@ move=> y.
 reflexivity.
 Qed.
 
-Lemma blockdividesub : forall (m1 m2 : nat) (x : {n : nat | (n < m1 + m2)}), (m1 <= proj1_sig x) -> {y : {n : nat | (n < m2)} | (m1 + proj1_sig y = proj1_sig x)}.
-Proof.
-move=> m1 m2 x H1.
-suff: ((proj1_sig x - m1) < m2).
-move=> H2.
-exists (exist (fun n : nat => (n < m2)) (proj1_sig x - m1) H2).
-unfold proj1_sig at 1.
-apply (le_plus_minus_r m1 (proj1_sig x) H1).
-apply (plus_lt_reg_l (proj1_sig x - m1) m2 m1).
-rewrite (le_plus_minus_r m1 (proj1_sig x) H1).
-apply (proj2_sig x).
-Qed.
-
-Definition MBlockH := fun (f : Field) (M1 M2 N : nat) (A1 : Matrix f M1 N) (A2 : Matrix f M2 N) (x : {n : nat | (n < M1 + M2)}) (y : {n : nat | (n < N)}) => match (le_lt_dec M1 (proj1_sig x)) with
-  | left a => A2 (proj1_sig (blockdividesub M1 M2 x a)) y
-  | right b => A1 (exist (fun (n : nat) => (n < M1)) (proj1_sig x) b) y
+Definition MBlockH := fun (f : Field) (M1 M2 N : nat) (A1 : Matrix f M1 N) (A2 : Matrix f M2 N) (x : {n : nat | (n < M1 + M2)}) (y : {n : nat | (n < N)}) => match (AddConnectInv M1 M2 x) with
+  | inl x0 => A1 x0 y
+  | inr x0 => A2 x0 y
 end.
 
-Definition MBlockW := fun (f : Field) (M N1 N2 : nat) (A1 : Matrix f M N1) (A2 : Matrix f M N2) (x : {n : nat | (n < M)}) (y : {n : nat | (n < N1 + N2)}) => match (le_lt_dec N1 (proj1_sig y)) with
-  | left a => A2 x (proj1_sig (blockdividesub N1 N2 y a))
-  | right b => A1 x (exist (fun (n : nat) => (n < N1)) (proj1_sig y) b)
+Definition MBlockW := fun (f : Field) (M N1 N2 : nat) (A1 : Matrix f M N1) (A2 : Matrix f M N2) (x : {n : nat | (n < M)}) (y : {n : nat | (n < N1 + N2)}) => match (AddConnectInv N1 N2 y) with
+  | inl y0 => A1 x y0
+  | inr y0 => A2 x y0
 end.
 
 Lemma MBlockHPlus : forall (f : Field) (M1 M2 N : nat) (A1 B1 : Matrix f M1 N) (A2 B2 : Matrix f M2 N), Mplus f (M1 + M2) N (MBlockH f M1 M2 N A1 A2) (MBlockH f M1 M2 N B1 B2) = MBlockH f M1 M2 N (Mplus f M1 N A1 B1) (Mplus f M2 N A2 B2).
@@ -499,7 +488,7 @@ apply functional_extensionality.
 move=> y.
 unfold Mplus.
 unfold MBlockH.
-elim (le_lt_dec M1 (proj1_sig x)).
+elim (AddConnectInv M1 M2 x).
 move=> H1.
 reflexivity.
 move=> H1.
@@ -515,7 +504,7 @@ apply functional_extensionality.
 move=> y.
 unfold Mplus.
 unfold MBlockW.
-elim (le_lt_dec N1 (proj1_sig y)).
+elim (AddConnectInv N1 N2 y).
 move=> H1.
 reflexivity.
 move=> H1.
@@ -531,7 +520,7 @@ apply functional_extensionality.
 move=> y.
 unfold Mopp.
 unfold MBlockH.
-elim (le_lt_dec M1 (proj1_sig x)).
+elim (AddConnectInv M1 M2 x).
 move=> H1.
 reflexivity.
 move=> H1.
@@ -547,7 +536,7 @@ apply functional_extensionality.
 move=> y.
 unfold Mopp.
 unfold MBlockW.
-elim (le_lt_dec N1 (proj1_sig y)).
+elim (AddConnectInv N1 N2 y).
 move=> H1.
 reflexivity.
 move=> H1.
@@ -563,7 +552,7 @@ apply functional_extensionality.
 move=> y.
 unfold Mmult.
 unfold MBlockH.
-elim (le_lt_dec M1 (proj1_sig x)).
+elim (AddConnectInv M1 M2 x).
 move=> H1.
 reflexivity.
 move=> H1.
@@ -579,7 +568,7 @@ apply functional_extensionality.
 move=> y.
 unfold Mmult.
 unfold MBlockW.
-elim (le_lt_dec K1 (proj1_sig y)).
+elim (AddConnectInv K1 K2 y).
 move=> H1.
 reflexivity.
 move=> H1.
@@ -597,170 +586,178 @@ unfold Mmult.
 unfold Mplus.
 unfold MBlockH.
 unfold MBlockW.
-rewrite (MySumF2Excluded {n : nat | (n < N1 + N2)} (FPCM f) (fun n : Count (N1 + N2) => Fmul f match le_lt_dec N1 (proj1_sig n) with
-  | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
-  | right b => A1 x (exist (fun n0 : nat => (n0 < N1)) (proj1_sig n) b)
-end match le_lt_dec N1 (proj1_sig n) with
-  | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
-  | right b => B1 (exist (fun n0 : nat => (n0 < N1)) (proj1_sig n) b) y
+rewrite (MySumF2Excluded {n : nat | (n < N1 + N2)} (FPCM f) (fun n : Count (N1 + N2) => Fmul f match AddConnectInv N1 N2 n with
+  | inl y0 => A1 x y0
+  | inr y0 => A2 x y0
+end match AddConnectInv N1 N2 n with
+  | inl x0 => B1 x0 y
+  | inr x0 => B2 x0 y
 end) (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)}) (CountFinite (N1 + N2))) (fun (m : {n : nat | (n < N1 + N2)}) => (proj1_sig m < N1))).
-suff: ((MySumF2 {n : nat | (n < N1 + N2)} (FiniteIntersection {n : nat | (n < N1 + N2)} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)}) (CountFinite (N1 + N2))) (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1))) (FPCM f) (fun n : Count (N1 + N2) => Fmul f match le_lt_dec N1 (proj1_sig n) with
-  | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
-  | right b => A1 x (exist (fun n0 : nat => (n0 < N1)) (proj1_sig n) b)
-end match le_lt_dec N1 (proj1_sig n) with
-  | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
-  | right b => B1 (exist (fun n0 : nat => (n0 < N1)) (proj1_sig n) b) y
+suff: ((MySumF2 {n : nat | (n < N1 + N2)} (FiniteIntersection {n : nat | (n < N1 + N2)} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)}) (CountFinite (N1 + N2))) (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1))) (FPCM f) (fun n : Count (N1 + N2) => Fmul f match AddConnectInv N1 N2 n with
+  | inl y0 => A1 x y0
+  | inr y0 => A2 x y0
+end match AddConnectInv N1 N2 n with
+  | inl x0 => B1 x0 y
+  | inr x0 => B2 x0 y
 end)) = (MySumF2 {n : nat | (n < N1)} (exist (Finite (Count N1)) (Full_set {n : nat | (n < N1)}) (CountFinite N1)) (FPCM f) (fun n : Count N1 => Fmul f (A1 x n) (B1 n y)))).
 move=> H1.
 rewrite H1.
-suff: ((MySumF2 {n : nat | (n < N1 + N2)} (FiniteIntersection {n : nat | (n < N1 + N2)} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)}) (CountFinite (N1 + N2))) (Complement {n : nat | (n < N1 + N2)} (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1)))) (FPCM f) (fun n : Count (N1 + N2) => Fmul f match le_lt_dec N1 (proj1_sig n) with
-  | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
-  | right b => A1 x (exist (fun n0 : nat => (n0 < N1)) (proj1_sig n) b)
-end match le_lt_dec N1 (proj1_sig n) with
-  | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
-  | right b => B1 (exist (fun n0 : nat => (n0 < N1)) (proj1_sig n) b) y
+suff: ((MySumF2 {n : nat | (n < N1 + N2)} (FiniteIntersection {n : nat | (n < N1 + N2)} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)}) (CountFinite (N1 + N2))) (Complement {n : nat | (n < N1 + N2)} (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1)))) (FPCM f) (fun n : Count (N1 + N2) => Fmul f match AddConnectInv N1 N2 n with
+  | inl y0 => A1 x y0
+  | inr y0 => A2 x y0
+end match AddConnectInv N1 N2 n with
+  | inl x0 => B1 x0 y
+  | inr x0 => B2 x0 y
 end)) = (MySumF2 {n : nat | (n < N2)} (exist (Finite (Count N2)) (Full_set {n : nat | (n < N2)}) (CountFinite N2)) (FPCM f) (fun n : Count N2 => Fmul f (A2 x n) (B2 n y)))).
 move=> H2.
 rewrite H2.
 reflexivity.
-suff: (forall (u : {n : nat | (n < N2)}), (N1 + proj1_sig u < N1 + N2)).
-move=> H2.
-suff: (forall (u : {n : nat | (n < N2)}), proj1_sig (exist (Finite (Count N2)) (Full_set {n : nat | (n < N2)}) (CountFinite N2)) u -> proj1_sig (FiniteIntersection {n : nat | (n < N1 + N2)} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)}) (CountFinite (N1 + N2))) (Complement {n : nat | (n < N1 + N2)} (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1)))) ((fun (u1 : {n : nat | (n < N2)}) => (exist (fun (n : nat) => (n < N1 + N2)) (N1 + proj1_sig u1) (H2 u1))) u)).
-move=> H3.
-rewrite - (MySumF2BijectiveSame {n : nat | (n < N2)} (exist (Finite (Count N2)) (Full_set {n : nat | (n < N2)}) (CountFinite N2)) {n : nat | (n < N1 + N2)} (FiniteIntersection {n : nat | (n < N1 + N2)} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)}) (CountFinite (N1 + N2))) (Complement {n : nat | (n < N1 + N2)} (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1)))) (FPCM f) (fun n : Count (N1 + N2) => Fmul f match le_lt_dec N1 (proj1_sig n) with
-  | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
-  | right b => A1 x (exist (fun n0 : nat => (n0 < N1)) (proj1_sig n) b)
-end match le_lt_dec N1 (proj1_sig n) with
-  | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
-  | right b => B1 (exist (fun n0 : nat => (n0 < N1)) (proj1_sig n) b) y
-end) (fun (u1 : {n : nat | (n < N2)}) => (exist (fun (n : nat) => (n < N1 + N2)) (N1 + proj1_sig u1) (H2 u1))) H3).
+rewrite - (MySumF2BijectiveSame {n : nat | (n < N2)} (exist (Finite (Count N2)) (Full_set {n : nat | (n < N2)}) (CountFinite N2)) {n : nat | (n < N1 + N2)} (FiniteIntersection {n : nat | (n < N1 + N2)} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)}) (CountFinite (N1 + N2))) (Complement {n : nat | (n < N1 + N2)} (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1)))) (FPCM f) (fun n : Count (N1 + N2) => Fmul f match AddConnectInv N1 N2 n with
+  | inl y0 => A1 x y0
+  | inr y0 => A2 x y0
+end match AddConnectInv N1 N2 n with
+  | inl x0 => B1 x0 y
+  | inr x0 => B2 x0 y
+end) (fun (u1 : {n : nat | (n < N2)}) => AddConnect N1 N2 (inr u1))).
 apply (MySumF2Same {n : nat | (n < N2)} (exist (Finite (Count N2)) (Full_set {n : nat | (n < N2)}) (CountFinite N2)) (FPCM f)).
-simpl.
-move=> u H4.
-elim (le_lt_dec N1 (N1 + proj1_sig u)).
-move=> H5.
-suff: (u = (proj1_sig (blockdividesub N1 N2 (exist (fun n : nat => (n < N1 + N2)) (N1 + proj1_sig u) (H2 u)) H5))).
-move=> H6.
-rewrite {7} H6.
-rewrite {11} H6.
-reflexivity.
-apply sig_map.
-apply (plus_reg_l (proj1_sig u) (proj1_sig (proj1_sig (blockdividesub N1 N2 (exist (fun n : nat => (n < N1 + N2)) (N1 + proj1_sig u) (H2 u)) H5))) N1).
-rewrite (proj2_sig (blockdividesub N1 N2 (exist (fun n : nat => (n < N1 + N2)) (N1 + proj1_sig u) (H2 u)) H5)).
-reflexivity.
-move=> H5.
-apply False_ind.
-apply (lt_not_le (N1 + proj1_sig u) N1 H5).
-rewrite - {1} (plus_0_r N1).
-apply (plus_le_compat_l 0 (proj1_sig u) N1 (le_0_n (proj1_sig u))).
-simpl.
-suff: (forall (x : {u : {n : nat | (n < N1 + N2)} | Intersection {n : nat | (n < N1 + N2)} (Complement {n : nat | (n < N1 + N2)} (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1))) (Full_set {n : nat | (n < N1 + N2)}) u}), (proj1_sig (proj1_sig x) - N1 < N2)).
+move=> u H2.
+suff: (match AddConnectInv N1 N2 (AddConnect N1 N2 (inr u)) return Prop with
+  | inl _ => False
+  | inr k => proj1_sig (AddConnect N1 N2 (inr u)) = N1 + proj1_sig k
+end).
+elim (AddConnectInv N1 N2 (AddConnect N1 N2 (inr u))).
+move=> k.
+elim.
+move=> k H3.
+suff: (k = u).
 move=> H4.
-suff: (forall (x : {u : {n : nat | (n < N1 + N2)} | Intersection {n : nat | (n < N1 + N2)} (Complement {n : nat | (n < N1 + N2)} (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1))) (Full_set {n : nat | (n < N1 + N2)}) u}), Full_set {n : nat | (n < N2)} (exist (fun (n : nat) => (n < N2)) (proj1_sig (proj1_sig x) - N1) (H4 x))).
-move=> H5.
-exists (fun (x : {u : {n : nat | (n < N1 + N2)} | Intersection {n : nat | (n < N1 + N2)} (Complement {n : nat | (n < N1 + N2)} (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1))) (Full_set {n : nat | (n < N1 + N2)}) u}) => exist (fun (u : {n : nat | (n < N2)}) => Full_set {n : nat | (n < N2)} u) (exist (fun (n : nat) => (n < N2)) (proj1_sig (proj1_sig x) - N1) (H4 x)) (H5 x)).
-apply conj.
-move=> x0.
-apply sig_map.
-simpl.
-apply sig_map.
-simpl.
-apply (minus_plus N1 (proj1_sig (proj1_sig x0))).
-move=> y0.
-apply sig_map.
-simpl.
-apply sig_map.
-simpl.
-apply (le_plus_minus_r N1 (proj1_sig (proj1_sig y0))).
-elim (le_or_lt N1 (proj1_sig (proj1_sig y0))).
-apply.
-elim (proj2_sig y0).
-move=> y1 H6 H7 H8.
-apply False_ind.
-apply (H6 H8).
-move=> x0.
-apply (Full_intro {n : nat | (n < N2)} (exist (fun n : nat => (n < N2)) (proj1_sig (proj1_sig x0) - N1) (H4 x0))).
-move=> x0.
-apply (plus_lt_reg_l (proj1_sig (proj1_sig x0) - N1) N2 N1).
-rewrite (le_plus_minus_r N1 (proj1_sig (proj1_sig x0))).
-apply (proj2_sig (proj1_sig x0)).
-elim (le_or_lt N1 (proj1_sig (proj1_sig x0))).
-apply.
-elim (proj2_sig x0).
-move=> x1 H4 H5 H6.
-apply False_ind.
-apply (H4 H6).
-move=> u H3.
-unfold FiniteIntersection.
-simpl.
-apply (Intersection_intro {n : nat | (n < N1 + N2)}).
-apply (le_not_lt N1 (N1 + proj1_sig u)).
-rewrite - {1} (plus_0_r N1).
-apply (plus_le_compat_l 0 (proj1_sig u) N1 (le_0_n (proj1_sig u))).
-apply (Full_intro {n : nat | (n < N1 + N2)}).
-move=> u.
-apply (plus_lt_compat_l (proj1_sig u) N2 N1).
-apply (proj2_sig u).
-suff: (forall (u : {n : nat | (n < N1)}), (proj1_sig u < N1 + N2)).
-move=> H1.
-suff: (forall (u : {n : nat | (n < N1)}), proj1_sig (exist (Finite (Count N1)) (Full_set {n : nat | (n < N1)}) (CountFinite N1)) u -> proj1_sig (FiniteIntersection {n : nat | (n < N1 + N2)} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)}) (CountFinite (N1 + N2))) (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1))) ((fun (u1 : {n : nat | (n < N1)}) => (exist (fun (n : nat) => (n < N1 + N2)) (proj1_sig u1) (H1 u1))) u)).
-move=> H2.
-rewrite - (MySumF2BijectiveSame {n : nat | (n < N1)} (exist (Finite (Count N1)) (Full_set {n : nat | (n < N1)}) (CountFinite N1)) {n : nat | (n < N1 + N2)} (FiniteIntersection {n : nat | (n < N1 + N2)} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)}) (CountFinite (N1 + N2))) (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1))) (FPCM f) (fun n : Count (N1 + N2) => Fmul f match le_lt_dec N1 (proj1_sig n) with
-  | left a => A2 x (proj1_sig (blockdividesub N1 N2 n a))
-  | right b => A1 x (exist (fun n0 : nat => (n0 < N1)) (proj1_sig n) b)
-end match le_lt_dec N1 (proj1_sig n) with
-  | left a => B2 (proj1_sig (blockdividesub N1 N2 n a)) y
-  | right b => B1 (exist (fun n0 : nat => (n0 < N1)) (proj1_sig n) b) y
-end) (fun (u1 : {n : nat | (n < N1)}) => (exist (fun (n : nat) => (n < N1 + N2)) (proj1_sig u1) (H1 u1))) H2).
-apply (MySumF2Same {n : nat | (n < N1)} (exist (Finite (Count N1)) (Full_set {n : nat | (n < N1)}) (CountFinite N1)) (FPCM f)).
-simpl.
-move=> u H3.
-elim (le_lt_dec N1 (proj1_sig u)).
-move=> H4.
-apply False_ind.
-apply (lt_not_le (proj1_sig u) N1 (proj2_sig u) H4).
-move=> H4.
-suff: (u = (exist (fun n0 : nat => (n0 < N1)) (proj1_sig u) H4)).
-move=> H5.
-rewrite {3} H5.
-rewrite {4} H5.
+rewrite H4.
 reflexivity.
 apply sig_map.
+apply (plus_reg_l (proj1_sig k) (proj1_sig u) N1).
+rewrite - H3.
+rewrite (proj2 (AddConnectNature N1 N2) u).
 reflexivity.
-simpl.
-suff: (forall (x : {u : {n : nat | (n < N1 + N2)} | Intersection {n : nat | (n < N1 + N2)} (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1)) (Full_set {n : nat | (n < N1 + N2)}) u}), (proj1_sig (proj1_sig x) < N1)).
-move=> H3.
-suff: (forall (x : {u : {n : nat | (n < N1 + N2)} | Intersection {n : nat | (n < N1 + N2)} (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1)) (Full_set {n : nat | (n < N1 + N2)}) u}), Full_set {n : nat | (n < N1)} (exist (fun (n : nat) => (n < N1)) (proj1_sig (proj1_sig x)) (H3 x))).
-move=> H4.
-exists (fun (x : {u : {n : nat | (n < N1 + N2)} | Intersection {n : nat | (n < N1 + N2)} (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1)) (Full_set {n : nat | (n < N1 + N2)}) u}) => exist (fun (u : {n : nat | (n < N1)}) => Full_set {n : nat | (n < N1)} u) (exist (fun (n : nat) => (n < N1)) (proj1_sig (proj1_sig x)) (H3 x)) (H4 x)).
-apply conj.
-move=> x0.
-apply sig_map.
-simpl.
-apply sig_map.
-simpl.
-reflexivity.
-move=> y0.
-apply sig_map.
-simpl.
-apply sig_map.
-simpl.
-reflexivity.
-move=> x0.
-apply (Full_intro {n : nat | (n < N1)} (exist (fun n : nat => (n < N1)) (proj1_sig (proj1_sig x0)) (H3 x0))).
-move=> x0.
-elim (proj2_sig x0).
-move=> x1 H3 H4.
-apply H3.
-simpl.
+apply (proj2 (AddConnectInvNature N1 N2) (AddConnect N1 N2 (inr u))).
+rewrite - (proj2 (AddConnectNature N1 N2) u).
+apply (le_plus_l N1 (proj1_sig u)).
 move=> u H2.
 apply (Intersection_intro {n : nat | (n < N1 + N2)}).
-apply (proj2_sig u).
-apply (Full_intro {n : nat | (n < N1 + N2)} (exist (fun n : nat => (n < N1 + N2)) (proj1_sig u) (H1 u))).
+apply (le_not_lt N1 (proj1_sig (AddConnect N1 N2 (inr u)))).
+rewrite - (proj2 (AddConnectNature N1 N2) u).
+apply (le_plus_l N1 (proj1_sig u)).
+apply (Full_intro {n : nat | (n < N1 + N2)}).
+move=> H2.
+simpl.
+apply InjSurjBij.
+move=> u1 u2 H3.
+apply sig_map.
+apply (injective_inr {n : nat | n < N1} {n : nat | n < N2}).
+apply (BijInj ({n : nat | n < N1} + {n : nat | n < N2}) {n : nat | n < N1 + N2} (AddConnect N1 N2)).
+exists (AddConnectInv N1 N2).
+apply (AddConnectInvRelation N1 N2).
+suff: (AddConnect N1 N2 (inr (proj1_sig u1)) = proj1_sig (exist (Intersection {n : nat | n < N1 + N2} (Complement {n : nat | n < N1 + N2} (fun m : {n : nat | n < N1 + N2} => proj1_sig m < N1)) (Full_set {n : nat | n < N1 + N2})) (AddConnect N1 N2 (inr (proj1_sig u1))) (H2 (proj1_sig u1) (proj2_sig u1)))).
+move=> H4.
+rewrite H4.
+rewrite H3.
+reflexivity.
+reflexivity.
 move=> u.
-apply (lt_le_trans (proj1_sig u) N1 (N1 + N2) (proj2_sig u)).
-rewrite - {1} (plus_0_r N1).
-apply (plus_le_compat_l 0 N2 N1 (le_0_n N2)).
+suff: (match AddConnectInv N1 N2 (proj1_sig u) return Prop with
+  | inl _ => False
+  | inr k => proj1_sig (proj1_sig u) = N1 + proj1_sig k
+end).
+elim (AddConnectInv N1 N2 (proj1_sig u)).
+move=> H3.
+elim.
+move=> k H3.
+exists (exist (Full_set {n : nat | n < N2}) k (Full_intro {n : nat | n < N2} k)).
+apply sig_map.
+apply sig_map.
+simpl.
+rewrite H3.
+rewrite (proj2 (AddConnectNature N1 N2) k).
+reflexivity.
+apply (proj2 (AddConnectInvNature N1 N2) (proj1_sig u)).
+elim (proj2_sig u).
+move=> u0 H3 H4.
+apply NNPP.
+move=> H5.
+apply H3.
+elim (le_or_lt N1 (proj1_sig u0)).
+move=> H6.
+apply False_ind.
+apply (H5 H6).
+apply.
+rewrite - (MySumF2BijectiveSame {n : nat | (n < N1)} (exist (Finite (Count N1)) (Full_set {n : nat | (n < N1)}) (CountFinite N1)) {n : nat | (n < N1 + N2)} (FiniteIntersection {n : nat | (n < N1 + N2)} (exist (Finite (Count (N1 + N2))) (Full_set {n : nat | (n < N1 + N2)}) (CountFinite (N1 + N2))) (fun m : {n : nat | (n < N1 + N2)} => (proj1_sig m < N1))) (FPCM f) (fun n : Count (N1 + N2) => Fmul f match AddConnectInv N1 N2 n with
+  | inl y0 => A1 x y0
+  | inr y0 => A2 x y0
+end match AddConnectInv N1 N2 n with
+  | inl x0 => B1 x0 y
+  | inr x0 => B2 x0 y
+end) (fun (u1 : {n : nat | (n < N1)}) => AddConnect N1 N2 (inl u1))).
+apply (MySumF2Same {n : nat | (n < N1)} (exist (Finite (Count N1)) (Full_set {n : nat | (n < N1)}) (CountFinite N1)) (FPCM f)).
+move=> u H1.
+suff: (match AddConnectInv N1 N2 (AddConnect N1 N2 (inl u)) return Prop with
+  | inl k => proj1_sig (AddConnect N1 N2 (inl u)) = proj1_sig k
+  | inr _ => False
+end).
+elim (AddConnectInv N1 N2 (AddConnect N1 N2 (inl u))).
+move=> k H2.
+suff: (k = u).
+move=> H3.
+rewrite H3.
+reflexivity.
+apply sig_map.
+rewrite - H2.
+rewrite (proj1 (AddConnectNature N1 N2) u).
+reflexivity.
+move=> k.
+elim.
+apply (proj1 (AddConnectInvNature N1 N2) (AddConnect N1 N2 (inl u))).
+rewrite - (proj1 (AddConnectNature N1 N2) u).
+apply (proj2_sig u).
+move=> u H1.
+apply (Intersection_intro {n : nat | (n < N1 + N2)}).
+unfold In.
+rewrite - (proj1 (AddConnectNature N1 N2) u).
+apply (proj2_sig u).
+apply (Full_intro {n : nat | (n < N1 + N2)}).
+move=> H1.
+simpl.
+apply InjSurjBij.
+move=> u1 u2 H2.
+apply sig_map.
+apply (injective_inl {n : nat | n < N1} {n : nat | n < N2}).
+apply (BijInj ({n : nat | n < N1} + {n : nat | n < N2}) {n : nat | n < N1 + N2} (AddConnect N1 N2)).
+exists (AddConnectInv N1 N2).
+apply (AddConnectInvRelation N1 N2).
+suff: (AddConnect N1 N2 (inl (proj1_sig u1)) = proj1_sig (exist (Intersection {n : nat | n < N1 + N2} (fun m : {n : nat | n < N1 + N2} => proj1_sig m < N1) (Full_set {n : nat | n < N1 + N2})) (AddConnect N1 N2 (inl (proj1_sig u1))) (H1 (proj1_sig u1) (proj2_sig u1)))).
+move=> H3.
+rewrite H3.
+rewrite H2.
+reflexivity.
+reflexivity.
+move=> u.
+suff: (match AddConnectInv N1 N2 (proj1_sig u) return Prop with
+  | inl k => proj1_sig (proj1_sig u) = proj1_sig k
+  | inr _ => False
+end).
+elim (AddConnectInv N1 N2 (proj1_sig u)).
+move=> k H2.
+exists (exist (Full_set {n : nat | n < N1}) k (Full_intro {n : nat | n < N1} k)).
+apply sig_map.
+apply sig_map.
+simpl.
+rewrite H2.
+rewrite (proj1 (AddConnectNature N1 N2) k).
+reflexivity.
+move=> k.
+elim.
+apply (proj1 (AddConnectInvNature N1 N2) (proj1_sig u)).
+elim (proj2_sig u).
+move=> u0 H2 H3.
+apply H2.
 Qed.
 
 Lemma MBlockHVMult : forall (f : Field) (M1 M2 N : nat) (c : FT f) (A1 : Matrix f M1 N) (A2 : Matrix f M2 N), VMmult f (M1 + M2) N c (MBlockH f M1 M2 N A1 A2) = MBlockH f M1 M2 N (VMmult f M1 N c A1) (VMmult f M2 N c A2).
@@ -772,7 +769,7 @@ apply functional_extensionality.
 move=> y.
 unfold VMmult.
 unfold MBlockH.
-elim (le_lt_dec M1 (proj1_sig x)).
+elim (AddConnectInv M1 M2 x).
 move=> H1.
 reflexivity.
 move=> H1.
@@ -788,7 +785,7 @@ apply functional_extensionality.
 move=> y.
 unfold VMmult.
 unfold MBlockW.
-elim (le_lt_dec N1 (proj1_sig y)).
+elim (AddConnectInv N1 N2 y).
 move=> H1.
 reflexivity.
 move=> H1.
@@ -1731,7 +1728,18 @@ Qed.
 
 Lemma CauchyBinet : forall (f : Field) (N M : nat) (A : Matrix f N M) (B : Matrix f M N), Determinant f N (Mmult f N M N A B) = MySumF2 ({n : nat | (n < N)} -> {n : nat | (n < M)}) (FiniteIntersection ({n : nat | (n < N)} -> {n : nat | (n < M)}) (exist (Finite ({n : nat | (n < N)} -> {n : nat | (n < M)})) (Full_set ({n : nat | (n < N)} -> {n : nat | (n < M)})) (CountPowFinite N M)) (fun (r : ({n : nat | (n < N)} -> {n : nat | (n < M)})) => forall (p q : {n : nat | (n < N)}), (proj1_sig p < proj1_sig q) -> (proj1_sig (r p) < proj1_sig (r q)))) (FPCM f) (fun (r : ({n : nat | (n < N)} -> {n : nat | (n < M)})) => Fmul f (Determinant f N (fun (x y : {n : nat | (n < N)}) => A x (r y))) (Determinant f N (fun (x y : {n : nat | (n < N)}) => B (r x) y))).
 Proof.
-move=> f N M A B.
+suff: (forall (m1 m2 : nat) (x : {n : nat | (n < m1 + m2)}), (m1 <= proj1_sig x) -> {y : {n : nat | (n < m2)} | (m1 + proj1_sig y = proj1_sig x)}).
+move=> H37 f N M A B.
+suff: (MBlockH = fun (f : Field) (M1 M2 N : nat) (A1 : Matrix f M1 N) (A2 : Matrix f M2 N) (x : {n : nat | (n < M1 + M2)}) (y : {n : nat | (n < N)}) => match (le_lt_dec M1 (proj1_sig x)) with
+  | left a => A2 (proj1_sig (H37 M1 M2 x a)) y
+  | right b => A1 (exist (fun (n : nat) => (n < M1)) (proj1_sig x) b) y
+end).
+move=> H35.
+suff: (MBlockW = fun (f : Field) (M N1 N2 : nat) (A1 : Matrix f M N1) (A2 : Matrix f M N2) (x : {n : nat | (n < M)}) (y : {n : nat | (n < N1 + N2)}) => match (le_lt_dec N1 (proj1_sig y)) with
+  | left a => A2 x (proj1_sig (H37 N1 N2 y a))
+  | right b => A1 x (exist (fun (n : nat) => (n < N1)) (proj1_sig y) b)
+end).
+move=> H36.
 suff: (Determinant f N (Mopp f N N (Mmult f N M N A B)) = Determinant f (M + N) (MBlockW f (M + N) M N (MBlockH f M N M (MI f M) A) (MBlockH f M N N B (MO f N N)))).
 move=> H1.
 suff: (Determinant f N (Mmult f N M N A B) = Fmul f (PowF f (Fopp f (FI f)) N) (Determinant f (M + N) (MBlockW f (M + N) M N (MBlockH f M N M (MI f M) A) (MBlockH f M N N B (MO f N N))))).
@@ -1746,7 +1754,7 @@ suff: (forall (l : {n : nat | (n < N)}), (M + proj1_sig l < M + N)).
 move=> H5.
 suff: (forall (x : (({n : nat | (n < N)} -> {n : nat | (n < M)}) * ((Permutation N) * (Permutation N)))), Bijective ((fun (x : (({n : nat | (n < N)} -> {n : nat | (n < M)}) * ((Permutation N) * (Permutation N)))) => match excluded_middle_informative (Injective (fst x)) with
   | left a => (fun (k : {n : nat | (n < M + N)}) => match le_lt_dec M (proj1_sig k) with
-    | left b => exist (fun (s : nat) => (s < M + N)) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k b))))) (H4 (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k b)))))
+    | left b => exist (fun (s : nat) => (s < M + N)) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k b))))) (H4 (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k b)))))
     | right b => match excluded_middle_informative (exists (l : {n : nat | (n < N)}), exist (fun (s : nat) => (s < M)) (proj1_sig k) b = fst x l) with
       | left c => exist (fun (s : nat) => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun (s : nat) => (s < M)) (proj1_sig k) b) a c)))) (H5 (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun (s : nat) => (s < M)) (proj1_sig k) b) a c))))
       | right _ => k
@@ -1757,7 +1765,7 @@ end) x)).
 move=> H6.
 rewrite (MySumF2Included (Permutation (M + N)) (FiniteIm (({n : nat | (n < N)} -> {n : nat | (n < M)}) * ((Permutation N) * (Permutation N))) (Permutation (M + N)) (fun (x : (({n : nat | (n < N)} -> {n : nat | (n < M)}) * ((Permutation N) * (Permutation N)))) => exist Bijective (match excluded_middle_informative (Injective (fst x)) with
   | left a => (fun (k : {n : nat | (n < M + N)}) => match le_lt_dec M (proj1_sig k) with
-    | left b => exist (fun (s : nat) => (s < M + N)) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k b))))) (H4 (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k b)))))
+    | left b => exist (fun (s : nat) => (s < M + N)) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k b))))) (H4 (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k b)))))
     | right b => match excluded_middle_informative (exists (l : {n : nat | (n < N)}), exist (fun (s : nat) => (s < M)) (proj1_sig k) b = fst x l) with
       | left c => exist (fun (s : nat) => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun (s : nat) => (s < M)) (proj1_sig k) b) a c)))) (H5 (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun (s : nat) => (s < M)) (proj1_sig k) b) a c))))
       | right _ => k
@@ -1767,7 +1775,7 @@ rewrite (MySumF2Included (Permutation (M + N)) (FiniteIm (({n : nat | (n < N)} -
 end) (H6 x)) (FinitePair ({n : nat | (n < N)} -> {n : nat | (n < M)}) ((Permutation N) * (Permutation N)) (FiniteIntersection ({n : nat | (n < N)} -> {n : nat | (n < M)}) (exist (Finite ({n : nat | (n < N)} -> {n : nat | (n < M)})) (Full_set ({n : nat | (n < N)} -> {n : nat | (n < M)})) (CountPowFinite N M)) (fun r : {n : nat | (n < N)} -> {n : nat | (n < M)} => forall p q : {n : nat | (n < N)}, (proj1_sig p < proj1_sig q) -> (proj1_sig (r p) < proj1_sig (r q)))) (FinitePair (Permutation N) (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N))))) (exist (Finite (Permutation (M + N))) (Full_set (Permutation (M + N))) (PermutationFinite (M + N)))).
 rewrite (MySumF2O (Permutation (M + N)) (FiniteIntersection (Permutation (M + N)) (exist (Finite (Permutation (M + N))) (Full_set (Permutation (M + N))) (PermutationFinite (M + N))) (Complement (Permutation (M + N)) (proj1_sig (FiniteIm (({n : nat | (n < N)} -> {n : nat | (n < M)}) * (Permutation N * Permutation N)) (Permutation (M + N)) (fun x : ({n : nat | (n < N)} -> {n : nat | (n < M)}) * (Permutation N * Permutation N) => exist Bijective match excluded_middle_informative (Injective (fst x)) with
   | left a => fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k b))))) (H4 (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k b)))))
+    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k b))))) (H4 (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k b)))))
     | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = fst x l) with
       | left c => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig k) b) a c)))) (H5 (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig k) b) a c))))
       | right _ => k
@@ -1779,7 +1787,7 @@ rewrite - (MySumF2BijectiveSame2 (({n : nat | (n < N)} -> {n : nat | (n < M)}) *
 unfold Basics.compose.
 rewrite (MySumF2Pair ({n : nat | (n < N)} -> {n : nat | (n < M)}) ((Permutation N) * (Permutation N)) (FiniteIntersection ({n : nat | (n < N)} -> {n : nat | (n < M)}) (exist (Finite ({n : nat | (n < N)} -> {n : nat | (n < M)})) (Full_set ({n : nat | (n < N)} -> {n : nat | (n < M)})) (CountPowFinite N M)) (fun r : {n : nat | (n < N)} -> {n : nat | (n < M)} => forall p q : {n : nat | (n < N)}, (proj1_sig p < proj1_sig q) -> (proj1_sig (r p) < proj1_sig (r q)))) (FinitePair (Permutation N) (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N))) (FPCM f) (fun (x : ({n : nat | (n < N)} -> {n : nat | (n < M)})) (y : (Permutation N * Permutation N)) => Fmul f match PermutationParity (M + N) (exist Bijective match excluded_middle_informative (Injective x) with
     | left a => fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-      | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (x (proj1_sig (fst y) (proj1_sig (blockdividesub M N k b))))) (H4 (x (proj1_sig (fst y) (proj1_sig (blockdividesub M N k b)))))
+      | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (x (proj1_sig (fst y) (proj1_sig (H37 M N k b))))) (H4 (x (proj1_sig (fst y) (proj1_sig (H37 M N k b)))))
       | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = x l) with
         | left c => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd y) (proj1_sig (H3 x (exist (fun s : nat => s < M) (proj1_sig k) b) a c)))) (H5 (proj1_sig (snd y) (proj1_sig (H3 x (exist (fun s : nat => (s < M)) (proj1_sig k) b) a c))))
         | right _ => k
@@ -1791,7 +1799,7 @@ rewrite (MySumF2Pair ({n : nat | (n < N)} -> {n : nat | (n < M)}) ((Permutation 
   | OFF => FI f
 end (MySumF2 {n : nat | (n < M + N)} (exist (Finite (Count (M + N))) (Full_set {n : nat | (n < M + N)}) (CountFinite (M + N))) (FMCM f) (fun k : {n : nat | (n < M + N)} => MBlockW f (M + N) M N (MBlockH f M N M (MI f M) A) (MBlockH f M N N B (MO f N N)) k (proj1_sig (exist Bijective match excluded_middle_informative (Injective x) with
   | left a => fun k0 : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k0) with
-    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (x (proj1_sig (fst y) (proj1_sig (blockdividesub M N k0 b))))) (H4 (x (proj1_sig (fst y) (proj1_sig (blockdividesub M N k0 b)))))
+    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (x (proj1_sig (fst y) (proj1_sig (H37 M N k0 b))))) (H4 (x (proj1_sig (fst y) (proj1_sig (H37 M N k0 b)))))
     | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k0) b = x l) with
       | left c => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd y) (proj1_sig (H3 x (exist (fun s : nat => s < M) (proj1_sig k0) b) a c)))) (H5 (proj1_sig (snd y) (proj1_sig (H3 x (exist (fun s : nat => (s < M)) (proj1_sig k0) b) a c))))
       | right _ => k0
@@ -1862,7 +1870,7 @@ end)).
 rewrite - (Fmul_assoc f (PowF f (Fopp f (FI f)) N)).
 suff: ((Fmul f (PowF f (Fopp f (FI f)) N) match PermutationParity (M + N) (exist Bijective match excluded_middle_informative (Injective c) with
     | left a => fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-      | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (fst d) (proj1_sig (blockdividesub M N k b))))) (H4 (c (proj1_sig (fst d) (proj1_sig (blockdividesub M N k b)))))
+      | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (fst d) (proj1_sig (H37 M N k b))))) (H4 (c (proj1_sig (fst d) (proj1_sig (H37 M N k b)))))
       | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = c l) with
         | left c0 => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) b) a c0)))) (H5 (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) b) a c0))))
         | right _ => k
@@ -1888,7 +1896,7 @@ rewrite (MySumF2O {n : nat | (n < M + N)} (FiniteIntersection {n : nat | (n < M 
 rewrite (CM_O_r (FMCM f)).
 suff: ((MySumF2 {n : nat | (n < M + N)} (FiniteIntersection {n : nat | (n < M + N)} (exist (Finite (Count (M + N))) (Full_set {n : nat | (n < M + N)}) (CountFinite (M + N))) (fun k : {n : nat | (n < M + N)} => (M <= proj1_sig k))) (FMCM f) (fun k : {n : nat | (n < M + N)} => MBlockW f (M + N) M N (MBlockH f M N M (MI f M) A) (MBlockH f M N N B (MO f N N)) k (proj1_sig (exist Bijective match excluded_middle_informative (Injective c) with
   | left a => fun k0 : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k0) with
-    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (fst d) (proj1_sig (blockdividesub M N k0 b))))) (H4 (c (proj1_sig (fst d) (proj1_sig (blockdividesub M N k0 b)))))
+    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (fst d) (proj1_sig (H37 M N k0 b))))) (H4 (c (proj1_sig (fst d) (proj1_sig (H37 M N k0 b)))))
     | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k0) b = c l) with
       | left c0 => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k0) b) a c0)))) (H5 (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k0) b) a c0))))
       | right _ => k0
@@ -1917,8 +1925,8 @@ apply (le_not_lt M (proj1_sig (c u)) H21 (proj2_sig (c u))).
 move=> H21.
 elim (excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig (c u)) H21 = c l)).
 move=> H22.
-unfold MBlockW.
-unfold MBlockH.
+rewrite H36.
+rewrite H35.
 simpl.
 elim (le_lt_dec M (M + proj1_sig (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c u)) H21) H20 H22))))).
 move=> H23.
@@ -1930,13 +1938,13 @@ move=> H24.
 suff: ((exist (fun n : nat => (n < M)) (proj1_sig (c u)) H24) = c u).
 move=> H25.
 rewrite H25.
-suff: ((proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig (c u)) H21) H20 H22)))) (H5 (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c u)) H21) H20 H22))))) H23)) = (proj1_sig (snd d) u)).
+suff: ((proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig (c u)) H21) H20 H22)))) (H5 (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c u)) H21) H20 H22))))) H23)) = (proj1_sig (snd d) u)).
 move=> H26.
 rewrite H26.
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig (c u)) H21) H20 H22)))) (H5 (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c u)) H21) H20 H22))))) H23))) (proj1_sig (proj1_sig (snd d) u)) M).
-rewrite ((proj2_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig (c u)) H21) H20 H22)))) (H5 (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c u)) H21) H20 H22))))) H23))).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig (c u)) H21) H20 H22)))) (H5 (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c u)) H21) H20 H22))))) H23))) (proj1_sig (proj1_sig (snd d) u)) M).
+rewrite ((proj2_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig (c u)) H21) H20 H22)))) (H5 (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c u)) H21) H20 H22))))) H23))).
 simpl.
 suff: ((proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c u)) H21) H20 H22)) = u).
 move=> H26.
@@ -2021,8 +2029,8 @@ rewrite - (MySumF2BijectiveSame2 {n : nat | (n < N)} {n : nat | (n < M + N)} (ex
 unfold Basics.compose.
 apply MySumF2Same.
 move=> u H18.
-unfold MBlockW.
-unfold MBlockH.
+rewrite H36.
+rewrite H35.
 simpl.
 elim (excluded_middle_informative (Injective c)).
 move=> H19.
@@ -2030,14 +2038,14 @@ simpl.
 elim (le_lt_dec M (M + proj1_sig u)).
 move=> H20.
 simpl.
-elim (le_lt_dec M (@proj1_sig nat (fun n : nat => lt n M) (c (@proj1_sig (forall _ : @sig nat (fun n : nat => lt n N), @sig nat (fun n : nat => lt n N)) (fun f0 : forall _ : @sig nat (fun n : nat => lt n N), @sig nat (fun n : nat => lt n N) => @Bijective (@sig nat (fun n : nat => lt n N)) (@sig nat (fun n : nat => lt n N)) f0) (@fst (Permutation N) (Permutation N) d) (@proj1_sig (@sig nat (fun n : nat => lt n N)) (fun y : @sig nat (fun n : nat => lt n N) => @eq nat (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) y)) (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) u))) (blockdividesub M N (@exist nat (fun l : nat => lt l (Init.Nat.add M N)) (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) u)) (H5 u)) H20)))))).
+elim (le_lt_dec M (@proj1_sig nat (fun n : nat => lt n M) (c (@proj1_sig (forall _ : @sig nat (fun n : nat => lt n N), @sig nat (fun n : nat => lt n N)) (fun f0 : forall _ : @sig nat (fun n : nat => lt n N), @sig nat (fun n : nat => lt n N) => @Bijective (@sig nat (fun n : nat => lt n N)) (@sig nat (fun n : nat => lt n N)) f0) (@fst (Permutation N) (Permutation N) d) (@proj1_sig (@sig nat (fun n : nat => lt n N)) (fun y : @sig nat (fun n : nat => lt n N) => @eq nat (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) y)) (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) u))) (H37 M N (@exist nat (fun l : nat => lt l (Init.Nat.add M N)) (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) u)) (H5 u)) H20)))))).
 move=> H21.
 apply False_ind.
-apply (lt_not_le (proj1_sig (c (proj1_sig (fst d) (proj1_sig (blockdividesub M N (exist (fun l : nat => (l < M + N)) (M + proj1_sig u) (H5 u)) H20))))) M (proj2_sig (c (proj1_sig (fst d) (proj1_sig (blockdividesub M N (exist (fun l : nat => (l < M + N)) (M + proj1_sig u) (H5 u)) H20))))) H21).
+apply (lt_not_le (proj1_sig (c (proj1_sig (fst d) (proj1_sig (H37 M N (exist (fun l : nat => (l < M + N)) (M + proj1_sig u) (H5 u)) H20))))) M (proj2_sig (c (proj1_sig (fst d) (proj1_sig (H37 M N (exist (fun l : nat => (l < M + N)) (M + proj1_sig u) (H5 u)) H20))))) H21).
 move=> H21.
-suff: ((proj1_sig (blockdividesub M N (exist (fun l : nat => (l < M + N)) (M + proj1_sig u) (H5 u)) H20)) = u).
+suff: ((proj1_sig (H37 M N (exist (fun l : nat => (l < M + N)) (M + proj1_sig u) (H5 u)) H20)) = u).
 move=> H22.
-suff: ((exist (fun n : nat => (n < M)) (proj1_sig (c (proj1_sig (fst d) (proj1_sig (blockdividesub M N (exist (fun l : nat => (l < M + N)) (M + proj1_sig u) (H5 u)) H20))))) H21) = (c (proj1_sig (fst d) u))).
+suff: ((exist (fun n : nat => (n < M)) (proj1_sig (c (proj1_sig (fst d) (proj1_sig (H37 M N (exist (fun l : nat => (l < M + N)) (M + proj1_sig u) (H5 u)) H20))))) H21) = (c (proj1_sig (fst d) u))).
 move=> H23.
 rewrite H23.
 rewrite H22.
@@ -2047,8 +2055,8 @@ simpl.
 rewrite H22.
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun l : nat => (l < M + N)) (M + proj1_sig u) (H5 u)) H20))) (proj1_sig u) M).
-apply (proj2_sig (blockdividesub M N (exist (fun l : nat => (l < M + N)) (M + proj1_sig u) (H5 u)) H20)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun l : nat => (l < M + N)) (M + proj1_sig u) (H5 u)) H20))) (proj1_sig u) M).
+apply (proj2_sig (H37 M N (exist (fun l : nat => (l < M + N)) (M + proj1_sig u) (H5 u)) H20)).
 move=> H20.
 apply False_ind.
 apply (lt_not_le (M + proj1_sig u) M H20).
@@ -2107,8 +2115,8 @@ apply Intersection_intro.
 apply (le_plus_l M (proj1_sig s)).
 apply (Full_intro {n : nat | (n < M + N)}).
 move=> u H17.
-unfold MBlockW.
-unfold MBlockH.
+rewrite H36.
+rewrite H35.
 simpl.
 elim (excluded_middle_informative (Injective c)).
 move=> H18.
@@ -2213,7 +2221,7 @@ move=> H19.
 suff: (Injective c).
 move=> H20.
 suff: (Bijective (fun (k : {n : nat | (n < M + N)}) => match le_lt_dec M (proj1_sig k) with
-  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (blockdividesub M N k b)))) (H4 (c (proj1_sig (blockdividesub M N k b))))
+  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (H37 M N k b)))) (H4 (c (proj1_sig (H37 M N k b))))
   | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = c l) with
     | left c0 => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) b) H20 c0))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) b) H20 c0)))
     | right _ => k
@@ -2226,7 +2234,7 @@ suff: (Injective (fun (k : {n : nat | (n < N)}) => exist (fun (n : nat) => (n < 
 move=> H23.
 suff: ((exist Bijective match excluded_middle_informative (Injective c) with
   | left a => fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (fst d) (proj1_sig (blockdividesub M N k b))))) (H4 (c (proj1_sig (fst d) (proj1_sig (blockdividesub M N k b)))))
+    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (fst d) (proj1_sig (H37 M N k b))))) (H4 (c (proj1_sig (fst d) (proj1_sig (H37 M N k b)))))
     | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = c l) with
       | left c0 => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) b) a c0)))) (H5 (proj1_sig (snd d) (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) b) a c0))))
       | right _ => k
@@ -2234,7 +2242,7 @@ suff: ((exist Bijective match excluded_middle_informative (Injective c) with
   end
   | right _ => fun k : {n0 : nat | (n0 < M + N)} => k
 end (H6 (c, d))) = PermutationCompose (M + N) (exist Bijective (fun (k : {n : nat | (n < M + N)}) => match le_lt_dec M (proj1_sig k) with
-  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (blockdividesub M N k b)))) (H4 (c (proj1_sig (blockdividesub M N k b))))
+  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (H37 M N k b)))) (H4 (c (proj1_sig (H37 M N k b))))
   | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = c l) with
     | left c0 => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) b) H20 c0))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) b) H20 c0)))
     | right _ => k
@@ -2279,27 +2287,27 @@ simpl.
 elim (le_lt_dec M (proj1_sig k)).
 move=> H26.
 simpl.
-elim (le_lt_dec M (proj1_sig (c (proj1_sig (blockdividesub M N k H26))))).
+elim (le_lt_dec M (proj1_sig (c (proj1_sig (H37 M N k H26))))).
 move=> H27.
 apply False_ind.
-apply (le_not_lt M (proj1_sig (c (proj1_sig (blockdividesub M N k H26)))) H27 (proj2_sig (c (proj1_sig (blockdividesub M N k H26))))).
+apply (le_not_lt M (proj1_sig (c (proj1_sig (H37 M N k H26)))) H27 (proj2_sig (c (proj1_sig (H37 M N k H26))))).
 move=> H27.
-elim (excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig (c (proj1_sig (blockdividesub M N k H26)))) H27 = c l)).
+elim (excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig (c (proj1_sig (H37 M N k H26)))) H27 = c l)).
 move=> H28.
 apply sig_map.
 simpl.
-suff: ((proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c (proj1_sig (blockdividesub M N k H26)))) H27) H20 H28)) = (proj1_sig (blockdividesub M N k H26))).
+suff: ((proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c (proj1_sig (H37 M N k H26)))) H27) H20 H28)) = (proj1_sig (H37 M N k H26))).
 move=> H29.
 rewrite H29.
-apply (proj2_sig (blockdividesub M N k H26)).
+apply (proj2_sig (H37 M N k H26)).
 apply H20.
-rewrite - (proj2_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c (proj1_sig (blockdividesub M N k H26)))) H27) H20 H28)).
+rewrite - (proj2_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c (proj1_sig (H37 M N k H26)))) H27) H20 H28)).
 apply sig_map.
 reflexivity.
 move=> H28.
 apply False_ind.
 apply H28.
-exists (proj1_sig (blockdividesub M N k H26)).
+exists (proj1_sig (H37 M N k H26)).
 apply sig_map.
 reflexivity.
 move=> H26.
@@ -2315,13 +2323,13 @@ move=> l H29.
 suff: (proj1_sig k = proj1_sig (c l)).
 move=> H30.
 rewrite {7} H30.
-suff: ((proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H26) H20 H27))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H26) H20 H27)))) H28)) = l).
+suff: ((proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H26) H20 H27))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H26) H20 H27)))) H28)) = l).
 move=> H31.
 rewrite H31.
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H26) H20 H27))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H26) H20 H27)))) H28))) (proj1_sig l) M).
-rewrite ((proj2_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H26) H20 H27))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H26) H20 H27)))) H28))).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H26) H20 H27))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H26) H20 H27)))) H28))) (proj1_sig l) M).
+rewrite ((proj2_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H26) H20 H27))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H26) H20 H27)))) H28))).
 simpl.
 suff: ((proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H26) H20 H27)) = l).
 move=> H31.
@@ -2360,7 +2368,7 @@ move=> H29.
 reflexivity.
 simpl.
 suff: ((fun (k : {n : nat | (n < M + N)}) => (proj1_sig match le_lt_dec M (proj1_sig k) with
-  | left b => exist (fun s : nat => s < M + N) (proj1_sig (c (proj1_sig (blockdividesub M N k b)))) (H4 (c (proj1_sig (blockdividesub M N k b))))
+  | left b => exist (fun s : nat => s < M + N) (proj1_sig (c (proj1_sig (H37 M N k b)))) (H4 (c (proj1_sig (H37 M N k b))))
   | right b => match excluded_middle_informative (exists l : {n : nat | n < N}, exist (fun s : nat => s < M) (proj1_sig k) b = c l) with
     | left c0 => exist (fun s : nat => s < M + N) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) b) H20 c0))) (H5 (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) b) H20 c0)))
     | right _ => k
@@ -2371,18 +2379,18 @@ rewrite H26.
 apply (CardinalSigSame {n : nat | (n < M + N)}).
 apply (CountCardinalBijective {t : {n : nat | (n < M + N)} | (M <= proj1_sig t)}).
 exists (fun (k : {n : nat | (n < N)}) => (exist (fun (t : {n : nat | (n < M + N)}) => (M <= proj1_sig t)) (exist (fun (l : nat) => (l < M + N)) (M + proj1_sig k) (H5 k)) (le_plus_l M (proj1_sig k)))).
-exists (fun (k : {t : {n : nat | (n < M + N)} | (M <= proj1_sig t)}) => proj1_sig (blockdividesub M N (proj1_sig k) (proj2_sig k))).
+exists (fun (k : {t : {n : nat | (n < M + N)} | (M <= proj1_sig t)}) => proj1_sig (H37 M N (proj1_sig k) (proj2_sig k))).
 apply conj.
 move=> k.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (proj1_sig (exist (fun t : {n : nat | (n < M + N)} => (M <= proj1_sig t)) (exist (fun l : nat => (l < M + N)) (M + proj1_sig k) (H5 k)) (le_plus_l M (proj1_sig k)))) (proj2_sig (exist (fun t : {n : nat | (n < M + N)} => (M <= proj1_sig t)) (exist (fun l : nat => (l < M + N)) (M + proj1_sig k) (H5 k)) (le_plus_l M (proj1_sig k))))))) (proj1_sig k) M).
-rewrite (proj2_sig (blockdividesub M N (proj1_sig (exist (fun t : {n : nat | (n < M + N)} => (M <= proj1_sig t)) (exist (fun l : nat => (l < M + N)) (M + proj1_sig k) (H5 k)) (le_plus_l M (proj1_sig k)))) (proj2_sig (exist (fun t : {n : nat | (n < M + N)} => (M <= proj1_sig t)) (exist (fun l : nat => (l < M + N)) (M + proj1_sig k) (H5 k)) (le_plus_l M (proj1_sig k)))))).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (proj1_sig (exist (fun t : {n : nat | (n < M + N)} => (M <= proj1_sig t)) (exist (fun l : nat => (l < M + N)) (M + proj1_sig k) (H5 k)) (le_plus_l M (proj1_sig k)))) (proj2_sig (exist (fun t : {n : nat | (n < M + N)} => (M <= proj1_sig t)) (exist (fun l : nat => (l < M + N)) (M + proj1_sig k) (H5 k)) (le_plus_l M (proj1_sig k))))))) (proj1_sig k) M).
+rewrite (proj2_sig (H37 M N (proj1_sig (exist (fun t : {n : nat | (n < M + N)} => (M <= proj1_sig t)) (exist (fun l : nat => (l < M + N)) (M + proj1_sig k) (H5 k)) (le_plus_l M (proj1_sig k)))) (proj2_sig (exist (fun t : {n : nat | (n < M + N)} => (M <= proj1_sig t)) (exist (fun l : nat => (l < M + N)) (M + proj1_sig k) (H5 k)) (le_plus_l M (proj1_sig k)))))).
 reflexivity.
 move=> y.
 apply sig_map.
 apply sig_map.
 simpl.
-apply (proj2_sig (blockdividesub M N (proj1_sig y) (proj2_sig y))).
+apply (proj2_sig (H37 M N (proj1_sig y) (proj2_sig y))).
 apply Extensionality_Ensembles.
 apply conj.
 move=> k.
@@ -2409,7 +2417,7 @@ move=> k H26.
 unfold In.
 elim (le_lt_dec M (proj1_sig k)).
 move=> H27.
-apply (le_trans (S (proj1_sig (c (proj1_sig (blockdividesub M N k H27))))) M (proj1_sig k) (proj2_sig (c (proj1_sig (blockdividesub M N k H27)))) H27).
+apply (le_trans (S (proj1_sig (c (proj1_sig (H37 M N k H27))))) M (proj1_sig k) (proj2_sig (c (proj1_sig (H37 M N k H27)))) H27).
 move=> H27.
 apply False_ind.
 apply (le_not_lt M (proj1_sig k) H26 H27).
@@ -2452,21 +2460,21 @@ elim (le_lt_dec M (M + proj1_sig (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (f
 move=> H28.
 apply sig_map.
 simpl.
-suff: ((proj1_sig (fst d) (proj1_sig (blockdividesub M N k H25))) = (proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | n < N} => exist (fun n : nat => n < M + N) (M + proj1_sig k0) (H5 k0)) k H22 H27)))) (H5 (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | (n < N)} => exist (fun n : nat => (n < M + N)) (M + proj1_sig k0) (H5 k0)) k H22 H27))))) H28))).
+suff: ((proj1_sig (fst d) (proj1_sig (H37 M N k H25))) = (proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | n < N} => exist (fun n : nat => n < M + N) (M + proj1_sig k0) (H5 k0)) k H22 H27)))) (H5 (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | (n < N)} => exist (fun n : nat => (n < M + N)) (M + proj1_sig k0) (H5 k0)) k H22 H27))))) H28))).
 move=> H29.
 rewrite H29.
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (fst d) (proj1_sig (blockdividesub M N k H25)))) (proj1_sig (proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | n < N} => exist (fun n : nat => n < M + N) (M + proj1_sig k0) (H5 k0)) k H22 H27)))) (H5 (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | (n < N)} => exist (fun n : nat => (n < M + N)) (M + proj1_sig k0) (H5 k0)) k H22 H27))))) H28))) M).
-rewrite (proj2_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | n < N} => exist (fun n : nat => n < M + N) (M + proj1_sig k0) (H5 k0)) k H22 H27)))) (H5 (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | (n < N)} => exist (fun n : nat => (n < M + N)) (M + proj1_sig k0) (H5 k0)) k H22 H27))))) H28)).
+apply (plus_reg_l (proj1_sig (proj1_sig (fst d) (proj1_sig (H37 M N k H25)))) (proj1_sig (proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | n < N} => exist (fun n : nat => n < M + N) (M + proj1_sig k0) (H5 k0)) k H22 H27)))) (H5 (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | (n < N)} => exist (fun n : nat => (n < M + N)) (M + proj1_sig k0) (H5 k0)) k H22 H27))))) H28))) M).
+rewrite (proj2_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | n < N} => exist (fun n : nat => n < M + N) (M + proj1_sig k0) (H5 k0)) k H22 H27)))) (H5 (proj1_sig (fst d) (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | (n < N)} => exist (fun n : nat => (n < M + N)) (M + proj1_sig k0) (H5 k0)) k H22 H27))))) H28)).
 simpl.
-suff: ((proj1_sig (blockdividesub M N k H25)) = (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | (n < N)} => exist (fun n : nat => (n < M + N)) (M + proj1_sig k0) (H5 k0)) k H22 H27))).
+suff: ((proj1_sig (H37 M N k H25)) = (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | (n < N)} => exist (fun n : nat => (n < M + N)) (M + proj1_sig k0) (H5 k0)) k H22 H27))).
 move=> H29.
 rewrite H29.
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N k H25))) (proj1_sig (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | (n < N)} => exist (fun n : nat => (n < M + N)) (M + proj1_sig k0) (H5 k0)) k H22 H27))) M).
-rewrite (proj2_sig (blockdividesub M N k H25)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N k H25))) (proj1_sig (proj1_sig (H16 N (M + N) (fun k0 : {n : nat | (n < N)} => exist (fun n : nat => (n < M + N)) (M + proj1_sig k0) (H5 k0)) k H22 H27))) M).
+rewrite (proj2_sig (H37 M N k H25)).
 rewrite {1} (proj2_sig (H16 N (M + N) (fun k0 : {n : nat | (n < N)} => exist (fun n : nat => (n < M + N)) (M + proj1_sig k0) (H5 k0)) k H22 H27)).
 reflexivity.
 move=> H28.
@@ -2615,20 +2623,20 @@ rewrite H22.
 reflexivity.
 reflexivity.
 exists (fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (blockdividesub M N k b)))) (H4 (c (proj1_sig (blockdividesub M N k b))))
+  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (H37 M N k b)))) (H4 (c (proj1_sig (H37 M N k b))))
   | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = c l) with
     | left c0 => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) b) H20 c0))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) b) H20 c0)))
     | right _ => k
   end
 end).
 suff: (forall (x : {n : nat | (n < M + N)}), Basics.compose (fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (blockdividesub M N k b)))) (H4 (c (proj1_sig (blockdividesub M N k b))))
+  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (H37 M N k b)))) (H4 (c (proj1_sig (H37 M N k b))))
   | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = c l) with
     | left c0 => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) b) H20 c0))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) b) H20 c0)))
     | right _ => k
   end
 end) (fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (blockdividesub M N k b)))) (H4 (c (proj1_sig (blockdividesub M N k b))))
+  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (c (proj1_sig (H37 M N k b)))) (H4 (c (proj1_sig (H37 M N k b))))
   | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = c l) with
     | left c0 => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) b) H20 c0))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) b) H20 c0)))
     | right _ => k
@@ -2643,27 +2651,27 @@ unfold Basics.compose.
 elim (le_lt_dec M (proj1_sig k)).
 move=> H21.
 simpl.
-elim (le_lt_dec M (proj1_sig (c (proj1_sig (blockdividesub M N k H21))))).
+elim (le_lt_dec M (proj1_sig (c (proj1_sig (H37 M N k H21))))).
 move=> H22.
 apply False_ind.
-apply (le_not_lt M (proj1_sig (c (proj1_sig (blockdividesub M N k H21)))) H22 (proj2_sig (c (proj1_sig (blockdividesub M N k H21))))).
+apply (le_not_lt M (proj1_sig (c (proj1_sig (H37 M N k H21)))) H22 (proj2_sig (c (proj1_sig (H37 M N k H21))))).
 move=> H22.
-elim (excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig (c (proj1_sig (blockdividesub M N k H21)))) H22 = c l)).
+elim (excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig (c (proj1_sig (H37 M N k H21)))) H22 = c l)).
 move=> H23.
 apply sig_map.
 simpl.
-suff: ((proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig (c (proj1_sig (blockdividesub M N k H21)))) H22) H20 H23)) = (proj1_sig (blockdividesub M N k H21))).
+suff: ((proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig (c (proj1_sig (H37 M N k H21)))) H22) H20 H23)) = (proj1_sig (H37 M N k H21))).
 move=> H24.
 rewrite H24.
-apply (proj2_sig (blockdividesub M N k H21)).
+apply (proj2_sig (H37 M N k H21)).
 apply H20.
-rewrite - (proj2_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c (proj1_sig (blockdividesub M N k H21)))) H22) H20 H23)).
+rewrite - (proj2_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig (c (proj1_sig (H37 M N k H21)))) H22) H20 H23)).
 apply sig_map.
 reflexivity.
 move=> H23.
 apply False_ind.
 apply H23.
-exists (proj1_sig (blockdividesub M N k H21)).
+exists (proj1_sig (H37 M N k H21)).
 apply sig_map.
 reflexivity.
 move=> H21.
@@ -2674,14 +2682,14 @@ elim (le_lt_dec M (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => (s < M)
 move=> H23.
 apply sig_map.
 simpl.
-suff: ((proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H21) H20 H22))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H21) H20 H22)))) H23)) = (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H21) H20 H22))).
+suff: ((proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H21) H20 H22))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H21) H20 H22)))) H23)) = (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H21) H20 H22))).
 move=> H24.
 rewrite H24.
 rewrite - (proj2_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H21) H20 H22)).
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H21) H20 H22))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H21) H20 H22)))) H23))) (proj1_sig (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H21) H20 H22))) M).
-apply (proj2_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H21) H20 H22))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H21) H20 H22)))) H23)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H21) H20 H22))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H21) H20 H22)))) H23))) (proj1_sig (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H21) H20 H22))) M).
+apply (proj2_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H3 c (exist (fun s : nat => s < M) (proj1_sig k) H21) H20 H22))) (H5 (proj1_sig (H3 c (exist (fun s : nat => (s < M)) (proj1_sig k) H21) H20 H22)))) H23)).
 move=> H23.
 apply False_ind.
 apply (lt_irrefl M).
@@ -3262,7 +3270,7 @@ suff: (forall (u : (({n : nat | (n < N)} -> {n : nat | (n < M)}) * (Permutation 
 move=> H7 u1 u2 H8 H9 H10.
 suff: (proj1_sig (exist Bijective match excluded_middle_informative (Injective (fst u1)) with
   | left a => fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (blockdividesub M N k b))))) (H4 (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (blockdividesub M N k b)))))
+    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (H37 M N k b))))) (H4 (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (H37 M N k b)))))
     | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = fst u1 l) with
       | left c => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd u1)) (proj1_sig (H3 (fst u1) (exist (fun s : nat => s < M) (proj1_sig k) b) a c)))) (H5 (proj1_sig (snd (snd u1)) (proj1_sig (H3 (fst u1) (exist (fun s : nat => (s < M)) (proj1_sig k) b) a c))))
       | right _ => k
@@ -3271,7 +3279,7 @@ suff: (proj1_sig (exist Bijective match excluded_middle_informative (Injective (
   | right _ => fun k : {n : nat | (n < M + N)} => k
 end (H6 u1)) = proj1_sig (exist Bijective match excluded_middle_informative (Injective (fst u2)) with
   | left a => fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u2 (proj1_sig (fst (snd u2)) (proj1_sig (blockdividesub M N k b))))) (H4 (fst u2 (proj1_sig (fst (snd u2)) (proj1_sig (blockdividesub M N k b)))))
+    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u2 (proj1_sig (fst (snd u2)) (proj1_sig (H37 M N k b))))) (H4 (fst u2 (proj1_sig (fst (snd u2)) (proj1_sig (H37 M N k b)))))
     | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = fst u2 l) with
       | left c => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd u2)) (proj1_sig (H3 (fst u2) (exist (fun s : nat => s < M) (proj1_sig k) b) a c)))) (H5 (proj1_sig (snd (snd u2)) (proj1_sig (H3 (fst u2) (exist (fun s : nat => (s < M)) (proj1_sig k) b) a c))))
       | right _ => k
@@ -3296,7 +3304,7 @@ apply H11.
 rewrite {2} H14.
 apply sig_map.
 suff: (proj1_sig (fst u1 (proj1_sig (fst (snd u1)) k)) = let temp := (fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (blockdividesub M N k b))))) (H4 (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (blockdividesub M N k b)))))
+  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (H37 M N k b))))) (H4 (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (H37 M N k b)))))
   | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = fst u1 l) with
     | left c => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd u1)) (proj1_sig (H3 (fst u1) (exist (fun s : nat => s < M) (proj1_sig k) b) H11 c)))) (H5 (proj1_sig (snd (snd u1)) (proj1_sig (H3 (fst u1) (exist (fun s : nat => (s < M)) (proj1_sig k) b) H11 c))))
     | right _ => k
@@ -3309,13 +3317,13 @@ simpl.
 elim (le_lt_dec M (M + proj1_sig k)).
 move=> H16.
 simpl.
-suff: ((proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig k) (H5 k)) H16)) = k).
+suff: ((proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig k) (H5 k)) H16)) = k).
 move=> H17.
 rewrite H17.
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig k) (H5 k)) H16))) (proj1_sig k) M).
-apply (proj2_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig k) (H5 k)) H16)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig k) (H5 k)) H16))) (proj1_sig k) M).
+apply (proj2_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig k) (H5 k)) H16)).
 move=> H16.
 apply False_ind.
 apply (lt_irrefl M).
@@ -3327,13 +3335,13 @@ simpl.
 elim (le_lt_dec M (M + proj1_sig k)).
 move=> H15.
 simpl.
-suff: ((proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig k) (H5 k)) H15)) = k).
+suff: ((proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig k) (H5 k)) H15)) = k).
 move=> H16.
 rewrite H16.
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig k) (H5 k)) H15))) (proj1_sig k) M).
-apply (proj2_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig k) (H5 k)) H15)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig k) (H5 k)) H15))) (proj1_sig k) M).
+apply (proj2_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig k) (H5 k)) H15)).
 move=> H15.
 apply False_ind.
 apply (lt_irrefl M).
@@ -3347,7 +3355,7 @@ move=> k.
 apply sig_map.
 apply (plus_reg_l (proj1_sig (proj1_sig (snd (snd u1)) k)) (proj1_sig (proj1_sig (snd (snd u2)) k)) M).
 suff: ((M + proj1_sig (proj1_sig (snd (snd u1)) k)) = let temp := (fun (k : {n : nat | (n < M + N)}) => match le_lt_dec M (proj1_sig k) with
-  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (blockdividesub M N k b))))) (H4 (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (blockdividesub M N k b)))))
+  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (H37 M N k b))))) (H4 (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (H37 M N k b)))))
   | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = fst u1 l) with
     | left c => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd u1)) (proj1_sig (H3 (fst u1) (exist (fun s : nat => s < M) (proj1_sig k) b) H11 c)))) (H5 (proj1_sig (snd (snd u1)) (proj1_sig (H3 (fst u1) (exist (fun s : nat => (s < M)) (proj1_sig k) b) H11 c))))
     | right _ => k
@@ -3544,7 +3552,7 @@ apply (H14 l k).
 apply le_S_n.
 apply H19.
 suff: (Im {n : nat | (n < N)} nat (Full_set {n : nat | (n < N)}) (fun k : {n : nat | (n < N)} => proj1_sig (fst u1 k)) = Im {n : nat | (n < M + N)} nat (fun (k : {n : nat | (n < M + N)}) => (M <= proj1_sig k)) (Basics.compose (fun (k : {n : nat | (n < M + N)}) => proj1_sig k) (fun (k : {n : nat | (n < M + N)}) => match le_lt_dec M (proj1_sig k) with
-  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (blockdividesub M N k b))))) (H4 (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (blockdividesub M N k b)))))
+  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (H37 M N k b))))) (H4 (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (H37 M N k b)))))
   | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = fst u1 l) with
     | left c => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd u1)) (proj1_sig (H3 (fst u1) (exist (fun s : nat => s < M) (proj1_sig k) b) H11 c)))) (H5 (proj1_sig (snd (snd u1)) (proj1_sig (H3 (fst u1) (exist (fun s : nat => (s < M)) (proj1_sig k) b) H11 c))))
     | right _ => k
@@ -3561,7 +3569,7 @@ move=> x H17 y H18.
 rewrite H18.
 unfold Basics.compose.
 unfold In.
-apply (Im_intro {n : nat | (n < N)} nat (Full_set {n : nat | (n < N)}) (fun (k : {n : nat | (n < N)}) => proj1_sig (fst u2 k)) (proj1_sig (fst (snd u2)) (proj1_sig (blockdividesub M N x H17)))).
+apply (Im_intro {n : nat | (n < N)} nat (Full_set {n : nat | (n < N)}) (fun (k : {n : nat | (n < N)}) => proj1_sig (fst u2 k)) (proj1_sig (fst (snd u2)) (proj1_sig (H37 M N x H17)))).
 apply (Full_intro {n : nat | (n < N)}).
 elim (le_lt_dec M (proj1_sig x)).
 move=> H19.
@@ -3580,7 +3588,7 @@ rewrite H18.
 elim (proj2_sig (fst (snd u2))).
 move=> invg H19.
 apply (Im_intro {n : nat | (n < M + N)} nat (fun (k : {n : nat | (n < M + N)}) => (M <= proj1_sig k)) (Basics.compose (fun k : {n : nat | (n < M + N)} => proj1_sig k) (fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u2 (proj1_sig (fst (snd u2)) (proj1_sig (blockdividesub M N k b))))) (H4 (fst u2 (proj1_sig (fst (snd u2)) (proj1_sig (blockdividesub M N k b)))))
+  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u2 (proj1_sig (fst (snd u2)) (proj1_sig (H37 M N k b))))) (H4 (fst u2 (proj1_sig (fst (snd u2)) (proj1_sig (H37 M N k b)))))
   | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = fst u2 l) with
     | left c => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd u2)) (proj1_sig (H3 (fst u2) (exist (fun s : nat => s < M) (proj1_sig k) b) H12 c)))) (H5 (proj1_sig (snd (snd u2)) (proj1_sig (H3 (fst u2) (exist (fun s : nat => (s < M)) (proj1_sig k) b) H12 c))))
     | right _ => k
@@ -3591,17 +3599,17 @@ unfold Basics.compose.
 simpl.
 elim (le_lt_dec M (M + (proj1_sig (invg x)))).
 move=> H20.
-suff: ((proj1_sig (fst (snd u2)) (proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H20))) = x).
+suff: ((proj1_sig (fst (snd u2)) (proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H20))) = x).
 move=> H21.
 rewrite H21.
 reflexivity.
-suff: ((proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H20)) = invg x).
+suff: ((proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H20)) = invg x).
 move=> H21.
 rewrite H21.
 apply (proj2 H19 x).
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H20))) (proj1_sig (invg x)) M).
-apply (proj2_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H20)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H20))) (proj1_sig (invg x)) M).
+apply (proj2_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H20)).
 move=> H20.
 apply False_ind.
 apply (lt_not_le (M + proj1_sig (invg x)) M H20).
@@ -3615,7 +3623,7 @@ rewrite H17.
 elim (proj2_sig (fst (snd u1))).
 move=> invg H18.
 apply (Im_intro {n : nat | (n < M + N)} nat (fun (k : {n : nat | (n < M + N)}) => (M <= proj1_sig k)) (Basics.compose (fun k : {n : nat | (n < M + N)} => proj1_sig k) (fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (blockdividesub M N k b))))) (H4 (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (blockdividesub M N k b)))))
+  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (H37 M N k b))))) (H4 (fst u1 (proj1_sig (fst (snd u1)) (proj1_sig (H37 M N k b)))))
   | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = fst u1 l) with
     | left c => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd u1)) (proj1_sig (H3 (fst u1) (exist (fun s : nat => s < M) (proj1_sig k) b) H11 c)))) (H5 (proj1_sig (snd (snd u1)) (proj1_sig (H3 (fst u1) (exist (fun s : nat => (s < M)) (proj1_sig k) b) H11 c))))
     | right _ => k
@@ -3626,17 +3634,17 @@ unfold Basics.compose.
 simpl.
 elim (le_lt_dec M (M + (proj1_sig (invg x)))).
 move=> H19.
-suff: ((proj1_sig (fst (snd u1)) (proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H19))) = x).
+suff: ((proj1_sig (fst (snd u1)) (proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H19))) = x).
 move=> H20.
 rewrite H20.
 reflexivity.
-suff: ((proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H19)) = invg x).
+suff: ((proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H19)) = invg x).
 move=> H20.
 rewrite H20.
 apply (proj2 H18 x).
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H19))) (proj1_sig (invg x)) M).
-apply (proj2_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H19)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H19))) (proj1_sig (invg x)) M).
+apply (proj2_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (invg x)) (H5 (invg x))) H19)).
 move=> H19.
 apply False_ind.
 apply (lt_not_le (M + proj1_sig (invg x)) M H19).
@@ -3647,7 +3655,7 @@ move=> x H16 y H17.
 rewrite H17.
 unfold Basics.compose.
 unfold In.
-apply (Im_intro {n : nat | (n < N)} nat (Full_set {n : nat | (n < N)}) (fun (k : {n : nat | (n < N)}) => proj1_sig (fst u1 k)) (proj1_sig (fst (snd u1)) (proj1_sig (blockdividesub M N x H16)))).
+apply (Im_intro {n : nat | (n < N)} nat (Full_set {n : nat | (n < N)}) (fun (k : {n : nat | (n < N)}) => proj1_sig (fst u1 k)) (proj1_sig (fst (snd u1)) (proj1_sig (H37 M N x H16)))).
 apply (Full_intro {n : nat | (n < N)}).
 elim (le_lt_dec M (proj1_sig x)).
 move=> H18.
@@ -3733,7 +3741,7 @@ elim.
 move=> p2 H14.
 apply (Im_intro (({n : nat | (n < N)} -> {n : nat | (n < M)}) * (Permutation N * Permutation N)) (Permutation (M + N)) (proj1_sig (FinitePair ({n : nat | (n < N)} -> {n : nat | (n < M)}) (Permutation N * Permutation N) (FiniteIntersection ({n : nat | (n < N)} -> {n : nat | (n < M)}) (exist (Finite ({n : nat | (n < N)} -> {n : nat | (n < M)})) (Full_set ({n : nat | (n < N)} -> {n : nat | (n < M)})) (CountPowFinite N M)) (fun r : {n : nat | (n < N)} -> {n : nat | (n < M)} => forall p q : {n : nat | (n < N)}, (proj1_sig p < proj1_sig q) -> (proj1_sig (r p) < proj1_sig (r q)))) (FinitePair (Permutation N) (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N))))) (fun (x : ({n : nat | (n < N)} -> {n : nat | (n < M)}) * (Permutation N * Permutation N)) => exist Bijective match excluded_middle_informative (Injective (fst x)) with
   | left a => fun k : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig k) with
-    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k b))))) (H4 (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k b)))))
+    | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k b))))) (H4 (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k b)))))
     | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = fst x l) with
       | left c => exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig k) b) a c)))) (H5 (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig k) b) a c))))
       | right _ => k
@@ -3760,13 +3768,13 @@ elim (le_lt_dec M (proj1_sig k)).
 move=> H16.
 apply sig_map.
 simpl.
-rewrite (H12 (proj1_sig (blockdividesub M N k H16))).
-suff: ((exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig (blockdividesub M N k H16))) (H5 (proj1_sig (blockdividesub M N k H16)))) = k).
+rewrite (H12 (proj1_sig (H37 M N k H16))).
+suff: ((exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig (H37 M N k H16))) (H5 (proj1_sig (H37 M N k H16)))) = k).
 move=> H17.
 rewrite H17.
 reflexivity.
 apply sig_map.
-apply (proj2_sig (blockdividesub M N k H16)).
+apply (proj2_sig (H37 M N k H16)).
 move=> H16.
 elim (excluded_middle_informative (exists (l : {n : nat | (n < N)}), exist (fun s : nat => (s < M)) (proj1_sig k) H16 = g l)).
 move=> H17.
@@ -3786,8 +3794,8 @@ move=> H18.
 apply NNPP.
 move=> H19.
 apply (H9 k).
-unfold MBlockW.
-unfold MBlockH.
+rewrite H36.
+rewrite H35.
 elim (le_lt_dec M (proj1_sig (proj1_sig u0 k))).
 move=> H20.
 apply False_ind.
@@ -3964,17 +3972,17 @@ apply (CountCardinalBijective {x : {n : nat | (n < M + N)} | (M <= proj1_sig x)}
 suff: (forall (l : {n : nat | (n < N)}), (M <= M + proj1_sig l)).
 move=> H19.
 exists (fun (l : {n : nat | (n < N)}) => exist (fun (x : {n : nat | (n < M + N)}) => (M <= proj1_sig x)) (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig l) (H5 l)) (H19 l)).
-exists (fun (l : {x : {n : nat | (n < M + N)} | (M <= proj1_sig x)}) => proj1_sig (blockdividesub M N (proj1_sig l) (proj2_sig l))).
+exists (fun (l : {x : {n : nat | (n < M + N)} | (M <= proj1_sig x)}) => proj1_sig (H37 M N (proj1_sig l) (proj2_sig l))).
 apply conj.
 move=> t.
 apply sig_map.
 simpl.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig t) (H5 t)) (H19 t)))) (proj1_sig t) M).
-apply (proj2_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig t) (H5 t)) (H19 t))).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig t) (H5 t)) (H19 t)))) (proj1_sig t) M).
+apply (proj2_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig t) (H5 t)) (H19 t))).
 move=> t.
 apply sig_map.
 apply sig_map.
-apply (proj2_sig (blockdividesub M N (proj1_sig t) (proj2_sig t))).
+apply (proj2_sig (H37 M N (proj1_sig t) (proj2_sig t))).
 move=> l.
 apply le_plus_l.
 apply.
@@ -3996,12 +4004,12 @@ apply False_ind.
 apply (lt_irrefl (proj1_sig (g k1))).
 rewrite {1} H16.
 apply (proj2 H11 k2 k1 H17).
-suff: (Bijective (fun (m : {n : nat | (n < N)}) => (proj1_sig (blockdividesub M N (proj1_sig u0 (exist (fun n : nat => (n < M + N)) (proj1_sig (g m)) (H4 (g m)))) (H13 m))))).
+suff: (Bijective (fun (m : {n : nat | (n < N)}) => (proj1_sig (H37 M N (proj1_sig u0 (exist (fun n : nat => (n < M + N)) (proj1_sig (g m)) (H4 (g m)))) (H13 m))))).
 move=> H14.
-exists (exist Bijective (fun (m : {n : nat | (n < N)}) => proj1_sig (blockdividesub M N (proj1_sig u0 (exist (fun n : nat => (n < M + N)) (proj1_sig (g m)) (H4 (g m)))) (H13 m))) H14).
+exists (exist Bijective (fun (m : {n : nat | (n < N)}) => proj1_sig (H37 M N (proj1_sig u0 (exist (fun n : nat => (n < M + N)) (proj1_sig (g m)) (H4 (g m)))) (H13 m))) H14).
 move=> m.
 simpl.
-apply (proj2_sig (blockdividesub M N (proj1_sig u0 (exist (fun (n : nat) => n < M + N) (proj1_sig (g m)) (H4 (g m)))) (H13 m))).
+apply (proj2_sig (H37 M N (proj1_sig u0 (exist (fun (n : nat) => n < M + N) (proj1_sig (g m)) (H4 (g m)))) (H13 m))).
 apply CountInjBij.
 move=> k1 k2 H14.
 suff: ((proj1_sig (g k1)) = (proj1_sig (g k2))).
@@ -4030,17 +4038,17 @@ reflexivity.
 reflexivity.
 apply (BijInj {n : nat | (n < M + N)} {n : nat | (n < M + N)} (proj1_sig u0) (proj2_sig u0)).
 apply sig_map.
-rewrite - (proj2_sig (blockdividesub M N (proj1_sig u0 (exist (fun n : nat => (n < M + N)) (proj1_sig (g k1)) (H4 (g k1)))) (H13 k1))).
+rewrite - (proj2_sig (H37 M N (proj1_sig u0 (exist (fun n : nat => (n < M + N)) (proj1_sig (g k1)) (H4 (g k1)))) (H13 k1))).
 rewrite H14.
-apply (proj2_sig (blockdividesub M N (proj1_sig u0 (exist (fun n : nat => (n < M + N)) (proj1_sig (g k2)) (H4 (g k2)))) (H13 k2))).
+apply (proj2_sig (H37 M N (proj1_sig u0 (exist (fun n : nat => (n < M + N)) (proj1_sig (g k2)) (H4 (g k2)))) (H13 k2))).
 move=> m.
 elim (le_or_lt M (proj1_sig (proj1_sig u0 (exist (fun (n : nat) => (n < M + N)) (proj1_sig (g m)) (H4 (g m)))))).
 apply.
 move=> H13.
 apply False_ind.
 apply (H9 (exist (fun (n : nat) => n < M + N) (proj1_sig (g m)) (H4 (g m)))).
-unfold MBlockW.
-unfold MBlockH.
+rewrite H36.
+rewrite H35.
 simpl.
 elim (le_lt_dec M (proj1_sig (g m))).
 move=> H14.
@@ -4463,14 +4471,14 @@ apply sig_map.
 apply H12.
 elim (proj2_sig k).
 move=> x H12 y H13.
-exists (proj1_sig (blockdividesub M N x H12)).
+exists (proj1_sig (H37 M N x H12)).
 rewrite H13.
-suff: ((exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (blockdividesub M N x H12))) (H5 (proj1_sig (blockdividesub M N x H12)))) = x).
+suff: ((exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (H37 M N x H12))) (H5 (proj1_sig (H37 M N x H12)))) = x).
 move=> H14.
 rewrite H14.
 reflexivity.
 apply sig_map.
-apply (proj2_sig (blockdividesub M N x H12)).
+apply (proj2_sig (H37 M N x H12)).
 move=> m.
 apply (Im_intro {n : nat | (n < M + N)} nat (fun (k : {n : nat | (n < M + N)}) => (proj1_sig k >= M)) (Basics.compose (fun (k : {n : nat | (n < M + N)}) => proj1_sig k) (proj1_sig u0)) (exist (fun s : nat => (s < M + N)) (M + proj1_sig m) (H5 m))).
 apply le_plus_l.
@@ -4480,8 +4488,8 @@ elim (le_or_lt M (proj1_sig (proj1_sig u0 m))).
 move=> H11.
 apply False_ind.
 apply (H9 m).
-unfold MBlockW.
-unfold MBlockH.
+rewrite H36.
+rewrite H35.
 elim (le_lt_dec M (proj1_sig (proj1_sig u0 m))).
 move=> H12.
 elim (le_lt_dec M (proj1_sig m)).
@@ -4504,7 +4512,7 @@ move=> fsti H7.
 elim (proj2_sig (snd (snd x))).
 move=> sndi H8.
 exists ((fun (k : {n : nat | (n < M + N)}) => match le_lt_dec M (proj1_sig k) with
-  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst x (sndi (proj1_sig (blockdividesub M N k b))))) (H4 (fst x (sndi (proj1_sig (blockdividesub M N k b)))))
+  | left b => exist (fun s : nat => (s < M + N)) (proj1_sig (fst x (sndi (proj1_sig (H37 M N k b))))) (H4 (fst x (sndi (proj1_sig (H37 M N k b)))))
   | right b => match excluded_middle_informative (exists l : {n : nat | (n < N)}, exist (fun s : nat => (s < M)) (proj1_sig k) b = fst x l) with
     | left c => exist (fun s : nat => (s < M + N)) (M + proj1_sig (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig k) b) H6 c)))) (H5 (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig k) b) H6 c))))
     | right _ => k
@@ -4515,30 +4523,30 @@ move=> k.
 elim (le_lt_dec M (proj1_sig k)).
 move=> H9.
 simpl.
-elim (le_lt_dec M (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k H9)))))).
+elim (le_lt_dec M (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k H9)))))).
 move=> H10.
 apply sig_map.
 simpl.
 apply False_ind.
-apply (le_not_lt M (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k H9))))) H10 (proj2_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k H9)))))).
+apply (le_not_lt M (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k H9))))) H10 (proj2_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k H9)))))).
 move=> H10.
-elim (excluded_middle_informative (exists (l : {n : nat | (n < N)}), exist (fun s : nat => (s < M)) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k H9))))) H10 = fst x l)).
+elim (excluded_middle_informative (exists (l : {n : nat | (n < N)}), exist (fun s : nat => (s < M)) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k H9))))) H10 = fst x l)).
 move=> H11.
 apply sig_map.
 simpl.
-suff: ((proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k H9))))) H10) H6 H11)) = (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k H9)))).
+suff: ((proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k H9))))) H10) H6 H11)) = (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k H9)))).
 move=> H12.
 rewrite H12.
 rewrite (proj1 H7).
-apply (proj2_sig (blockdividesub M N k H9)).
+apply (proj2_sig (H37 M N k H9)).
 apply H6.
-rewrite - (proj2_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k H9))))) H10) H6 H11)).
+rewrite - (proj2_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig (fst x (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k H9))))) H10) H6 H11)).
 apply sig_map.
 reflexivity.
 move=> H11.
 apply False_ind.
 apply H11.
-exists (proj1_sig (fst (snd x)) (proj1_sig (blockdividesub M N k H9))).
+exists (proj1_sig (fst (snd x)) (proj1_sig (H37 M N k H9))).
 apply sig_map.
 reflexivity.
 move=> H9.
@@ -4549,15 +4557,15 @@ elim (le_lt_dec M (M + proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x)
 move=> H11.
 apply sig_map.
 simpl.
-suff: ((proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig k) H9) H6 H10)))) (H5 (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig k) H9) H6 H10))))) H11)) = (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig k) H9) H6 H10)))).
+suff: ((proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig k) H9) H6 H10)))) (H5 (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig k) H9) H6 H10))))) H11)) = (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig k) H9) H6 H10)))).
 move=> H12.
 rewrite H12.
 rewrite (proj1 H8).
 rewrite - (proj2_sig (H3 (fst x) (exist (fun (s : nat) => (s < M)) (proj1_sig k) H9) H6 H10)).
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig k) H9) H6 H10)))) (H5 (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig k) H9) H6 H10))))) H11))) (proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig k) H9) H6 H10)))) M).
-apply (proj2_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig k) H9) H6 H10)))) (H5 (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig k) H9) H6 H10))))) H11)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig k) H9) H6 H10)))) (H5 (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig k) H9) H6 H10))))) H11))) (proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig k) H9) H6 H10)))) M).
+apply (proj2_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig k) H9) H6 H10)))) (H5 (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig k) H9) H6 H10))))) H11)).
 move=> H11.
 apply False_ind.
 apply (le_not_lt M (M + proj1_sig (proj1_sig (snd (snd x)) (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig k) H9) H6 H10))))).
@@ -4587,28 +4595,28 @@ move=> y.
 elim (le_lt_dec M (proj1_sig y)).
 move=> H9.
 simpl.
-elim (le_lt_dec M (proj1_sig (fst x (sndi (proj1_sig (blockdividesub M N y H9)))))).
+elim (le_lt_dec M (proj1_sig (fst x (sndi (proj1_sig (H37 M N y H9)))))).
 move=> H10.
 apply False_ind.
-apply (le_not_lt M (proj1_sig (fst x (sndi (proj1_sig (blockdividesub M N y H9))))) H10 (proj2_sig (fst x (sndi (proj1_sig (blockdividesub M N y H9)))))).
+apply (le_not_lt M (proj1_sig (fst x (sndi (proj1_sig (H37 M N y H9))))) H10 (proj2_sig (fst x (sndi (proj1_sig (H37 M N y H9)))))).
 move=> H10.
-elim (excluded_middle_informative (exists (l : {n : nat | (n < N)}), exist (fun s : nat => (s < M)) (proj1_sig (fst x (sndi (proj1_sig (blockdividesub M N y H9))))) H10 = fst x l)).
+elim (excluded_middle_informative (exists (l : {n : nat | (n < N)}), exist (fun s : nat => (s < M)) (proj1_sig (fst x (sndi (proj1_sig (H37 M N y H9))))) H10 = fst x l)).
 move=> H11.
 apply sig_map.
 simpl.
-suff: ((proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig (fst x (sndi (proj1_sig (blockdividesub M N y H9))))) H10) H6 H11)) = (sndi (proj1_sig (blockdividesub M N y H9)))).
+suff: ((proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig (fst x (sndi (proj1_sig (H37 M N y H9))))) H10) H6 H11)) = (sndi (proj1_sig (H37 M N y H9)))).
 move=> H12.
 rewrite H12.
 rewrite (proj2 H8).
-apply (proj2_sig (blockdividesub M N y H9)).
+apply (proj2_sig (H37 M N y H9)).
 apply H6.
-rewrite - (proj2_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig (fst x (sndi (proj1_sig (blockdividesub M N y H9))))) H10) H6 H11)).
+rewrite - (proj2_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig (fst x (sndi (proj1_sig (H37 M N y H9))))) H10) H6 H11)).
 apply sig_map.
 reflexivity.
 move=> H11.
 apply False_ind.
 apply H11.
-exists (sndi (proj1_sig (blockdividesub M N y H9))).
+exists (sndi (proj1_sig (H37 M N y H9))).
 apply sig_map.
 reflexivity.
 move=> H9.
@@ -4619,15 +4627,15 @@ elim (le_lt_dec M (M + proj1_sig (fsti (proj1_sig (H3 (fst x) (exist (fun s : na
 move=> H11.
 apply sig_map.
 simpl.
-suff: ((proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig y) H9) H6 H10)))) (H5 (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig y) H9) H6 H10))))) H11)) = (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig y) H9) H6 H10)))).
+suff: ((proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig y) H9) H6 H10)))) (H5 (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig y) H9) H6 H10))))) H11)) = (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig y) H9) H6 H10)))).
 move=> H12.
 rewrite H12.
 rewrite (proj2 H7).
 rewrite - (proj2_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig y) H9) H6 H10)).
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig y) H9) H6 H10)))) (H5 (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig y) H9) H6 H10))))) H11))) (proj1_sig (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig y) H9) H6 H10)))) M).
-apply (proj2_sig (blockdividesub M N (exist (fun (s : nat) => (s < M + N)) (M + proj1_sig (fsti (proj1_sig (H3 (fst x) (exist (fun (s : nat) => s < M) (proj1_sig y) H9) H6 H10)))) (H5 (fsti (proj1_sig (H3 (fst x) (exist (fun (s : nat) => (s < M)) (proj1_sig y) H9) H6 H10))))) H11)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun s : nat => (s < M + N)) (M + proj1_sig (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig y) H9) H6 H10)))) (H5 (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig y) H9) H6 H10))))) H11))) (proj1_sig (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => (s < M)) (proj1_sig y) H9) H6 H10)))) M).
+apply (proj2_sig (H37 M N (exist (fun (s : nat) => (s < M + N)) (M + proj1_sig (fsti (proj1_sig (H3 (fst x) (exist (fun (s : nat) => s < M) (proj1_sig y) H9) H6 H10)))) (H5 (fsti (proj1_sig (H3 (fst x) (exist (fun (s : nat) => (s < M)) (proj1_sig y) H9) H6 H10))))) H11)).
 move=> H11.
 apply False_ind.
 apply (le_not_lt M (M + proj1_sig (fsti (proj1_sig (H3 (fst x) (exist (fun s : nat => s < M) (proj1_sig y) H9) H6 H10))))).
@@ -4844,16 +4852,16 @@ unfold Determinant.
 suff: (forall (m : {n : nat | (n < N)}), (M + proj1_sig m < M + N)).
 move=> H5.
 suff: (forall (P : Permutation N), Bijective (fun (m : {n : nat | (n < M + N)}) => match le_lt_dec M (proj1_sig m) with
-  | left H => exist (fun (n : nat) => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N m H)))) (H5 (proj1_sig P (proj1_sig (blockdividesub M N m H))))
+  | left H => exist (fun (n : nat) => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N m H)))) (H5 (proj1_sig P (proj1_sig (H37 M N m H))))
   | right _ => m
 end)).
 move=> H6.
 rewrite (MySumF2Included (Permutation (M + N)) (FiniteIm (Permutation N) (Permutation (M + N)) (fun (P : (Permutation N)) => exist Bijective (fun (m : {n : nat | (n < M + N)}) => match le_lt_dec M (proj1_sig m) with
-  | left H => exist (fun (n : nat) => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N m H)))) (H5 (proj1_sig P (proj1_sig (blockdividesub M N m H))))
+  | left H => exist (fun (n : nat) => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N m H)))) (H5 (proj1_sig P (proj1_sig (H37 M N m H))))
   | right _ => m
 end) (H6 P)) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N))) (exist (Finite (Permutation (M + N))) (Full_set (Permutation (M + N))) (PermutationFinite (M + N)))).
 rewrite (MySumF2O (Permutation (M + N)) (FiniteIntersection (Permutation (M + N)) (exist (Finite (Permutation (M + N))) (Full_set (Permutation (M + N))) (PermutationFinite (M + N))) (Complement (Permutation (M + N)) (proj1_sig (FiniteIm (Permutation N) (Permutation (M + N)) (fun P : Permutation N => exist Bijective (fun m : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig m) with
-  | left H => exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N m H)))) (H5 (proj1_sig P (proj1_sig (blockdividesub M N m H))))
+  | left H => exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N m H)))) (H5 (proj1_sig P (proj1_sig (H37 M N m H))))
   | right _ => m
 end) (H6 P)) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N))))))).
 rewrite (CM_O_r (FPCM f)).
@@ -4862,7 +4870,7 @@ unfold Basics.compose.
 apply MySumF2Same.
 move=> P H7.
 suff: (PermutationParity N P = PermutationParity (M + N) (exist Bijective (fun m : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig m) with
-  | left H => exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N m H)))) (H5 (proj1_sig P (proj1_sig (blockdividesub M N m H))))
+  | left H => exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N m H)))) (H5 (proj1_sig P (proj1_sig (H37 M N m H))))
   | right _ => m
 end) (H6 P))).
 move=> H8.
@@ -4876,32 +4884,32 @@ apply (MySumF2Same {n : nat | (n < N)} (exist (Finite (Count N)) (Full_set {n : 
 move=> x H9.
 unfold Basics.compose.
 simpl.
-unfold MBlockH.
-unfold MBlockW.
+rewrite H35.
+rewrite H36.
 simpl.
 elim (le_lt_dec M (M + proj1_sig x)).
 move=> H10.
 simpl.
-elim (le_lt_dec M (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) (@proj1_sig (forall _ : @sig nat (fun n : nat => lt n N), @sig nat (fun n : nat => lt n N)) (fun f0 : forall _ : @sig nat (fun n : nat => lt n N), @sig nat (fun n : nat => lt n N) => @Bijective (@sig nat (fun n : nat => lt n N)) (@sig nat (fun n : nat => lt n N)) f0) P (@proj1_sig (@sig nat (fun n : nat => lt n N)) (fun y : @sig nat (fun n : nat => lt n N) => @eq nat (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) y)) (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) x))) (blockdividesub M N (@exist nat (fun n : nat => lt n (Init.Nat.add M N)) (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) x)) (H5 x)) H10)))))).
+elim (le_lt_dec M (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) (@proj1_sig (forall _ : @sig nat (fun n : nat => lt n N), @sig nat (fun n : nat => lt n N)) (fun f0 : forall _ : @sig nat (fun n : nat => lt n N), @sig nat (fun n : nat => lt n N) => @Bijective (@sig nat (fun n : nat => lt n N)) (@sig nat (fun n : nat => lt n N)) f0) P (@proj1_sig (@sig nat (fun n : nat => lt n N)) (fun y : @sig nat (fun n : nat => lt n N) => @eq nat (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) y)) (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) x))) (H37 M N (@exist nat (fun n : nat => lt n (Init.Nat.add M N)) (Init.Nat.add M (@proj1_sig nat (fun n : nat => lt n N) x)) (H5 x)) H10)))))).
 move=> H11.
-suff: ((proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig x) (H5 x)) H10)) = x).
+suff: ((proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig x) (H5 x)) H10)) = x).
 move=> H12.
-suff: ((proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig x) (H5 x)) H10)))) (H5 (proj1_sig P (proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig x) (H5 x)) H10))))) H11)) = proj1_sig P x).
+suff: ((proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig x) (H5 x)) H10)))) (H5 (proj1_sig P (proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig x) (H5 x)) H10))))) H11)) = proj1_sig P x).
 move=> H13.
 rewrite H13.
 rewrite H12.
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig x) (H5 x)) H10)))) (H5 (proj1_sig P (proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig x) (H5 x)) H10))))) H11))) (proj1_sig (proj1_sig P x)) M).
-rewrite (proj2_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig x) (H5 x)) H10)))) (H5 (proj1_sig P (proj1_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig x) (H5 x)) H10))))) H11)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig x) (H5 x)) H10)))) (H5 (proj1_sig P (proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig x) (H5 x)) H10))))) H11))) (proj1_sig (proj1_sig P x)) M).
+rewrite (proj2_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig x) (H5 x)) H10)))) (H5 (proj1_sig P (proj1_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig x) (H5 x)) H10))))) H11)).
 rewrite H12.
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig x) (H5 x)) H10))) (proj1_sig x) M).
-apply (proj2_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig x) (H5 x)) H10)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig x) (H5 x)) H10))) (proj1_sig x) M).
+apply (proj2_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig x) (H5 x)) H10)).
 move=> H11.
 apply False_ind.
-apply (le_not_lt M (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig x) (H5 x)) H10))))).
+apply (le_not_lt M (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig x) (H5 x)) H10))))).
 apply le_plus_l.
 apply H11.
 move=> H10.
@@ -4917,19 +4925,19 @@ rewrite H11.
 reflexivity.
 reflexivity.
 move=> u H9.
-unfold MBlockH.
-unfold MBlockW.
+rewrite H35.
+rewrite H36.
 simpl.
 elim (le_lt_dec M (proj1_sig u)).
 elim H9.
 move=> u0 H10 H11 H12.
 apply False_ind.
 apply H10.
-apply (Im_intro {n : nat | (n < N)} {n : nat | (n < M + N)} (Full_set {n : nat | (n < N)}) (fun (m : {n : nat | (n < N)}) => exist (fun n : nat => (n < M + N)) (M + proj1_sig m) (H5 m)) (proj1_sig (blockdividesub M N u0 H12))).
+apply (Im_intro {n : nat | (n < N)} {n : nat | (n < M + N)} (Full_set {n : nat | (n < N)}) (fun (m : {n : nat | (n < N)}) => exist (fun n : nat => (n < M + N)) (M + proj1_sig m) (H5 m)) (proj1_sig (H37 M N u0 H12))).
 apply (Full_intro {n : nat | (n < N)}).
 apply sig_map.
 simpl.
-rewrite (proj2_sig (blockdividesub M N u0 H12)).
+rewrite (proj2_sig (H37 M N u0 H12)).
 reflexivity.
 move=> H10.
 elim (le_lt_dec M (proj1_sig u)).
@@ -4966,10 +4974,10 @@ move=> H9.
 elim (le_lt_dec M (M + proj1_sig (snd xy))).
 move=> H10.
 simpl.
-suff: ((proj1_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig (fst xy)) (H5 (fst xy))) H9)) = fst xy).
+suff: ((proj1_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig (fst xy)) (H5 (fst xy))) H9)) = fst xy).
 move=> H11.
 rewrite H11.
-suff: ((proj1_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig (snd xy)) (H5 (snd xy))) H10)) = snd xy).
+suff: ((proj1_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig (snd xy)) (H5 (snd xy))) H10)) = snd xy).
 move=> H12.
 rewrite H12.
 elim (excluded_middle_informative (proj1_sig (proj1_sig P (fst xy)) < proj1_sig (proj1_sig P (snd xy)))).
@@ -4991,11 +4999,11 @@ apply (plus_lt_reg_l (proj1_sig (proj1_sig P (fst xy))) (proj1_sig (proj1_sig P 
 move=> H14.
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (snd xy)) (H5 (snd xy))) H10))) (proj1_sig (snd xy)) M).
-apply (proj2_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig (snd xy)) (H5 (snd xy))) H10)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (snd xy)) (H5 (snd xy))) H10))) (proj1_sig (snd xy)) M).
+apply (proj2_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig (snd xy)) (H5 (snd xy))) H10)).
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (fst xy)) (H5 (fst xy))) H9))) (proj1_sig (fst xy)) M).
-apply (proj2_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig (fst xy)) (H5 (fst xy))) H9)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (fst xy)) (H5 (fst xy))) H9))) (proj1_sig (fst xy)) M).
+apply (proj2_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig (fst xy)) (H5 (fst xy))) H9)).
 move=> H10.
 apply False_ind.
 apply (le_not_lt M (M + proj1_sig (snd xy)) (le_plus_l M (proj1_sig (snd xy))) H10).
@@ -5027,19 +5035,19 @@ elim H8.
 move=> u0 H9 H10 H11 H12.
 apply False_ind.
 apply H9.
-apply (Im_intro ({n : nat | (n < N)} * {n : nat | (n < N)}) ({n : nat | (n < M + N)} * {n : nat | (n < M + N)}) (fun (xy : {n : nat | (n < N)} * {n : nat | (n < N)}) => (proj1_sig (fst xy) < proj1_sig (snd xy))) (fun m : {n : nat | (n < N)} * {n : nat | (n < N)} => (exist (fun n : nat => (n < M + N)) (M + proj1_sig (fst m)) (H5 (fst m)), exist (fun n : nat => (n < M + N)) (M + proj1_sig (snd m)) (H5 (snd m)))) (proj1_sig (blockdividesub M N (fst u0) H12), proj1_sig (blockdividesub M N (snd u0) H11))).
-apply (plus_lt_reg_l (proj1_sig (proj1_sig (blockdividesub M N (fst u0) H12))) (proj1_sig (proj1_sig (blockdividesub M N (snd u0) H11))) M).
-rewrite (proj2_sig (blockdividesub M N (fst u0) H12)).
-rewrite (proj2_sig (blockdividesub M N (snd u0) H11)).
+apply (Im_intro ({n : nat | (n < N)} * {n : nat | (n < N)}) ({n : nat | (n < M + N)} * {n : nat | (n < M + N)}) (fun (xy : {n : nat | (n < N)} * {n : nat | (n < N)}) => (proj1_sig (fst xy) < proj1_sig (snd xy))) (fun m : {n : nat | (n < N)} * {n : nat | (n < N)} => (exist (fun n : nat => (n < M + N)) (M + proj1_sig (fst m)) (H5 (fst m)), exist (fun n : nat => (n < M + N)) (M + proj1_sig (snd m)) (H5 (snd m)))) (proj1_sig (H37 M N (fst u0) H12), proj1_sig (H37 M N (snd u0) H11))).
+apply (plus_lt_reg_l (proj1_sig (proj1_sig (H37 M N (fst u0) H12))) (proj1_sig (proj1_sig (H37 M N (snd u0) H11))) M).
+rewrite (proj2_sig (H37 M N (fst u0) H12)).
+rewrite (proj2_sig (H37 M N (snd u0) H11)).
 apply H10.
 apply injective_projections.
 apply sig_map.
 simpl.
-rewrite (proj2_sig (blockdividesub M N (fst u0) H12)).
+rewrite (proj2_sig (H37 M N (fst u0) H12)).
 reflexivity.
 apply sig_map.
 simpl.
-rewrite (proj2_sig (blockdividesub M N (snd u0) H11)).
+rewrite (proj2_sig (H37 M N (snd u0) H11)).
 reflexivity.
 elim H8.
 move=> u0 H9 H10 H11 H12.
@@ -5048,13 +5056,13 @@ apply (le_not_lt M (proj1_sig (fst u0)) H12 (lt_trans (proj1_sig (fst u0)) (proj
 elim (le_lt_dec M (proj1_sig (snd u))).
 move=> H9 H10.
 simpl.
-elim (excluded_middle_informative (proj1_sig (fst u) < M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N (snd u) H9))))).
+elim (excluded_middle_informative (proj1_sig (fst u) < M + proj1_sig (proj1_sig P (proj1_sig (H37 M N (snd u) H9))))).
 move=> H11.
 reflexivity.
 move=> H11.
 apply False_ind.
 apply H11.
-apply (le_trans (S (proj1_sig (fst u))) M (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N (snd u) H9))))).
+apply (le_trans (S (proj1_sig (fst u))) M (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N (snd u) H9))))).
 apply H10.
 apply le_plus_l.
 move=> H9 H10.
@@ -5078,7 +5086,7 @@ apply functional_extensionality.
 move=> m.
 apply sig_map.
 suff: (proj1_sig (proj1_sig u1 m) = proj1_sig (proj1_sig (exist Bijective (fun m : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig m) with
-  | left H => exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig u1 (proj1_sig (blockdividesub M N m H)))) (H5 (proj1_sig u1 (proj1_sig (blockdividesub M N m H))))
+  | left H => exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig u1 (proj1_sig (H37 M N m H)))) (H5 (proj1_sig u1 (proj1_sig (H37 M N m H))))
   | right _ => m
 end) (H6 u1)) (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m))) - M).
 move=> H10.
@@ -5087,13 +5095,13 @@ rewrite H9.
 simpl.
 elim (le_lt_dec M (M + proj1_sig m)).
 move=> H11.
-suff: ((proj1_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig m) (H5 m)) H11)) = m).
+suff: ((proj1_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig m) (H5 m)) H11)) = m).
 move=> H12.
 rewrite H12.
 apply minus_plus.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m)) H11))) (proj1_sig m) M).
-apply (proj2_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig m) (H5 m)) H11)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m)) H11))) (proj1_sig m) M).
+apply (proj2_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig m) (H5 m)) H11)).
 move=> H11.
 apply False_ind.
 apply (le_not_lt M (M + proj1_sig m)).
@@ -5102,15 +5110,15 @@ apply H11.
 simpl.
 elim (le_lt_dec M (M + proj1_sig m)).
 move=> H10.
-suff: ((proj1_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig m) (H5 m)) H10)) = m).
+suff: ((proj1_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig m) (H5 m)) H10)) = m).
 move=> H11.
 rewrite H11.
 simpl.
 rewrite minus_plus.
 reflexivity.
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m)) H10))) (proj1_sig m) M).
-apply (proj2_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig m) (H5 m)) H10)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m)) H10))) (proj1_sig m) M).
+apply (proj2_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig m) (H5 m)) H10)).
 move=> H10.
 apply False_ind.
 apply (le_not_lt M (M + proj1_sig m)).
@@ -5141,7 +5149,7 @@ suff: (exists (P : Permutation N), forall (m : {n : nat | (n < N)}), proj1_sig (
 elim.
 move=> P H12.
 apply (Im_intro (Permutation N) (Permutation (M + N)) (Full_set (Permutation N)) (fun (P : Permutation N) => exist Bijective (fun m : {n : nat | (n < M + N)} => match le_lt_dec M (proj1_sig m) with
-  | left H => exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N m H)))) (H5 (proj1_sig P (proj1_sig (blockdividesub M N m H))))
+  | left H => exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N m H)))) (H5 (proj1_sig P (proj1_sig (H37 M N m H))))
   | right _ => m
 end) (H6 P)) P).
 apply (Full_intro (Permutation N) P).
@@ -5152,24 +5160,24 @@ simpl.
 elim (le_lt_dec M (proj1_sig m)).
 move=> H13.
 apply sig_map.
-suff: (m = (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig (blockdividesub M N m H13))) (H5 (proj1_sig (blockdividesub M N m H13))))).
+suff: (m = (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig (H37 M N m H13))) (H5 (proj1_sig (H37 M N m H13))))).
 move=> H14.
 rewrite {1} H14.
-apply (H12 (proj1_sig (blockdividesub M N m H13))).
+apply (H12 (proj1_sig (H37 M N m H13))).
 apply sig_map.
 simpl.
-rewrite (proj2_sig (blockdividesub M N m H13)).
+rewrite (proj2_sig (H37 M N m H13)).
 reflexivity.
 move=> H13.
 apply (H20 m H13).
 suff: (forall (m : {n : nat | (n < N)}), M <= M + proj1_sig m).
 move=> H12.
-suff: (Bijective (fun (m : {n : nat | (n < N)}) => proj1_sig (blockdividesub M N (proj1_sig u0 (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m))) (H11 (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m)) (H12 m))))).
+suff: (Bijective (fun (m : {n : nat | (n < N)}) => proj1_sig (H37 M N (proj1_sig u0 (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m))) (H11 (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m)) (H12 m))))).
 move=> H13.
-exists (exist Bijective (fun (m : {n : nat | (n < N)}) => proj1_sig (blockdividesub M N (proj1_sig u0 (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m))) (H11 (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m)) (H12 m)))) H13).
+exists (exist Bijective (fun (m : {n : nat | (n < N)}) => proj1_sig (H37 M N (proj1_sig u0 (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m))) (H11 (exist (fun (n : nat) => (n < M + N)) (M + proj1_sig m) (H5 m)) (H12 m)))) H13).
 simpl.
 move=> m.
-rewrite (proj2_sig (blockdividesub M N (proj1_sig u0 (exist (fun n : nat => n < M + N) (M + proj1_sig m) (H5 m))) (H11 (exist (fun n : nat => n < M + N) (M + proj1_sig m) (H5 m)) (H12 m)))).
+rewrite (proj2_sig (H37 M N (proj1_sig u0 (exist (fun n : nat => n < M + N) (M + proj1_sig m) (H5 m))) (H11 (exist (fun n : nat => n < M + N) (M + proj1_sig m) (H5 m)) (H12 m)))).
 reflexivity.
 apply CountInjBij.
 move=> m1 m2 H13.
@@ -5185,9 +5193,9 @@ reflexivity.
 reflexivity.
 apply (BijInj {n : nat | (n < M + N)} {n : nat | (n < M + N)} (proj1_sig u0) (proj2_sig u0)).
 apply sig_map.
-rewrite - (proj2_sig (blockdividesub M N (proj1_sig u0 (exist (fun n : nat => (n < M + N)) (M + proj1_sig m1) (H5 m1))) (H11 (exist (fun n : nat => (n < M + N)) (M + proj1_sig m1) (H5 m1)) (H12 m1)))).
+rewrite - (proj2_sig (H37 M N (proj1_sig u0 (exist (fun n : nat => (n < M + N)) (M + proj1_sig m1) (H5 m1))) (H11 (exist (fun n : nat => (n < M + N)) (M + proj1_sig m1) (H5 m1)) (H12 m1)))).
 rewrite H13.
-rewrite (proj2_sig (blockdividesub M N (proj1_sig u0 (exist (fun n : nat => (n < M + N)) (M + proj1_sig m2) (H5 m2))) (H11 (exist (fun n : nat => (n < M + N)) (M + proj1_sig m2) (H5 m2)) (H12 m2)))).
+rewrite (proj2_sig (H37 M N (proj1_sig u0 (exist (fun n : nat => (n < M + N)) (M + proj1_sig m2) (H5 m2))) (H11 (exist (fun n : nat => (n < M + N)) (M + proj1_sig m2) (H5 m2)) (H12 m2)))).
 reflexivity.
 move=> m.
 apply le_plus_l.
@@ -5209,8 +5217,8 @@ apply NNPP.
 move=> H12.
 apply H10.
 exists m.
-unfold MBlockH.
-unfold MBlockW.
+rewrite H35.
+rewrite H36.
 elim (le_lt_dec M (proj1_sig m)).
 move=> H13.
 apply False_ind.
@@ -5237,7 +5245,7 @@ move=> P.
 elim (proj2_sig P).
 move=> Pinv H6.
 exists (fun (m : {n : nat | (n < M + N)}) => match le_lt_dec M (proj1_sig m) with
-  | left H => exist (fun n : nat => (n < M + N)) (M + proj1_sig (Pinv (proj1_sig (blockdividesub M N m H)))) (H5 (Pinv (proj1_sig (blockdividesub M N m H))))
+  | left H => exist (fun n : nat => (n < M + N)) (M + proj1_sig (Pinv (proj1_sig (H37 M N m H)))) (H5 (Pinv (proj1_sig (H37 M N m H))))
   | right _ => m
 end).
 apply conj.
@@ -5245,21 +5253,21 @@ move=> m.
 elim (le_lt_dec M (proj1_sig m)).
 move=> H7.
 simpl.
-elim (le_lt_dec M (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N m H7))))).
+elim (le_lt_dec M (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N m H7))))).
 move=> H8.
 apply sig_map.
 simpl.
-suff: ((proj1_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N m H7)))) (H5 (proj1_sig P (proj1_sig (blockdividesub M N m H7))))) H8)) = (proj1_sig P (proj1_sig (blockdividesub M N m H7)))).
+suff: ((proj1_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N m H7)))) (H5 (proj1_sig P (proj1_sig (H37 M N m H7))))) H8)) = (proj1_sig P (proj1_sig (H37 M N m H7)))).
 move=> H9.
 rewrite H9.
 rewrite (proj1 H6).
-apply (proj2_sig (blockdividesub M N m H7)).
+apply (proj2_sig (H37 M N m H7)).
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N m H7)))) (H5 (proj1_sig P (proj1_sig (blockdividesub M N m H7))))) H8))) (proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N m H7)))) M).
-apply (proj2_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N m H7)))) (H5 (proj1_sig P (proj1_sig (blockdividesub M N m H7))))) H8)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N m H7)))) (H5 (proj1_sig P (proj1_sig (H37 M N m H7))))) H8))) (proj1_sig (proj1_sig P (proj1_sig (H37 M N m H7)))) M).
+apply (proj2_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N m H7)))) (H5 (proj1_sig P (proj1_sig (H37 M N m H7))))) H8)).
 move=> H8.
 apply False_ind.
-apply (le_not_lt M (M + proj1_sig (proj1_sig P (proj1_sig (blockdividesub M N m H7))))).
+apply (le_not_lt M (M + proj1_sig (proj1_sig P (proj1_sig (H37 M N m H7))))).
 apply le_plus_l.
 apply H8.
 move=> H7.
@@ -5273,21 +5281,21 @@ move=> m.
 elim (le_lt_dec M (proj1_sig m)).
 move=> H7.
 simpl.
-elim (le_lt_dec M (M + proj1_sig (Pinv (proj1_sig (blockdividesub M N m H7))))).
+elim (le_lt_dec M (M + proj1_sig (Pinv (proj1_sig (H37 M N m H7))))).
 move=> H8.
 apply sig_map.
 simpl.
-suff: ((proj1_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig (Pinv (proj1_sig (blockdividesub M N m H7)))) (H5 (Pinv (proj1_sig (blockdividesub M N m H7))))) H8)) = (Pinv (proj1_sig (blockdividesub M N m H7)))).
+suff: ((proj1_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig (Pinv (proj1_sig (H37 M N m H7)))) (H5 (Pinv (proj1_sig (H37 M N m H7))))) H8)) = (Pinv (proj1_sig (H37 M N m H7)))).
 move=> H9.
 rewrite H9.
 rewrite (proj2 H6).
-apply (proj2_sig (blockdividesub M N m H7)).
+apply (proj2_sig (H37 M N m H7)).
 apply sig_map.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (Pinv (proj1_sig (blockdividesub M N m H7)))) (H5 (Pinv (proj1_sig (blockdividesub M N m H7))))) H8))) (proj1_sig (Pinv (proj1_sig (blockdividesub M N m H7)))) M).
-apply (proj2_sig (blockdividesub M N (exist (fun n : nat => n < M + N) (M + proj1_sig (Pinv (proj1_sig (blockdividesub M N m H7)))) (H5 (Pinv (proj1_sig (blockdividesub M N m H7))))) H8)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N (exist (fun n : nat => (n < M + N)) (M + proj1_sig (Pinv (proj1_sig (H37 M N m H7)))) (H5 (Pinv (proj1_sig (H37 M N m H7))))) H8))) (proj1_sig (Pinv (proj1_sig (H37 M N m H7)))) M).
+apply (proj2_sig (H37 M N (exist (fun n : nat => n < M + N) (M + proj1_sig (Pinv (proj1_sig (H37 M N m H7)))) (H5 (Pinv (proj1_sig (H37 M N m H7))))) H8)).
 move=> H8.
 apply False_ind.
-apply (le_not_lt M (M + proj1_sig (Pinv (proj1_sig (blockdividesub M N m H7))))).
+apply (le_not_lt M (M + proj1_sig (Pinv (proj1_sig (H37 M N m H7))))).
 apply le_plus_l.
 apply H8.
 move=> H7.
@@ -5372,8 +5380,8 @@ apply functional_extensionality.
 move=> x.
 apply functional_extensionality.
 move=> y.
-unfold MBlockH.
-unfold MBlockW.
+rewrite H35.
+rewrite H36.
 elim (le_lt_dec M (proj1_sig x)).
 move=> H2.
 elim (le_lt_dec M (proj1_sig y)).
@@ -5381,24 +5389,24 @@ move=> H3.
 unfold MI.
 elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
 move=> H4.
-elim (Nat.eq_dec (proj1_sig (proj1_sig (blockdividesub M N x H2))) (proj1_sig (proj1_sig (blockdividesub M N y H3)))).
+elim (Nat.eq_dec (proj1_sig (proj1_sig (H37 M N x H2))) (proj1_sig (proj1_sig (H37 M N y H3)))).
 move=> H5.
 reflexivity.
 move=> H5.
 apply False_ind.
 apply H5.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N x H2))) (proj1_sig (proj1_sig (blockdividesub M N y H3))) M).
-rewrite (proj2_sig (blockdividesub M N x H2)).
-rewrite (proj2_sig (blockdividesub M N y H3)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N x H2))) (proj1_sig (proj1_sig (H37 M N y H3))) M).
+rewrite (proj2_sig (H37 M N x H2)).
+rewrite (proj2_sig (H37 M N y H3)).
 apply H4.
 move=> H4.
-elim (Nat.eq_dec (proj1_sig (proj1_sig (blockdividesub M N x H2))) (proj1_sig (proj1_sig (blockdividesub M N y H3)))).
+elim (Nat.eq_dec (proj1_sig (proj1_sig (H37 M N x H2))) (proj1_sig (proj1_sig (H37 M N y H3)))).
 move=> H5.
 apply False_ind.
 apply H4.
-rewrite - (proj2_sig (blockdividesub M N x H2)).
+rewrite - (proj2_sig (H37 M N x H2)).
 rewrite H5.
-apply (proj2_sig (blockdividesub M N y H3)).
+apply (proj2_sig (H37 M N y H3)).
 move=> H5.
 reflexivity.
 move=> H3.
@@ -5414,7 +5422,7 @@ reflexivity.
 move=> H2.
 elim (le_lt_dec M (proj1_sig y)).
 move=> H3.
-suff: (~ In ({n : nat | (n < M)} * {n : nat | (n < N)}) (fun (xy : {n : nat | (n < M)} * {n : nat | (n < N)}) => C (fst xy) (snd xy) <> FO f) ((exist (fun n : nat => (n < M)) (proj1_sig x) H2), (proj1_sig (blockdividesub M N y H3)))).
+suff: (~ In ({n : nat | (n < M)} * {n : nat | (n < N)}) (fun (xy : {n : nat | (n < M)} * {n : nat | (n < N)}) => C (fst xy) (snd xy) <> FO f) ((exist (fun n : nat => (n < M)) (proj1_sig x) H2), (proj1_sig (H37 M N y H3)))).
 move=> H4.
 apply NNPP.
 move=> H5.
@@ -5609,8 +5617,8 @@ rewrite MySumF2Singleton.
 simpl.
 elim (excluded_middle_informative (proj1_sig (fst d) = proj1_sig (fst d) /\ proj1_sig y = (M + proj1_sig (snd d)))).
 move=> H5.
-unfold MBlockH.
-unfold MBlockW.
+rewrite H35.
+rewrite H36.
 elim (le_lt_dec M (proj1_sig x)).
 move=> H6.
 elim (le_lt_dec M (proj1_sig y)).
@@ -5640,7 +5648,7 @@ move=> H8.
 apply False_ind.
 apply (le_not_lt M (proj1_sig (fst d)) H8 (proj2_sig (fst d))).
 move=> H8.
-elim (excluded_middle_informative ((exist (fun (n : nat) => (n < M)) (proj1_sig x) H6, proj1_sig (blockdividesub M N y H7)) = d)).
+elim (excluded_middle_informative ((exist (fun (n : nat) => (n < M)) (proj1_sig x) H6, proj1_sig (H37 M N y H7)) = d)).
 move=> H9.
 rewrite (Fadd_O_l f).
 unfold MI.
@@ -5667,8 +5675,8 @@ simpl.
 apply H10.
 apply sig_map.
 simpl.
-apply (plus_reg_l (proj1_sig (proj1_sig (blockdividesub M N y H7))) (proj1_sig (snd d)) M).
-rewrite (proj2_sig (blockdividesub M N y H7)).
+apply (plus_reg_l (proj1_sig (proj1_sig (H37 M N y H7))) (proj1_sig (snd d)) M).
+rewrite (proj2_sig (H37 M N y H7)).
 apply (proj2 H5).
 move=> H10.
 rewrite (Fmul_O_l f).
@@ -5683,15 +5691,15 @@ apply H7.
 move=> H5.
 rewrite (Fmul_O_r f).
 rewrite (Fadd_O_r f).
-unfold MBlockH.
-unfold MBlockW.
+rewrite H35.
+rewrite H36.
 elim (le_lt_dec M (proj1_sig x)).
 move=> H6.
 reflexivity.
 move=> H6.
 elim (le_lt_dec M (proj1_sig y)).
 move=> H7.
-elim (excluded_middle_informative ((exist (fun (n : nat) => (n < M)) (proj1_sig x) H6, proj1_sig (blockdividesub M N y H7)) = d)).
+elim (excluded_middle_informative ((exist (fun (n : nat) => (n < M)) (proj1_sig x) H6, proj1_sig (H37 M N y H7)) = d)).
 move=> H8.
 apply False_ind.
 apply H5.
@@ -5699,7 +5707,7 @@ apply conj.
 reflexivity.
 rewrite - H8.
 simpl.
-rewrite (proj2_sig (blockdividesub M N y H7)).
+rewrite (proj2_sig (H37 M N y H7)).
 reflexivity.
 move=> H8.
 reflexivity.
@@ -5724,6 +5732,123 @@ apply (Fmul_O_r f).
 move=> k H5.
 apply (Full_intro {n : nat | (n < M + N)} k).
 apply (le_trans (S (proj1_sig (fst d))) M (M + N) (proj2_sig (fst d)) (le_plus_l M N)).
+apply functional_extensionality_dep.
+move=> f0.
+apply functional_extensionality_dep.
+move=> K.
+apply functional_extensionality_dep.
+move=> N1.
+apply functional_extensionality_dep.
+move=> N2.
+apply functional_extensionality.
+move=> A1.
+apply functional_extensionality.
+move=> A2.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MBlockW.
+elim (le_lt_dec N1 (proj1_sig y)).
+move=> H1.
+suff: (match AddConnectInv N1 N2 y return Prop with
+  | inl _ => False
+  | inr k => proj1_sig y = N1 + proj1_sig k
+end).
+elim (AddConnectInv N1 N2 y).
+move=> m.
+elim.
+move=> m H2.
+suff: (m = (proj1_sig (H37 N1 N2 y H1))).
+move=> H3.
+rewrite H3.
+reflexivity.
+apply sig_map.
+apply (plus_reg_l (proj1_sig m) (proj1_sig (proj1_sig (H37 N1 N2 y H1))) N1).
+rewrite (proj2_sig (H37 N1 N2 y H1)).
+rewrite H2.
+reflexivity.
+apply (proj2 (AddConnectInvNature N1 N2) y H1).
+move=> H1.
+suff: (match AddConnectInv N1 N2 y return Prop with
+  | inl k => proj1_sig y = proj1_sig k
+  | inr _ => False
+end).
+elim (AddConnectInv N1 N2 y).
+move=> m H2.
+suff: (m = (exist (fun n : nat => n < N1) (proj1_sig y) H1)).
+move=> H3.
+rewrite H3.
+reflexivity.
+apply sig_map.
+rewrite - H2.
+reflexivity.
+move=> m.
+elim.
+apply (proj1 (AddConnectInvNature N1 N2) y H1).
+apply functional_extensionality_dep.
+move=> f0.
+apply functional_extensionality_dep.
+move=> M1.
+apply functional_extensionality_dep.
+move=> M2.
+apply functional_extensionality_dep.
+move=> K.
+apply functional_extensionality.
+move=> A1.
+apply functional_extensionality.
+move=> A2.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MBlockH.
+elim (le_lt_dec M1 (proj1_sig x)).
+move=> H1.
+suff: (match AddConnectInv M1 M2 x return Prop with
+  | inl _ => False
+  | inr k => proj1_sig x = M1 + proj1_sig k
+end).
+elim (AddConnectInv M1 M2 x).
+move=> m.
+elim.
+move=> m H2.
+suff: (m = (proj1_sig (H37 M1 M2 x H1))).
+move=> H3.
+rewrite H3.
+reflexivity.
+apply sig_map.
+apply (plus_reg_l (proj1_sig m) (proj1_sig (proj1_sig (H37 M1 M2 x H1))) M1).
+rewrite (proj2_sig (H37 M1 M2 x H1)).
+rewrite H2.
+reflexivity.
+apply (proj2 (AddConnectInvNature M1 M2) x H1).
+move=> H1.
+suff: (match AddConnectInv M1 M2 x return Prop with
+  | inl k => proj1_sig x = proj1_sig k
+  | inr _ => False
+end).
+elim (AddConnectInv M1 M2 x).
+move=> m H2.
+suff: (m = (exist (fun n : nat => n < M1) (proj1_sig x) H1)).
+move=> H3.
+rewrite H3.
+reflexivity.
+apply sig_map.
+rewrite - H2.
+reflexivity.
+move=> m.
+elim.
+apply (proj1 (AddConnectInvNature M1 M2) x H1).
+move=> m1 m2 x H1.
+suff: ((proj1_sig x - m1) < m2).
+move=> H2.
+exists (exist (fun n : nat => (n < m2)) (proj1_sig x - m1) H2).
+unfold proj1_sig at 1.
+apply (le_plus_minus_r m1 (proj1_sig x) H1).
+apply (plus_lt_reg_l (proj1_sig x - m1) m2 m1).
+rewrite (le_plus_minus_r m1 (proj1_sig x) H1).
+apply (proj2_sig x).
 Qed.
 
 Lemma DeterminantMult : forall (f : Field) (N : nat) (A B : Matrix f N N), Determinant f N (Mmult f N N N A B) = Fmul f (Determinant f N A) (Determinant f N B).

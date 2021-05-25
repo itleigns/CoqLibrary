@@ -1138,85 +1138,166 @@ move=> T A B F.
 apply (ForallSavesInjective_dep T (fun (t : T) => A) (fun (t : T) => B) F).
 Qed.
 
-Lemma CountAdd : forall (N M : nat), {f : {n : nat | n < N} + {n : nat | n < M} -> {n : nat | n < N + M} | Bijective f}.
+Lemma AddConnectSig : forall (N M : nat), {f : {n : nat | n < N} + {n : nat | n < M} -> {n : nat | n < N + M} | (forall (m : {n : nat | n < N}), proj1_sig m = proj1_sig (f (inl m))) /\ (forall (m : {n : nat | n < M}), N + proj1_sig m = proj1_sig (f (inr m)))}.
 Proof.
-suff: (forall (N M : nat) (k : {n : nat | n < N}), proj1_sig k < N + M).
+move=> N M.
+suff: (forall (m : {n : nat | n < N}), proj1_sig m < N + M).
 move=> H1.
-suff: (forall (N M : nat) (k : {n : nat | n < M}), N + proj1_sig k < N + M).
+suff: (forall (m : {n : nat | n < M}), N + proj1_sig m < N + M).
 move=> H2.
-suff: (forall (N M : nat) (k : {n : nat | n < N + M}), ~ proj1_sig k < N -> proj1_sig k - N < M).
-move=> H3 N M.
-exists (fun (k : {n : nat | n < N} + {n : nat | n < M}) => match k with
-  | inl l => exist (fun (n : nat) => n < N + M) (proj1_sig l) (H1 N M l)
-  | inr l => exist (fun (n : nat) => n < N + M) (N + proj1_sig l) (H2 N M l)
-end).
-exists (fun (k : {n : nat | n < N + M}) => match excluded_middle_informative (proj1_sig k < N) with
-  | left H => inl (exist (fun (n : nat) => n < N) (proj1_sig k) H)
-  | right H => inr (exist (fun (n : nat) => n < M) (proj1_sig k - N) (H3 N M k H))
+exists (fun (m : {n : nat | n < N} + {n : nat | n < M}) => match m with
+  | inl k => exist (fun (l : nat) => l < N + M) (proj1_sig k) (H1 k)
+  | inr k => exist (fun (l : nat) => l < N + M) (N + proj1_sig k) (H2 k)
 end).
 apply conj.
+move=> m.
+reflexivity.
+move=> m.
+reflexivity.
+move=> m.
+apply (plus_lt_compat_l (proj1_sig m) M N (proj2_sig m)).
+move=> m.
+apply (le_trans (S (proj1_sig m)) N (N + M) (proj2_sig m) (le_plus_l N M)).
+Qed.
+
+Definition AddConnect (N M : nat) := proj1_sig (AddConnectSig N M).
+
+Definition AddConnectNature (N M : nat) : (forall (m : {n : nat | n < N}), proj1_sig m = proj1_sig (AddConnect N M (inl m))) /\ (forall (m : {n : nat | n < M}), N + proj1_sig m = proj1_sig (AddConnect N M (inr m))) := proj2_sig (AddConnectSig N M).
+
+Lemma AddConnectInvSig : forall (N M : nat), {f : {n : nat | n < N + M} -> {n : nat | n < N} + {n : nat | n < M} | (forall (m : {n : nat | n < N + M}), (proj1_sig m < N) -> match (f m) with
+  | inl k => proj1_sig m = proj1_sig k
+  | inr _ => False
+end) /\ (forall (m : {n : nat | n < N + M}), (N <= proj1_sig m) -> match (f m) with
+  | inl _ => False
+  | inr k => proj1_sig m = N + proj1_sig k
+end)}.
+Proof.
+move=> N M.
+suff: (forall (m : {n : nat | n < N + M}), ~ proj1_sig m < N -> proj1_sig m - N < M).
+move=> H1.
+exists (fun (m : {n : nat | n < N + M}) => match excluded_middle_informative (proj1_sig m < N) with
+  | left H => inl (exist (fun (k : nat) => k < N) (proj1_sig m) H)
+  | right H => inr (exist (fun (k : nat) => k < M) (proj1_sig m - N) (H1 m H))
+end).
+apply conj.
+move=> m H2.
+elim (excluded_middle_informative (proj1_sig m < N)).
+move=> H3.
+reflexivity.
+move=> H3.
+apply (H3 H2).
+move=> m H2.
+elim (excluded_middle_informative (proj1_sig m < N)).
+move=> H3.
+apply (le_not_lt N (proj1_sig m) H2 H3).
+move=> H3.
+apply (le_plus_minus N (proj1_sig m) H2).
+move=> m H1.
+apply (plus_lt_reg_l (proj1_sig m - N) M N).
+rewrite (le_plus_minus_r N (proj1_sig m)).
+apply (proj2_sig m).
+elim (le_or_lt N (proj1_sig m)).
+apply.
+move=> H2.
+apply False_ind.
+apply (H1 H2).
+Qed.
+
+Definition AddConnectInv (N M : nat) := proj1_sig (AddConnectInvSig N M).
+
+Definition AddConnectInvNature (N M : nat) : (forall (m : {n : nat | n < N + M}), proj1_sig m < N -> match AddConnectInv N M m with
+  | inl k => proj1_sig m = proj1_sig k
+  | inr _ => False
+end) /\ (forall (m : {n : nat | n < N + M}), N <= proj1_sig m -> match AddConnectInv N M m with
+  | inl _ => False
+  | inr k => proj1_sig m = N + proj1_sig k
+end) := proj2_sig (AddConnectInvSig N M).
+
+Lemma AddConnectInvRelation : forall (N M : nat), (forall (m : {n : nat | n < N} + {n : nat | n < M}), AddConnectInv N M (AddConnect N M m) = m) /\ (forall (m : {n : nat | n < N + M}), AddConnect N M (AddConnectInv N M m) = m).
+Proof.
+move=> N M.
+apply conj.
 elim.
+move=> m.
+suff: (match AddConnectInv N M (AddConnect N M (inl m)) return Prop with
+  | inl k => proj1_sig (AddConnect N M (inl m)) = proj1_sig k
+  | inr _ => False
+end).
+elim (AddConnectInv N M (AddConnect N M (inl m))).
+move=> k H1.
+suff: (k = m).
+move=> H2.
+rewrite H2.
+reflexivity.
+apply sig_map.
+rewrite - H1.
+rewrite (proj1 (AddConnectNature N M) m).
+reflexivity.
 move=> k.
-elim (excluded_middle_informative (proj1_sig (exist (fun n : nat => n < N + M) (proj1_sig k) (H1 N M k)) < N)).
-move=> H4.
-simpl.
-suff: ((exist (fun n : nat => n < N) (proj1_sig k) H4) = k).
-move=> H5.
-rewrite H5.
-reflexivity.
-apply sig_map.
-reflexivity.
-move=> H4.
-apply False_ind.
-apply H4.
-apply (proj2_sig k).
+elim.
+apply (proj1 (AddConnectInvNature N M) (AddConnect N M (inl m))).
+rewrite - (proj1 (AddConnectNature N M) m).
+apply (proj2_sig m).
+move=> m.
+suff: (match AddConnectInv N M (AddConnect N M (inr m)) return Prop with
+  | inl _ => False
+  | inr k => proj1_sig (AddConnect N M (inr m)) = N + proj1_sig k
+end).
+elim (AddConnectInv N M (AddConnect N M (inr m))).
 move=> k.
-elim (excluded_middle_informative (proj1_sig (exist (fun n : nat => n < N + M) (N + proj1_sig k) (H2 N M k)) < N)).
-move=> H4.
-apply False_ind.
-apply (lt_irrefl N).
-apply (le_trans (S N) (S (N + proj1_sig k)) N).
-apply (le_n_S N (N + proj1_sig k)).
-rewrite - {1} (plus_0_r N).
-apply (plus_le_compat_l 0 (proj1_sig k) N (le_0_n (proj1_sig k))).
-apply H4.
-move=> H4.
-simpl.
-suff: ((exist (fun n : nat => n < M) (N + proj1_sig k - N) (H3 N M (exist (fun n : nat => n < N + M) (N + proj1_sig k) (H2 N M k)) H4)) = k).
-move=> H5.
-rewrite H5.
+elim.
+move=> k H1.
+suff: (m = k).
+move=> H2.
+rewrite H2.
 reflexivity.
 apply sig_map.
-simpl.
-apply (minus_plus N (proj1_sig k)).
+apply (plus_reg_l (proj1_sig m) (proj1_sig k) N).
+rewrite (proj2 (AddConnectNature N M) m).
+apply H1.
+apply (proj2 (AddConnectInvNature N M) (AddConnect N M (inr m))).
+rewrite - (proj2 (AddConnectNature N M) m).
+apply (le_plus_l N (proj1_sig m)).
+move=> m.
+elim (le_or_lt N (proj1_sig m)).
+move=> H1.
+suff: (match AddConnectInv N M m return Prop with
+  | inl _ => False
+  | inr k => proj1_sig m = N + proj1_sig k
+end).
+elim (AddConnectInv N M m).
 move=> k.
-elim (excluded_middle_informative (proj1_sig k < N)).
-move=> H4.
+elim.
+move=> k H2.
 apply sig_map.
+rewrite H2.
+rewrite (proj2 (AddConnectNature N M) k).
 reflexivity.
-move=> H4.
+apply (proj2 (AddConnectInvNature N M) m).
+apply H1.
+move=> H1.
+suff: (match AddConnectInv N M m return Prop with
+  | inl k => proj1_sig m = proj1_sig k
+  | inr _ => False
+end).
+elim (AddConnectInv N M m).
+move=> k H2.
 apply sig_map.
-simpl.
-apply (le_plus_minus_r N (proj1_sig k)).
-elim (le_or_lt N (proj1_sig k)).
-apply.
-move=> H5.
-apply False_ind.
-apply (H4 H5).
-move=> N M k H3.
-apply (plus_lt_reg_l (proj1_sig k - N) M N).
-rewrite (le_plus_minus_r N (proj1_sig k)).
-apply (proj2_sig k).
-elim (le_or_lt N (proj1_sig k)).
-apply.
-move=> H4.
-apply False_ind.
-apply (H3 H4).
-apply (fun (N M : nat) (k : {n : nat | n < M}) => (plus_lt_compat_l (proj1_sig k) M N) (proj2_sig k)).
-move=> N M k.
-unfold lt.
-rewrite - (plus_0_r (S (proj1_sig k))).
-apply (plus_le_compat (S (proj1_sig k)) N 0 M (proj2_sig k) (le_0_n M)).
+rewrite H2.
+rewrite (proj1 (AddConnectNature N M) k).
+reflexivity.
+move=> k.
+elim.
+apply (proj1 (AddConnectInvNature N M) m).
+apply H1.
+Qed.
+
+Lemma CountAdd : forall (N M : nat), {f : {n : nat | n < N} + {n : nat | n < M} -> {n : nat | n < N + M} | Bijective f}.
+Proof.
+move=> N M.
+exists (AddConnect N M).
+exists (AddConnectInv N M).
+apply (AddConnectInvRelation N M).
 Qed.
 
 Lemma CountMult : forall (N M : nat), {f : {n : nat | n < N} * {n : nat | n < M} -> {n : nat | n < N * M} | Bijective f}.
