@@ -1726,4 +1726,3 @@ rewrite - (proj1 (SkipOneNature (S N) m k2) H4).
 rewrite H2.
 reflexivity.
 Qed.
-
