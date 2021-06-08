@@ -1726,3 +1726,26 @@ rewrite - (proj1 (SkipOneNature (S N) m k2) H4).
 rewrite H2.
 reflexivity.
 Qed.
+
+Lemma SkipOneMonotonicallyIncreasing : forall (N : nat) (m : {n : nat | n < N}) (k1 k2 : {n : nat | n < pred N}), proj1_sig k1 < proj1_sig k2 -> proj1_sig (SkipOne N m k1) < proj1_sig (SkipOne N m k2).
+Proof.
+elim.
+move=> m.
+apply False_ind.
+apply (le_not_lt O (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)).
+move=> N H1 m k1 k2 H2.
+elim (le_or_lt (proj1_sig m) (proj1_sig k1)).
+move=> H3.
+rewrite (proj2 (SkipOneNature (S N) m k1) H3).
+rewrite (proj2 (SkipOneNature (S N) m k2) (le_trans (proj1_sig m) (proj1_sig k1) (proj1_sig k2) H3 (lt_le_weak (proj1_sig k1) (proj1_sig k2) H2))).
+apply (le_n_S (S (proj1_sig k1)) (proj1_sig k2) H2).
+move=> H3.
+rewrite (proj1 (SkipOneNature (S N) m k1) H3).
+elim (le_or_lt (proj1_sig m) (proj1_sig k2)).
+move=> H4.
+rewrite (proj2 (SkipOneNature (S N) m k2) H4).
+apply (le_S (S (proj1_sig k1)) (proj1_sig k2) H2).
+move=> H4.
+rewrite (proj1 (SkipOneNature (S N) m k2) H4).
+apply H2.
+Qed.
