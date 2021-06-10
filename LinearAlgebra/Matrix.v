@@ -7664,18 +7664,10 @@ apply H1.
 move=> H1.
 rewrite (Fmul_O_r f (Determinant f N A)).
 unfold Mmult.
-suff: ((fun (n : Count N) => Fmul f (A x n) (CofactorMatrix f N A n y)) = 
-(fun (n : Count N) =>
-        Fmul f
-          ((fun (a : {n : nat | n < N}) =>
-            match Nat.eq_dec (proj1_sig a) (proj1_sig y) with
+suff: ((fun (n : Count N) => Fmul f (A x n) (CofactorMatrix f N A n y)) = (fun (n : Count N) => Fmul f ((fun (a : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig a) (proj1_sig y) with
   | left _ => A x
   | right _ => A a
-end)
-             y n)
-          (Cofactor f N
-             (fun (a : {n : nat | n < N}) =>
-            match Nat.eq_dec (proj1_sig a) (proj1_sig y) with
+end) y n) (Cofactor f N (fun (a : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig a) (proj1_sig y) with
   | left _ => A x
   | right _ => A a
 end) y n))).
@@ -7685,8 +7677,7 @@ rewrite - (DeterminantDivideW f N (fun (a : {n : nat | n < N}) => match Nat.eq_d
   | left _ => A x
   | right _ => A a
 end) y).
-apply (DeterminantDuplicateH f N (fun (a : {n : nat | n < N}) =>
-            match Nat.eq_dec (proj1_sig a) (proj1_sig y) with
+apply (DeterminantDuplicateH f N (fun (a : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig a) (proj1_sig y) with
   | left _ => A x
   | right _ => A a
 end) x y H1).
@@ -7708,11 +7699,10 @@ move=> H2.
 unfold CofactorMatrix.
 unfold MTranspose.
 unfold Cofactor.
-suff: ((fun (x0 y0 : {n0 : nat | n0 < pred N}) =>
-         A (SkipOne N y x0) (SkipOne N n y0)) = (fun (x0 y0 : {n0 : nat | n0 < pred N}) =>
-         (match Nat.eq_dec (proj1_sig (SkipOne N y x0)) (proj1_sig y)
-          with | left _ => A x
-          | right _ => A (SkipOne N y x0) end) (SkipOne N n y0))).
+suff: ((fun (x0 y0 : {n0 : nat | n0 < pred N}) => A (SkipOne N y x0) (SkipOne N n y0)) = (fun (x0 y0 : {n0 : nat | n0 < pred N}) => (match Nat.eq_dec (proj1_sig (SkipOne N y x0)) (proj1_sig y) with
+  | left _ => A x
+  | right _ => A (SkipOne N y x0)
+end) (SkipOne N n y0))).
 move=> H3.
 rewrite H3.
 reflexivity.
@@ -7762,8 +7752,7 @@ apply functional_extensionality.
 move=> x.
 apply functional_extensionality.
 move=> y.
-rewrite - (DeterminantTrans f (pred N) (fun (x0 y0 : {n : nat | n < pred N}) =>
-      A (SkipOne N x y0) (SkipOne N y x0))).
+rewrite - (DeterminantTrans f (pred N) (fun (x0 y0 : {n : nat | n < pred N}) => A (SkipOne N x y0) (SkipOne N y x0))).
 rewrite (plus_comm (proj1_sig x) (proj1_sig y)).
 reflexivity.
 Qed.
@@ -7782,25 +7771,7 @@ unfold CofactorMatrix.
 rewrite - (MTransMult f (S N) (S N) (S N) (Cofactor f (S N) A) (Cofactor f (S N) B)).
 unfold Mmult at 2.
 unfold Cofactor.
-suff: ((fun (p q : {n : nat | n < S N}) =>
-   Fmul f (PowF f (Fopp f (FI f)) (proj1_sig p + proj1_sig q))
-     (Determinant f (pred (S N))
-        (fun (x y : {n : nat | n < pred (S N)}) =>
-         Mmult f (S N) (S N) (S N) A B (SkipOne (S N) p x)
-           (SkipOne (S N) q y)))) = (fun (x y : {n : nat | n < S N}) =>
-   MySumF2 {n : nat | n < S N}
-     (exist (Finite (Count (S N))) (Full_set {n : nat | n < S N})
-        (CountFinite (S N))) (FPCM f)
-     (fun n : Count (S N) =>
-      Fmul f
-        (Fmul f (PowF f (Fopp f (FI f)) (proj1_sig x + proj1_sig n))
-           (Determinant f (pred (S N))
-              (fun (x0 y0 : {n0 : nat | n0 < pred (S N)}) =>
-               A (SkipOne (S N) x x0) (SkipOne (S N) n y0))))
-        (Fmul f (PowF f (Fopp f (FI f)) (proj1_sig n + proj1_sig y))
-           (Determinant f (pred (S N))
-              (fun (x0 y0 : {n0 : nat | n0 < pred (S N)}) =>
-               B (SkipOne (S N) n x0) (SkipOne (S N) y y0))))))).
+suff: ((fun (p q : {n : nat | n < S N}) => Fmul f (PowF f (Fopp f (FI f)) (proj1_sig p + proj1_sig q)) (Determinant f (pred (S N)) (fun (x y : {n : nat | n < pred (S N)}) => Mmult f (S N) (S N) (S N) A B (SkipOne (S N) p x) (SkipOne (S N) q y)))) = (fun (x y : {n : nat | n < S N}) => MySumF2 {n : nat | n < S N} (exist (Finite (Count (S N))) (Full_set {n : nat | n < S N}) (CountFinite (S N))) (FPCM f) (fun n : Count (S N) => Fmul f (Fmul f (PowF f (Fopp f (FI f)) (proj1_sig x + proj1_sig n)) (Determinant f (pred (S N)) (fun (x0 y0 : {n0 : nat | n0 < pred (S N)}) => A (SkipOne (S N) x x0) (SkipOne (S N) n y0)))) (Fmul f (PowF f (Fopp f (FI f)) (proj1_sig n + proj1_sig y)) (Determinant f (pred (S N)) (fun (x0 y0 : {n0 : nat | n0 < pred (S N)}) => B (SkipOne (S N) n x0) (SkipOne (S N) y y0))))))).
 move=> H2.
 rewrite H2.
 reflexivity.
@@ -7809,30 +7780,16 @@ move=> x.
 apply functional_extensionality.
 move=> y.
 simpl.
-suff: ((fun (x0 y0 : {n : nat | n < N}) =>
-      Mmult f (S N) (S N) (S N) A B (SkipOne (S N) x x0)
-        (SkipOne (S N) y y0)) = Mmult f N (S N) N (fun (x0 : {n : nat | n < N}) (y0 : {n : nat | n < S N}) => A (SkipOne (S N) x x0) y0) (fun (x0 : {n : nat | n < S N}) (y0 : {n : nat | n < N}) => B x0 (SkipOne (S N) y y0))).
+suff: ((fun (x0 y0 : {n : nat | n < N}) => Mmult f (S N) (S N) (S N) A B (SkipOne (S N) x x0) (SkipOne (S N) y y0)) = Mmult f N (S N) N (fun (x0 : {n : nat | n < N}) (y0 : {n : nat | n < S N}) => A (SkipOne (S N) x x0) y0) (fun (x0 : {n : nat | n < S N}) (y0 : {n : nat | n < N}) => B x0 (SkipOne (S N) y y0))).
 move=> H2.
 rewrite H2.
-rewrite (CauchyBinet f N (S N) (fun (x0 : {n : nat | n < N}) (y0 : {n : nat | n < S N}) =>
-         A (SkipOne (S N) x x0) y0) (fun (x0 : {n : nat | n < S N}) (y0 : {n : nat | n < N}) =>
-         B x0 (SkipOne (S N) y y0))).
-suff: ((FiniteIntersection ({n : nat | n < N} -> {n : nat | n < S N})
-        (exist (Finite ({n : nat | n < N} -> {n : nat | n < S N}))
-           (Full_set ({n : nat | n < N} -> {n : nat | n < S N}))
-           (CountPowFinite N (S N)))
-        (fun (r : {n : nat | n < N} -> {n : nat | n < S N}) =>
-         forall (p q : {n : nat | n < N}),
-         proj1_sig p < proj1_sig q -> proj1_sig (r p) < proj1_sig (r q))) = FiniteIm {n : nat | n < S N} ({n : nat | n < N} -> {n : nat | n < S N}) (SkipOne (S N)) (exist (Finite (Count (S N))) (Full_set {n : nat | n < S N})
-     (CountFinite (S N)))).
+rewrite (CauchyBinet f N (S N) (fun (x0 : {n : nat | n < N}) (y0 : {n : nat | n < S N}) => A (SkipOne (S N) x x0) y0) (fun (x0 : {n : nat | n < S N}) (y0 : {n : nat | n < N}) => B x0 (SkipOne (S N) y y0))).
+suff: ((FiniteIntersection ({n : nat | n < N} -> {n : nat | n < S N}) (exist (Finite ({n : nat | n < N} -> {n : nat | n < S N})) (Full_set ({n : nat | n < N} -> {n : nat | n < S N})) (CountPowFinite N (S N))) (fun (r : {n : nat | n < N} -> {n : nat | n < S N}) => forall (p q : {n : nat | n < N}), proj1_sig p < proj1_sig q -> proj1_sig (r p) < proj1_sig (r q))) = FiniteIm {n : nat | n < S N} ({n : nat | n < N} -> {n : nat | n < S N}) (SkipOne (S N)) (exist (Finite (Count (S N))) (Full_set {n : nat | n < S N}) (CountFinite (S N)))).
 move=> H3.
 rewrite H3.
-rewrite - (MySumF2BijectiveSame2 {n : nat | n < S N} ({n : nat | n < N} -> {n : nat | n < S N}) (exist (Finite (Count (S N))) (Full_set {n : nat | n < S N})
-     (CountFinite (S N)))).
+rewrite - (MySumF2BijectiveSame2 {n : nat | n < S N} ({n : nat | n < N} -> {n : nat | n < S N}) (exist (Finite (Count (S N))) (Full_set {n : nat | n < S N}) (CountFinite (S N)))).
 unfold Basics.compose.
-apply (FiniteSetInduction {n : nat | n < S N}
-     (exist (Finite (Count (S N))) (Full_set {n : nat | n < S N})
-        (CountFinite (S N)))).
+apply (FiniteSetInduction {n : nat | n < S N} (exist (Finite (Count (S N))) (Full_set {n : nat | n < S N}) (CountFinite (S N)))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
@@ -7843,17 +7800,9 @@ rewrite MySumF2Add.
 rewrite (Fmul_add_distr_l f (PowF f (Fopp f (FI f)) (proj1_sig x + proj1_sig y))).
 rewrite H7.
 apply (Fadd_eq_compat_l f).
-rewrite (Fmul_assoc f (PowF f (Fopp f (FI f)) (proj1_sig x + proj1_sig c)) (Determinant f N
-        (fun (x0 y0 : {n : nat | n < N}) =>
-         A (SkipOne (S N) x x0) (SkipOne (S N) c y0)))).
-rewrite - (Fmul_assoc f (Determinant f N
-        (fun (x0 y0 : {n : nat | n < N}) =>
-         A (SkipOne (S N) x x0) (SkipOne (S N) c y0))) (PowF f (Fopp f (FI f)) (proj1_sig c + proj1_sig y)) (Determinant f N
-           (fun (x0 y0 : {n0 : nat | n0 < N}) =>
-            B (SkipOne (S N) c x0) (SkipOne (S N) y y0)))).
-rewrite (Fmul_comm f (Determinant f N
-           (fun (x0 y0 : {n : nat | n < N}) =>
-            A (SkipOne (S N) x x0) (SkipOne (S N) c y0))) (PowF f (Fopp f (FI f)) (proj1_sig c + proj1_sig y))).
+rewrite (Fmul_assoc f (PowF f (Fopp f (FI f)) (proj1_sig x + proj1_sig c)) (Determinant f N (fun (x0 y0 : {n : nat | n < N}) => A (SkipOne (S N) x x0) (SkipOne (S N) c y0)))).
+rewrite - (Fmul_assoc f (Determinant f N (fun (x0 y0 : {n : nat | n < N}) => A (SkipOne (S N) x x0) (SkipOne (S N) c y0))) (PowF f (Fopp f (FI f)) (proj1_sig c + proj1_sig y)) (Determinant f N (fun (x0 y0 : {n0 : nat | n0 < N}) => B (SkipOne (S N) c x0) (SkipOne (S N) y y0)))).
+rewrite (Fmul_comm f (Determinant f N (fun (x0 y0 : {n : nat | n < N}) => A (SkipOne (S N) x x0) (SkipOne (S N) c y0))) (PowF f (Fopp f (FI f)) (proj1_sig c + proj1_sig y))).
 rewrite - (Fmul_assoc f (PowF f (Fopp f (FI f)) (proj1_sig x + proj1_sig c))).
 rewrite (Fmul_assoc f (PowF f (Fopp f (FI f)) (proj1_sig x + proj1_sig c))).
 rewrite (Fmul_assoc f (PowF f (Fopp f (FI f)) (proj1_sig c + proj1_sig y))).
@@ -7892,12 +7841,8 @@ move=> H8.
 apply False_ind.
 apply (lt_irrefl (proj1_sig (SkipOne (S N) u1 (exist (fun (n : nat) => n < N) (proj1_sig u1) (le_trans (S (proj1_sig u1)) (proj1_sig u2) N H8 (le_S_n (proj1_sig u2) N (proj2_sig u2))))))).
 rewrite {1} H6.
-rewrite (proj1 (SkipOneNature (S N) u2 (exist (fun (n : nat) => n < N) (proj1_sig u1)
-        (le_trans (S (proj1_sig u1)) (proj1_sig u2) N H8
-           (le_S_n (proj1_sig u2) N (proj2_sig u2))))) H8).
-rewrite (proj2 (SkipOneNature (S N) u1 (exist (fun (n : nat) => n < N) (proj1_sig u1)
-        (le_trans (S (proj1_sig u1)) (proj1_sig u2) N H8
-           (le_S_n (proj1_sig u2) N (proj2_sig u2))))) (le_n (proj1_sig u1))).
+rewrite (proj1 (SkipOneNature (S N) u2 (exist (fun (n : nat) => n < N) (proj1_sig u1) (le_trans (S (proj1_sig u1)) (proj1_sig u2) N H8 (le_S_n (proj1_sig u2) N (proj2_sig u2))))) H8).
+rewrite (proj2 (SkipOneNature (S N) u1 (exist (fun (n : nat) => n < N) (proj1_sig u1) (le_trans (S (proj1_sig u1)) (proj1_sig u2) N H8 (le_S_n (proj1_sig u2) N (proj2_sig u2))))) (le_n (proj1_sig u1))).
 apply (le_n (S (proj1_sig u1))).
 apply sig_map.
 move=> H7.
@@ -7977,9 +7922,7 @@ move=> H13.
 elim (le_lt_or_eq (proj1_sig (g0 p)) (proj1_sig m) H13).
 move=> H14.
 exists (exist (fun (k : nat) => k < N) (proj1_sig (g0 p)) (le_trans (S (proj1_sig (g0 p))) (proj1_sig m) N H14 (le_S_n (proj1_sig m) N (proj2_sig m)))).
-rewrite (proj1 (SkipOneNature (S N) m (exist (fun (k : nat) => k < N) (proj1_sig (g0 p))
-        (le_trans (S (proj1_sig (g0 p))) (proj1_sig m) N H14
-           (le_S_n (proj1_sig m) N (proj2_sig m))))) H14).
+rewrite (proj1 (SkipOneNature (S N) m (exist (fun (k : nat) => k < N) (proj1_sig (g0 p)) (le_trans (S (proj1_sig (g0 p))) (proj1_sig m) N H14 (le_S_n (proj1_sig m) N (proj2_sig m))))) H14).
 reflexivity.
 move=> H14.
 apply False_ind.
@@ -7990,8 +7933,7 @@ move=> H13.
 suff: (pred (proj1_sig (g0 p)) < N).
 move=> H14.
 exists (exist (fun (k : nat) => k < N) (pred (proj1_sig (g0 p))) H14).
-rewrite (proj2 (SkipOneNature (S N) m (exist (fun k : nat => k < N) (pred (proj1_sig (g0 p)))
-        H14))).
+rewrite (proj2 (SkipOneNature (S N) m (exist (fun k : nat => k < N) (pred (proj1_sig (g0 p))) H14))).
 simpl.
 suff: (proj1_sig m < proj1_sig (g0 p)).
 elim (proj1_sig (g0 p)).
@@ -8079,9 +8021,7 @@ apply (lt_irrefl (S N)).
 apply (incl_card_le {n : nat | n < S N} (Add {n : nat | n < S N} (Add {n : nat | n < S N} (Im {n : nat | n < N} {n : nat | n < S N} (Full_set {n : nat | n < N}) g0) p) m) (Full_set {n : nat | n < S N})).
 apply (card_add {n : nat | n < S N}).
 apply (card_add {n : nat | n < S N}).
-suff: (forall (k : nat), k <= N -> cardinal {n : nat | n < S N}
-  (Im {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < k)
-     g0) k).
+suff: (forall (k : nat), k <= N -> cardinal {n : nat | n < S N} (Im {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < k) g0) k).
 move=> H8.
 suff: (Full_set {n : nat | n < N} = (fun (l : {n : nat | n < N}) => proj1_sig l < N)).
 move=> H9.
@@ -8095,8 +8035,7 @@ move=> k H9.
 apply (Full_intro {n : nat | n < N} k).
 elim.
 move=> H8.
-suff: (Im {n : nat | n < N} {n : nat | n < S N}
-     (fun (l : {n : nat | n < N}) => proj1_sig l < 0) g0 = Empty_set {n : nat | n < S N}).
+suff: (Im {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < 0) g0 = Empty_set {n : nat | n < S N}).
 move=> H9.
 rewrite H9.
 apply (card_empty {n : nat | n < S N}).
@@ -8110,9 +8049,7 @@ apply (le_not_lt O (proj1_sig l) (le_0_n (proj1_sig l)) H9).
 move=> k.
 elim.
 move=> k H8 H9.
-suff: (Im {n : nat | n < N} {n : nat | n < S N}
-     (fun (l : {n : nat | n < N}) => proj1_sig l < S k) g0 = Add {n : nat | n < S N} (Im {n : nat | n < N} {n : nat | n < S N}
-     (fun (l : {n : nat | n < N}) => proj1_sig l < k) g0) (g0 (exist (fun (n : nat) => n < N) k H9))).
+suff: (Im {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < S k) g0 = Add {n : nat | n < S N} (Im {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < k) g0) (g0 (exist (fun (n : nat) => n < N) k H9))).
 move=> H10.
 rewrite H10.
 apply (card_add {n : nat | n < S N}).
@@ -8175,12 +8112,10 @@ elim.
 move=> s.
 elim.
 move=> t H10 z H11.
-apply (Im_intro {n : nat | n < N} {n : nat | n < S N}
-           (fun (l : {n : nat | n < N}) => proj1_sig l < S k) g0 t (le_trans (S (proj1_sig t)) k (S k) H10 (le_S k k (le_n k))) z H11).
+apply (Im_intro {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < S k) g0 t (le_trans (S (proj1_sig t)) k (S k) H10 (le_S k k (le_n k))) z H11).
 move=> s.
 elim.
-apply (Im_intro {n : nat | n < N} {n : nat | n < S N}
-           (fun (l : {n : nat | n < N}) => proj1_sig l < S k) g0 (exist (fun (n : nat) => n < N) k H9)).
+apply (Im_intro {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < S k) g0 (exist (fun (n : nat) => n < N) k H9)).
 apply (le_n (S k)).
 reflexivity.
 move=> H8.
@@ -8212,9 +8147,7 @@ apply H5.
 suff: (Full_set {n : nat | n < S N} = (fun (k : {n : nat | n < S N}) => proj1_sig k < S N)).
 move=> H8.
 rewrite H8.
-suff: (forall (l : nat), l <= S N -> cardinal {n : nat | n < S N}
-  (fun (k : {n : nat | n < S N}) => proj1_sig k < l) 
-  l).
+suff: (forall (l : nat), l <= S N -> cardinal {n : nat | n < S N} (fun (k : {n : nat | n < S N}) => proj1_sig k < l) l).
 move=> H9.
 apply (H9 (S N) (le_n (S N))).
 elim.
@@ -8275,9 +8208,7 @@ apply (incl_card_le {n : nat | n < S N} (Full_set {n : nat | n < S N}) (fun (m :
 suff: (Full_set {n : nat | n < S N} = (fun (k : {n : nat | n < S N}) => proj1_sig k < S N)).
 move=> H6.
 rewrite H6.
-suff: (forall (l : nat), l <= S N -> cardinal {n : nat | n < S N}
-  (fun (k : {n : nat | n < S N}) => proj1_sig k < l) 
-  l).
+suff: (forall (l : nat), l <= S N -> cardinal {n : nat | n < S N} (fun (k : {n : nat | n < S N}) => proj1_sig k < l) l).
 move=> H7.
 apply (H7 (S N) (le_n (S N))).
 elim.
@@ -8329,20 +8260,15 @@ move=> k H6.
 apply (proj2_sig k).
 move=> k H6.
 apply (Full_intro {n : nat | n < S N} k).
-suff: ((fun (m : {n : nat | n < S N}) =>
-   ~ (forall k : {n : nat | n < N}, g0 k <> m)) = Im {n : nat | n < N} {n : nat | n < S N}
-     (fun (l : {n : nat | n < N}) => proj1_sig l < N) g0).
+suff: ((fun (m : {n : nat | n < S N}) => ~ (forall k : {n : nat | n < N}, g0 k <> m)) = Im {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < N) g0).
 move=> H6.
 rewrite H6.
-suff: (forall (k : nat), k <= N -> cardinal {n : nat | n < S N}
-  (Im {n : nat | n < N} {n : nat | n < S N}
-     (fun (l : {n : nat | n < N}) => proj1_sig l < k) g0) k).
+suff: (forall (k : nat), k <= N -> cardinal {n : nat | n < S N} (Im {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < k) g0) k).
 move=> H7.
 apply (H7 N (le_n N)).
 elim.
 move=> H7.
-suff: (Im {n : nat | n < N} {n : nat | n < S N}
-     (fun (l : {n : nat | n < N}) => proj1_sig l < 0) g0 = Empty_set {n : nat | n < S N}).
+suff: (Im {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < 0) g0 = Empty_set {n : nat | n < S N}).
 move=> H8.
 rewrite H8.
 apply (card_empty {n : nat | n < S N}).
@@ -8356,9 +8282,7 @@ apply (le_not_lt O (proj1_sig l) (le_0_n (proj1_sig l)) H8).
 move=> k.
 elim.
 move=> k H7 H8.
-suff: (Im {n : nat | n < N} {n : nat | n < S N}
-     (fun (l : {n : nat | n < N}) => proj1_sig l < S k) g0 = Add {n : nat | n < S N} (Im {n : nat | n < N} {n : nat | n < S N}
-     (fun (l : {n : nat | n < N}) => proj1_sig l < k) g0) (g0 (exist (fun (n : nat) => n < N) k H8))).
+suff: (Im {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < S k) g0 = Add {n : nat | n < S N} (Im {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < k) g0) (g0 (exist (fun (n : nat) => n < N) k H8))).
 move=> H9.
 rewrite H9.
 apply (card_add {n : nat | n < S N}).
@@ -8421,12 +8345,10 @@ elim.
 move=> l.
 elim.
 move=> s H9 z H10.
-apply (Im_intro {n : nat | n < N} {n : nat | n < S N}
-           (fun (l : {n : nat | n < N}) => proj1_sig l < S k) g0 s (le_trans (S (proj1_sig s)) k (S k) H9 (le_S k k (le_n k))) z H10).
+apply (Im_intro {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < S k) g0 s (le_trans (S (proj1_sig s)) k (S k) H9 (le_S k k (le_n k))) z H10).
 move=> s.
 elim.
-apply (Im_intro {n : nat | n < N} {n : nat | n < S N}
-           (fun (l : {n : nat | n < N}) => proj1_sig l < S k) g0 (exist (fun (n : nat) => n < N) k H8)).
+apply (Im_intro {n : nat | n < N} {n : nat | n < S N} (fun (l : {n : nat | n < N}) => proj1_sig l < S k) g0 (exist (fun (n : nat) => n < N) k H8)).
 apply (le_n (S k)).
 reflexivity.
 apply Extensionality_Ensembles.
@@ -8577,5 +8499,3 @@ apply (proj2 H1).
 Qed.
 
 End Matrix.
-
-
