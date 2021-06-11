@@ -8388,9 +8388,11 @@ apply (Full_intro ({n : nat | n < N} -> {n : nat | n < S N}) (SkipOne (S N) m)).
 reflexivity.
 Qed.
 
+Definition RegularMatrix (f : Field) (N : nat) (A : Matrix f N N) := Determinant f N A <> FO f.
+
 Definition InvMatrix (f : Field) (N : nat) (A : Matrix f N N) := VMmult f N N (Finv f (Determinant f N A)) (CofactorMatrix f N A).
 
-Lemma InvMatrixMultR : forall (f : Field) (N : nat) (A : Matrix f N N), Determinant f N A <> FO f -> Mmult f N N N A (InvMatrix f N A) = MI f N.
+Lemma InvMatrixMultR : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A -> Mmult f N N N A (InvMatrix f N A) = MI f N.
 Proof.
 move=> f N A H1.
 unfold InvMatrix.
@@ -8401,7 +8403,7 @@ rewrite (Finv_l f (Determinant f N A) H1).
 apply (VMmult_I_l f N N (MI f N)).
 Qed.
 
-Lemma InvMatrixMultL : forall (f : Field) (N : nat) (A : Matrix f N N), Determinant f N A <> FO f -> Mmult f N N N (InvMatrix f N A) A = MI f N.
+Lemma InvMatrixMultL : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A -> Mmult f N N N (InvMatrix f N A) A = MI f N.
 Proof.
 move=> f N A H1.
 unfold InvMatrix.
@@ -8412,7 +8414,7 @@ rewrite (Finv_l f (Determinant f N A) H1).
 apply (VMmult_I_l f N N (MI f N)).
 Qed.
 
-Lemma InvMatrixMultUniqueR : forall (f : Field) (N : nat) (A : Matrix f N N), Determinant f N A <> FO f -> forall (B : Matrix f N N), Mmult f N N N A B = MI f N -> B = InvMatrix f N A.
+Lemma InvMatrixMultUniqueR : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A -> forall (B : Matrix f N N), Mmult f N N N A B = MI f N -> B = InvMatrix f N A.
 Proof.
 move=> f N A H1 B H2.
 rewrite - (Mmult_I_l f N N B).
@@ -8422,7 +8424,7 @@ rewrite H2.
 apply (Mmult_I_r f N N (InvMatrix f N A)).
 Qed.
 
-Lemma InvMatrixMultUniqueL : forall (f : Field) (N : nat) (A : Matrix f N N), Determinant f N A <> FO f -> forall (B : Matrix f N N), Mmult f N N N B A = MI f N -> B = InvMatrix f N A.
+Lemma InvMatrixMultUniqueL : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A -> forall (B : Matrix f N N), Mmult f N N N B A = MI f N -> B = InvMatrix f N A.
 Proof.
 move=> f N A H1 B H2.
 rewrite - (Mmult_I_r f N N B).
@@ -8432,7 +8434,7 @@ rewrite H2.
 apply (Mmult_I_l f N N (InvMatrix f N A)).
 Qed.
 
-Lemma InvMatrixMult : forall (f : Field) (N : nat) (A B : Matrix f N N), Determinant f N A <> FO f -> Determinant f N B <> FO f -> InvMatrix f N (Mmult f N N N A B) = Mmult f N N N (InvMatrix f N B) (InvMatrix f N A).
+Lemma InvMatrixMult : forall (f : Field) (N : nat) (A B : Matrix f N N), RegularMatrix f N A -> RegularMatrix f N B -> InvMatrix f N (Mmult f N N N A B) = Mmult f N N N (InvMatrix f N B) (InvMatrix f N A).
 Proof.
 move=> f N A B H1 H2.
 suff: (Determinant f N (Mmult f N N N A B) <> FO f).
@@ -8448,7 +8450,7 @@ rewrite (DeterminantMult f N A B).
 apply (Fmul_integral_contrapositive f (Determinant f N A) (Determinant f N B) (conj H1 H2)).
 Qed.
 
-Lemma DeterminantInvRExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), Determinant f N A <> FO f <-> exists (B : Matrix f N N), Mmult f N N N A B = MI f N.
+Lemma DeterminantInvRExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A <-> exists (B : Matrix f N N), Mmult f N N N A B = MI f N.
 Proof.
 move=> f N A.
 apply conj.
@@ -8465,7 +8467,7 @@ rewrite H2.
 apply (Fmul_O_l f (Determinant f N B)).
 Qed.
 
-Lemma DeterminantInvLExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), Determinant f N A <> FO f <-> exists (B : Matrix f N N), Mmult f N N N B A = MI f N.
+Lemma DeterminantInvLExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A <-> exists (B : Matrix f N N), Mmult f N N N B A = MI f N.
 Proof.
 move=> f N A.
 apply conj.
@@ -8482,7 +8484,7 @@ rewrite H2.
 apply (Fmul_O_r f (Determinant f N B)).
 Qed.
 
-Lemma DeterminantInvBothExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), Determinant f N A <> FO f <-> exists (B : Matrix f N N), Mmult f N N N A B = MI f N /\ Mmult f N N N B A = MI f N.
+Lemma DeterminantInvBothExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A <-> exists (B : Matrix f N N), Mmult f N N N A B = MI f N /\ Mmult f N N N B A = MI f N.
 Proof.
 move=> f N A.
 apply conj.
