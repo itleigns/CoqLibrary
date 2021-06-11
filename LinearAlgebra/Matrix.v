@@ -8390,6 +8390,14 @@ Qed.
 
 Definition RegularMatrix (f : Field) (N : nat) (A : Matrix f N N) := Determinant f N A <> FO f.
 
+Lemma RegularMatrixChain : forall (f : Field) (N : nat) (A B : Matrix f N N), RegularMatrix f N A -> RegularMatrix f N B -> RegularMatrix f N (Mmult f N N N A B).
+Proof.
+move=> f N A B.
+unfold RegularMatrix.
+rewrite (DeterminantMult f N A B).
+apply (Fmul_integral_contrapositive_currified f (Determinant f N A) (Determinant f N B)).
+Qed.
+
 Definition InvMatrix (f : Field) (N : nat) (A : Matrix f N N) := VMmult f N N (Finv f (Determinant f N A)) (CofactorMatrix f N A).
 
 Lemma InvMatrixMultR : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A -> Mmult f N N N A (InvMatrix f N A) = MI f N.
@@ -8446,8 +8454,7 @@ rewrite - (Mmult_assoc f N N N N (InvMatrix f N A) A B).
 rewrite (InvMatrixMultL f N A H1).
 rewrite (Mmult_I_l f N N B).
 apply (InvMatrixMultL f N B H2).
-rewrite (DeterminantMult f N A B).
-apply (Fmul_integral_contrapositive f (Determinant f N A) (Determinant f N B) (conj H1 H2)).
+apply (RegularMatrixChain f N A B H1 H2).
 Qed.
 
 Lemma DeterminantInvRExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A <-> exists (B : Matrix f N N), Mmult f N N N A B = MI f N.
