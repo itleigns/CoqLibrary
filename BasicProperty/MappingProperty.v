@@ -1638,3 +1638,114 @@ apply (Im_intro {n : nat | (n < N)%nat} {n : nat | (n < N)%nat} (fun (k : {n : n
 apply (le_n (S m)).
 reflexivity.
 Qed.
+
+Lemma SkipOneSig : forall (N : nat) (m : {n : nat | n < N}), {f : {n : nat | n < pred N} -> {n : nat | n < N} | forall (k : {n : nat | n < pred N}), (proj1_sig k < proj1_sig m -> proj1_sig (f k) = proj1_sig k) /\ (proj1_sig k >= proj1_sig m -> proj1_sig (f k) = S (proj1_sig k))}.
+Proof.
+elim.
+move=> m.
+apply constructive_definite_description.
+apply False_ind.
+apply (le_not_lt 0 (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)).
+move=> k H1 m.
+simpl.
+suff: (forall (l : {n : nat | n < k}), proj1_sig l < S k).
+move=> H2.
+suff: (forall (l : {n : nat | n < k}), S (proj1_sig l) < S k).
+move=> H3.
+exists (fun (l : {n : nat | n < k}) => match excluded_middle_informative (proj1_sig l < proj1_sig m) with
+  | left _ => exist (fun (n : nat) => n < S k) (proj1_sig l) (H2 l)
+  | right _ => exist (fun (n : nat) => n < S k) (S (proj1_sig l)) (H3 l)
+end).
+move=> l.
+apply conj.
+move=> H4.
+elim (excluded_middle_informative (proj1_sig l < proj1_sig m)).
+move=> H5.
+reflexivity.
+move=> H5.
+apply False_ind.
+apply (H5 H4).
+move=> H4.
+elim (excluded_middle_informative (proj1_sig l < proj1_sig m)).
+move=> H5.
+apply False_ind.
+apply (le_not_lt (proj1_sig m) (proj1_sig l) H4 H5).
+move=> H5.
+reflexivity.
+move=> l.
+apply (lt_n_S (proj1_sig l) k (proj2_sig l)).
+move=> l.
+apply (le_S (S (proj1_sig l)) k (proj2_sig l)).
+Qed.
+
+Definition SkipOne (N : nat) (m : {n : nat | n < N}) := proj1_sig (SkipOneSig N m).
+
+Definition SkipOneNature (N : nat) (m : {n : nat | n < N}) : forall (k : {n : nat | n < pred N}), (proj1_sig k < proj1_sig m -> proj1_sig ((SkipOne N m) k) = proj1_sig k) /\ (proj1_sig k >= proj1_sig m -> proj1_sig ((SkipOne N m) k) = S (proj1_sig k)) := proj2_sig (SkipOneSig N m).
+
+Lemma SkipOneInj : forall (N : nat) (m : {n : nat | n < N}), Injective (SkipOne N m).
+Proof.
+elim.
+move=> m.
+apply False_ind.
+apply (le_not_lt O (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)).
+move=> N H1 m k1 k2 H2.
+elim (le_or_lt (proj1_sig m) (proj1_sig k1)).
+move=> H3.
+elim (le_or_lt (proj1_sig m) (proj1_sig k2)).
+move=> H4.
+apply sig_map.
+apply (Nat.succ_inj (proj1_sig k1) (proj1_sig k2)).
+rewrite - (proj2 (SkipOneNature (S N) m k1) H3).
+rewrite - (proj2 (SkipOneNature (S N) m k2) H4).
+rewrite H2.
+reflexivity.
+move=> H4.
+apply False_ind.
+apply (le_not_lt (proj1_sig (SkipOne (S N) m k1)) (proj1_sig (SkipOne (S N) m k2))).
+rewrite H2.
+apply (le_n (proj1_sig (SkipOne (S N) m k2))).
+rewrite (proj1 (SkipOneNature (S N) m k2) H4).
+rewrite (proj2 (SkipOneNature (S N) m k1) H3).
+apply (lt_trans (proj1_sig k2) (proj1_sig m) (S (proj1_sig k1)) H4).
+apply (le_n_S (proj1_sig m) (proj1_sig k1) H3).
+move=> H3.
+elim (le_or_lt (proj1_sig m) (proj1_sig k2)).
+move=> H4.
+apply False_ind.
+apply (le_not_lt (proj1_sig (SkipOne (S N) m k2)) (proj1_sig (SkipOne (S N) m k1))).
+rewrite H2.
+apply (le_n (proj1_sig (SkipOne (S N) m k2))).
+rewrite (proj1 (SkipOneNature (S N) m k1) H3).
+rewrite (proj2 (SkipOneNature (S N) m k2) H4).
+apply (lt_trans (proj1_sig k1) (proj1_sig m) (S (proj1_sig k2)) H3).
+apply (le_n_S (proj1_sig m) (proj1_sig k2) H4).
+move=> H4.
+apply sig_map.
+rewrite - (proj1 (SkipOneNature (S N) m k1) H3).
+rewrite - (proj1 (SkipOneNature (S N) m k2) H4).
+rewrite H2.
+reflexivity.
+Qed.
+
+Lemma SkipOneMonotonicallyIncreasing : forall (N : nat) (m : {n : nat | n < N}) (k1 k2 : {n : nat | n < pred N}), proj1_sig k1 < proj1_sig k2 -> proj1_sig (SkipOne N m k1) < proj1_sig (SkipOne N m k2).
+Proof.
+elim.
+move=> m.
+apply False_ind.
+apply (le_not_lt O (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)).
+move=> N H1 m k1 k2 H2.
+elim (le_or_lt (proj1_sig m) (proj1_sig k1)).
+move=> H3.
+rewrite (proj2 (SkipOneNature (S N) m k1) H3).
+rewrite (proj2 (SkipOneNature (S N) m k2) (le_trans (proj1_sig m) (proj1_sig k1) (proj1_sig k2) H3 (lt_le_weak (proj1_sig k1) (proj1_sig k2) H2))).
+apply (le_n_S (S (proj1_sig k1)) (proj1_sig k2) H2).
+move=> H3.
+rewrite (proj1 (SkipOneNature (S N) m k1) H3).
+elim (le_or_lt (proj1_sig m) (proj1_sig k2)).
+move=> H4.
+rewrite (proj2 (SkipOneNature (S N) m k2) H4).
+apply (le_S (S (proj1_sig k1)) (proj1_sig k2) H2).
+move=> H4.
+rewrite (proj1 (SkipOneNature (S N) m k2) H4).
+apply H2.
+Qed.
