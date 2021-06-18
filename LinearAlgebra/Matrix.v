@@ -3,6 +3,7 @@ Add LoadPath "Tools" as Tools.
 Add LoadPath "BasicProperty" as BasicProperty.
 Add LoadPath "BasicNotation" as BasicNotation.
 Add LoadPath "LibraryExtension" as LibraryExtension.
+Add LoadPath "LinearAlgebra/SenkeiDaisuunoSekai" as LinearAlgebra.SenkeiDaisuunoSekai.
 
 From mathcomp Require Import ssreflect.
 Require Import Coq.Sets.Ensembles.
@@ -26,6 +27,7 @@ Require Import BasicProperty.NatProperty.
 Require Import BasicNotation.Parity.
 Require Import BasicNotation.Permutation.
 Require Import LibraryExtension.DatatypesExtension.
+Require Import LinearAlgebra.SenkeiDaisuunoSekai.SenkeiDaisuunoSekai1.
 
 Section Matrix.
 
@@ -8505,6 +8507,787 @@ move=> B H1.
 apply (proj2 (DeterminantInvLExistRelation f N A)).
 exists B.
 apply (proj2 H1).
+Qed.
+
+Definition Rank (f : Field) (M N : nat) (A : Matrix f M N) := DimensionSubspaceVS f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A) (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A) (Proposition_5_9_1_1 f (FnVS f N) (FnVSFiniteDimension f N) (SpanVS f (FnVS f N) {n : nat | n < M} A) (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)).
+
+Lemma RankDef2 : forall (f : Field) (M N : nat) (A : Matrix f M N) (r : nat), Rank f M N A = r <-> is_max_nat (fun (k : nat) => exists (x : {n : nat | n < k} -> {n : nat | n < M}), LinearlyIndependentVS f (FnVS f N) {n : nat | n < k} (fun (m : {n : nat | n < k}) => A (x m))) r.
+Proof.
+move=> f M N A r.
+apply conj.
+move=> H1.
+apply conj.
+elim (proj2 (CountFiniteBijective {m : Count M
+         | ~
+           In
+             (VT f
+                (SubspaceMakeVS f (FnVS f N)
+                   (SpanVS f (FnVS f N) {n : nat | n < M} A)
+                   (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)))
+             (SpanVS f
+                (SubspaceMakeVS f (FnVS f N)
+                   (SpanVS f (FnVS f N) {n : nat | n < M} A)
+                   (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))
+                {n : Count M | proj1_sig n < proj1_sig m}
+                (fun k : {n : Count M | proj1_sig n < proj1_sig m} =>
+                 exist (SpanVS f (FnVS f N) {n : nat | n < M} A)
+                   (A (proj1_sig k))
+                   (SpanContainSelfVS f (FnVS f N) 
+                      {n : nat | n < M} A (proj1_sig k))))
+             (exist (SpanVS f (FnVS f N) {n : nat | n < M} A) 
+                (A m)
+                (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A m))})).
+move=> s.
+elim.
+move=> g H2.
+suff: (r = s).
+move=> H3.
+rewrite H3.
+exists (fun (k : {n : nat | n < s}) => proj1_sig (g k)).
+apply (SubspaceBasisLinearlyIndependentVS f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A) (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A) {n : nat | n < s} (fun (m : {n : nat | n < s}) => A (proj1_sig (g m)))).
+exists (fun (m : {n : nat | n < s}) => SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A (proj1_sig (g m))).
+apply (BijectiveSaveBasisVS f (SubspaceMakeVS f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A)
+     (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) {n : nat | n < s} {m : Count M
+    | ~
+      In
+        (VT f
+           (SubspaceMakeVS f (FnVS f N)
+              (SpanVS f (FnVS f N) {n : nat | n < M} A)
+              (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)))
+        (SpanVS f
+           (SubspaceMakeVS f (FnVS f N)
+              (SpanVS f (FnVS f N) {n : nat | n < M} A)
+              (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))
+           {n : Count M | proj1_sig n < proj1_sig m}
+           (fun k : {n : Count M | proj1_sig n < proj1_sig m} =>
+            exist (SpanVS f (FnVS f N) {n : nat | n < M} A)
+              (A (proj1_sig k))
+              (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A
+                 (proj1_sig k))))
+        (exist (SpanVS f (FnVS f N) {n : nat | n < M} A) 
+           (A m) (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A m))} g (fun (t : {m : Count M
+    | ~
+      In
+        (VT f
+           (SubspaceMakeVS f (FnVS f N)
+              (SpanVS f (FnVS f N) {n : nat | n < M} A)
+              (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)))
+        (SpanVS f
+           (SubspaceMakeVS f (FnVS f N)
+              (SpanVS f (FnVS f N) {n : nat | n < M} A)
+              (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))
+           {n : Count M | proj1_sig n < proj1_sig m}
+           (fun k : {n : Count M | proj1_sig n < proj1_sig m} =>
+            exist (SpanVS f (FnVS f N) {n : nat | n < M} A)
+              (A (proj1_sig k))
+              (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A
+                 (proj1_sig k))))
+        (exist (SpanVS f (FnVS f N) {n : nat | n < M} A) 
+           (A m) (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A m))}) =>
+   exist (SpanVS f (FnVS f N) {n : nat | n < M} A) 
+     (A (proj1_sig t))
+     (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A
+        (proj1_sig t))) H2).
+apply (Theorem_5_6_sub f (SubspaceMakeVS f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A) (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) M (fun (k : {n : nat | n < M}) => exist (SpanVS f (FnVS f N) {n : nat | n < M} A) (A k) (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A k))).
+apply Extensionality_Ensembles.
+apply conj.
+move=> v H4.
+elim (proj2_sig v).
+move=> x H5.
+exists x.
+apply sig_map.
+rewrite H5.
+unfold Count.
+apply (FiniteSetInduction {n : nat | n < M}
+  (exist (Finite {n : nat | n < M})
+     (fun (t : {n : nat | n < M}) => proj1_sig x t <> FO f) 
+     (proj2_sig x))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H6 H7 H8 H9.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H9.
+reflexivity.
+apply H8.
+apply H8.
+move=> v H4.
+apply Full_intro.
+rewrite - H1.
+apply (DimensionVSNature2 f
+  (SubspaceMakeVS f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A)
+     (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))
+  (Proposition_5_9_1_1 f (FnVS f N) (FnVSFiniteDimension f N)
+     (SpanVS f (FnVS f N) {n : nat | n < M} A)
+     (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) s (fun (t : {n : nat | n < s}) =>
+   exist (SpanVS f (FnVS f N) {n : nat | n < M} A) 
+     (A (proj1_sig (g t)))
+     (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A
+        (proj1_sig (g t))))).
+apply (BijectiveSaveBasisVS f (SubspaceMakeVS f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A)
+     (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) {n : nat | n < s} {m : Count M
+    | ~
+      In
+        (VT f
+           (SubspaceMakeVS f (FnVS f N)
+              (SpanVS f (FnVS f N) {n : nat | n < M} A)
+              (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)))
+        (SpanVS f
+           (SubspaceMakeVS f (FnVS f N)
+              (SpanVS f (FnVS f N) {n : nat | n < M} A)
+              (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))
+           {n : Count M | proj1_sig n < proj1_sig m}
+           (fun k : {n : Count M | proj1_sig n < proj1_sig m} =>
+            exist (SpanVS f (FnVS f N) {n : nat | n < M} A)
+              (A (proj1_sig k))
+              (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A
+                 (proj1_sig k))))
+        (exist (SpanVS f (FnVS f N) {n : nat | n < M} A) 
+           (A m) (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A m))} g (fun (t : {m : Count M
+    | ~
+      In
+        (VT f
+           (SubspaceMakeVS f (FnVS f N)
+              (SpanVS f (FnVS f N) {n : nat | n < M} A)
+              (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)))
+        (SpanVS f
+           (SubspaceMakeVS f (FnVS f N)
+              (SpanVS f (FnVS f N) {n : nat | n < M} A)
+              (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))
+           {n : Count M | proj1_sig n < proj1_sig m}
+           (fun k : {n : Count M | proj1_sig n < proj1_sig m} =>
+            exist (SpanVS f (FnVS f N) {n : nat | n < M} A)
+              (A (proj1_sig k))
+              (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A
+                 (proj1_sig k))))
+        (exist (SpanVS f (FnVS f N) {n : nat | n < M} A) 
+           (A m) (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A m))}) =>
+   exist (SpanVS f (FnVS f N) {n : nat | n < M} A) 
+     (A (proj1_sig t))
+     (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A
+        (proj1_sig t))) H2).
+apply (Theorem_5_6_sub f (SubspaceMakeVS f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A) (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) M (fun (k : {n : nat | n < M}) => exist (SpanVS f (FnVS f N) {n : nat | n < M} A) (A k) (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A k))).
+apply Extensionality_Ensembles.
+apply conj.
+move=> v H4.
+elim (proj2_sig v).
+move=> x H5.
+exists x.
+apply sig_map.
+rewrite H5.
+unfold Count.
+apply (FiniteSetInduction {n : nat | n < M}
+  (exist (Finite {n : nat | n < M})
+     (fun (t : {n : nat | n < M}) => proj1_sig x t <> FO f) 
+     (proj2_sig x))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H6 H7 H8 H9.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H9.
+reflexivity.
+apply H8.
+apply H8.
+move=> v H4.
+apply Full_intro.
+apply (FiniteSigSame (Count M)).
+apply (Finite_downward_closed (Count M) (Full_set (Count M)) (CountFinite M)).
+move=> m H2.
+apply (Full_intro (Count M) m).
+move=> s.
+elim.
+move=> g.
+rewrite - H1.
+move=> H2.
+apply (Corollary_5_7_3 f
+  (SubspaceMakeVS f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A)
+     (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) s
+  (fun (m : (Count s)) => exist (SpanVS f (FnVS f N) {n : nat | n < M} A) 
+     (A (g m))
+     (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A
+        (g m)))).
+apply (FiniteLinearlyIndependentVS f).
+move=> x H3.
+apply (FiniteLinearlyIndependentVS f (FnVS f N) s
+       (fun m : {n : nat | n < s} => A (g m))).
+apply H2.
+suff: (VO f (FnVS f N) = proj1_sig (VO f
+       (SubspaceMakeVS f (FnVS f N)
+          (SpanVS f (FnVS f N) {n : nat | n < M} A)
+          (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)))).
+move=> H4.
+rewrite H4.
+rewrite - H3.
+apply (FiniteSetInduction (Count s)
+  (exist (Finite (Count s)) (Full_set (Count s)) (CountFinite s))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H5 H6 H7 H8.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H8.
+reflexivity.
+apply H7.
+apply H7.
+reflexivity.
+move=> H1.
+elim (proj1 H1).
+move=> g H2.
+apply (DimensionVSNature2 f
+  (SubspaceMakeVS f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A)
+     (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))
+  (Proposition_5_9_1_1 f (FnVS f N) (FnVSFiniteDimension f N)
+     (SpanVS f (FnVS f N) {n : nat | n < M} A)
+     (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) r (fun (t : {n : nat | n < r}) =>
+   exist (SpanVS f (FnVS f N) {n : nat | n < M} A) 
+     (A (g t))
+     (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A
+        (g t)))).
+apply (BasisLIGeVS f
+  (SubspaceMakeVS f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A)
+     (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
+apply conj.
+apply (FiniteLinearlyIndependentVS f).
+move=> x H3.
+apply (FiniteLinearlyIndependentVS f (FnVS f N) r
+       (fun m : {n : nat | n < r} => A (g m))).
+apply H2.
+suff: (VO f (FnVS f N) = proj1_sig (VO f
+       (SubspaceMakeVS f (FnVS f N)
+          (SpanVS f (FnVS f N) {n : nat | n < M} A)
+          (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)))).
+move=> H4.
+rewrite H4.
+rewrite - H3.
+apply (FiniteSetInduction (Count r)
+  (exist (Finite (Count r)) (Full_set (Count r)) (CountFinite r))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H5 H6 H7 H8.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H8.
+reflexivity.
+apply H7.
+apply H7.
+reflexivity.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v H3.
+suff: (In (Fn f N) (SpanVS f (FnVS f N) {n : nat | n < r} (fun (t : {n : nat | n < r}) => A (g t))) (proj1_sig v)).
+elim.
+move=> x H4.
+exists x.
+apply sig_map.
+rewrite H4.
+unfold Count.
+apply (FiniteSetInduction {n : nat | n < r}
+  (exist (Finite {n : nat | n < r})
+     (fun (t : {n : nat | n < r}) => proj1_sig x t <> FO f) 
+     (proj2_sig x))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H5 H6 H7 H8.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H8.
+reflexivity.
+apply H7.
+apply H7.
+elim (proj2_sig v).
+move=> x H4.
+rewrite H4.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < r}
+     (fun (t : {n : nat | n < r}) => A (g t))))).
+move=> cm t H5 H6.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < r}
+     (fun (t : {n : nat | n < r}) => A (g t))) cm (Vmul f (FnVS f N) (proj1_sig x t) (A t)) H6).
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < r}
+     (fun (t : {n : nat | n < r}) => A (g t)))) (proj1_sig x t) (A t)).
+apply NNPP.
+move=> H7.
+apply (lt_irrefl r).
+apply (proj2 H1 (S r)).
+exists (fun (m : Count (S r)) => match excluded_middle_informative (proj1_sig m < r) with
+  | left H => g (exist (fun (k : nat) => k < r) (proj1_sig m) H)
+  | right _ => t
+end).
+elim (Proposition_5_2_exists f (FnVS f N) r).
+move=> H8.
+elim.
+move=> H9 H10.
+apply (proj2 (H10 (fun (m : {n : nat | n < S r}) =>
+   A
+     match excluded_middle_informative (proj1_sig m < r) with
+     | left H => g (exist (fun k : nat => k < r) (proj1_sig m) H)
+     | right _ => t
+     end))).
+simpl.
+suff: ((fun (m : Count r) =>
+   A
+     match excluded_middle_informative (proj1_sig m < r) with
+     | left H => g (exist (fun k : nat => k < r) (proj1_sig m) H)
+     | right _ => t
+     end) = (fun m : {n : nat | n < r} => A (g m))).
+move=> H11.
+rewrite H11.
+apply conj.
+apply H2.
+elim (excluded_middle_informative (r < r)).
+move=> H12.
+apply False_ind.
+apply (lt_irrefl r H12).
+move=> H12.
+apply H7.
+apply functional_extensionality.
+move=> m.
+elim (excluded_middle_informative (proj1_sig m < r)).
+move=> H11.
+suff: (exist (fun (k : nat) => k < r) (proj1_sig m) H11 = m).
+move=> H12.
+rewrite H12.
+reflexivity.
+apply sig_map.
+reflexivity.
+move=> H11.
+elim (H11 (proj2_sig m)).
+move=> v H3.
+apply Full_intro.
+Qed.
+
+Lemma RankMultTransformH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p : {n : nat | (n < M)}) (c : FT f), c <> FO f -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end) = Rank f M N A.
+Proof.
+move=> f M N A p c H1.
+suff: (forall (W1 W2 : Ensemble (Fn f N)), W1 = W2 -> forall (H1 : SubspaceVS f (FnVS f N) W1) (H2 : SubspaceVS f (FnVS f N) W2) (H3 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W1 H1)) (H4 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W2 H2)), DimensionSubspaceVS f (FnVS f N) W1 H1 H3 = DimensionSubspaceVS f (FnVS f N) W2 H2 H4).
+move=> H2.
+apply H2.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
+elim.
+move=> x H3.
+rewrite H3.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
+move=> cm u H4 H5.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A) cm).
+apply H5.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
+move=> H6.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) c (A u)).
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
+move=> H6.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
+move=> v.
+elim.
+move=> x H3.
+rewrite H3.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end)))).
+move=> cm u H4 H5.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end))).
+apply H5.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end))) (proj1_sig x u) (A u)).
+elim (classic (proj1_sig u = proj1_sig p)).
+move=> H6.
+suff: (A u = Fnmul f N (Finv f c) ((fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end) u)).
+move=> H7.
+rewrite H7.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end))) (Finv f c)).
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end) u).
+rewrite - {1} (Vmul_I_l f (FnVS f N) (A u)).
+rewrite - (Finv_l f c H1).
+rewrite - (Vmul_assoc f (FnVS f N) (Finv f c) c (A u)).
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
+move=> H7.
+reflexivity.
+move=> H7.
+elim (H7 H6).
+move=> H6.
+suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end) u).
+move=> H7.
+rewrite H7.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end) u).
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
+move=> H7.
+elim (H6 H7).
+move=> H7.
+reflexivity.
+move=> W1 W2 H2.
+rewrite H2.
+move=> H3 H4.
+suff: (H3 = H4).
+move=> H5.
+rewrite H5.
+move=> H6 H7.
+suff: (H6 = H7).
+move=> H8.
+rewrite H8.
+reflexivity.
+apply proof_irrelevance.
+apply proof_irrelevance.
+Qed.
+
+Lemma RankSwapH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < M}), proj1_sig p <> proj1_sig q -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) = Rank f M N A.
+Proof.
+move=> f M N A p q H1.
+suff: (forall (W1 W2 : Ensemble (Fn f N)), W1 = W2 -> forall (H1 : SubspaceVS f (FnVS f N) W1) (H2 : SubspaceVS f (FnVS f N) W2) (H3 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W1 H1)) (H4 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W2 H2)), DimensionSubspaceVS f (FnVS f N) W1 H1 H3 = DimensionSubspaceVS f (FnVS f N) W2 H2 H4).
+move=> H2.
+apply H2.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
+elim.
+move=> x H3.
+rewrite H3.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
+move=> cm u H4 H5.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)).
+apply H5.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
+move=> H6.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A q).
+move=> H6.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
+move=> H7.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A p).
+move=> H7.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
+move=> v.
+elim.
+move=> x H3.
+rewrite H3.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end)))).
+move=> cm u H4 H5.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end)) cm (Vmul f (FnVS f N) (proj1_sig x u) (A u))).
+apply H5.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end))) (proj1_sig x u) (A u)).
+elim (classic (proj1_sig u = proj1_sig p)).
+move=> H6.
+suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) q).
+move=> H7.
+rewrite H7.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) q).
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig p)).
+move=> H7.
+apply False_ind.
+apply H1.
+rewrite H7.
+reflexivity.
+move=> H7.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
+move=> H8.
+suff: (u = p).
+move=> H9.
+rewrite H9.
+reflexivity.
+apply sig_map.
+apply H6.
+move=> H8.
+apply False_ind.
+apply H8.
+reflexivity.
+move=> H6.
+elim (classic (proj1_sig u = proj1_sig q)).
+move=> H7.
+suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) p).
+move=> H8.
+rewrite H8.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) p).
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
+move=> H8.
+suff: (u = q).
+move=> H9.
+rewrite H9.
+reflexivity.
+apply sig_map.
+apply H7.
+move=> H8.
+apply False_ind.
+apply H8.
+reflexivity.
+move=> H7.
+suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) u).
+move=> H8.
+rewrite H8.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) u).
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
+move=> H8.
+elim (H6 H8).
+move=> H8.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
+move=> H9.
+elim (H7 H9).
+move=> H9.
+reflexivity.
+move=> W1 W2 H2.
+rewrite H2.
+move=> H3 H4.
+suff: (H3 = H4).
+move=> H5.
+rewrite H5.
+move=> H6 H7.
+suff: (H6 = H7).
+move=> H8.
+rewrite H8.
+reflexivity.
+apply proof_irrelevance.
+apply proof_irrelevance.
+Qed.
+
+Lemma RankAddTransformH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < M}) (c : FT f), proj1_sig p <> proj1_sig q -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+  | left _ => Fadd f (A x y) (Fmul f c (A p y))
+  | right _ => A x y
+end) = Rank f M N A.
+Proof.
+move=> f M N A p q c H1.
+suff: (forall (W1 W2 : Ensemble (Fn f N)), W1 = W2 -> forall (H1 : SubspaceVS f (FnVS f N) W1) (H2 : SubspaceVS f (FnVS f N) W2) (H3 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W1 H1)) (H4 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W2 H2)), DimensionSubspaceVS f (FnVS f N) W1 H1 H3 = DimensionSubspaceVS f (FnVS f N) W2 H2 H4).
+move=> H2.
+apply H2.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
+elim.
+move=> x H3.
+rewrite H3.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
+move=> cm u H4 H5.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)).
+apply H5.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
+unfold In.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
+move=> H6.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A) (A u) (Fnmul f N c (A p))).
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) c (A p) (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A p)).
+move=> H6.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
+move=> v.
+elim.
+move=> x H3.
+rewrite H3.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end)))).
+move=> cm u H4 H5.
+elim (classic (proj1_sig u = proj1_sig q)).
+move=> H6.
+suff: (A u = Fnminus f N ((fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end) u) (Fnmul f N c (A p))).
+move=> H7.
+rewrite H7.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end))).
+apply H5.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end)))).
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end))).
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end) u).
+apply (SubspaceMakeVSVoppSub f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end)) (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end))).
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end)))).
+suff: (A p = ((fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end) p)).
+move=> H8.
+rewrite {2} H8.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end) p).
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig q)).
+move=> H8.
+elim (H1 H8).
+move=> H8.
+reflexivity.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
+move=> H7.
+apply functional_extensionality.
+move=> w.
+unfold Fnminus.
+unfold Fnmul.
+unfold Fnadd.
+unfold Fnopp.
+rewrite (Fadd_assoc f (A u w) (Fmul f c (A p w)) (Fopp f (Fmul f c (A p w)))).
+rewrite (Fadd_opp_r f (Fmul f c (A p w))).
+rewrite (Fadd_O_r f (A u w)).
+reflexivity.
+move=> H7.
+elim (H7 H6).
+move=> H6.
+suff: (A u = (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end) u).
+move=> H7.
+rewrite H7.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end))).
+apply H5.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end)))).
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end) u).
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
+move=> H7.
+elim (H6 H7).
+move=> H7.
+reflexivity.
+move=> W1 W2 H2.
+rewrite H2.
+move=> H3 H4.
+suff: (H3 = H4).
+move=> H5.
+rewrite H5.
+move=> H6 H7.
+suff: (H6 = H7).
+move=> H8.
+rewrite H8.
+reflexivity.
+apply proof_irrelevance.
+apply proof_irrelevance.
 Qed.
 
 End Matrix.

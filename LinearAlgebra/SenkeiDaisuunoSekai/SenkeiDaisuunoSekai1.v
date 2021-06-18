@@ -7890,16 +7890,19 @@ move=> G H5.
 apply (Theorem_5_4 K (SubspaceMakeVS K V W H1) (DimensionSubspaceVS K V W H1 H2) N G (fun t : Count N => exist W (F t) (H3 t)) H5 H4).
 Qed.
 
-Lemma FnVSDimension : forall (K : Field) (N : nat), exists (H : FiniteDimensionVS K (FnVS K N)), (DimensionVS K (FnVS K N) H) = N.
+Lemma FnVSFiniteDimension : forall (K : Field) (N : nat), FiniteDimensionVS K (FnVS K N).
 Proof.
 move=> K N.
-suff: (FiniteDimensionVS K (FnVS K N)).
-move=> H1.
-exists H1.
-apply (DimensionVSNature2 K (FnVS K N) H1 N (StandardBasisVS K N) (StandardBasisNatureVS K N)).
 exists N.
 exists (StandardBasisVS K N).
 apply (StandardBasisNatureVS K N).
+Qed.
+
+Lemma FnVSDimension : forall (K : Field) (N : nat), exists (H : FiniteDimensionVS K (FnVS K N)), (DimensionVS K (FnVS K N) H) = N.
+Proof.
+move=> K N.
+exists (FnVSFiniteDimension K N).
+apply (DimensionVSNature2 K (FnVS K N) (FnVSFiniteDimension K N) N (StandardBasisVS K N) (StandardBasisNatureVS K N)).
 Qed.
 
 Lemma OVSDimension : forall (K : Field), exists (H : FiniteDimensionVS K (OVS K)), (DimensionVS K (OVS K) H) = O.
