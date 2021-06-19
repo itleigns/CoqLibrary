@@ -1,4 +1,4 @@
-all:  BasicTools.vo NatProperty.vo MappingProperty.vo MySum.vo Parity.vo Permutation.vo DatatypesExtension.vo EnsemblesExtension.vo MyField.vo MyVectorSpace.vo SenkeiDaisuunoSekai1.vo Matrix.vo ShuugouIsouNyuumonn1.vo ShuugouIsouNyuumonn1AC.vo KaisekiNyuumonn1.vo
+all:  BasicTools.vo NatProperty.vo MappingProperty.vo MySum.vo MyProd.vo Parity.vo Permutation.vo DatatypesExtension.vo EnsemblesExtension.vo MyField.vo MyVectorSpace.vo SenkeiDaisuunoSekai1.vo Matrix.vo ShuugouIsouNyuumonn1.vo ShuugouIsouNyuumonn1AC.vo KaisekiNyuumonn1.vo
 
 BasicTools.vo: Tools/BasicTools.v
 	coqc -Q Tools Tools Tools/BasicTools.v
@@ -8,6 +8,9 @@ NatProperty.vo: BasicProperty/NatProperty.v
 
 MappingProperty.vo: BasicProperty/MappingProperty.v
 	coqc -Q BasicProperty BasicProperty BasicProperty/MappingProperty.v
+
+MyProd.vo: Tools/MyProd.v
+	coqc -Q Tools Tools Tools/MyProd.v
 
 MySum.vo: Tools/MySum.v
 	coqc -Q Tools Tools Tools/MySum.v
@@ -33,7 +36,7 @@ MyVectorSpace.vo: MyAlgebraicStructure/MyVectorSpace.v MyField.vo BasicProperty/
 SenkeiDaisuunoSekai1.vo: MyAlgebraicStructure/MyField.v MyAlgebraicStructure/MyVectorSpace.v BasicProperty/MappingProperty.v BasicProperty/NatProperty.v Tools/MySum.v Tools/BasicTools.v LibraryExtension/DatatypesExtension.v LibraryExtension/EnsemblesExtension.v
 	coqc -Q LinearAlgebra/SenkeiDaisuunoSekai LinearAlgebra.SenkeiDaisuunoSekai LinearAlgebra/SenkeiDaisuunoSekai/SenkeiDaisuunoSekai1.v
 
-Matrix.vo: LinearAlgebra/Matrix.v MyField.vo MyVectorSpace.vo MySum.vo
+Matrix.vo: LinearAlgebra/Matrix.v MyField.vo MyVectorSpace.vo MySum.vo MyProd.vo
 	coqc -Q LinearAlgebra LinearAlgebra LinearAlgebra/Matrix.v
 
 ShuugouIsouNyuumonn1.vo: Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1.v MySum.vo MappingProperty.vo EnsemblesExtension.vo
