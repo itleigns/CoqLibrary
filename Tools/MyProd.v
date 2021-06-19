@@ -10,25 +10,25 @@ Mo_O_l : forall (x : MoT), (Moc Moe x) = x;
 Mo_assoc : forall (x y z : MoT), (Moc (Moc x y) z) = (Moc x (Moc y z))
 }.
 
-Definition MyProdFL (U : Type) (a : list U) (mo : Monoid) (F : U -> MoT mo) := fold_right (fun (u : U) (m : MoT mo) => Moc mo (F u) m) (Moe mo) a.
+Definition MyProdFL (mo : Monoid) (a : list (MoT mo)) := fold_right (fun (m0 : MoT mo) (m : MoT mo) => Moc mo m0 m) (Moe mo) a.
 
-Lemma MyProdFLSingle : forall (U : Type) (u : U) (mo : Monoid) (F : U -> MoT mo), MyProdFL U (u :: nil) mo F = F u.
+Lemma MyProdFLSingle : forall (mo : Monoid) (m : MoT mo), MyProdFL mo (m :: nil) = m.
 Proof.
-intros U u mo F.
-apply (Mo_O_r mo (F u)).
+intros mo m.
+apply (Mo_O_r mo m).
 Qed.
 
-Lemma MyProdFLApp : forall (U : Type) (a b : list U) (mo : Monoid) (F : U -> MoT mo), MyProdFL U (app a b) mo F = Moc mo (MyProdFL U a mo F) (MyProdFL U b mo F).
+Lemma MyProdFLApp : forall (mo : Monoid) (a b : list (MoT mo)), MyProdFL mo (app a b) = Moc mo (MyProdFL mo a) (MyProdFL mo b).
 Proof.
-intros U a b mo F.
+intros mo a b.
 elim a.
 simpl.
-rewrite (Mo_O_l mo (MyProdFL U b mo F)).
+rewrite (Mo_O_l mo (MyProdFL mo b)).
 reflexivity.
-intros u a0 H1.
+intros a0 l H1.
 simpl.
 rewrite H1.
-rewrite (Mo_assoc mo (F u) (MyProdFL U a0 mo F) (MyProdFL U b mo F)).
+rewrite (Mo_assoc mo a0 (MyProdFL mo l) (MyProdFL mo b)).
 reflexivity.
 Qed.
 
@@ -41,15 +41,23 @@ Qed.
 
 Definition ReverseMonoid (mo : Monoid) := mkMonoid (MoT mo) (Moe mo) (fun (m1 m2 : MoT mo) => Moc mo m2 m1) (Mo_O_l mo) (Mo_O_r mo) (Mo_assoc_reverse mo).
 
-Lemma MyProdFLReverse : forall (U : Type) (a : list U) (mo : Monoid) (F : U -> MoT mo), MyProdFL U a mo F = MyProdFL U (rev a) (ReverseMonoid mo) F.
+Lemma MyProdFLReverse : forall (mo : Monoid) (a : list (MoT mo)), MyProdFL mo a = MyProdFL (ReverseMonoid mo) (rev a).
 Proof.
-intros U a mo F.
+intros mo a.
 elim a.
 reflexivity.
 intros a0 l H1.
 simpl.
-rewrite (MyProdFLApp U (rev l) (a0 :: nil) (ReverseMonoid mo) F).
 rewrite H1.
-rewrite (MyProdFLSingle U a0 (ReverseMonoid mo) F).
+cut ((@app (MoT mo) (@rev (MoT mo) l) (@cons (MoT mo) a0 (@nil (MoT mo)))) = (@app (MoT (ReverseMonoid mo)) (@rev (MoT mo) l) (@cons (MoT mo) a0 (@nil (MoT mo))))).
+intro H2.
+rewrite H2.
+rewrite (MyProdFLApp (ReverseMonoid mo) (rev l) (a0 :: nil)).
+cut ((@cons (MoT mo) a0 (@nil (MoT mo))) = (@cons (MoT (ReverseMonoid mo)) a0 (@nil (MoT (ReverseMonoid mo))))).
+intro H3.
+rewrite H3.
+rewrite (MyProdFLSingle (ReverseMonoid mo) a0).
+reflexivity.
+reflexivity.
 reflexivity.
 Qed.
