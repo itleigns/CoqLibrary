@@ -6,6 +6,7 @@ Add LoadPath "LibraryExtension" as LibraryExtension.
 Add LoadPath "LinearAlgebra/SenkeiDaisuunoSekai" as LinearAlgebra.SenkeiDaisuunoSekai.
 
 From mathcomp Require Import ssreflect.
+Require Import Coq.Lists.List.
 Require Import Coq.Sets.Ensembles.
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Arith.Plus.
@@ -22,6 +23,7 @@ Require Import Coq.Arith.Compare_dec.
 Require Import MyAlgebraicStructure.MyField.
 Require Import MyAlgebraicStructure.MyVectorSpace.
 Require Import Tools.MySum.
+Require Import Tools.MyProd.
 Require Import BasicProperty.MappingProperty.
 Require Import BasicProperty.NatProperty.
 Require Import BasicNotation.Parity.
@@ -411,6 +413,13 @@ move=> y.
 apply Fmul_assoc.
 Qed.
 
+Lemma VMmult_assoc_reverse : forall (f : Field) (M N : nat) (c d : FT f) (A : Matrix f M N), (VMmult f M N c (VMmult f M N d A)) = (VMmult f M N (Fmul f c d) A).
+Proof.
+move=> f M N c d A.
+rewrite (VMmult_assoc f M N c d A).
+reflexivity.
+Qed.
+
 Lemma VMmult_assoc_l : forall (f : Field) (M N K : nat) (c : FT f) (A : Matrix f M N) (B : Matrix f N K), (Mmult f M N K (VMmult f M N c A) B) = (VMmult f M K c (Mmult f M N K A B)).
 Proof.
 move=> f M N K c A B.
@@ -473,6 +482,56 @@ move=> x.
 apply functional_extensionality.
 move=> y.
 apply Fmul_I_l.
+Qed.
+
+Definition MVS (f : Field) (M N : nat) := mkVectorSpace f (Matrix f M N) (MO f M N) (Mplus f M N) (VMmult f M N) (Mopp f M N) (Mplus_comm f M N) (Mplus_assoc f M N) (Mplus_O_l f M N) (Mplus_opp_r f M N) (VMmult_plus_distr_l f M N) (VMmult_plus_distr_r f M N) (VMmult_assoc_reverse f M N) (VMmult_I_l f M N).
+
+Fixpoint PowM (f : Field) (N : nat) (A : Matrix f N N) (r : nat) : Matrix f N N := match r with
+  | O => MI f N
+  | S k => Mmult f N N N (PowM f N A k) A
+end.
+
+Definition MMM (f : Field) (N : nat) := mkMonoid (Matrix f N N) (MI f N) (Mmult f N N N) (Mmult_I_r f N N) (Mmult_I_l f N N) (Mmult_assoc f N N N N).
+
+Lemma PowMMyProdFL : forall (f : Field) (N : nat) (A : Matrix f N N) (r : nat), PowM f N A r = MyProdFL (MMM f N) (repeat A r).
+Proof.
+move=> f N A.
+suff: (forall (r : nat), rev (repeat A r) = repeat A r).
+move=> H1 r.
+rewrite (MyProdFLReverse (MMM f N) (repeat A r)).
+elim r.
+reflexivity.
+move=> n H2.
+rewrite (H1 (S n)).
+simpl.
+rewrite H2.
+rewrite (H1 n).
+reflexivity.
+elim.
+reflexivity.
+move=> n H1.
+simpl.
+rewrite H1.
+rewrite (repeat_cons n A).
+reflexivity.
+Qed.
+
+Lemma PowMplus : forall (f : Field) (N : nat) (A : Matrix f N N) (r1 r2 : nat), PowM f N A (r1 + r2) = Mmult f N N N (PowM f N A r1) (PowM f N A r2).
+Proof.
+move=> f N A r1 r2.
+rewrite (PowMMyProdFL f N A (r1 + r2)).
+rewrite (PowMMyProdFL f N A r1).
+rewrite (PowMMyProdFL f N A r2).
+suff: (repeat A (r1 + r2) = repeat A r1 ++ repeat A r2).
+move=> H1.
+rewrite H1.
+apply (MyProdFLApp (MMM f N) (repeat A r1) (repeat A r2)).
+elim r1.
+reflexivity.
+move=> n H1.
+simpl.
+rewrite H1.
+reflexivity.
 Qed.
 
 Definition MTranspose (f : Field) (M N : nat) := fun (A : Matrix f M N) (x : {n : nat | (n < N)}) (y : {n : nat | (n < M)}) => A y x.
@@ -8459,7 +8518,7 @@ apply (InvMatrixMultL f N B H2).
 apply (RegularMatrixChain f N A B H1 H2).
 Qed.
 
-Lemma DeterminantInvRExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A <-> exists (B : Matrix f N N), Mmult f N N N A B = MI f N.
+Lemma RegularInvRExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A <-> exists (B : Matrix f N N), Mmult f N N N A B = MI f N.
 Proof.
 move=> f N A.
 apply conj.
@@ -8476,7 +8535,7 @@ rewrite H2.
 apply (Fmul_O_l f (Determinant f N B)).
 Qed.
 
-Lemma DeterminantInvLExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A <-> exists (B : Matrix f N N), Mmult f N N N B A = MI f N.
+Lemma RegularInvLExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A <-> exists (B : Matrix f N N), Mmult f N N N B A = MI f N.
 Proof.
 move=> f N A.
 apply conj.
@@ -8493,7 +8552,7 @@ rewrite H2.
 apply (Fmul_O_r f (Determinant f N B)).
 Qed.
 
-Lemma DeterminantInvBothExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A <-> exists (B : Matrix f N N), Mmult f N N N A B = MI f N /\ Mmult f N N N B A = MI f N.
+Lemma RegularInvBothExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A <-> exists (B : Matrix f N N), Mmult f N N N A B = MI f N /\ Mmult f N N N B A = MI f N.
 Proof.
 move=> f N A.
 apply conj.
@@ -8504,9 +8563,600 @@ apply (InvMatrixMultR f N A H1).
 apply (InvMatrixMultL f N A H1).
 elim.
 move=> B H1.
-apply (proj2 (DeterminantInvLExistRelation f N A)).
+apply (proj2 (RegularInvLExistRelation f N A)).
 exists B.
 apply (proj2 H1).
+Qed.
+
+Lemma RegularZeroDivisorBothExistRelation : forall (f : Field) (N : nat) (A : Matrix f N N), (~ RegularMatrix f N A) <-> exists (B : Matrix f N N), B <> MO f N N /\ Mmult f N N N A B = MO f N N /\ Mmult f N N N B A = MO f N N.
+Proof.
+move=> f N A.
+apply conj.
+move=> H1.
+elim (min_nat_get (fun (d : nat) => ~ LinearlyIndependentVS f (MVS f N N) (Count d) (fun (m : Count d) => PowM f N A (proj1_sig m)))).
+move=> d H2.
+suff: (exists (a : Count d -> FT f),
+        MySumF2 (Count d)
+          (exist (Finite (Count d)) (Full_set (Count d)) (CountFinite d))
+          (VSPCM f (MVS f N N))
+          (fun n : Count d => Vmul f (MVS f N N) (a n) (PowM f N A (proj1_sig n))) =
+        VO f (MVS f N N) /\ exists (m : Count d), a m <> FO f).
+elim.
+simpl.
+move=> a H3.
+suff: (O < d).
+move=> H4.
+suff: (a (exist (fun (k : nat) => k < d) O H4) = FO f).
+move=> H5.
+suff: (forall (m : Count (pred d)), S (proj1_sig m) < d).
+move=> H6.
+suff: (forall (b : Count (pred d) -> FT f), Mmult f N N N A (MySumF2 (Count (pred d))
+       (exist (Finite (Count (pred d))) (Full_set (Count (pred d))) (CountFinite (pred d)))
+       (VSPCM f (MVS f N N))
+       (fun (n : Count (pred d)) =>
+        Vmul f (MVS f N N) (b n) (PowM f N A (proj1_sig n)))) = Mmult f N N N (MySumF2 (Count (pred d))
+       (exist (Finite (Count (pred d))) (Full_set (Count (pred d))) (CountFinite (pred d)))
+       (VSPCM f (MVS f N N))
+       (fun (n : Count (pred d)) =>
+        Vmul f (MVS f N N) (b n) (PowM f N A (proj1_sig n)))) A).
+move=> H7.
+exists (MySumF2 (Count (pred d))
+          (exist (Finite (Count (pred d)))
+             (Full_set (Count (pred d)))
+             (CountFinite (pred d))) (VSPCM f (MVS f N N))
+          (fun (n : Count (pred d)) =>
+           Vmul f (MVS f N N) (a (exist (fun (k : nat) => k < d) (S (proj1_sig n)) (H6 n))) (PowM f N A (proj1_sig n)))).
+apply conj.
+move=> H8.
+suff: (LinearlyIndependentVS f (MVS f N N) (Count (pred d)) (fun (m : Count (pred d)) => PowM f N A (proj1_sig m))).
+move=> H9.
+elim (proj2 H3).
+move=> m H10.
+suff: (forall (k : nat), proj1_sig m = k -> a m = FO f).
+move=> H11.
+apply H10.
+apply (H11 (proj1_sig m)).
+reflexivity.
+elim.
+move=> H11.
+rewrite - H5.
+suff: (m = (exist (fun k : nat => k < d) 0 H4)).
+move=> H12.
+rewrite H12.
+reflexivity.
+apply sig_map.
+apply H11.
+move=> n H11 H12.
+suff: (n < pred d).
+move=> H13.
+suff: (m = (exist (fun (k : nat) => k < d) (S (proj1_sig (exist (fun (k : nat) => k < pred d) n H13))) (H6 (exist (fun (k : nat) => k < pred d) n H13)))).
+move=> H14.
+rewrite H14.
+apply (proj1 (FiniteLinearlyIndependentVS f (MVS f N N) (pred d) (fun (m : Count (pred d)) => PowM f N A (proj1_sig m))) H9 (fun (n : Count (pred d)) => (a (exist (fun k : nat => k < d) (S (proj1_sig n)) (H6 n)))) H8 (exist (fun (k : nat) => k < pred d) n H13)).
+apply sig_map.
+apply H12.
+suff: (proj1_sig m < d).
+rewrite H12.
+suff: (0 < d).
+elim d.
+move=> H13.
+apply False_ind.
+apply (lt_irrefl O H13).
+move=> l H13 H14.
+apply (lt_S_n n l).
+apply H4.
+apply (proj2_sig m).
+apply NNPP.
+move=> H9.
+apply (lt_irrefl (pred d)).
+suff: (0 < d).
+suff: (d <= pred d).
+elim d.
+move=> H10 H11.
+apply False_ind.
+apply (lt_irrefl O H11).
+move=> n H10 H11 H12.
+apply H11.
+apply (proj2 H2 (pred d) H9).
+apply H4.
+suff: (Mmult f N N N
+  (MySumF2 (Count (pred d))
+     (exist (Finite (Count (pred d)))
+        (Full_set (Count (pred d)))
+        (CountFinite (pred d))) (VSPCM f (MVS f N N))
+     (fun n : Count (pred d) =>
+      Vmul f (MVS f N N)
+        (a (exist (fun k : nat => k < d) (S (proj1_sig n)) (H6 n)))
+        (PowM f N A (proj1_sig n)))) A = MO f N N).
+move=> H8.
+apply conj.
+rewrite H7.
+apply H8.
+apply H8.
+rewrite - (proj1 H3).
+rewrite (MySumF2Included (Count d) (FiniteSingleton (Count d) (exist (fun (k : nat) => k < d) 0 H4)) (exist (Finite (Count d)) (Full_set (Count d)) (CountFinite d)) ).
+rewrite MySumF2Singleton.
+rewrite H5.
+simpl.
+suff: (VMmult f N N (FO f) (MI f N) = MO f N N).
+move=> H8.
+rewrite H8.
+rewrite (Mplus_O_l f N N).
+suff: ((FiniteIntersection (Count d)
+     (exist (Finite (Count d)) (Full_set (Count d)) (CountFinite d))
+     (Complement (Count d)
+        (Singleton (Count d) (exist (fun (k : nat) => k < d) 0 H4)))) = (FiniteIm (Count (pred d)) (Count d)
+            (fun (n : Count (pred d)) =>
+             exist (fun k : nat => k < d) (S (proj1_sig n)) (H6 n))
+            (exist (Finite (Count (pred d)))
+               (Full_set (Count (pred d)))
+               (CountFinite (pred d))))).
+move=> H9.
+rewrite H9.
+rewrite - (MySumF2BijectiveSame2 (Count (pred d)) (Count d) (exist (Finite (Count (pred d)))
+        (Full_set (Count (pred d)))
+        (CountFinite (pred d))) (fun (n : Count (pred d)) => exist (fun (k : nat) => k < d) (S (proj1_sig n)) (H6 n)) (VSPCM f (MVS f N N))).
+apply (FiniteSetInduction (Count (pred d)) (exist (Finite (Count (pred d)))
+        (Full_set (Count (pred d)))
+        (CountFinite (pred d)))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+simpl.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mmult.
+unfold MO.
+apply MySumF2Induction.
+apply conj.
+reflexivity.
+move=> cm u H10 H11.
+rewrite H11.
+rewrite (Fmul_O_l f (A u y)).
+apply (Fadd_O_r f (FO f)).
+move=> B b H10 H11 H12 H13.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite - H13.
+rewrite (Mmult_plus_distr_r f N N N).
+unfold Basics.compose.
+simpl.
+rewrite (VMmult_assoc_l f N N N (a (exist (fun k : nat => k < d) (S (proj1_sig b)) (H6 b)))).
+reflexivity.
+apply H12.
+apply H12.
+move=> u1 u2 H10 H11 H12.
+apply sig_map.
+apply (eq_add_S (proj1_sig u1) (proj1_sig u2)).
+suff: (S (proj1_sig u1) = proj1_sig (exist (fun (k : nat) => k < d) (S (proj1_sig u1)) (H6 u1))).
+move=> H13.
+rewrite H13.
+rewrite H12.
+reflexivity.
+reflexivity.
+apply sig_map.
+apply Extensionality_Ensembles.
+apply conj.
+move=> m.
+elim.
+move=> m0 H9 H10.
+suff: (pred (proj1_sig m0) < pred d).
+move=> H11.
+apply (Im_intro (Count (pred d)) (Count d) (Full_set (Count (pred d))) (fun (n : Count (pred d)) =>
+         exist (fun (k : nat) => k < d) (S (proj1_sig n)) (H6 n)) (exist (fun (k : nat) => k < pred d) (pred (proj1_sig m0)) H11)).
+apply (Full_intro (Count (pred d))).
+apply sig_map.
+simpl.
+suff: (proj1_sig m0 <> O).
+elim (proj1_sig m0).
+move=> H12.
+apply False_ind.
+apply H12.
+reflexivity.
+move=> n H12 H13.
+reflexivity.
+move=> H12.
+apply H9.
+suff: (m0 = (exist (fun (k : nat) => k < d) 0 H4)).
+move=> H13.
+rewrite H13.
+apply (In_singleton (Count d) (exist (fun (k : nat) => k < d) 0 H4)).
+apply sig_map.
+apply H12.
+suff: (proj1_sig m0 < d).
+suff: (proj1_sig m0 <> 0).
+suff: (0 < d).
+elim (proj1_sig m0).
+move=> H11 H12.
+apply False_ind.
+apply H12.
+reflexivity.
+move=> n1 H11.
+elim d.
+move=> H12.
+apply False_ind.
+apply (lt_irrefl O H12).
+move=> n2 H12 H13 H14.
+apply (lt_S_n n1 n2).
+apply H4.
+move=> H11.
+apply H9.
+suff: (m0 = (exist (fun (k : nat) => k < d) 0 H4)).
+move=> H12.
+rewrite H12.
+apply (In_singleton (Count d) (exist (fun (k : nat) => k < d) 0 H4)).
+apply sig_map.
+apply H11.
+apply (proj2_sig m0).
+move=> m.
+elim.
+move=> x H9 y H10.
+apply Intersection_intro.
+move=> H11.
+suff: (match (proj1_sig y) with
+  | O => True
+  | S _ => False
+end).
+rewrite H10.
+apply.
+elim H11.
+apply I.
+apply (Full_intro (Count d)).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply (Fmul_O_l f (MI f N x y)).
+move=> v H8.
+apply (Full_intro (Count d) v).
+move=> b.
+apply (FiniteSetInduction (Count (pred d))
+     (exist (Finite (Count (pred d)))
+        (Full_set (Count (pred d)))
+        (CountFinite (pred d)))).
+apply conj.
+rewrite MySumF2Empty.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mmult.
+simpl.
+apply (MySumF2Same {n : nat | n < N}
+  (exist (Finite (Count N)) (Full_set {n : nat | n < N}) (CountFinite N)) (FPCM f)).
+move=> u H7.
+rewrite (Fmul_O_l f (A u y)).
+apply (Fmul_O_r f (A x u)).
+move=> C c H7 H8 H9 H10.
+rewrite MySumF2Add.
+rewrite (Mmult_plus_distr_r f N N N).
+rewrite (Mmult_plus_distr_l f N N N).
+rewrite H10.
+rewrite (VMmult_assoc_r f N N).
+rewrite (VMmult_assoc_l f N N).
+suff: (Mmult f N N N A (PowM f N A (proj1_sig c)) = Mmult f N N N (PowM f N A (proj1_sig c)) A).
+move=> H11.
+rewrite H11.
+reflexivity.
+suff: (Mmult f N N N (PowM f N A (S O)) (PowM f N A (proj1_sig c)) = Mmult f N N N (PowM f N A (proj1_sig c)) (PowM f N A (S O))).
+simpl.
+rewrite (Mmult_I_l f N N A).
+apply.
+rewrite - (PowMplus f N A (S O) (proj1_sig c)).
+rewrite - (PowMplus f N A (proj1_sig c) (S O)).
+rewrite (plus_comm (S O) (proj1_sig c)).
+reflexivity.
+apply H9.
+move=> m.
+suff: (proj1_sig m < pred d).
+elim (proj1_sig m).
+elim d.
+move=> H6.
+apply False_ind.
+apply (lt_irrefl O H6).
+move=> n H6.
+apply (lt_n_S O n).
+move=> n H6.
+suff: (O < d).
+elim d.
+move=> H7.
+apply False_ind.
+apply (lt_irrefl O H7).
+move=> k H7 H8.
+apply (lt_n_S (S n) k).
+apply H4.
+apply (proj2_sig m).
+apply NNPP.
+move=> H5.
+apply H1.
+apply (proj2 (RegularInvLExistRelation f N A)).
+suff: (exists (B : Matrix f N N), Mplus f N N (Mmult f N N N B A) (VMmult f N N (a (exist (fun (k : nat) => k < d) 0 H4)) (MI f N)) = MO f N N).
+elim.
+move=> B H6.
+exists (VMmult f N N (Fopp f (Finv f (a (exist (fun (k : nat) => k < d) 0 H4)))) B).
+rewrite (VMmult_assoc_l f N N N (Fopp f (Finv f (a (exist (fun (k : nat) => k < d) 0 H4)))) B).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold VMmult.
+apply (Fmul_eq_reg_l f (a (exist (fun (k : nat) => k < d) 0 H4))).
+rewrite - (Fmul_assoc f).
+rewrite (Fopp_mul_distr_r_reverse f (a (exist (fun (k : nat) => k < d) 0 H4))).
+rewrite (Finv_r f (a (exist (fun (k : nat) => k < d) 0 H4)) H5).
+apply (Fminus_diag_uniq_sym f).
+rewrite (Fopp_mul_distr_l_reverse f).
+rewrite (Fmul_I_l f).
+rewrite (Fopp_involutive f).
+rewrite (Fadd_comm f).
+suff: (Fadd f (Mmult f N N N B A x y)
+  (Fmul f (a (exist (fun (k : nat) => k < d) 0 H4)) (MI f N x y)) = Mplus f N N (Mmult f N N N B A)
+       (VMmult f N N (a (exist (fun (k : nat) => k < d) 0 H4)) (MI f N)) x y).
+move=> H7.
+rewrite H7.
+rewrite H6.
+reflexivity.
+reflexivity.
+apply H5.
+exists (MySumF2 (Count d)
+       (FiniteIntersection (Count d)
+     (exist (Finite (Count d)) (Full_set (Count d)) (CountFinite d))
+     (Complement (Count d)
+        (Singleton (Count d) (exist (fun (k : nat) => k < d) 0 H4))))
+       (VSPCM f (MVS f N N))
+       (fun (n : Count d) => VMmult f N N (a n) (PowM f N A (pred (proj1_sig n))))).
+rewrite - (proj1 H3).
+rewrite (MySumF2Included (Count d) (FiniteSingleton (Count d) (exist (fun (k : nat) => k < d) 0 H4)) (exist (Finite (Count d)) (Full_set (Count d))
+              (CountFinite d))).
+rewrite (CM_comm (VSPCM f (MVS f N N))).
+rewrite MySumF2Singleton.
+suff: (Mmult f N N N
+     (MySumF2 (Count d)
+        (FiniteIntersection (Count d)
+           (exist (Finite (Count d)) (Full_set (Count d))
+              (CountFinite d))
+           (Complement (Count d)
+              (Singleton (Count d) (exist (fun (k : nat) => k < d) 0 H4))))
+        (VSPCM f (MVS f N N))
+        (fun (n : Count d) =>
+         VMmult f N N (a n) (PowM f N A (Init.Nat.pred (proj1_sig n)))))
+     A = MySumF2 (Count d)
+     (FiniteIntersection (Count d)
+        (exist (Finite (Count d)) (Full_set (Count d)) (CountFinite d))
+        (Complement (Count d)
+           (proj1_sig
+              (FiniteSingleton (Count d)
+                 (exist (fun (k : nat) => k < d) 0 H4)))))
+     (VSPCM f (MVS f N N))
+     (fun (n : Count d) => VMmult f N N (a n) (PowM f N A (proj1_sig n)))).
+move=> H6.
+rewrite H6.
+reflexivity.
+simpl.
+apply (FiniteSetInduction (Count d)  (FiniteIntersection (Count d)
+     (exist (Finite (Count d)) (Full_set (Count d)) (CountFinite d))
+     (Complement (Count d)
+        (Singleton (Count d) (exist (fun (k : nat) => k < d) 0 H4))))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mmult.
+simpl.
+apply MySumF2Induction.
+apply conj.
+reflexivity.
+move=> cm u H6 H7.
+rewrite H7.
+rewrite (Fmul_O_l f (A u y)).
+apply (Fadd_O_r f (FO f)).
+move=> B b H6 H7 H8 H9.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite (Mmult_plus_distr_r f N N N).
+rewrite H9.
+rewrite (VMmult_assoc_l f N N N (a b)).
+suff: (proj1_sig b = S (pred (proj1_sig b))).
+move=> H10.
+rewrite {2} H10.
+reflexivity.
+suff: (proj1_sig b <> O).
+elim (proj1_sig b).
+move=> H10.
+apply False_ind.
+apply H10.
+reflexivity.
+move=> n H10 H11.
+reflexivity.
+elim H7.
+move=> c H10 H11 H12.
+apply H10.
+suff: (c = exist (fun (k : nat) => k < d) 0 H4).
+move=> H13.
+rewrite H13.
+apply (In_singleton (Count d) (exist (fun (k : nat) => k < d) 0 H4)).
+apply sig_map.
+apply H12.
+apply H8.
+apply H8.
+move=> m H6.
+apply (Full_intro (Count d) m).
+apply NNPP.
+move=> H4.
+suff: (0 = d).
+move=> H5.
+apply (proj1 H2).
+apply (proj2 (FiniteLinearlyIndependentVS f (MVS f N N) d (fun (m : Count d) => PowM f N A (proj1_sig m)))).
+move=> b H6 m.
+apply False_ind.
+apply (le_not_lt O (proj1_sig m) (le_O_n (proj1_sig m))).
+rewrite H5.
+apply (proj2_sig m).
+elim (le_lt_or_eq O d (le_O_n d)).
+move=> H5.
+elim (H4 H5).
+apply.
+apply NNPP.
+move=> H3.
+apply (proj1 H2).
+apply (proj2 (FiniteLinearlyIndependentVS f (MVS f N N) d (fun (m : Count d) => PowM f N A (proj1_sig m)))).
+move=> a H4 m.
+apply NNPP.
+move=> H5.
+apply H3.
+exists a.
+apply conj.
+apply H4.
+exists m.
+apply H5.
+suff: (FiniteDimensionVS f (MVS f N N)).
+move=> H2.
+apply (Inhabited_intro nat (fun (d : nat) =>
+   ~
+   LinearlyIndependentVS f (MVS f N N) (Count d)
+     (fun m : Count d => PowM f N A (proj1_sig m))) (S (DimensionVS f (MVS f N N) H2))).
+move=> H3.
+apply (lt_irrefl (DimensionVS f (MVS f N N) H2)).
+apply (Corollary_5_7_3 f (MVS f N N) (S (DimensionVS f (MVS f N N) H2)) (fun (m : Count (S (DimensionVS f (MVS f N N) H2))) =>
+        PowM f N A (proj1_sig m)) H2 H3).
+elim (CountMult N N).
+move=> F.
+elim.
+move=> G H2.
+apply (Corollary_5_7_1 f (MVS f N N) (N * N) (fun (m : Count (N * N)) (x y : Count N) => match excluded_middle_informative (x = fst (G m)), excluded_middle_informative (y = snd (G m)) with
+  | left _, left _ => FI f
+  | left _, right _ => FO f
+  | right _, left _ => FO f
+  | right _, right _ => FO f
+end)).
+apply Extensionality_Ensembles.
+apply conj.
+move=> B H3.
+rewrite (FiniteSpanVS f (MVS f N N) (N * N) (fun (m : Count (N * N)) (x y : Count N) => match excluded_middle_informative (x = fst (G m)), excluded_middle_informative (y = snd (G m)) with
+  | left _, left _ => FI f
+  | left _, right _ => FO f
+  | right _, left _ => FO f
+  | right _, right _ => FO f
+end)).
+exists (fun (m : Count (N * N)) => B (fst (G m)) (snd (G m))).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+rewrite (MySumF2Included (Count (N * N)) (FiniteSingleton (Count (N * N)) (F (x, y))) (exist (Finite (Count (N * N))) (Full_set (Count (N * N)))
+     (CountFinite (N * N)))).
+rewrite MySumF2Singleton.
+simpl.
+unfold Mplus.
+unfold VMmult.
+rewrite (proj1 H2 (x, y)).
+simpl.
+elim (excluded_middle_informative (@eq (Count N) x x)).
+move=> H4.
+elim (excluded_middle_informative (@eq (Count N) y y)).
+move=> H5.
+rewrite (Fmul_I_r f (B x y)).
+rewrite - {1} (Fadd_O_r f (B x y)).
+apply (Fadd_eq_compat_l f).
+apply (FiniteSetInduction (Count (N * N)) (FiniteIntersection (Count (N * N))
+     (exist (Finite (Count (N * N))) (Full_set (Count (N * N)))
+        (CountFinite (N * N)))
+     (Complement (Count (N * N)) (Singleton (Count (N * N)) (F (x, y)))))).
+apply conj.
+rewrite MySumF2Empty.
+reflexivity.
+move=> C c H6 H7 H8 H9.
+rewrite MySumF2Add.
+simpl.
+unfold Mplus.
+rewrite - H9.
+elim (excluded_middle_informative (@eq (Count N) x
+               (@fst (@sig nat (fun (n : nat) => lt n N))
+                  (@sig nat (fun (n : nat) => lt n N)) 
+                  (G c)))).
+move=> H10.
+elim (excluded_middle_informative (@eq (Count N) y
+               (@snd (@sig nat (fun (n : nat) => lt n N))
+                  (@sig nat (fun (n : nat) => lt n N)) 
+                  (G c)))).
+move=> H11.
+apply False_ind.
+suff: (x = fst (G c)).
+suff: (y = snd (G c)).
+elim H7.
+move=> d H12 H13 H14 H15.
+apply H12.
+suff: (d = F (x, y)).
+move=> H16.
+rewrite H16.
+apply (In_singleton (Count (N * N)) (F (x, y))).
+apply (BijInj {n : nat | n < N * N} ({n : nat | n < N} * {n : nat | n < N}) G).
+exists F.
+apply conj.
+apply (proj2 H2).
+apply (proj1 H2).
+rewrite (proj1 H2 (x, y)).
+apply injective_projections.
+rewrite H15.
+reflexivity.
+rewrite H14.
+reflexivity.
+apply H11.
+apply H10.
+move=> H11.
+rewrite (Fmul_O_r f (B (fst (G c)) (snd (G c)))).
+rewrite (Fadd_O_r f (FO f)).
+reflexivity.
+move=> H10.
+elim (excluded_middle_informative (@eq (Count N) y
+               (@snd (@sig nat (fun (n : nat) => lt n N))
+                  (@sig nat (fun (n : nat) => lt n N)) 
+                  (G c)))).
+move=> H11.
+rewrite (Fmul_O_r f (B (fst (G c)) (snd (G c)))).
+rewrite (Fadd_O_r f (FO f)).
+reflexivity.
+move=> H11.
+rewrite (Fmul_O_r f (B (fst (G c)) (snd (G c)))).
+rewrite (Fadd_O_r f (FO f)).
+reflexivity.
+apply H8.
+move=> H5.
+apply False_ind.
+apply H5.
+reflexivity.
+move=> H4.
+apply False_ind.
+apply H4.
+reflexivity.
+move=> m H4.
+apply (Full_intro (Count (N * N)) m).
+move=> m H3.
+apply (Full_intro (Matrix f N N) m).
+elim.
+move=> B H1 H2.
+apply (proj1 H1).
+rewrite - (Mmult_I_l f N N B).
+rewrite - (InvMatrixMultL f N A H2).
+rewrite (Mmult_assoc f N N N N (InvMatrix f N A) A B).
+rewrite (proj1 (proj2 H1)).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mmult.
+apply MySumF2Induction.
+apply conj.
+reflexivity.
+move=> cm u H3 H4.
+rewrite H4.
+rewrite (Fmul_O_r f (InvMatrix f N A x u)).
+apply (CM_O_r (FPCM f) (MO f N N x y)).
 Qed.
 
 Definition Rank (f : Field) (M N : nat) (A : Matrix f M N) := DimensionSubspaceVS f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A) (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A) (Proposition_5_9_1_1 f (FnVS f N) (FnVSFiniteDimension f N) (SpanVS f (FnVS f N) {n : nat | n < M} A) (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)).
