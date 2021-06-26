@@ -5198,6 +5198,77 @@ apply H6.
 apply H6.
 Qed.
 
+Lemma LinearlyIndependentInjectiveVS : forall (K : Field) (V : VectorSpace K) (T : Type) (F : T -> VT K V), LinearlyIndependentVS K V T F -> Injective T (VT K V) F.
+Proof.
+move=> K V T F H1 t1 t2 H2.
+apply NNPP.
+move=> H3.
+apply (FI_neq_FO K).
+suff: (MySumF2 T (FiniteAdd T (FiniteSingleton T t1) t2) (VSPCM K V) (fun (t : T) => Vmul K V (match excluded_middle_informative (t = t1) with
+  | left _ => FI K
+  | right _ => match excluded_middle_informative (t = t2) with
+    | left _ => Fopp K (FI K)
+    | right _ => FO K
+  end
+end) (F t)) = VO K V).
+move=> H4.
+suff: (FI K = match excluded_middle_informative (t1 = t1) with
+  | left _ => FI K
+  | right _ => match excluded_middle_informative (t1 = t2) with
+    | left _ => Fopp K (FI K)
+    | right _ => FO K
+  end
+end).
+move=> H5.
+rewrite H5.
+apply (proj1 (LinearlyIndependentVSDef3 K V T F) H1 (fun (t : T) => match excluded_middle_informative (t = t1) with
+  | left _ => FI K
+  | right _ => match excluded_middle_informative (t = t2) with
+    | left _ => Fopp K (FI K)
+    | right _ => FO K
+  end
+end) (FiniteAdd T (FiniteSingleton T t1) t2) H4 t1).
+left.
+apply (In_singleton T t1).
+elim (excluded_middle_informative (t1 = t1)).
+move=> H5.
+reflexivity.
+move=> H5.
+apply False_ind.
+apply H5.
+reflexivity.
+rewrite MySumF2Add.
+rewrite MySumF2Singleton.
+elim (excluded_middle_informative (t1 = t1)).
+move=> H4.
+elim (excluded_middle_informative (t2 = t1)).
+move=> H5.
+apply False_ind.
+apply H3.
+rewrite H5.
+reflexivity.
+move=> H6.
+elim (excluded_middle_informative (t2 = t2)).
+move=> H7.
+rewrite H2.
+simpl.
+rewrite - (Vmul_add_distr_r K V (FI K) (Fopp K (FI K)) (F t2)).
+rewrite (Fadd_opp_r K (FI K)).
+apply (Vmul_O_l K V (F t2)).
+move=> H7.
+apply False_ind.
+apply H7.
+reflexivity.
+move=> H4.
+apply False_ind.
+apply H4.
+reflexivity.
+move=> H4.
+apply H3.
+elim H4.
+reflexivity.
+Qed.
+
 Lemma FiniteLinearlyIndependentVS : forall (K : Field) (V : VectorSpace K) (N : nat) (F : Count N -> VT K V), (LinearlyIndependentVS K V (Count N) F) <-> (forall (a : Count N -> FT K), MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM K V) (fun (n : Count N) => Vmul K V (a n) (F n)) = VO K V -> forall (m : Count N), a m = FO K).
 Proof.
 move=> K V N F.

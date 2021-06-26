@@ -962,6 +962,28 @@ move=> n H2.
 apply (cardinal_finite T (Full_set T) n (proj2 H2)).
 Qed.
 
+Lemma CountInjectiveLe : forall (N M : nat) (f : {n : nat | n < N} -> {n : nat | n < M}), Injective f -> N <= M.
+Proof.
+move=> N M f H1.
+elim (CountCardinalInjective {n : nat | n < N} M f H1).
+move=> K H2.
+suff: (N = K).
+move=> H3.
+rewrite H3.
+apply (proj1 H2).
+rewrite (cardinal_is_functional {n : nat | n < N} (Full_set {n : nat | n < N}) K (proj2 H2) (Full_set {n : nat | n < N}) N).
+reflexivity.
+apply (proj1 (CountCardinalBijective {n : nat | n < N} N)).
+exists (fun (m : {n : nat | n < N}) => m).
+exists (fun (m : {n : nat | n < N}) => m).
+apply conj.
+move=> x.
+reflexivity.
+move=> y.
+reflexivity.
+reflexivity.
+Qed.
+
 Lemma BijectiveSigFull : forall (T : Type) (A : Ensemble T), (forall (t : T), In T A t) -> {f : T -> {t : T | In T A t} | (forall (t : T), t = proj1_sig (f t)) /\ Bijective f}.
 Proof.
 move=> T A H1.

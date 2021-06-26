@@ -222,6 +222,30 @@ reflexivity.
 apply Full_intro.
 Qed.
 
+Lemma Mmult_O_r : forall (f : Field) (M N K : nat) (A : Matrix f M N), (Mmult f M N K A (MO f N K)) = MO f M K.
+Proof.
+move=> f M N K A.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply MySumF2O.
+move=> u H1.
+apply (Fmul_O_r f (A x u)).
+Qed.
+
+Lemma Mmult_O_l : forall (f : Field) (M N K : nat) (A : Matrix f N K), (Mmult f M N K (MO f M N) A) = MO f M K.
+Proof.
+move=> f M N K A.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply MySumF2O.
+move=> u H1.
+apply (Fmul_O_l f (A u y)).
+Qed.
+
 Lemma Mmult_assoc : forall (f : Field) (M N K L : nat) (A : Matrix f M N) (B : Matrix f N K) (C : Matrix f K L), (Mmult f M K L (Mmult f M N K A B) C) = (Mmult f M N L A (Mmult f N K L B C)).
 Proof.
 move=> f M N K L A B C.
@@ -9518,6 +9542,34 @@ move=> v H3.
 apply Full_intro.
 Qed.
 
+Lemma RankLeH : forall (f : Field) (M N : nat) (A : Matrix f M N), Rank f M N A <= M.
+Proof.
+move=> f M N A.
+suff: (Rank f M N A = Rank f M N A).
+move=> H1.
+elim (proj1 (proj1 (RankDef2 f M N A (Rank f M N A)) H1)).
+move=> F H2.
+apply (CountInjectiveLe (Rank f M N A) M F).
+move=> m1 m2 H3.
+apply (LinearlyIndependentInjectiveVS f (FnVS f N) {n : nat | n < Rank f M N A} (fun (m : {n : nat | n < Rank f M N A}) => A (F m)) H2).
+rewrite H3.
+reflexivity.
+reflexivity.
+Qed.
+
+Lemma RankLeW : forall (f : Field) (M N : nat) (A : Matrix f M N), Rank f M N A <= N.
+Proof.
+move=> f M N A.
+elim (FnVSDimension f N).
+move=> H1 H2.
+rewrite - {2} H2.
+apply (Proposition_5_9_1_2 f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A)
+  (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)
+  H1 (Proposition_5_9_1_1 f (FnVS f N) (FnVSFiniteDimension f N)
+     (SpanVS f (FnVS f N) {n : nat | n < M} A)
+     (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
+Qed.
+
 Lemma RankMultTransformH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p : {n : nat | (n < M)}) (c : FT f), c <> FO f -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => Fmul f c (A x y)
   | right _ => A x y
@@ -9940,4 +9992,1010 @@ apply proof_irrelevance.
 apply proof_irrelevance.
 Qed.
 
+Lemma RankMinorDeterminant : forall (f : Field) (M N : nat) (A : Matrix f M N) (r : nat), Rank f M N A = r <-> is_max_nat (fun (k : nat) => exists (hi : {n : nat | n < k} -> {n : nat | n < M}) (wi : {n : nat | n < k} -> {n : nat | n < N}), Determinant f k (fun (x y : {n : nat | n < k}) => A (hi x) (wi y)) <> FO f) r.
+Proof.
+suff: (forall (f : Field) (M N : nat) (A : Matrix f M N) (k : nat), (exists
+     (hi : {n : nat | n < k} -> {n : nat | n < M}) 
+   (wi : {n : nat | n < k} -> {n : nat | n < N}),
+     Determinant f k (fun (x y : {n : nat | n < k}) => A (hi x) (wi y)) <>
+     FO f) -> Rank f M N A >= k).
+move=> H1.
+suff: (forall (f : Field) (M N : nat) (A : Matrix f M N), exists
+     (hi : {n : nat | n < Rank f M N A} -> {n : nat | n < M}) 
+   (wi : {n : nat | n < Rank f M N A} -> {n : nat | n < N}),
+     Determinant f (Rank f M N A) (fun (x y : {n : nat | n < Rank f M N A}) => A (hi x) (wi y)) <>
+     FO f).
+move=> H2 f M N A r.
+apply conj.
+move=> H3.
+apply conj.
+rewrite - H3.
+apply (H2 f M N A).
+rewrite - H3.
+apply (H1 f M N A).
+move=> H3.
+elim (le_lt_or_eq r (Rank f M N A)).
+move=> H4.
+apply False_ind.
+apply (le_not_lt (Rank f M N A) r (proj2 H3 (Rank f M N A) (H2 f M N A)) H4).
+move=> H4.
+rewrite H4.
+reflexivity.
+apply (H1 f M N A r (proj1 H3)).
+move=> f M N A.
+suff: (Rank f M N A = Rank f M N A).
+move=> H2.
+elim (proj1 (proj1 (RankDef2 f M N A (Rank f M N A)) H2)).
+move=> hi H3.
+exists hi.
+suff: (exists (wi : {n : nat | n < Rank f M N A} -> {n : nat | n < N}), forall (p : {n : nat | n < N}), In (VT f (FnVS f (Rank f M N A))) (SpanVS f (FnVS f (Rank f M N A)) (Count (Rank f M N A))
+            (fun (k m : Count (Rank f M N A)) =>
+             A (hi m) (wi k))) (fun (m : Count (Rank f M N A)) => A (hi m) p)).
+elim.
+move=> wi H4.
+exists wi.
+move=> H5.
+suff: (exists (a : Count (Rank f M N A) -> FT f), ~ (forall (m : Count (Rank f M N A)), a m = FO f) /\ forall (m : Count (Rank f M N A)), MySumF2 {n : nat | n < Rank f M N A}
+  (exist (Finite (Count (Rank f M N A))) (Full_set {n : nat | n < Rank f M N A}) (CountFinite (Rank f M N A)))
+  (FPCM f) (fun (n : Count (Rank f M N A)) => Fmul f (a n) (A (hi n) (wi m))) = FO f).
+elim.
+move=> a H6.
+apply (proj1 H6).
+apply (proj1 (FiniteLinearlyIndependentVS f (FnVS f N) (Rank f M N A) (fun (m : {n : nat | n < Rank f M N A}) => A (hi m))) H3 a).
+apply functional_extensionality.
+move=> p.
+suff: (MySumF2 (Count (Rank f M N A))
+  (exist (Finite (Count (Rank f M N A)))
+     (Full_set (Count (Rank f M N A))) (CountFinite (Rank f M N A)))
+  (VSPCM f (FnVS f N))
+  (fun (n : Count (Rank f M N A)) => Vmul f (FnVS f N) (a n) (A (hi n))) p
+= MySumF2 {n : nat | n < Rank f M N A}
+        (exist (Finite (Count (Rank f M N A)))
+           (Full_set {n : nat | n < Rank f M N A})
+           (CountFinite (Rank f M N A))) (FPCM f)
+        (fun (n : Count (Rank f M N A)) => Fmul f (a n) (A (hi n) p))).
+move=> H7.
+rewrite H7.
+suff: (exists (a : Count (Rank f M N A) -> FT f), (fun (m : Count (Rank f M N A)) => A (hi m) p) = MySumF2 (Count (Rank f M N A))
+            (exist (Finite (Count (Rank f M N A)))
+               (Full_set (Count (Rank f M N A)))
+               (CountFinite (Rank f M N A)))
+            (VSPCM f (FnVS f (Rank f M N A)))
+            (fun (n : Count (Rank f M N A)) =>
+             Vmul f (FnVS f (Rank f M N A)) (a n)
+               (fun k : Count (Rank f M N A) => A (hi k) (wi n)))).
+elim.
+move=> b H8.
+suff: ((fun (n : Count (Rank f M N A)) => Fmul f (a n) (A (hi n) p)) = (fun (m : Count (Rank f M N A)) => MySumF2 (Count (Rank f M N A))
+       (exist (Finite (Count (Rank f M N A)))
+          (Full_set (Count (Rank f M N A))) (CountFinite (Rank f M N A)))
+       (FPCM f)
+       (fun (n : Count (Rank f M N A)) =>
+        Fmul f (a m) (Fmul f (b n) (A (hi m) (wi n)))))).
+move=> H9.
+rewrite H9.
+rewrite - (MySumF2Pair (Count (Rank f M N A)) (Count (Rank f M N A)) (exist (Finite (Count (Rank f M N A)))
+     (Full_set {n : nat | n < Rank f M N A})
+     (CountFinite (Rank f M N A))) (exist (Finite (Count (Rank f M N A)))
+     (Full_set {n : nat | n < Rank f M N A})
+     (CountFinite (Rank f M N A))) (FPCM f) (fun (u v : Count (Rank f M N A)) => Fmul f (a u) (Fmul f (b v) (A (hi u) (wi v))))).
+suff: (MySumF2 (Count (Rank f M N A) * Count (Rank f M N A))
+  (FinitePair (Count (Rank f M N A)) (Count (Rank f M N A))
+     (exist (Finite (Count (Rank f M N A)))
+        (Full_set {n : nat | n < Rank f M N A})
+        (CountFinite (Rank f M N A)))
+     (exist (Finite (Count (Rank f M N A)))
+        (Full_set {n : nat | n < Rank f M N A})
+        (CountFinite (Rank f M N A)))) (FPCM f)
+  (fun (uv : Count (Rank f M N A) * Count (Rank f M N A)) =>
+   Fmul f (a (fst uv))
+     (Fmul f (b (snd uv)) (A (hi (fst uv)) (wi (snd uv))))) =
+MySumF2 (Count (Rank f M N A) * Count (Rank f M N A))
+  (FinitePair (Count (Rank f M N A)) (Count (Rank f M N A))
+     (exist (Finite (Count (Rank f M N A)))
+        (Full_set {n : nat | n < Rank f M N A})
+        (CountFinite (Rank f M N A)))
+     (exist (Finite (Count (Rank f M N A)))
+        (Full_set {n : nat | n < Rank f M N A})
+        (CountFinite (Rank f M N A)))) (FPCM f)
+  (fun (uv : Count (Rank f M N A) * Count (Rank f M N A)) =>
+   Fmul f (a (snd uv))
+     (Fmul f (b (fst uv)) (A (hi (snd uv)) (wi (fst uv)))))).
+move=> H10.
+rewrite H10.
+rewrite (MySumF2Pair (Count (Rank f M N A)) (Count (Rank f M N A)) (exist (Finite (Count (Rank f M N A)))
+     (Full_set {n : nat | n < Rank f M N A})
+     (CountFinite (Rank f M N A))) (exist (Finite (Count (Rank f M N A)))
+     (Full_set {n : nat | n < Rank f M N A})
+     (CountFinite (Rank f M N A))) (FPCM f) (fun (v u : Count (Rank f M N A)) => Fmul f (a u) (Fmul f (b v) (A (hi u) (wi v))))).
+simpl.
+apply (MySumF2O (Count (Rank f M N A))
+  (exist (Finite (Count (Rank f M N A)))
+     (Full_set {n : nat | n < Rank f M N A})
+     (CountFinite (Rank f M N A))) (FPCM f)).
+move=> u H11.
+suff: (MySumF2 (Count (Rank f M N A))
+  (exist (Finite (Count (Rank f M N A)))
+     (Full_set {n : nat | n < Rank f M N A})
+     (CountFinite (Rank f M N A))) (FPCM f)
+  (fun u0 : Count (Rank f M N A) =>
+   Fmul f (a u0) (Fmul f (b u) (A (hi u0) (wi u)))) = Fmul f (b u) (MySumF2 (Count (Rank f M N A))
+  (exist (Finite (Count (Rank f M N A)))
+     (Full_set {n : nat | n < Rank f M N A})
+     (CountFinite (Rank f M N A))) (FPCM f)
+  (fun u0 : Count (Rank f M N A) =>
+   Fmul f (a u0) (A (hi u0) (wi u))))).
+move=> H12.
+rewrite H12.
+rewrite (proj2 H6 u).
+apply (Fmul_O_r f (b u)).
+apply (FiniteSetInduction (Count (Rank f M N A)) (exist (Finite (Count (Rank f M N A)))
+     (Full_set {n : nat | n < Rank f M N A})
+     (CountFinite (Rank f M N A)))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+rewrite (Fmul_O_r f (b u)).
+reflexivity.
+move=> C c H12 H13 H14 H15.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H15.
+rewrite (Fmul_add_distr_l f (b u)).
+rewrite - (Fmul_assoc f (b u) (a c)).
+rewrite - (Fmul_assoc f (a c) (b u)).
+rewrite (Fmul_comm f (a c) (b u)).
+reflexivity.
+apply H14.
+apply H14.
+suff: (FinitePair (Count (Rank f M N A)) (Count (Rank f M N A))
+     (exist (Finite (Count (Rank f M N A)))
+        (Full_set {n : nat | n < Rank f M N A})
+        (CountFinite (Rank f M N A)))
+     (exist (Finite (Count (Rank f M N A)))
+        (Full_set {n : nat | n < Rank f M N A})
+        (CountFinite (Rank f M N A))) = (FiniteIm (Count (Rank f M N A) * Count (Rank f M N A)) (Count (Rank f M N A) * Count (Rank f M N A))
+(fun (uv : (Count (Rank f M N A) * Count (Rank f M N A))) => (snd uv, fst uv)) (FinitePair (Count (Rank f M N A)) (Count (Rank f M N A))
+     (exist (Finite (Count (Rank f M N A)))
+        (Full_set {n : nat | n < Rank f M N A})
+        (CountFinite (Rank f M N A)))
+     (exist (Finite (Count (Rank f M N A)))
+        (Full_set {n : nat | n < Rank f M N A})
+        (CountFinite (Rank f M N A)))))).
+move=> H10.
+rewrite {2} H10.
+rewrite - (MySumF2BijectiveSame2 (Count (Rank f M N A) * Count (Rank f M N A)) (Count (Rank f M N A) * Count (Rank f M N A))).
+apply MySumF2Same.
+move=> u H11.
+reflexivity.
+move=> u1 u2 H11 H12 H13.
+apply injective_projections.
+suff: (fst u1 = snd (snd u1, fst u1)).
+move=> H14.
+rewrite H14.
+rewrite H13.
+reflexivity.
+reflexivity.
+suff: (snd u1 = fst (snd u1, fst u1)).
+move=> H14.
+rewrite H14.
+rewrite H13.
+reflexivity.
+reflexivity.
+apply sig_map.
+apply Extensionality_Ensembles.
+apply conj.
+move=> u H10.
+apply (Im_intro (Count (Rank f M N A) * Count (Rank f M N A)) (Count (Rank f M N A) * Count (Rank f M N A)) (proj1_sig (FinitePair (Count (Rank f M N A)) (Count (Rank f M N A))
+           (exist (Finite (Count (Rank f M N A)))
+              (Full_set {n : nat | n < Rank f M N A})
+              (CountFinite (Rank f M N A)))
+           (exist (Finite (Count (Rank f M N A)))
+              (Full_set {n : nat | n < Rank f M N A})
+              (CountFinite (Rank f M N A))))) (fun (uv : Count (Rank f M N A) * Count (Rank f M N A)) =>
+         (snd uv, fst uv)) (snd u, fst u)).
+apply conj.
+apply (Full_intro (Count (Rank f M N A)) (snd u)).
+apply (Full_intro (Count (Rank f M N A)) (fst u)).
+apply injective_projections.
+reflexivity.
+reflexivity.
+move=> u H10.
+apply conj.
+apply (Full_intro (Count (Rank f M N A)) (fst u)).
+apply (Full_intro (Count (Rank f M N A)) (snd u)).
+apply functional_extensionality.
+move=> m.
+suff: (A (hi m) p = let temp := (fun (m : Count (Rank f M N A)) => A (hi m) p) in temp m).
+move=> H9.
+rewrite H9.
+rewrite H8.
+simpl.
+apply (FiniteSetInduction (Count (Rank f M N A))
+  (exist (Finite (Count (Rank f M N A)))
+     (Full_set (Count (Rank f M N A))) (CountFinite (Rank f M N A)))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+apply (Fmul_O_r f (a m)).
+move=> C c H10 H11 H12 H13.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite - H13.
+apply (Fmul_add_distr_l f (a m)).
+apply H12.
+apply H12.
+reflexivity.
+suff: (In (VT f (FnVS f (Rank f M N A)))
+       (SpanVS f (FnVS f (Rank f M N A)) (Count (Rank f M N A))
+          (fun (k m : Count (Rank f M N A)) => A (hi m) (wi k)))
+       (fun (m : Count (Rank f M N A)) => A (hi m) p)).
+rewrite (FiniteSpanVS f (FnVS f (Rank f M N A)) (Rank f M N A) (fun (k m : Count (Rank f M N A)) => A (hi m) (wi k))).
+apply.
+apply (H4 p).
+unfold Count.
+apply (FiniteSetInduction {n : nat | n < Rank f M N A}
+  (exist (Finite {n : nat | n < Rank f M N A})
+     (Full_set {n : nat | n < Rank f M N A}) (CountFinite (Rank f M N A)))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H7 H8 H9 H10.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite - H10.
+reflexivity.
+apply H9.
+apply H9.
+elim (proj1 (RegularZeroDivisorBothExistRelation f (Rank f M N A) (fun (x y : {n : nat | n < Rank f M N A}) => A (hi x) (wi y)))).
+move=> B H6.
+suff: (exists (k : Count (Rank f M N A)), ~ (forall (m : Count (Rank f M N A)), B k m = FO f)).
+elim.
+move=> k H7.
+exists (B k).
+apply conj.
+apply H7.
+move=> m.
+suff: (FO f = MO f (Rank f M N A) (Rank f M N A) k m).
+move=> H8.
+rewrite H8.
+rewrite - (proj2 (proj2 H6)).
+reflexivity.
+reflexivity.
+apply NNPP.
+move=> H7.
+apply (proj1 H6).
+apply functional_extensionality.
+move=> h.
+apply NNPP.
+move=> H8.
+apply H7.
+exists h.
+move=> H9.
+apply H8.
+apply functional_extensionality.
+move=> w.
+apply (H9 w).
+move=> H6.
+apply (H6 H5).
+suff: (Rank f N (Rank f M N A) (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A}) => A (hi k) m) <= Rank f M N A).
+move=> H4.
+suff: (Rank f N (Rank f M N A)
+  (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A}) =>
+   A (hi k) m) =
+Rank f N (Rank f M N A)
+  (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A}) =>
+   A (hi k) m)).
+move=> H5.
+elim (proj1 (proj1 (RankDef2 f N (Rank f M N A) (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A}) => A (hi k) m) (Rank f N (Rank f M N A) (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A}) => A (hi k) m))) H5)).
+move=> F H6.
+suff: (exists (wi : Count (Rank f M N A) -> Count N), forall (x : Count (Rank f N (Rank f M N A)
+  (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A}) =>
+   A (hi k) m))), exists (y : Count (Rank f M N A)), wi y = F x).
+elim.
+move=> wi H7.
+exists wi.
+move=> p.
+apply NNPP.
+move=> H8.
+apply (lt_irrefl (Rank f N (Rank f M N A)
+         (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A})
+          => A (hi k) m))).
+apply (proj2 (proj1 (RankDef2 f N (Rank f M N A) (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A}) => A (hi k) m) (Rank f N (Rank f M N A) (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A}) => A (hi k) m))) H5) (S (Rank f N (Rank f M N A)
+         (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A})
+          => A (hi k) m)))).
+elim (Proposition_5_2_exists f (FnVS f (Rank f M N A)) (Rank f N (Rank f M N A)
+        (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A})
+         => A (hi k) m))).
+move=> H9.
+elim.
+move=> H10 H11.
+exists (fun (x : Count (S (Rank f N (Rank f M N A)
+        (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A})
+         => A (hi k) m)))) => match excluded_middle_informative (proj1_sig x < Rank f N (Rank f M N A)
+        (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A})
+         => A (hi k) m)) with
+  | left H => (F (exist (fun (y : nat) => y < Rank f N (Rank f M N A)
+        (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A})
+         => A (hi k) m)) (proj1_sig x) H))
+  | right _ => p
+end).
+apply (proj2 (H11 (fun
+     (m : {n : nat
+          | n <
+            S
+              (Rank f N (Rank f M N A)
+                 (fun (m : {n0 : nat | n0 < N})
+                    (k : {n0 : nat | n0 < Rank f M N A}) => 
+                  A (hi k) m))}) (k : {n : nat | n < Rank f M N A}) =>
+   A (hi k)
+     match
+       excluded_middle_informative
+         (proj1_sig m <
+          Rank f N (Rank f M N A)
+            (fun (m0 : {n : nat | n < N})
+               (k0 : {n : nat | n < Rank f M N A}) => 
+             A (hi k0) m0))
+     with
+     | left H =>
+         F
+           (exist
+              (fun y : nat =>
+               y <
+               Rank f N (Rank f M N A)
+                 (fun (m0 : {n : nat | n < N})
+                    (k0 : {n : nat | n < Rank f M N A}) => 
+                  A (hi k0) m0)) (proj1_sig m) H)
+     | right _ => p
+     end))).
+apply conj.
+simpl.
+suff: ((fun
+     (m : Count
+            (Rank f N (Rank f M N A)
+               (fun (m : {n : nat | n < N})
+                  (k : {n : nat | n < Rank f M N A}) => 
+                A (hi k) m))) (k : {n : nat | n < Rank f M N A}) =>
+   A (hi k)
+     match
+       excluded_middle_informative
+         (proj1_sig m <
+          Rank f N (Rank f M N A)
+            (fun (m0 : {n : nat | n < N})
+               (k0 : {n : nat | n < Rank f M N A}) => 
+             A (hi k0) m0))
+     with
+     | left H =>
+         F
+           (exist
+              (fun y : nat =>
+               y <
+               Rank f N (Rank f M N A)
+                 (fun (m0 : {n : nat | n < N})
+                    (k0 : {n : nat | n < Rank f M N A}) => 
+                  A (hi k0) m0)) (proj1_sig m) H)
+     | right _ => p
+     end) = (fun
+          (m : {n : nat
+               | n <
+                 Rank f N (Rank f M N A)
+                   (fun (m : {n0 : nat | n0 < N})
+                      (k : {n0 : nat | n0 < Rank f M N A}) => 
+                    A (hi k) m)}) (k : {n : nat | n < Rank f M N A}) =>
+        A (hi k) (F m))).
+move=> H12.
+rewrite H12.
+apply H6.
+apply functional_extensionality.
+move=> m.
+elim (excluded_middle_informative
+       (proj1_sig m <
+        Rank f N (Rank f M N A)
+          (fun (m0 : {n : nat | n < N})
+             (k0 : {n : nat | n < Rank f M N A}) => 
+           A (hi k0) m0))).
+move=> H12.
+suff: ((exist
+         (fun y : nat =>
+          y <
+          Rank f N (Rank f M N A)
+            (fun (m0 : {n : nat | n < N})
+               (k0 : {n : nat | n < Rank f M N A}) => 
+             A (hi k0) m0)) (proj1_sig m) H12) = m).
+move=> H13.
+rewrite H13.
+reflexivity.
+apply sig_map.
+reflexivity.
+move=> H12.
+elim (H12 (proj2_sig m)).
+simpl.
+elim (excluded_middle_informative
+            (Rank f N (Rank f M N A)
+               (fun (m0 : {n : nat | n < N})
+                  (k0 : {n : nat | n < Rank f M N A}) => 
+                A (hi k0) m0) <
+             Rank f N (Rank f M N A)
+               (fun (m0 : {n : nat | n < N})
+                  (k0 : {n : nat | n < Rank f M N A}) => 
+                A (hi k0) m0))).
+move=> H12.
+elim (lt_irrefl (Rank f N (Rank f M N A)
+               (fun (m0 : {n : nat | n < N})
+                  (k0 : {n : nat | n < Rank f M N A}) => 
+                A (hi k0) m0)) H12).
+move=> H12.
+suff: ((fun
+        (m : Count
+               (Rank f N (Rank f M N A)
+                  (fun (m : {n : nat | n < N})
+                     (k : {n : nat | n < Rank f M N A}) => 
+                   A (hi k) m))) (k : {n : nat | n < Rank f M N A}) =>
+      A (hi k)
+        match
+          excluded_middle_informative
+            (proj1_sig m <
+             Rank f N (Rank f M N A)
+               (fun (m0 : {n : nat | n < N})
+                  (k0 : {n : nat | n < Rank f M N A}) => 
+                A (hi k0) m0))
+        with
+        | left H =>
+            F
+              (exist
+                 (fun y : nat =>
+                  y <
+                  Rank f N (Rank f M N A)
+                    (fun (m0 : {n : nat | n < N})
+                       (k0 : {n : nat | n < Rank f M N A}) =>
+                     A (hi k0) m0)) (proj1_sig m) H)
+        | right _ => p
+        end) = (fun
+        (m : Count
+               (Rank f N (Rank f M N A)
+                  (fun (m : {n : nat | n < N})
+                     (k : {n : nat | n < Rank f M N A}) => 
+                   A (hi k) m))) (k : {n : nat | n < Rank f M N A}) =>
+      A (hi k)
+        (F m))).
+move=> H13.
+rewrite H13.
+rewrite (FiniteSpanVS f (FnVS f (Rank f M N A)) (Rank f N (Rank f M N A)
+           (fun (m : {n : nat | n < N})
+              (k : {n : nat | n < Rank f M N A}) => 
+            A (hi k) m))).
+move=> H14.
+apply H8.
+elim H14.
+move=> a H15.
+rewrite H15.
+apply (FiniteSetInduction (Count
+        (Rank f N (Rank f M N A)
+           (fun (m : {n : nat | n < N})
+              (k : {n : nat | n < Rank f M N A}) => 
+            A (hi k) m))) (exist
+        (Finite
+           (Count
+              (Rank f N (Rank f M N A)
+                 (fun (m : {n : nat | n < N})
+                    (k : {n : nat | n < Rank f M N A}) => 
+                  A (hi k) m))))
+        (Full_set
+           (Count
+              (Rank f N (Rank f M N A)
+                 (fun (m : {n : nat | n < N})
+                    (k : {n : nat | n < Rank f M N A}) => 
+                  A (hi k) m))))
+        (CountFinite
+           (Rank f N (Rank f M N A)
+              (fun (m : {n : nat | n < N})
+                 (k : {n : nat | n < Rank f M N A}) => 
+               A (hi k) m))))).
+apply conj.
+rewrite MySumF2Empty.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f (Rank f M N A)) (Count (Rank f M N A))
+     (fun (k m : Count (Rank f M N A)) => A (hi m) (wi k))))).
+move=> B b H16 H17 H18 H19.
+rewrite MySumF2Add.
+apply (proj1 (SpanSubspaceVS f (FnVS f (Rank f M N A)) (Count (Rank f M N A))
+     (fun (k m : Count (Rank f M N A)) => A (hi m) (wi k)))).
+apply H19.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f (Rank f M N A)) (Count (Rank f M N A))
+     (fun (k m : Count (Rank f M N A)) => A (hi m) (wi k)))) (a b)).
+elim (H7 b).
+move=> d H20.
+rewrite - H20.
+apply (SpanContainSelfVS f (FnVS f (Rank f M N A)) (Count (Rank f M N A))
+     (fun (k m : Count (Rank f M N A)) => A (hi m) (wi k))).
+apply H18.
+apply functional_extensionality.
+move=> m.
+elim (excluded_middle_informative
+       (proj1_sig m <
+        Rank f N (Rank f M N A)
+          (fun (m0 : {n : nat | n < N})
+             (k0 : {n : nat | n < Rank f M N A}) => 
+           A (hi k0) m0))).
+move=> H13.
+suff: ((exist
+         (fun (y : nat) =>
+          y <
+          Rank f N (Rank f M N A)
+            (fun (m0 : {n : nat | n < N})
+               (k0 : {n : nat | n < Rank f M N A}) => 
+             A (hi k0) m0)) (proj1_sig m) H13) = m).
+move=> H14.
+rewrite H14.
+reflexivity.
+apply sig_map.
+reflexivity.
+move=> H13.
+elim (H13 (proj2_sig m)).
+elim (le_lt_or_eq O N (le_O_n N)).
+move=> H7.
+exists (fun (m : Count (Rank f M N A)) => match excluded_middle_informative (proj1_sig m < Rank f N (Rank f M N A)
+             (fun (m : {n : nat | n < N})
+                (k : {n : nat | n < Rank f M N A}) => 
+              A (hi k) m)) with
+  | left H => F (exist (fun (n : nat) => n < Rank f N (Rank f M N A)
+             (fun (m : {n : nat | n < N})
+                (k : {n : nat | n < Rank f M N A}) => 
+              A (hi k) m)) (proj1_sig m) H)
+  | right _ => exist (fun (n : nat) => n < N) O H7
+end).
+move=> x.
+exists (exist (fun (n : nat) => n < Rank f M N A) (proj1_sig x) (le_trans (S (proj1_sig x)) (Rank f N (Rank f M N A)
+         (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A})
+          => A (hi k) m)) (Rank f M N A) (proj2_sig x) H4)).
+simpl.
+elim (excluded_middle_informative
+    (proj1_sig x <
+     Rank f N (Rank f M N A)
+       (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A})
+        => A (hi k) m))).
+move=> H8.
+suff: ((exist
+     (fun (n : nat) =>
+      n <
+      Rank f N (Rank f M N A)
+        (fun (m : {n0 : nat | n0 < N})
+           (k : {n0 : nat | n0 < Rank f M N A}) => 
+         A (hi k) m)) (proj1_sig x) H8) = x).
+move=> H9.
+rewrite H9.
+reflexivity.
+apply sig_map.
+reflexivity.
+move=> H8.
+elim (H8 (proj2_sig x)).
+move=> H7.
+suff: (Rank f M N A = O).
+move=> H8.
+suff: (Count (Rank f M N A) -> False).
+move=> H9.
+exists (fun (m : Count (Rank f M N A)) => match (H9 m) with end).
+move=> x.
+elim (H9 (exist (fun (n : nat) => n < Rank f M N A) (proj1_sig x) (le_trans (S (proj1_sig x)) (Rank f N (Rank f M N A)
+         (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A})
+          => A (hi k) m)) (Rank f M N A) (proj2_sig x) H4))).
+rewrite H8.
+move=> m.
+apply (lt_irrefl O (le_trans (S O) (S (proj1_sig m)) O (le_n_S O (proj1_sig m) (le_O_n (proj1_sig m))) (proj2_sig m))).
+elim (le_lt_or_eq (Rank f M N A) N).
+rewrite - {2} H7.
+move=> H8.
+elim (le_not_lt O (Rank f M N A) (le_O_n (Rank f M N A)) H8).
+move=> H8.
+rewrite H8.
+rewrite H7.
+reflexivity.
+apply (RankLeW f M N A).
+reflexivity.
+apply (RankLeW f N (Rank f M N A)
+  (fun (m : {n : nat | n < N}) (k : {n : nat | n < Rank f M N A}) =>
+   A (hi k) m)).
+reflexivity.
+move=> f M N A k.
+elim.
+move=> hi.
+elim.
+move=> wi H1.
+suff: (Rank f M N A = Rank f M N A).
+move=> H2.
+apply (proj2 (proj1 (RankDef2 f M N A (Rank f M N A)) H2) k).
+exists hi.
+apply (proj2 (FiniteLinearlyIndependentVS f (FnVS f N) k (fun (m : {n : nat | n < k}) => A (hi m)))).
+move=> a H3.
+suff: (forall (m : {n : nat | n < k}), MySumF2 (Count k)
+       (exist (Finite (Count k)) (Full_set (Count k)) (CountFinite k))
+       (FPCM f)
+       (fun (n : Count k) => Fmul f (a n) (A (hi n) (wi m))) = FO f).
+move=> H4.
+suff: (Mmult f 1 k k (fun (_ : Count 1) (n : Count k) => a n) (fun (m n : Count k) => A (hi m) (wi n)) = MO f 1 k).
+move=> H5.
+suff: ((fun (_ : Count 1) (n : Count k) => a n) = MO f 1 k).
+move=> H6 m.
+suff: (FO f = MO f 1 k (exist (fun (n : nat) => n < 1) O (le_n 1)) m).
+move=> H7.
+rewrite H7.
+rewrite - H6.
+reflexivity.
+reflexivity.
+rewrite - (Mmult_I_r f 1 k (fun (_ : Count 1) (n : Count k) => a n)).
+rewrite - (InvMatrixMultR f k (fun (m n : Count k) => A (hi m) (wi n))).
+rewrite - (Mmult_assoc f 1 k k k).
+rewrite H5.
+apply (Mmult_O_l f 1 k k).
+apply H1.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+apply H4.
+move=> m.
+suff: (FO f = VO f (FnVS f N) (wi m)).
+move=> H4.
+rewrite H4.
+rewrite - H3.
+apply (FiniteSetInduction (Count k)
+  (exist (Finite (Count k)) (Full_set (Count k)) (CountFinite k))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H5 H6 H7 H8.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H8.
+reflexivity.
+apply H7.
+apply H7.
+reflexivity.
+reflexivity.
+Qed.
+
+Lemma RankTrans : forall (f : Field) (M N : nat) (A : Matrix f M N), Rank f N M (MTranspose f M N A) = Rank f M N A.
+Proof.
+move=> f M N A.
+apply (proj2 (RankMinorDeterminant f N M (MTranspose f M N A) (Rank f M N A))).
+suff: (is_max_nat
+  (fun k : nat =>
+   exists
+     (hi : {n : nat | n < k} -> {n : nat | n < M}) 
+   (wi : {n : nat | n < k} -> {n : nat | n < N}),
+     Determinant f k
+       (fun x y : {n : nat | n < k} => A (hi x) (wi y)) <>
+     FO f) (Rank f M N A)).
+move=> H1.
+suff: ((fun (k : nat) =>
+   exists
+     (hi : {n : nat | n < k} -> {n : nat | n < N}) 
+   (wi : {n : nat | n < k} -> {n : nat | n < M}),
+     Determinant f k
+       (fun x y : {n : nat | n < k} => MTranspose f M N A (hi x) (wi y)) <>
+     FO f) = (fun (k : nat) =>
+        exists
+          (hi : {n : nat | n < k} -> {n : nat | n < M}) 
+        (wi : {n : nat | n < k} -> {n : nat | n < N}),
+          Determinant f k
+            (fun x y : {n : nat | n < k} => A (hi x) (wi y)) <> 
+          FO f)).
+move=> H2.
+rewrite H2.
+apply H1.
+apply Extensionality_Ensembles.
+apply conj.
+move=> r.
+elim.
+move=> hi.
+elim.
+move=> wi.
+rewrite (DeterminantTrans f r (fun (x y : {n : nat | n < r}) => A (wi x) (hi y))).
+move=> H2.
+exists wi.
+exists hi.
+apply H2.
+move=> r.
+elim.
+move=> hi.
+elim.
+move=> wi H2.
+exists wi.
+exists hi.
+rewrite (DeterminantTrans f r (fun (x y : {n : nat | n < r}) => A (hi x) (wi y))).
+apply H2.
+apply (proj1 (RankMinorDeterminant f M N A (Rank f M N A))).
+reflexivity.
+Qed.
+
+Definition ElementaryMatrixSwap (f : Field) (N : nat) (p q : {n : nat | n < N}) (H : proj1_sig p <> proj1_sig q) := (fun (x y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
+    | left _ => FI f
+    | right _ => FO f
+  end
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+      | left _ => FI f
+      | right _ => FO f
+    end
+    | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig y) with
+      | left _ => FI f
+      | right _ => FO f
+    end
+  end
+end).
+
+Definition ElementaryMatrixMultiply (f : Field) (N : nat) (p : {n : nat | n < N}) (c : FT f) := (fun (x y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig y) with
+  | left _ => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+    | left _ => c
+    | right _ => FI f
+  end
+  | right _ => FO f
+end).
+
+Definition ElementaryMatrixAdd (f : Field) (N : nat) (p q : {n : nat | n < N}) (H : proj1_sig p <> proj1_sig q) (c : FT f) := (fun (x y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig y) with
+  | left _ => FI f
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig p), Nat.eq_dec (proj1_sig y) (proj1_sig q) with
+    | left _, left _ => c
+    | left _, right _ => FO f
+    | right _, left _ => FO f
+    | right _, right _ => FO f
+  end
+end).
+
+Inductive ElementaryMatrix (f : Field) (N : nat) : Ensemble (Matrix f N N) :=
+  | ElementaryMatrixSwap_intro : forall (p q : {n : nat | n < N}) (H : proj1_sig p <> proj1_sig q), ElementaryMatrix f N (ElementaryMatrixSwap f N p q H)
+  | ElementaryMatrixMultiply_intro : forall (p : {n : nat | n < N}) (c : FT f), ElementaryMatrix f N (ElementaryMatrixMultiply f N p c)
+  | ElementaryMatrixAdd_intro : forall (p q : {n : nat | n < N}) (H : proj1_sig p <> proj1_sig q) (c : FT f), ElementaryMatrix f N (ElementaryMatrixAdd f N p q H c).
+
+Definition ElementaryTransformable (f : Field) (N : nat) (A : Matrix f N N) := exists (AL : list (Matrix f N N)), (Forall (fun (x : Matrix f N N) => ElementaryMatrix f N x) AL) /\ A = MyProdFL (MMM f N) AL.
+
+Lemma ElementaryTransforamableConnect : forall (f : Field) (N : nat) (A B : Matrix f N N), ElementaryTransformable f N A -> ElementaryTransformable f N B -> ElementaryTransformable f N (Mmult f N N N A B).
+Proof.
+move=> f N A B H1 H2.
+elim H1.
+move=> AL H3.
+elim H2.
+move=> BL H4.
+exists (app AL BL).
+apply conj.
+apply (Forall_app (fun (x : Matrix f N N) => ElementaryMatrix f N x) AL BL).
+apply conj.
+apply (proj1 H3).
+apply (proj1 H4).
+rewrite (MyProdFLApp (MMM f N) AL BL).
+rewrite (proj2 H3).
+rewrite (proj2 H4).
+reflexivity.
+Qed.
+
+Lemma ElementaryTransforamableTrans : forall (f : Field) (N : nat) (A : Matrix f N N), ElementaryTransformable f N A -> ElementaryTransformable f N (MTranspose f N N A).
+Proof.
+move=> f N A.
+elim.
+move=> AL H1.
+exists (rev (map (MTranspose f N N) AL)).
+apply conj.
+suff: (Forall (fun x : Matrix f N N => ElementaryMatrix f N x) (map (MTranspose f N N) AL)).
+move=> H2.
+apply (Forall_rev H2).
+apply (proj2 (Forall_forall (fun (x : Matrix f N N) => ElementaryMatrix f N x) (map (MTranspose f N N) AL))).
+move=> B H2.
+elim (proj1 (in_map_iff (MTranspose f N N) AL B)).
+move=> BT H3.
+rewrite - (proj1 H3).
+elim (proj1 (Forall_forall (fun (x : Matrix f N N) => ElementaryMatrix f N x) AL) (proj1 H1) BT (proj2 H3)).
+move=> p q H4.
+suff: (MTranspose f N N (ElementaryMatrixSwap f N p q H4) = ElementaryMatrixSwap f N p q H4).
+move=> H5.
+rewrite H5.
+apply (ElementaryMatrixSwap_intro f N p q H4).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MTranspose.
+unfold ElementaryMatrixSwap.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H5.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
+move=> H6.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H7.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H8.
+reflexivity.
+rewrite H5.
+rewrite - H7.
+rewrite H6.
+move=> H8.
+apply False_ind.
+apply H8.
+reflexivity.
+move=> H7.
+reflexivity.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H6.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H7.
+rewrite H6.
+rewrite - H5.
+rewrite H7.
+move=> H8.
+apply False_ind.
+apply H8.
+reflexivity.
+move=> H7 H8.
+reflexivity.
+move=> H6 H7.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+rewrite H5.
+move=> H8.
+elim (H6 H8).
+move=> H8.
+reflexivity.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H5.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H6 H7.
+reflexivity.
+move=> H6 H7.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
+move=> H8.
+reflexivity.
+move=> H8.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+rewrite H5.
+move=> H9.
+elim (H8 H9).
+move=> H9.
+reflexivity.
+move=> H5 H6.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H7.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+rewrite - H7.
+move=> H8.
+elim (H6 H8).
+move=> H8.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
+rewrite - H7.
+move=> H9.
+elim (H5 H9).
+move=> H9.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H10.
+reflexivity.
+move=> H10.
+apply False_ind.
+apply H10.
+rewrite H7.
+reflexivity.
+move=> H7.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H8.
+reflexivity.
+move=> H8.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
+move=> H9.
+reflexivity.
+move=> H9.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H10.
+apply False_ind.
+apply H7.
+rewrite H10.
+reflexivity.
+move=> H10.
+reflexivity.
+move=> p c.
+suff: (MTranspose f N N (ElementaryMatrixMultiply f N p c) = ElementaryMatrixMultiply f N p c).
+move=> H4.
+rewrite H4.
+apply (ElementaryMatrixMultiply_intro f N p c).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MTranspose.
+unfold ElementaryMatrixMultiply.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H4.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H5.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H6.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H7.
+reflexivity.
+rewrite H6.
+rewrite H5.
+move=> H7.
+apply False_ind.
+apply H7.
+reflexivity.
+rewrite H4.
+move=> H6.
+apply False_ind.
+apply H6.
+reflexivity.
+move=> H5.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H6.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+rewrite H6.
+move=> H7.
+elim (H5 H7).
+move=> H7.
+reflexivity.
+rewrite H4.
+move=> H6.
+apply False_ind.
+apply H6.
+reflexivity.
+move=> H4.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H5.
+apply False_ind.
+apply H4.
+rewrite H5.
+reflexivity.
+move=> H5.
+reflexivity.
+move=> p q H4 c.
+suff: (proj1_sig q <> proj1_sig p).
+move=> H5.
+suff: (MTranspose f N N (ElementaryMatrixAdd f N p q H4 c) = ElementaryMatrixAdd f N q p H5 c).
+move=> H6.
+rewrite H6.
+apply (ElementaryMatrixAdd_intro f N q p H5 c).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MTranspose.
+unfold ElementaryMatrixAdd.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H6.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H7.
+reflexivity.
+move=> H7.
+apply False_ind.
+apply H7.
+rewrite H6.
+reflexivity.
+move=> H6.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H7.
+apply False_ind.
+apply H6.
+rewrite H7.
+reflexivity.
+move=> H7.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H8.
+reflexivity.
+move=> H8.
+reflexivity.
+move=> H5.
+apply H4.
+rewrite H5.
+reflexivity.
+apply H2.
+rewrite (proj2 H1).
+elim AL.
+apply (MTransI f N).
+move=> a l H2.
+simpl.
+rewrite (MyProdFLApp (MMM f N)).
+rewrite (MTransMult f N N N).
+rewrite H2.
+simpl.
+rewrite (Mmult_I_r f N N (MTranspose f N N a)).
+reflexivity.
+Qed.
+
 End Matrix.
+
+
