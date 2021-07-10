@@ -11794,7 +11794,7 @@ rewrite (RankMultiplyTransformH f N M (MTranspose f M N A) p c H1).
 apply (RankTrans f M N A).
 Qed.
 
-Lemma RankSwapH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < M}), proj1_sig p <> proj1_sig q -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+Lemma RankSwapH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < M}), Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => A q y
   | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
     | left _ => A p y
@@ -11802,36 +11802,36 @@ Lemma RankSwapH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : 
   end
 end) = Rank f M N A.
 Proof.
-move=> f M N A p q H1.
+move=> f M N A p q.
 suff: (forall (W1 W2 : Ensemble (Fn f N)), W1 = W2 -> forall (H1 : SubspaceVS f (FnVS f N) W1) (H2 : SubspaceVS f (FnVS f N) W2) (H3 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W1 H1)) (H4 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W2 H2)), DimensionSubspaceVS f (FnVS f N) W1 H1 H3 = DimensionSubspaceVS f (FnVS f N) W2 H2 H4).
-move=> H2.
-apply H2.
+move=> H1.
+apply H1.
 apply Extensionality_Ensembles.
 apply conj.
 move=> v.
 elim.
-move=> x H3.
-rewrite H3.
+move=> x H2.
+rewrite H2.
 apply MySumF2Induction.
 apply conj.
 apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
-move=> cm u H4 H5.
+move=> cm u H3 H4.
 apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)).
-apply H5.
+apply H4.
 apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
 elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
-move=> H6.
+move=> H5.
 apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A q).
-move=> H6.
+move=> H5.
 elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
-move=> H7.
+move=> H6.
 apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A p).
-move=> H7.
+move=> H6.
 apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
 move=> v.
 elim.
-move=> x H3.
-rewrite H3.
+move=> x H2.
+rewrite H2.
 apply MySumF2Induction.
 apply conj.
 apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
@@ -11841,7 +11841,7 @@ apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n 
     | right _ => A x y
   end
 end)))).
-move=> cm u H4 H5.
+move=> cm u H3 H4.
 apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => A q y
   | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
@@ -11849,7 +11849,7 @@ apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat |
     | right _ => A x y
   end
 end)) cm (Vmul f (FnVS f N) (proj1_sig x u) (A u))).
-apply H5.
+apply H4.
 apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => A q y
   | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
@@ -11858,7 +11858,7 @@ apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n 
   end
 end))) (proj1_sig x u) (A u)).
 elim (classic (proj1_sig u = proj1_sig p)).
-move=> H6.
+move=> H5.
 suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => A q y
   | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
@@ -11866,8 +11866,8 @@ suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.e
     | right _ => A x y
   end
 end) q).
-move=> H7.
-rewrite H7.
+move=> H6.
+rewrite H6.
 apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => A q y
   | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
@@ -11876,27 +11876,33 @@ apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n <
   end
 end) q).
 elim (Nat.eq_dec (proj1_sig q) (proj1_sig p)).
+move=> H6.
+apply functional_extensionality.
+move=> y.
+suff: (u = q).
 move=> H7.
-apply False_ind.
-apply H1.
 rewrite H7.
 reflexivity.
-move=> H7.
-elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
-move=> H8.
-suff: (u = p).
-move=> H9.
-rewrite H9.
-reflexivity.
 apply sig_map.
-apply H6.
-move=> H8.
-apply False_ind.
-apply H8.
+rewrite H5.
+rewrite - H6.
 reflexivity.
 move=> H6.
-elim (classic (proj1_sig u = proj1_sig q)).
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
 move=> H7.
+suff: (u = p).
+move=> H8.
+rewrite H8.
+reflexivity.
+apply sig_map.
+apply H5.
+move=> H7.
+apply False_ind.
+apply H7.
+reflexivity.
+move=> H5.
+elim (classic (proj1_sig u = proj1_sig q)).
+move=> H6.
 suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => A q y
   | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
@@ -11904,8 +11910,8 @@ suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.e
     | right _ => A x y
   end
 end) p).
-move=> H8.
-rewrite H8.
+move=> H7.
+rewrite H7.
 apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => A q y
   | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
@@ -11914,18 +11920,18 @@ apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n <
   end
 end) p).
 elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
-move=> H8.
+move=> H7.
 suff: (u = q).
-move=> H9.
-rewrite H9.
+move=> H8.
+rewrite H8.
 reflexivity.
 apply sig_map.
-apply H7.
-move=> H8.
-apply False_ind.
-apply H8.
-reflexivity.
+apply H6.
 move=> H7.
+apply False_ind.
+apply H7.
+reflexivity.
+move=> H6.
 suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => A q y
   | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
@@ -11933,8 +11939,8 @@ suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.e
     | right _ => A x y
   end
 end) u).
-move=> H8.
-rewrite H8.
+move=> H7.
+rewrite H7.
 apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => A q y
   | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
@@ -11943,30 +11949,30 @@ apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n <
   end
 end) u).
 elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
+move=> H7.
+elim (H5 H7).
+move=> H7.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
 move=> H8.
 elim (H6 H8).
 move=> H8.
-elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
-move=> H9.
-elim (H7 H9).
-move=> H9.
 reflexivity.
-move=> W1 W2 H2.
-rewrite H2.
-move=> H3 H4.
-suff: (H3 = H4).
-move=> H5.
-rewrite H5.
-move=> H6 H7.
-suff: (H6 = H7).
-move=> H8.
-rewrite H8.
+move=> W1 W2 H1.
+rewrite H1.
+move=> H2 H3.
+suff: (H2 = H3).
+move=> H4.
+rewrite H4.
+move=> H5 H6.
+suff: (H5 = H6).
+move=> H7.
+rewrite H7.
 reflexivity.
 apply proof_irrelevance.
 apply proof_irrelevance.
 Qed.
 
-Lemma RankSwapW : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < N}), proj1_sig p <> proj1_sig q -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+Lemma RankSwapW : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < N}), Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
   | left _ => A x q
   | right _ => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
     | left _ => A x p
@@ -11974,13 +11980,13 @@ Lemma RankSwapW : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : 
   end
 end) = Rank f M N A.
 Proof.
-move=> f M N A p q H1.
+move=> f M N A p q.
 rewrite - (ElementaryMatrixSwapNatureR f M N A p q).
 rewrite - (RankTrans f M N (Mmult f M N N A (ElementaryMatrixSwap f N p q))).
 rewrite (MTransMult f M N N A (ElementaryMatrixSwap f N p q)).
 rewrite (ElementaryMatrixSwapTrans f N p q).
 rewrite (ElementaryMatrixSwapNatureL f N M (MTranspose f M N A) p q).
-rewrite (RankSwapH f N M (MTranspose f M N A) p q H1).
+rewrite (RankSwapH f N M (MTranspose f M N A) p q).
 apply (RankTrans f M N A).
 Qed.
 
@@ -14083,7 +14089,7 @@ rewrite (ElementaryMatrixMultiplyNatureL f M N A p c).
 apply (RankMultiplyTransformH f M N A p c H1).
 move=> p q H1.
 rewrite (ElementaryMatrixSwapNatureL f M N A p q).
-apply (RankSwapH f M N A p q H1).
+apply (RankSwapH f M N A p q).
 Qed.
 
 Lemma RankElementaryTransformableL : forall (f : Field) (M N : nat) (A : Matrix f M N) (B : Matrix f M M), ElementaryTransformable f M B -> Rank f M N (Mmult f M M N B A) = Rank f M N A.
@@ -14119,7 +14125,7 @@ rewrite (ElementaryMatrixMultiplyNatureR f M N A p c).
 apply (RankMultiplyTransformW f M N A p c H1).
 move=> p q H1.
 rewrite (ElementaryMatrixSwapNatureR f M N A p q).
-apply (RankSwapW f M N A p q H1).
+apply (RankSwapW f M N A p q).
 Qed.
 
 Lemma RankElementaryTransformableR : forall (f : Field) (M N : nat) (A : Matrix f M N) (B : Matrix f N N), ElementaryTransformable f N B -> Rank f M N (Mmult f M N N A B) = Rank f M N A.
