@@ -14590,4 +14590,76 @@ move=> H4.
 elim (H4 (proj2_sig x)).
 Qed.
 
+Lemma RankMultLeL : forall (f : Field) (M N K : nat) (A : Matrix f N K) (B : Matrix f M N), Rank f M K (Mmult f M N K B A) <= Rank f N K A.
+Proof.
+move=> f M N K A B.
+unfold Rank.
+apply (Proposition_5_9_1_2_subspace f (FnVS f K) (SpanVS f (FnVS f K) {n : nat | n < M} (Mmult f M N K B A)) (SpanVS f (FnVS f K) {n : nat | n < N} A) (SpanSubspaceVS f (FnVS f K) {n : nat | n < M} (Mmult f M N K B A)) (SpanSubspaceVS f (FnVS f K) {n : nat | n < N} A)).
+move=> x.
+elim.
+move=> a H1.
+rewrite H1.
+apply (FiniteSetInduction {n : nat | n < M}
+     (exist (Finite {n : nat | n < M})
+        (fun (t : {n : nat | n < M}) => proj1_sig a t <> FO f)
+        (proj2_sig a))).
+apply conj.
+rewrite MySumF2Empty.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f K) {n : nat | n < N} A))).
+move=> C c H2 H3 H4 H5.
+rewrite MySumF2Add.
+apply (proj1 (SpanSubspaceVS f (FnVS f K) {n : nat | n < N} A)).
+apply H5.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f K) {n : nat | n < N} A))).
+unfold Mmult.
+suff: ((fun (y : {n : nat | n < K}) =>
+   MySumF2 {n : nat | n < N}
+     (exist (Finite (Count N)) (Full_set {n : nat | n < N})
+        (CountFinite N)) (FPCM f)
+     (fun (n : Count N) => Fmul f (B c n) (A n y))) = MySumF2 {n : nat | n < N}
+     (exist (Finite (Count N)) (Full_set {n : nat | n < N})
+        (CountFinite N)) (VSPCM f (FnVS f K)) (fun (n : Count N) => Vmul f (FnVS f K) (B c n) (A n))).
+move=> H6.
+rewrite H6.
+apply (FiniteSetInduction {n : nat | n < N}
+     (exist (Finite (Count N)) (Full_set {n : nat | n < N})
+        (CountFinite N))).
+apply conj.
+rewrite MySumF2Empty.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f K) {n : nat | n < N} A))).
+move=> D d H7 H8 H9 H10.
+rewrite MySumF2Add.
+apply (proj1 (SpanSubspaceVS f (FnVS f K) {n : nat | n < N} A)).
+apply H10.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f K) {n : nat | n < N} A))).
+apply (SpanContainSelfVS f (FnVS f K) {n : nat | n < N} A d).
+apply H9.
+apply functional_extensionality.
+move=> m.
+apply (FiniteSetInduction {n : nat | n < N}
+     (exist (Finite (Count N)) (Full_set {n : nat | n < N})
+        (CountFinite N))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> D d H6 H7 H8 H9.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H9.
+reflexivity.
+apply H8.
+apply H8.
+apply H4.
+Qed.
+
+Lemma RankMultLeR : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B : Matrix f N K), Rank f M K (Mmult f M N K A B) <= Rank f M N A.
+Proof.
+move=> f M N K A B.
+rewrite - (RankTrans f M K (Mmult f M N K A B)).
+rewrite - (RankTrans f M N A).
+rewrite (MTransMult f M N K A B).
+apply (RankMultLeL f K N M (MTranspose f M N A) (MTranspose f N K B)).
+Qed.
+
 End Matrix.
