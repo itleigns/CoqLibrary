@@ -1022,6 +1022,913 @@ move=> y.
 reflexivity.
 Qed.
 
+Definition ElementaryMatrixSwap (f : Field) (N : nat) (p q : {n : nat | n < N}) := (fun (x y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
+    | left _ => FI f
+    | right _ => FO f
+  end
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+      | left _ => FI f
+      | right _ => FO f
+    end
+    | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig y) with
+      | left _ => FI f
+      | right _ => FO f
+    end
+  end
+end).
+
+Definition ElementaryMatrixMultiply (f : Field) (N : nat) (p : {n : nat | n < N}) (c : FT f) := (fun (x y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig y) with
+  | left _ => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+    | left _ => c
+    | right _ => FI f
+  end
+  | right _ => FO f
+end).
+
+Definition ElementaryMatrixAdd (f : Field) (N : nat) (p q : {n : nat | n < N}) (c : FT f) := (fun (x y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig y) with
+  | left _ => FI f
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig p), Nat.eq_dec (proj1_sig y) (proj1_sig q) with
+    | left _, left _ => c
+    | left _, right _ => FO f
+    | right _, left _ => FO f
+    | right _, right _ => FO f
+  end
+end).
+
+Inductive ElementaryMatrix (f : Field) (N : nat) : Ensemble (Matrix f N N) :=
+  | ElementaryMatrixAdd_intro : forall (p q : {n : nat | n < N}) (c : FT f), proj1_sig p <> proj1_sig q -> c <> FO f -> ElementaryMatrix f N (ElementaryMatrixAdd f N p q c)
+  | ElementaryMatrixMultiply_intro : forall (p : {n : nat | n < N}) (c : FT f), c <> FO f -> ElementaryMatrix f N (ElementaryMatrixMultiply f N p c)
+  | ElementaryMatrixSwap_intro : forall (p q : {n : nat | n < N}), proj1_sig p <> proj1_sig q -> ElementaryMatrix f N (ElementaryMatrixSwap f N p q).
+
+Definition ElementaryTransformable (f : Field) (N : nat) (A : Matrix f N N) := exists (AL : list (Matrix f N N)), (Forall (ElementaryMatrix f N) AL) /\ A = MyProdFL (MMM f N) AL.
+
+Lemma ElementaryMatrixAddTrans : forall (f : Field) (N : nat) (p q : {n : nat | n < N}) (c : FT f), MTranspose f N N (ElementaryMatrixAdd f N p q c) = ElementaryMatrixAdd f N q p c.
+Proof.
+move=> f N p q c.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MTranspose.
+unfold ElementaryMatrixAdd.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H2.
+reflexivity.
+move=> H2.
+apply False_ind.
+apply H2.
+rewrite H1.
+reflexivity.
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H2.
+apply False_ind.
+apply H1.
+rewrite H2.
+reflexivity.
+move=> H2.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H3.
+reflexivity.
+move=> H3.
+reflexivity.
+Qed.
+
+Lemma ElementaryMatrixMultiplyTrans : forall (f : Field) (N : nat) (p : {n : nat | n < N}) (c : FT f), MTranspose f N N (ElementaryMatrixMultiply f N p c) = ElementaryMatrixMultiply f N p c.
+Proof.
+move=> f N p c.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MTranspose.
+unfold ElementaryMatrixMultiply.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H4.
+reflexivity.
+rewrite H3.
+rewrite H2.
+move=> H4.
+apply False_ind.
+apply H4.
+reflexivity.
+rewrite H1.
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+rewrite H3.
+move=> H4.
+elim (H2 H4).
+move=> H4.
+reflexivity.
+rewrite H1.
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H2.
+apply False_ind.
+apply H1.
+rewrite H2.
+reflexivity.
+move=> H2.
+reflexivity.
+Qed.
+
+Lemma ElementaryMatrixSwapTrans : forall (f : Field) (N : nat) (p q : {n : nat | n < N}), MTranspose f N N (ElementaryMatrixSwap f N p q) = ElementaryMatrixSwap f N p q.
+Proof.
+move=> f N p q.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MTranspose.
+unfold ElementaryMatrixSwap.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
+move=> H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H4.
+reflexivity.
+rewrite H1.
+rewrite - H2.
+move=> H4.
+apply False_ind.
+apply H4.
+rewrite H3.
+reflexivity.
+move=> H3.
+reflexivity.
+move=> H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+rewrite H1.
+move=> H4.
+apply False_ind.
+apply H2.
+rewrite H3.
+apply H4.
+move=> H4.
+reflexivity.
+move=> H3.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+rewrite H1.
+move=> H4.
+elim (H3 H4).
+move=> H4.
+reflexivity.
+move=> H1.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H3.
+reflexivity.
+move=> H3.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
+move=> H4.
+reflexivity.
+move=> H4.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+rewrite H2.
+move=> H5.
+elim (H4 H5).
+move=> H5.
+reflexivity.
+move=> H2.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+rewrite - H3.
+move=> H4.
+elim (H1 H4).
+move=> H4.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
+rewrite - H3.
+move=> H5.
+elim (H2 H5).
+move=> H5.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H6.
+reflexivity.
+move=> H6.
+apply False_ind.
+apply H6.
+rewrite H3.
+reflexivity.
+move=> H3.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H4.
+reflexivity.
+move=> H4.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
+move=> H5.
+reflexivity.
+move=> H5.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H6.
+apply False_ind.
+apply H3.
+rewrite H6.
+reflexivity.
+move=> H6.
+reflexivity.
+Qed.
+
+Lemma ElementaryTransformableConnect : forall (f : Field) (N : nat) (A B : Matrix f N N), ElementaryTransformable f N A -> ElementaryTransformable f N B -> ElementaryTransformable f N (Mmult f N N N A B).
+Proof.
+move=> f N A B H1 H2.
+elim H1.
+move=> AL H3.
+elim H2.
+move=> BL H4.
+exists (app AL BL).
+apply conj.
+apply (Forall_app (fun (x : Matrix f N N) => ElementaryMatrix f N x) AL BL).
+apply conj.
+apply (proj1 H3).
+apply (proj1 H4).
+rewrite (MyProdFLApp (MMM f N) AL BL).
+rewrite (proj2 H3).
+rewrite (proj2 H4).
+reflexivity.
+Qed.
+
+Lemma ElementaryTransformableTrans : forall (f : Field) (N : nat) (A : Matrix f N N), ElementaryTransformable f N A -> ElementaryTransformable f N (MTranspose f N N A).
+Proof.
+move=> f N A.
+elim.
+move=> AL H1.
+exists (rev (map (MTranspose f N N) AL)).
+apply conj.
+suff: (Forall (fun x : Matrix f N N => ElementaryMatrix f N x) (map (MTranspose f N N) AL)).
+move=> H2.
+apply (Forall_rev H2).
+apply (proj2 (Forall_forall (fun (x : Matrix f N N) => ElementaryMatrix f N x) (map (MTranspose f N N) AL))).
+move=> B H2.
+elim (proj1 (in_map_iff (MTranspose f N N) AL B)).
+move=> BT H3.
+rewrite - (proj1 H3).
+elim (proj1 (Forall_forall (fun (x : Matrix f N N) => ElementaryMatrix f N x) AL) (proj1 H1) BT (proj2 H3)).
+move=> p q c H4 H5.
+suff: (proj1_sig q <> proj1_sig p).
+move=> H6.
+rewrite (ElementaryMatrixAddTrans f N p q c).
+apply (ElementaryMatrixAdd_intro f N q p c H6 H5).
+move=> H6.
+apply H4.
+rewrite H6.
+reflexivity.
+move=> p c H4.
+rewrite (ElementaryMatrixMultiplyTrans f N p c).
+apply (ElementaryMatrixMultiply_intro f N p c H4).
+move=> p q H4.
+rewrite (ElementaryMatrixSwapTrans f N p q).
+apply (ElementaryMatrixSwap_intro f N p q H4).
+apply H2.
+rewrite (proj2 H1).
+elim AL.
+apply (MTransI f N).
+move=> a l H2.
+simpl.
+rewrite (MyProdFLApp (MMM f N)).
+rewrite (MTransMult f N N N).
+rewrite H2.
+simpl.
+rewrite (Mmult_I_r f N N (MTranspose f N N a)).
+reflexivity.
+Qed.
+
+Lemma ElementaryMatrixAddNatureL : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < M}) (c : FT f), proj1_sig p <> proj1_sig q -> Mmult f M M N (ElementaryMatrixAdd f M p q c) A = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fadd f (A x y) (Fmul f c (A q y))
+  | right _ => A x y
+end).
+Proof.
+move=> f M N A p q c H1.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mmult.
+unfold ElementaryMatrixAdd.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H2.
+rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} x)).
+rewrite MySumF2Singleton.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig x)).
+move=> H3.
+rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} q)).
+rewrite MySumF2Singleton.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
+move=> H4.
+apply False_ind.
+apply H1.
+rewrite - H2.
+apply H4.
+move=> H4.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
+move=> H5.
+rewrite MySumF2O.
+rewrite (Fmul_I_l f (A x y)).
+rewrite (CM_O_r (FPCM f) (Fmul f c (A q y))).
+reflexivity.
+move=> u.
+elim.
+move=> u0 H6 H7.
+suff: (In {n : nat | n < M}
+       (Complement {n : nat | n < M}
+          (proj1_sig (FiniteSingleton {n : nat | n < M} q))) u0).
+elim H7.
+move=> u1 H8 H9 H10.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig u1)).
+move=> H11.
+apply False_ind.
+apply H8.
+suff: (x = u1).
+move=> H12.
+rewrite H12.
+apply (In_singleton {n : nat | n < M} u1).
+apply sig_map.
+apply H11.
+move=> H11.
+elim (Nat.eq_dec (proj1_sig u1) (proj1_sig q)).
+move=> H12.
+apply False_ind.
+apply H10.
+suff: (u1 = q).
+move=> H13.
+rewrite H13.
+apply (In_singleton {n : nat | n < M} q).
+apply sig_map.
+apply H12.
+move=> H12.
+apply (Fmul_O_l f (A u1 y)).
+apply H6.
+move=> H5.
+apply False_ind.
+apply H5.
+reflexivity.
+move=> m H4.
+apply (Intersection_intro {n : nat | n < M}).
+move=> H5.
+apply H1.
+rewrite - H2.
+suff: (q = m).
+move=> H6.
+rewrite H6.
+elim H5.
+reflexivity.
+elim H4.
+reflexivity.
+apply (Full_intro {n : nat | n < M} m).
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> m H3.
+apply (Full_intro {n : nat | n < M} m).
+move=> H2.
+rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} x)).
+rewrite MySumF2Singleton.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig x)).
+move=> H3.
+rewrite MySumF2O.
+rewrite (Fmul_I_l f (A x y)).
+apply (Fadd_O_r f (A x y)).
+move=> u.
+elim.
+move=> u0 H4 H5.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig u0)).
+move=> H6.
+apply False_ind.
+apply H4.
+suff: (x = u0).
+move=> H7.
+rewrite H7.
+apply (In_singleton {n : nat | n < M} u0).
+apply sig_map.
+apply H6.
+move=> H6.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig q)).
+move=> H7.
+apply (Fmul_O_l f (A u0 y)).
+move=> H7.
+apply (Fmul_O_l f (A u0 y)).
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> u H3.
+apply (Full_intro {n : nat | n < M} u).
+Qed.
+
+Lemma ElementaryMatrixAddNatureR : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < N}) (c : FT f), proj1_sig p <> proj1_sig q -> Mmult f M N N A (ElementaryMatrixAdd f N p q c) = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
+  | left _ => Fadd f (A x y) (Fmul f c (A x p))
+  | right _ => A x y
+end).
+Proof.
+move=> f M N A p q c H1.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mmult.
+unfold ElementaryMatrixAdd.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H2.
+rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} y)).
+rewrite MySumF2Singleton.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
+move=> H3.
+rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} p)).
+rewrite MySumF2Singleton.
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig y)).
+move=> H4.
+apply False_ind.
+apply H1.
+rewrite - H2.
+apply H4.
+move=> H4.
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
+move=> H5.
+rewrite MySumF2O.
+rewrite (Fmul_I_r f (A x y)).
+rewrite (CM_O_r (FPCM f) (Fmul f (A x p) c)).
+rewrite (Fmul_comm f (A x p) c).
+reflexivity.
+move=> u.
+elim.
+move=> u0 H6 H7.
+suff: (In {n : nat | n < N}
+       (Complement {n : nat | n < N}
+          (proj1_sig (FiniteSingleton {n : nat | n < N} p))) u0).
+elim H7.
+move=> u1 H8 H9 H10.
+elim (Nat.eq_dec (proj1_sig u1) (proj1_sig y)).
+move=> H11.
+apply False_ind.
+apply H8.
+suff: (u1 = y).
+move=> H12.
+rewrite H12.
+apply (In_singleton {n : nat | n < N} y).
+apply sig_map.
+apply H11.
+move=> H11.
+elim (Nat.eq_dec (proj1_sig u1) (proj1_sig p)).
+move=> H12.
+apply False_ind.
+apply H10.
+suff: (u1 = p).
+move=> H13.
+rewrite H13.
+apply (In_singleton {n : nat | n < N} p).
+apply sig_map.
+apply H12.
+move=> H12.
+apply (Fmul_O_r f (A x u1)).
+apply H6.
+move=> H5.
+apply False_ind.
+apply H5.
+reflexivity.
+move=> m H4.
+apply (Intersection_intro {n : nat | n < N}).
+move=> H5.
+apply H1.
+rewrite - H2.
+suff: (p = m).
+move=> H6.
+rewrite H6.
+elim H5.
+reflexivity.
+elim H4.
+reflexivity.
+apply (Full_intro {n : nat | n < N} m).
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> m H3.
+apply (Full_intro {n : nat | n < N} m).
+move=> H2.
+rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} y)).
+rewrite MySumF2Singleton.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
+move=> H3.
+rewrite MySumF2O.
+rewrite (Fmul_I_r f (A x y)).
+apply (Fadd_O_r f (A x y)).
+move=> u.
+elim.
+move=> u0 H4 H5.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig y)).
+move=> H6.
+apply False_ind.
+apply H4.
+suff: (u0 = y).
+move=> H7.
+rewrite H7.
+apply (In_singleton {n : nat | n < N} y).
+apply sig_map.
+apply H6.
+move=> H6.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig p)).
+move=> H7.
+apply (Fmul_O_r f (A x u0)).
+move=> H7.
+apply (Fmul_O_r f (A x u0)).
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> u H3.
+apply (Full_intro {n : nat | n < N} u).
+Qed.
+
+Lemma ElementaryMatrixMultiplyNatureL : forall (f : Field) (M N : nat) (A : Matrix f M N) (p : {n : nat | n < M}) (c : FT f), Mmult f M M N (ElementaryMatrixMultiply f M p c) A = (fun (x : {n : nat | (n < M)}) (y : {n : nat | (n < N)}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end).
+Proof.
+move=> f M N A p c.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mmult.
+unfold ElementaryMatrixMultiply.
+rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} x)).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite (CM_O_r (FPCM f)).
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig x)).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H2.
+reflexivity.
+move=> H2.
+apply (Fmul_I_l f (A x y)).
+move=> H1.
+apply False_ind.
+apply H1.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H1 H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig u0)).
+move=> H3.
+apply False_ind.
+apply H1.
+suff: (x = u0).
+move=> H4.
+rewrite H4.
+apply (In_singleton {n : nat | n < M} u0).
+apply sig_map.
+apply H3.
+move=> H3.
+apply (Fmul_O_l f (A u0 y)).
+move=> m H1.
+apply (Full_intro {n : nat | n < M} m).
+Qed.
+
+Lemma ElementaryMatrixMultiplyNatureR : forall (f : Field) (M N : nat) (A : Matrix f M N) (p : {n : nat | n < N}) (c : FT f), Mmult f M N N A (ElementaryMatrixMultiply f N p c) = (fun (x : {n : nat | (n < M)}) (y : {n : nat | (n < N)}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end).
+Proof.
+move=> f M N A p c.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mmult.
+unfold ElementaryMatrixMultiply.
+rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} y)).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite (CM_O_r (FPCM f)).
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H2.
+apply (Fmul_comm f (A x y) c).
+move=> H2.
+apply (Fmul_I_r f (A x y)).
+move=> H1.
+apply False_ind.
+apply H1.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H1 H2.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig y)).
+move=> H3.
+apply False_ind.
+apply H1.
+suff: (u0 = y).
+move=> H4.
+rewrite H4.
+apply (In_singleton {n : nat | n < N} y).
+apply sig_map.
+apply H3.
+move=> H3.
+apply (Fmul_O_r f (A x u0)).
+move=> m H1.
+apply (Full_intro {n : nat | n < N} m).
+Qed.
+
+Lemma ElementaryMatrixSwapNatureL : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < M}), Mmult f M M N (ElementaryMatrixSwap f M p q) A = (fun (x : {n : nat | (n < M)}) (y : {n : nat | (n < N)}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end).
+Proof.
+move=> f M N A p q.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mmult.
+unfold ElementaryMatrixSwap.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H1.
+rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} q)).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite (CM_O_r (FPCM f)).
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
+move=> H2.
+apply (Fmul_I_l f (A q y)).
+move=> H2.
+apply False_ind.
+apply H2.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H2 H3.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig q)).
+move=> H4.
+apply False_ind.
+apply H2.
+suff: (u0 = q).
+move=> H5.
+rewrite H5.
+apply (In_singleton {n : nat | n < M} q).
+apply sig_map.
+apply H4.
+move=> H4.
+apply (Fmul_O_l f (A u0 y)).
+move=> m H2.
+apply (Full_intro {n : nat | n < M} m).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
+move=> H2.
+rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} p)).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite (CM_O_r (FPCM f)).
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
+move=> H3.
+apply (Fmul_I_l f (A p y)).
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H3 H4.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig p)).
+move=> H5.
+apply False_ind.
+apply H3.
+suff: (u0 = p).
+move=> H6.
+rewrite H6.
+apply (In_singleton {n : nat | n < M} p).
+apply sig_map.
+apply H5.
+move=> H5.
+apply (Fmul_O_l f (A u0 y)).
+move=> m H3.
+apply (Full_intro {n : nat | n < M} m).
+move=> H2.
+rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} x)).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite (CM_O_r (FPCM f)).
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig x)).
+move=> H3.
+apply (Fmul_I_l f (A x y)).
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H3 H4.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig u0)).
+move=> H5.
+apply False_ind.
+apply H3.
+suff: (x = u0).
+move=> H6.
+rewrite H6.
+apply (In_singleton {n : nat | n < M} u0).
+apply sig_map.
+apply H5.
+move=> H5.
+apply (Fmul_O_l f (A u0 y)).
+move=> m H3.
+apply (Full_intro {n : nat | n < M} m).
+Qed.
+
+Lemma ElementaryMatrixSwapNatureR : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < N}), Mmult f M N N A (ElementaryMatrixSwap f N p q) = (fun (x : {n : nat | (n < M)}) (y : {n : nat | (n < N)}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+  | left _ => A x q
+  | right _ => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
+    | left _ => A x p
+    | right _ => A x y
+  end
+end).
+Proof.
+move=> f M N A p q.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mmult.
+unfold ElementaryMatrixSwap.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H1.
+rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} q)).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite (CM_O_r (FPCM f)).
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
+move=> H2.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig p)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H4.
+apply (Fmul_I_r f (A x q)).
+move=> H4.
+apply False_ind.
+apply H4.
+rewrite H3.
+apply H1.
+move=> H3.
+apply (Fmul_I_r f (A x q)).
+move=> H2.
+apply False_ind.
+apply H2.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H2 H3.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig q)).
+move=> H4.
+apply False_ind.
+apply H2.
+suff: (u0 = q).
+move=> H5.
+rewrite H5.
+apply (In_singleton {n : nat | n < N} q).
+apply sig_map.
+apply H4.
+move=> H4.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig p)).
+move=> H5.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H6.
+apply False_ind.
+apply H4.
+rewrite - H6.
+rewrite H1.
+apply H5.
+move=> H6.
+apply (Fmul_O_r f (A x u0)).
+move=> H5.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig y)).
+move=> H6.
+apply False_ind.
+apply H5.
+rewrite - H1.
+apply H6.
+move=> H6.
+apply (Fmul_O_r f (A x u0)).
+move=> m H2.
+apply (Full_intro {n : nat | n < N} m).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H2.
+rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} p)).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite (CM_O_r (FPCM f)).
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
+move=> H3.
+apply (Fmul_I_r f (A x p)).
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H3 H4.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig p)).
+move=> H5.
+apply False_ind.
+apply H3.
+suff: (u0 = p).
+move=> H6.
+rewrite H6.
+apply (In_singleton {n : nat | n < N} p).
+apply sig_map.
+apply H5.
+move=> H5.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig q)).
+move=> H6.
+apply (Fmul_O_r f (A x u0)).
+move=> H6.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig y)).
+move=> H7.
+apply False_ind.
+apply H6.
+rewrite H7.
+apply H2.
+move=> H7.
+apply (Fmul_O_r f (A x u0)).
+move=> m H3.
+apply (Full_intro {n : nat | n < N} m).
+move=> H2.
+rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} y)).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite (CM_O_r (FPCM f)).
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H4.
+elim (H1 H4).
+move=> H4.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H5.
+elim (H2 H5).
+move=> H5.
+apply (Fmul_I_r f (A x y)).
+move=> H3.
+apply False_ind.
+apply H3.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H3 H4.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig y)).
+move=> H5.
+apply False_ind.
+apply H3.
+suff: (u0 = y).
+move=> H6.
+rewrite H6.
+apply (In_singleton {n : nat | n < N} y).
+apply sig_map.
+apply H5.
+move=> H5.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig p)).
+move=> H6.
+apply (Fmul_O_r f (A x u0)).
+move=> H6.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig q)).
+move=> H7.
+apply (Fmul_O_r f (A x u0)).
+move=> H7.
+apply (Fmul_O_r f (A x u0)).
+move=> m H3.
+apply (Full_intro {n : nat | n < N} m).
+Qed.
+
 Definition Determinant (f : Field) (N : nat) (A : Matrix f N N) := MySumF2 (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) (FPCM f) (fun (P : Permutation N) => Fmul f (match PermutationParity N P with
   | OFF => (FI f)
   | ON => Fopp f (FI f)
@@ -9203,6 +10110,303 @@ rewrite (Fmul_O_r f (InvMatrix f N A x u)).
 apply (CM_O_r (FPCM f) (MO f N N x y)).
 Qed.
 
+Lemma InvMatrixMultUniqueRStrong : forall (f : Field) (N : nat) (A : Matrix f N N) (B : Matrix f N N), Mmult f N N N A B = MI f N -> B = InvMatrix f N A.
+Proof.
+move=> f N A B H2.
+apply (InvMatrixMultUniqueR f N A).
+apply (proj2 (RegularInvRExistRelation f N A)).
+exists B.
+apply H2.
+apply H2.
+Qed.
+
+Lemma InvMatrixMultUniqueLStrong : forall (f : Field) (N : nat) (A : Matrix f N N) (B : Matrix f N N), Mmult f N N N B A = MI f N -> B = InvMatrix f N A.
+Proof.
+move=> f N A B H2.
+apply (InvMatrixMultUniqueL f N A).
+apply (proj2 (RegularInvLExistRelation f N A)).
+exists B.
+apply H2.
+apply H2.
+Qed.
+
+Lemma DeterminantElementaryMatrixAdd : forall (f : Field) (N : nat) (p q : {n : nat | n < N}) (c : FT f), proj1_sig p <> proj1_sig q -> Determinant f N (ElementaryMatrixAdd f N p q c) = FI f.
+Proof.
+move=> f N p q c H1.
+rewrite - (Mmult_I_r f N N (ElementaryMatrixAdd f N p q c)).
+rewrite (ElementaryMatrixAddNatureL f N N (MI f N) p q c H1).
+rewrite (DeterminantAddTransformH f N (MI f N) q p c).
+apply (DeterminantI f N).
+move=> H2.
+apply H1.
+rewrite H2.
+reflexivity.
+Qed.
+
+Lemma DeterminantElementaryMatrixMultiply : forall (f : Field) (N : nat) (p : {n : nat | n < N}) (c : FT f), Determinant f N (ElementaryMatrixMultiply f N p c) = c.
+Proof.
+move=> f N p c.
+rewrite - (Mmult_I_r f N N (ElementaryMatrixMultiply f N p c)).
+rewrite (ElementaryMatrixMultiplyNatureL f N N (MI f N) p c).
+rewrite (DeterminantMultiLinearityHMult f N (MI f N) p c).
+rewrite (DeterminantI f N).
+apply (Fmul_I_r f c).
+Qed.
+
+Lemma DeterminantElementaryMatrixSwap : forall (f : Field) (N : nat) (p q : {n : nat | n < N}), proj1_sig p <> proj1_sig q -> Determinant f N (ElementaryMatrixSwap f N p q) = Fopp f (FI f).
+Proof.
+move=> f N p q H1.
+rewrite - (Mmult_I_r f N N (ElementaryMatrixSwap f N p q)).
+rewrite (ElementaryMatrixSwapNatureL f N N (MI f N) p q).
+rewrite (DeterminantSwapH f N (MI f N) p q).
+rewrite (DeterminantI f N).
+reflexivity.
+apply H1.
+Qed.
+
+Lemma ElementaryMatrixRegular : forall (f : Field) (N : nat) (A : Matrix f N N), ElementaryMatrix f N A -> RegularMatrix f N A.
+Proof.
+move=> f N A.
+elim.
+move=> p q c H1 H2.
+unfold RegularMatrix.
+rewrite (DeterminantElementaryMatrixAdd f N p q c H1).
+apply (FI_neq_FO f).
+move=> p c.
+unfold RegularMatrix.
+rewrite (DeterminantElementaryMatrixMultiply f N p c).
+apply.
+move=> p q H1.
+unfold RegularMatrix.
+rewrite (DeterminantElementaryMatrixSwap f N p q H1).
+apply (Fopp_neq_O_compat f (FI f) (FI_neq_FO f)).
+Qed.
+
+Lemma InvMatrixElementaryMatrixAdd : forall (f : Field) (N : nat) (p q : {n : nat | n < N}) (c : FT f), proj1_sig p <> proj1_sig q -> InvMatrix f N (ElementaryMatrixAdd f N p q c) = ElementaryMatrixAdd f N p q (Fopp f c).
+Proof.
+move=> f N p q c H1.
+rewrite (InvMatrixMultUniqueLStrong f N (ElementaryMatrixAdd f N p q c) (ElementaryMatrixAdd f N p q (Fopp f c))).
+reflexivity.
+rewrite (ElementaryMatrixAddNatureL f N N (ElementaryMatrixAdd f N p q c) p q (Fopp f c)).
+unfold ElementaryMatrixAdd.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H2.
+unfold MI.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig y)).
+move=> H4.
+apply False_ind.
+apply H1.
+rewrite - H2.
+rewrite H3.
+rewrite H4.
+reflexivity.
+move=> H4.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig p)).
+move=> H5.
+apply False_ind.
+apply H1.
+rewrite H5.
+reflexivity.
+move=> H5.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H6.
+rewrite (Fmul_O_r f (Fopp f c)).
+apply (Fadd_O_r f (FI f)).
+move=> H6.
+rewrite (Fmul_O_r f (Fopp f c)).
+apply (Fadd_O_r f (FI f)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H4.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig y)).
+move=> H5.
+rewrite (Fmul_I_r f (Fopp f c)).
+apply (Fadd_opp_r f c).
+move=> H5.
+apply False_ind.
+apply H5.
+rewrite H4.
+reflexivity.
+move=> H4.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig y)).
+move=> H5.
+apply False_ind.
+apply H4.
+rewrite H5.
+reflexivity.
+move=> H5.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig p)).
+move=> H6.
+apply False_ind.
+apply H1.
+rewrite H6.
+reflexivity.
+move=> H6.
+rewrite (Fmul_O_r f (Fopp f c)).
+apply (Fadd_O_l f (FO f)).
+move=> H2.
+unfold MI.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H3.
+reflexivity.
+move=> H3.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H4.
+reflexivity.
+move=> H4.
+reflexivity.
+apply H1.
+Qed.
+
+Lemma InvMatrixElementaryMatrixMultiply : forall (f : Field) (N : nat) (p : {n : nat | n < N}) (c : FT f), c <> FO f -> InvMatrix f N (ElementaryMatrixMultiply f N p c) = ElementaryMatrixMultiply f N p (Finv f c).
+Proof.
+move=> f N p c H1.
+rewrite (InvMatrixMultUniqueLStrong f N (ElementaryMatrixMultiply f N p c) (ElementaryMatrixMultiply f N p (Finv f c))).
+reflexivity.
+rewrite (ElementaryMatrixMultiplyNatureL f N N (ElementaryMatrixMultiply f N p c) p (Finv f c)).
+unfold ElementaryMatrixMultiply.
+unfold MI.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H3.
+apply (Finv_l f c H1).
+move=> H3.
+reflexivity.
+move=> H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H3.
+apply (Fmul_O_r f (Finv f c)).
+move=> H3.
+reflexivity.
+Qed.
+
+Lemma InvMatrixElementaryMatrixSwap : forall (f : Field) (N : nat) (p q : {n : nat | n < N}), InvMatrix f N (ElementaryMatrixSwap f N p q) = ElementaryMatrixSwap f N p q.
+Proof.
+move=> f N p q.
+rewrite - (InvMatrixMultUniqueLStrong f N (ElementaryMatrixSwap f N p q) (ElementaryMatrixSwap f N p q)).
+reflexivity.
+rewrite (ElementaryMatrixSwapNatureL f N N (ElementaryMatrixSwap f N p q) p q).
+unfold ElementaryMatrixSwap.
+unfold MI.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H1.
+rewrite H1.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig p)).
+move=> H2.
+rewrite H2.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H3.
+reflexivity.
+move=> H3.
+reflexivity.
+move=> H2.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H4.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
+move=> H5.
+reflexivity.
+move=> H5.
+apply False_ind.
+apply H5.
+reflexivity.
+move=> H4.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
+move=> H5.
+reflexivity.
+move=> H5.
+apply False_ind.
+apply H5.
+reflexivity.
+move=> H3.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H4.
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
+move=> H5.
+reflexivity.
+move=> H5.
+apply False_ind.
+apply H5.
+reflexivity.
+move=> H4.
+reflexivity.
+move=> H1.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig p)).
+move=> H2.
+rewrite H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H4.
+apply False_ind.
+apply H1.
+rewrite H4.
+apply H3.
+move=> H4.
+reflexivity.
+move=> H3.
+reflexivity.
+move=> H2.
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig q)).
+move=> H3.
+apply False_ind.
+apply H2.
+rewrite H3.
+reflexivity.
+move=> H3.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+move=> H4.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
+move=> H5.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
+move=> H6.
+apply False_ind.
+apply H1.
+rewrite H6.
+apply H4.
+move=> H6.
+reflexivity.
+move=> H5.
+apply False_ind.
+apply H5.
+reflexivity.
+move=> H4.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
+move=> H5.
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
+move=> H6.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+move=> H7.
+apply False_ind.
+apply H1.
+rewrite H7.
+apply H5.
+move=> H7.
+reflexivity.
+move=> H6.
+apply False_ind.
+apply H6.
+reflexivity.
+move=> H5.
+reflexivity.
+Qed.
+
 Definition Rank (f : Field) (M N : nat) (A : Matrix f M N) := DimensionSubspaceVS f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A) (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A) (Proposition_5_9_1_1 f (FnVS f N) (FnVSFiniteDimension f N) (SpanVS f (FnVS f N) {n : nat | n < M} A) (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)).
 
 Lemma RankDef2 : forall (f : Field) (M N : nat) (A : Matrix f M N) (r : nat), Rank f M N A = r <-> is_max_nat (fun (k : nat) => exists (x : {n : nat | n < k} -> {n : nat | n < M}), LinearlyIndependentVS f (FnVS f N) {n : nat | n < k} (fun (m : {n : nat | n < k}) => A (x m))) r.
@@ -9588,428 +10792,6 @@ apply (Proposition_5_9_1_2 f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} A
   H1 (Proposition_5_9_1_1 f (FnVS f N) (FnVSFiniteDimension f N)
      (SpanVS f (FnVS f N) {n : nat | n < M} A)
      (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
-Qed.
-
-Lemma RankMultTransformH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p : {n : nat | (n < M)}) (c : FT f), c <> FO f -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => Fmul f c (A x y)
-  | right _ => A x y
-end) = Rank f M N A.
-Proof.
-move=> f M N A p c H1.
-suff: (forall (W1 W2 : Ensemble (Fn f N)), W1 = W2 -> forall (H1 : SubspaceVS f (FnVS f N) W1) (H2 : SubspaceVS f (FnVS f N) W2) (H3 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W1 H1)) (H4 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W2 H2)), DimensionSubspaceVS f (FnVS f N) W1 H1 H3 = DimensionSubspaceVS f (FnVS f N) W2 H2 H4).
-move=> H2.
-apply H2.
-apply Extensionality_Ensembles.
-apply conj.
-move=> v.
-elim.
-move=> x H3.
-rewrite H3.
-apply MySumF2Induction.
-apply conj.
-apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
-move=> cm u H4 H5.
-apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A) cm).
-apply H5.
-elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
-move=> H6.
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) c (A u)).
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
-move=> H6.
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
-move=> v.
-elim.
-move=> x H3.
-rewrite H3.
-apply MySumF2Induction.
-apply conj.
-apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => Fmul f c (A x y)
-  | right _ => A x y
-end)))).
-move=> cm u H4 H5.
-apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => Fmul f c (A x y)
-  | right _ => A x y
-end))).
-apply H5.
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => Fmul f c (A x y)
-  | right _ => A x y
-end))) (proj1_sig x u) (A u)).
-elim (classic (proj1_sig u = proj1_sig p)).
-move=> H6.
-suff: (A u = Fnmul f N (Finv f c) ((fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => Fmul f c (A x y)
-  | right _ => A x y
-end) u)).
-move=> H7.
-rewrite H7.
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => Fmul f c (A x y)
-  | right _ => A x y
-end))) (Finv f c)).
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => Fmul f c (A x y)
-  | right _ => A x y
-end) u).
-rewrite - {1} (Vmul_I_l f (FnVS f N) (A u)).
-rewrite - (Finv_l f c H1).
-rewrite - (Vmul_assoc f (FnVS f N) (Finv f c) c (A u)).
-elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
-move=> H7.
-reflexivity.
-move=> H7.
-elim (H7 H6).
-move=> H6.
-suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => Fmul f c (A x y)
-  | right _ => A x y
-end) u).
-move=> H7.
-rewrite H7.
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => Fmul f c (A x y)
-  | right _ => A x y
-end) u).
-elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
-move=> H7.
-elim (H6 H7).
-move=> H7.
-reflexivity.
-move=> W1 W2 H2.
-rewrite H2.
-move=> H3 H4.
-suff: (H3 = H4).
-move=> H5.
-rewrite H5.
-move=> H6 H7.
-suff: (H6 = H7).
-move=> H8.
-rewrite H8.
-reflexivity.
-apply proof_irrelevance.
-apply proof_irrelevance.
-Qed.
-
-Lemma RankSwapH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < M}), proj1_sig p <> proj1_sig q -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => A q y
-  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
-    | left _ => A p y
-    | right _ => A x y
-  end
-end) = Rank f M N A.
-Proof.
-move=> f M N A p q H1.
-suff: (forall (W1 W2 : Ensemble (Fn f N)), W1 = W2 -> forall (H1 : SubspaceVS f (FnVS f N) W1) (H2 : SubspaceVS f (FnVS f N) W2) (H3 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W1 H1)) (H4 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W2 H2)), DimensionSubspaceVS f (FnVS f N) W1 H1 H3 = DimensionSubspaceVS f (FnVS f N) W2 H2 H4).
-move=> H2.
-apply H2.
-apply Extensionality_Ensembles.
-apply conj.
-move=> v.
-elim.
-move=> x H3.
-rewrite H3.
-apply MySumF2Induction.
-apply conj.
-apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
-move=> cm u H4 H5.
-apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)).
-apply H5.
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
-elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
-move=> H6.
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A q).
-move=> H6.
-elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
-move=> H7.
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A p).
-move=> H7.
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
-move=> v.
-elim.
-move=> x H3.
-rewrite H3.
-apply MySumF2Induction.
-apply conj.
-apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => A q y
-  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
-    | left _ => A p y
-    | right _ => A x y
-  end
-end)))).
-move=> cm u H4 H5.
-apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => A q y
-  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
-    | left _ => A p y
-    | right _ => A x y
-  end
-end)) cm (Vmul f (FnVS f N) (proj1_sig x u) (A u))).
-apply H5.
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => A q y
-  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
-    | left _ => A p y
-    | right _ => A x y
-  end
-end))) (proj1_sig x u) (A u)).
-elim (classic (proj1_sig u = proj1_sig p)).
-move=> H6.
-suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => A q y
-  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
-    | left _ => A p y
-    | right _ => A x y
-  end
-end) q).
-move=> H7.
-rewrite H7.
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => A q y
-  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
-    | left _ => A p y
-    | right _ => A x y
-  end
-end) q).
-elim (Nat.eq_dec (proj1_sig q) (proj1_sig p)).
-move=> H7.
-apply False_ind.
-apply H1.
-rewrite H7.
-reflexivity.
-move=> H7.
-elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
-move=> H8.
-suff: (u = p).
-move=> H9.
-rewrite H9.
-reflexivity.
-apply sig_map.
-apply H6.
-move=> H8.
-apply False_ind.
-apply H8.
-reflexivity.
-move=> H6.
-elim (classic (proj1_sig u = proj1_sig q)).
-move=> H7.
-suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => A q y
-  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
-    | left _ => A p y
-    | right _ => A x y
-  end
-end) p).
-move=> H8.
-rewrite H8.
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => A q y
-  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
-    | left _ => A p y
-    | right _ => A x y
-  end
-end) p).
-elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
-move=> H8.
-suff: (u = q).
-move=> H9.
-rewrite H9.
-reflexivity.
-apply sig_map.
-apply H7.
-move=> H8.
-apply False_ind.
-apply H8.
-reflexivity.
-move=> H7.
-suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => A q y
-  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
-    | left _ => A p y
-    | right _ => A x y
-  end
-end) u).
-move=> H8.
-rewrite H8.
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => A q y
-  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
-    | left _ => A p y
-    | right _ => A x y
-  end
-end) u).
-elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
-move=> H8.
-elim (H6 H8).
-move=> H8.
-elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
-move=> H9.
-elim (H7 H9).
-move=> H9.
-reflexivity.
-move=> W1 W2 H2.
-rewrite H2.
-move=> H3 H4.
-suff: (H3 = H4).
-move=> H5.
-rewrite H5.
-move=> H6 H7.
-suff: (H6 = H7).
-move=> H8.
-rewrite H8.
-reflexivity.
-apply proof_irrelevance.
-apply proof_irrelevance.
-Qed.
-
-Lemma RankAddTransformH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < M}) (c : FT f), proj1_sig p <> proj1_sig q -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
-  | left _ => Fadd f (A x y) (Fmul f c (A p y))
-  | right _ => A x y
-end) = Rank f M N A.
-Proof.
-move=> f M N A p q c H1.
-suff: (forall (W1 W2 : Ensemble (Fn f N)), W1 = W2 -> forall (H1 : SubspaceVS f (FnVS f N) W1) (H2 : SubspaceVS f (FnVS f N) W2) (H3 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W1 H1)) (H4 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W2 H2)), DimensionSubspaceVS f (FnVS f N) W1 H1 H3 = DimensionSubspaceVS f (FnVS f N) W2 H2 H4).
-move=> H2.
-apply H2.
-apply Extensionality_Ensembles.
-apply conj.
-move=> v.
-elim.
-move=> x H3.
-rewrite H3.
-apply MySumF2Induction.
-apply conj.
-apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
-move=> cm u H4 H5.
-apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)).
-apply H5.
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
-unfold In.
-elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
-move=> H6.
-apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A) (A u) (Fnmul f N c (A p))).
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) c (A p) (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A p)).
-move=> H6.
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
-move=> v.
-elim.
-move=> x H3.
-rewrite H3.
-apply MySumF2Induction.
-apply conj.
-apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end)))).
-move=> cm u H4 H5.
-elim (classic (proj1_sig u = proj1_sig q)).
-move=> H6.
-suff: (A u = Fnminus f N ((fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end) u) (Fnmul f N c (A p))).
-move=> H7.
-rewrite H7.
-apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end))).
-apply H5.
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end)))).
-apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end))).
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end) u).
-apply (SubspaceMakeVSVoppSub f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end)) (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end))).
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end)))).
-suff: (A p = ((fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end) p)).
-move=> H8.
-rewrite {2} H8.
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end) p).
-elim (Nat.eq_dec (proj1_sig p) (proj1_sig q)).
-move=> H8.
-elim (H1 H8).
-move=> H8.
-reflexivity.
-elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
-move=> H7.
-apply functional_extensionality.
-move=> w.
-unfold Fnminus.
-unfold Fnmul.
-unfold Fnadd.
-unfold Fnopp.
-rewrite (Fadd_assoc f (A u w) (Fmul f c (A p w)) (Fopp f (Fmul f c (A p w)))).
-rewrite (Fadd_opp_r f (Fmul f c (A p w))).
-rewrite (Fadd_O_r f (A u w)).
-reflexivity.
-move=> H7.
-elim (H7 H6).
-move=> H6.
-suff: (A u = (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end) u).
-move=> H7.
-rewrite H7.
-apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end))).
-apply H5.
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end)))).
-apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
-      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
-      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
-      | right _ => A x0 y0 end) u).
-elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
-move=> H7.
-elim (H6 H7).
-move=> H7.
-reflexivity.
-move=> W1 W2 H2.
-rewrite H2.
-move=> H3 H4.
-suff: (H3 = H4).
-move=> H5.
-rewrite H5.
-move=> H6 H7.
-suff: (H6 = H7).
-move=> H8.
-rewrite H8.
-reflexivity.
-apply proof_irrelevance.
-apply proof_irrelevance.
 Qed.
 
 Lemma RankMinorDeterminant : forall (f : Field) (M N : nat) (A : Matrix f M N) (r : nat), Rank f M N A = r <-> is_max_nat (fun (k : nat) => exists (hi : {n : nat | n < k} -> {n : nat | n < M}) (wi : {n : nat | n < k} -> {n : nat | n < N}), Determinant f k (fun (x y : {n : nat | n < k}) => A (hi x) (wi y)) <> FO f) r.
@@ -10728,911 +11510,478 @@ apply (proj1 (RankMinorDeterminant f M N A (Rank f M N A))).
 reflexivity.
 Qed.
 
-Definition ElementaryMatrixSwap (f : Field) (N : nat) (p q : {n : nat | n < N}) := (fun (x y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
-    | left _ => FI f
-    | right _ => FO f
-  end
-  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
-    | left _ => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
-      | left _ => FI f
-      | right _ => FO f
-    end
-    | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig y) with
-      | left _ => FI f
-      | right _ => FO f
-    end
-  end
-end).
-
-Definition ElementaryMatrixMultiply (f : Field) (N : nat) (p : {n : nat | n < N}) (c : FT f) := (fun (x y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig y) with
-  | left _ => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-    | left _ => c
-    | right _ => FI f
-  end
-  | right _ => FO f
-end).
-
-Definition ElementaryMatrixAdd (f : Field) (N : nat) (p q : {n : nat | n < N}) (c : FT f) := (fun (x y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig y) with
-  | left _ => FI f
-  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig p), Nat.eq_dec (proj1_sig y) (proj1_sig q) with
-    | left _, left _ => c
-    | left _, right _ => FO f
-    | right _, left _ => FO f
-    | right _, right _ => FO f
-  end
-end).
-
-Inductive ElementaryMatrix (f : Field) (N : nat) : Ensemble (Matrix f N N) :=
-  | ElementaryMatrixSwap_intro : forall (p q : {n : nat | n < N}), proj1_sig p <> proj1_sig q -> ElementaryMatrix f N (ElementaryMatrixSwap f N p q)
-  | ElementaryMatrixMultiply_intro : forall (p : {n : nat | n < N}) (c : FT f), c <> FO f -> ElementaryMatrix f N (ElementaryMatrixMultiply f N p c)
-  | ElementaryMatrixAdd_intro : forall (p q : {n : nat | n < N}) (c : FT f), proj1_sig p <> proj1_sig q -> c <> FO f -> ElementaryMatrix f N (ElementaryMatrixAdd f N p q c).
-
-Definition ElementaryTransformable (f : Field) (N : nat) (A : Matrix f N N) := exists (AL : list (Matrix f N N)), (Forall (fun (x : Matrix f N N) => ElementaryMatrix f N x) AL) /\ A = MyProdFL (MMM f N) AL.
-
-Lemma ElementaryMatrixSwapTrans : forall (f : Field) (N : nat) (p q : {n : nat | n < N}), MTranspose f N N (ElementaryMatrixSwap f N p q) = ElementaryMatrixSwap f N p q.
-Proof.
-move=> f N p q.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold MTranspose.
-unfold ElementaryMatrixSwap.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
-move=> H1.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
-move=> H2.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
-move=> H3.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
-move=> H4.
-reflexivity.
-rewrite H1.
-rewrite - H2.
-move=> H4.
-apply False_ind.
-apply H4.
-rewrite H3.
-reflexivity.
-move=> H3.
-reflexivity.
-move=> H2.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
-move=> H3.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
-rewrite H1.
-move=> H4.
-apply False_ind.
-apply H2.
-rewrite H3.
-apply H4.
-move=> H4.
-reflexivity.
-move=> H3.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-rewrite H1.
-move=> H4.
-elim (H3 H4).
-move=> H4.
-reflexivity.
-move=> H1.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
-move=> H2.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
-move=> H3.
-reflexivity.
-move=> H3.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
-move=> H4.
-reflexivity.
-move=> H4.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-rewrite H2.
-move=> H5.
-elim (H4 H5).
-move=> H5.
-reflexivity.
-move=> H2.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
-move=> H3.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
-rewrite - H3.
-move=> H4.
-elim (H1 H4).
-move=> H4.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
-rewrite - H3.
-move=> H5.
-elim (H2 H5).
-move=> H5.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H6.
-reflexivity.
-move=> H6.
-apply False_ind.
-apply H6.
-rewrite H3.
-reflexivity.
-move=> H3.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
-move=> H4.
-reflexivity.
-move=> H4.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
-move=> H5.
-reflexivity.
-move=> H5.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H6.
-apply False_ind.
-apply H3.
-rewrite H6.
-reflexivity.
-move=> H6.
-reflexivity.
-Qed.
-
-Lemma ElementaryMatrixMultiplyTrans : forall (f : Field) (N : nat) (p : {n : nat | n < N}) (c : FT f), MTranspose f N N (ElementaryMatrixMultiply f N p c) = ElementaryMatrixMultiply f N p c.
-Proof.
-move=> f N p c.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold MTranspose.
-unfold ElementaryMatrixMultiply.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
-move=> H1.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
-move=> H2.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H3.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
-move=> H4.
-reflexivity.
-rewrite H3.
-rewrite H2.
-move=> H4.
-apply False_ind.
-apply H4.
-reflexivity.
-rewrite H1.
-move=> H3.
-apply False_ind.
-apply H3.
-reflexivity.
-move=> H2.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H3.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
-rewrite H3.
-move=> H4.
-elim (H2 H4).
-move=> H4.
-reflexivity.
-rewrite H1.
-move=> H3.
-apply False_ind.
-apply H3.
-reflexivity.
-move=> H1.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H2.
-apply False_ind.
-apply H1.
-rewrite H2.
-reflexivity.
-move=> H2.
-reflexivity.
-Qed.
-
-Lemma ElementaryMatrixAddTrans : forall (f : Field) (N : nat) (p q : {n : nat | n < N}) (c : FT f), MTranspose f N N (ElementaryMatrixAdd f N p q c) = ElementaryMatrixAdd f N q p c.
-Proof.
-move=> f N p q c.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold MTranspose.
-unfold ElementaryMatrixAdd.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
-move=> H1.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H2.
-reflexivity.
-move=> H2.
-apply False_ind.
-apply H2.
-rewrite H1.
-reflexivity.
-move=> H1.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H2.
-apply False_ind.
-apply H1.
-rewrite H2.
-reflexivity.
-move=> H2.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
-move=> H3.
-reflexivity.
-move=> H3.
-reflexivity.
-Qed.
-
-Lemma ElementaryTransformableConnect : forall (f : Field) (N : nat) (A B : Matrix f N N), ElementaryTransformable f N A -> ElementaryTransformable f N B -> ElementaryTransformable f N (Mmult f N N N A B).
-Proof.
-move=> f N A B H1 H2.
-elim H1.
-move=> AL H3.
-elim H2.
-move=> BL H4.
-exists (app AL BL).
-apply conj.
-apply (Forall_app (fun (x : Matrix f N N) => ElementaryMatrix f N x) AL BL).
-apply conj.
-apply (proj1 H3).
-apply (proj1 H4).
-rewrite (MyProdFLApp (MMM f N) AL BL).
-rewrite (proj2 H3).
-rewrite (proj2 H4).
-reflexivity.
-Qed.
-
-Lemma ElementaryTransformableTrans : forall (f : Field) (N : nat) (A : Matrix f N N), ElementaryTransformable f N A -> ElementaryTransformable f N (MTranspose f N N A).
-Proof.
-move=> f N A.
-elim.
-move=> AL H1.
-exists (rev (map (MTranspose f N N) AL)).
-apply conj.
-suff: (Forall (fun x : Matrix f N N => ElementaryMatrix f N x) (map (MTranspose f N N) AL)).
-move=> H2.
-apply (Forall_rev H2).
-apply (proj2 (Forall_forall (fun (x : Matrix f N N) => ElementaryMatrix f N x) (map (MTranspose f N N) AL))).
-move=> B H2.
-elim (proj1 (in_map_iff (MTranspose f N N) AL B)).
-move=> BT H3.
-rewrite - (proj1 H3).
-elim (proj1 (Forall_forall (fun (x : Matrix f N N) => ElementaryMatrix f N x) AL) (proj1 H1) BT (proj2 H3)).
-move=> p q H4.
-rewrite (ElementaryMatrixSwapTrans f N p q).
-apply (ElementaryMatrixSwap_intro f N p q H4).
-move=> p c H4.
-rewrite (ElementaryMatrixMultiplyTrans f N p c).
-apply (ElementaryMatrixMultiply_intro f N p c H4).
-move=> p q c H4 H5.
-suff: (proj1_sig q <> proj1_sig p).
-move=> H6.
-rewrite (ElementaryMatrixAddTrans f N p q c).
-apply (ElementaryMatrixAdd_intro f N q p c H6 H5).
-move=> H6.
-apply H4.
-rewrite H6.
-reflexivity.
-apply H2.
-rewrite (proj2 H1).
-elim AL.
-apply (MTransI f N).
-move=> a l H2.
-simpl.
-rewrite (MyProdFLApp (MMM f N)).
-rewrite (MTransMult f N N N).
-rewrite H2.
-simpl.
-rewrite (Mmult_I_r f N N (MTranspose f N N a)).
-reflexivity.
-Qed.
-
-Lemma ElementaryMatrixAddNatureL : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < M}) (c : FT f), proj1_sig p <> proj1_sig q -> Mmult f M M N (ElementaryMatrixAdd f M p q c) A = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
-  | left _ => Fadd f (A x y) (Fmul f c (A q y))
+Lemma RankAddTransformH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < M}) (c : FT f), proj1_sig p <> proj1_sig q -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+  | left _ => Fadd f (A x y) (Fmul f c (A p y))
   | right _ => A x y
-end).
+end) = Rank f M N A.
 Proof.
 move=> f M N A p q c H1.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold Mmult.
-unfold ElementaryMatrixAdd.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
+suff: (forall (W1 W2 : Ensemble (Fn f N)), W1 = W2 -> forall (H1 : SubspaceVS f (FnVS f N) W1) (H2 : SubspaceVS f (FnVS f N) W2) (H3 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W1 H1)) (H4 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W2 H2)), DimensionSubspaceVS f (FnVS f N) W1 H1 H3 = DimensionSubspaceVS f (FnVS f N) W2 H2 H4).
 move=> H2.
-rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} x)).
-rewrite MySumF2Singleton.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig x)).
-move=> H3.
-rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} q)).
-rewrite MySumF2Singleton.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
-move=> H4.
-apply False_ind.
-apply H1.
-rewrite - H2.
-apply H4.
-move=> H4.
-elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
-move=> H5.
-rewrite MySumF2O.
-rewrite (Fmul_I_l f (A x y)).
-rewrite (CM_O_r (FPCM f) (Fmul f c (A q y))).
-reflexivity.
-move=> u.
+apply H2.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
 elim.
-move=> u0 H6 H7.
-suff: (In {n : nat | n < M}
-       (Complement {n : nat | n < M}
-          (proj1_sig (FiniteSingleton {n : nat | n < M} q))) u0).
-elim H7.
-move=> u1 H8 H9 H10.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig u1)).
-move=> H11.
-apply False_ind.
-apply H8.
-suff: (x = u1).
-move=> H12.
-rewrite H12.
-apply (In_singleton {n : nat | n < M} u1).
-apply sig_map.
-apply H11.
-move=> H11.
-elim (Nat.eq_dec (proj1_sig u1) (proj1_sig q)).
-move=> H12.
-apply False_ind.
-apply H10.
-suff: (u1 = q).
-move=> H13.
-rewrite H13.
-apply (In_singleton {n : nat | n < M} q).
-apply sig_map.
-apply H12.
-move=> H12.
-apply (Fmul_O_l f (A u1 y)).
-apply H6.
-move=> H5.
-apply False_ind.
+move=> x H3.
+rewrite H3.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
+move=> cm u H4 H5.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)).
 apply H5.
-reflexivity.
-move=> m H4.
-apply (Intersection_intro {n : nat | n < M}).
-move=> H5.
-apply H1.
-rewrite - H2.
-suff: (q = m).
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
+unfold In.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
 move=> H6.
-rewrite H6.
-elim H5.
-reflexivity.
-elim H4.
-reflexivity.
-apply (Full_intro {n : nat | n < M} m).
-move=> H3.
-apply False_ind.
-apply H3.
-reflexivity.
-move=> m H3.
-apply (Full_intro {n : nat | n < M} m).
-move=> H2.
-rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} x)).
-rewrite MySumF2Singleton.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig x)).
-move=> H3.
-rewrite MySumF2O.
-rewrite (Fmul_I_l f (A x y)).
-apply (Fadd_O_r f (A x y)).
-move=> u.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A) (A u) (Fnmul f N c (A p))).
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) c (A p) (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A p)).
+move=> H6.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
+move=> v.
 elim.
-move=> u0 H4 H5.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig u0)).
+move=> x H3.
+rewrite H3.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end)))).
+move=> cm u H4 H5.
+elim (classic (proj1_sig u = proj1_sig q)).
 move=> H6.
-apply False_ind.
-apply H4.
-suff: (x = u0).
+suff: (A u = Fnminus f N ((fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end) u) (Fnmul f N c (A p))).
 move=> H7.
 rewrite H7.
-apply (In_singleton {n : nat | n < M} u0).
-apply sig_map.
-apply H6.
-move=> H6.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig q)).
-move=> H7.
-apply (Fmul_O_l f (A u0 y)).
-move=> H7.
-apply (Fmul_O_l f (A u0 y)).
-move=> H3.
-apply False_ind.
-apply H3.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end))).
+apply H5.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end)))).
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end))).
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end) u).
+apply (SubspaceMakeVSVoppSub f (FnVS f N) (SpanVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end)) (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end))).
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end)))).
+suff: (A p = ((fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end) p)).
+move=> H8.
+rewrite {2} H8.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end) p).
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig q)).
+move=> H8.
+elim (H1 H8).
+move=> H8.
 reflexivity.
-move=> u H3.
-apply (Full_intro {n : nat | n < M} u).
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
+move=> H7.
+apply functional_extensionality.
+move=> w.
+unfold Fnminus.
+unfold Fnmul.
+unfold Fnadd.
+unfold Fnopp.
+rewrite (Fadd_assoc f (A u w) (Fmul f c (A p w)) (Fopp f (Fmul f c (A p w)))).
+rewrite (Fadd_opp_r f (Fmul f c (A p w))).
+rewrite (Fadd_O_r f (A u w)).
+reflexivity.
+move=> H7.
+elim (H7 H6).
+move=> H6.
+suff: (A u = (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end) u).
+move=> H7.
+rewrite H7.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end))).
+apply H5.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end)))).
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x0 : {n : nat | n < M}) (y0 : {n : nat | n < N}) =>
+      match Nat.eq_dec (proj1_sig x0) (proj1_sig q)
+      with | left _ => Fadd f (A x0 y0) (Fmul f c (A p y0))
+      | right _ => A x0 y0 end) u).
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
+move=> H7.
+elim (H6 H7).
+move=> H7.
+reflexivity.
+move=> W1 W2 H2.
+rewrite H2.
+move=> H3 H4.
+suff: (H3 = H4).
+move=> H5.
+rewrite H5.
+move=> H6 H7.
+suff: (H6 = H7).
+move=> H8.
+rewrite H8.
+reflexivity.
+apply proof_irrelevance.
+apply proof_irrelevance.
 Qed.
 
-Lemma ElementaryMatrixAddNatureR : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < N}) (c : FT f), proj1_sig p <> proj1_sig q -> Mmult f M N N A (ElementaryMatrixAdd f N p q c) = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
+Lemma RankAddTransformW : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < N}) (c : FT f), proj1_sig p <> proj1_sig q -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
   | left _ => Fadd f (A x y) (Fmul f c (A x p))
   | right _ => A x y
-end).
+end) = Rank f M N A.
 Proof.
 move=> f M N A p q c H1.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold Mmult.
-unfold ElementaryMatrixAdd.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
+rewrite - (ElementaryMatrixAddNatureR f M N A p q c H1).
+rewrite - (RankTrans f M N (Mmult f M N N A (ElementaryMatrixAdd f N p q c))).
+rewrite (MTransMult f M N N A (ElementaryMatrixAdd f N p q c)).
+rewrite (ElementaryMatrixAddTrans f N p q c).
+rewrite (ElementaryMatrixAddNatureL f N M (MTranspose f M N A) q p c).
+rewrite (RankAddTransformH f N M (MTranspose f M N A) p q c H1).
+apply (RankTrans f M N A).
 move=> H2.
-rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} y)).
-rewrite MySumF2Singleton.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
-move=> H3.
-rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} p)).
-rewrite MySumF2Singleton.
-elim (Nat.eq_dec (proj1_sig p) (proj1_sig y)).
-move=> H4.
-apply False_ind.
 apply H1.
-rewrite - H2.
-apply H4.
-move=> H4.
-elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
-move=> H5.
-rewrite MySumF2O.
-rewrite (Fmul_I_r f (A x y)).
-rewrite (CM_O_r (FPCM f) (Fmul f (A x p) c)).
-rewrite (Fmul_comm f (A x p) c).
+rewrite H2.
 reflexivity.
-move=> u.
+Qed.
+
+Lemma RankMultiplyTransformH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p : {n : nat | (n < M)}) (c : FT f), c <> FO f -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end) = Rank f M N A.
+Proof.
+move=> f M N A p c H1.
+suff: (forall (W1 W2 : Ensemble (Fn f N)), W1 = W2 -> forall (H1 : SubspaceVS f (FnVS f N) W1) (H2 : SubspaceVS f (FnVS f N) W2) (H3 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W1 H1)) (H4 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W2 H2)), DimensionSubspaceVS f (FnVS f N) W1 H1 H3 = DimensionSubspaceVS f (FnVS f N) W2 H2 H4).
+move=> H2.
+apply H2.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
 elim.
-move=> u0 H6 H7.
-suff: (In {n : nat | n < N}
-       (Complement {n : nat | n < N}
-          (proj1_sig (FiniteSingleton {n : nat | n < N} p))) u0).
-elim H7.
-move=> u1 H8 H9 H10.
-elim (Nat.eq_dec (proj1_sig u1) (proj1_sig y)).
-move=> H11.
-apply False_ind.
-apply H8.
-suff: (u1 = y).
-move=> H12.
-rewrite H12.
-apply (In_singleton {n : nat | n < N} y).
-apply sig_map.
-apply H11.
-move=> H11.
-elim (Nat.eq_dec (proj1_sig u1) (proj1_sig p)).
-move=> H12.
-apply False_ind.
-apply H10.
-suff: (u1 = p).
-move=> H13.
-rewrite H13.
-apply (In_singleton {n : nat | n < N} p).
-apply sig_map.
-apply H12.
-move=> H12.
-apply (Fmul_O_r f (A x u1)).
-apply H6.
-move=> H5.
-apply False_ind.
+move=> x H3.
+rewrite H3.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
+move=> cm u H4 H5.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A) cm).
 apply H5.
-reflexivity.
-move=> m H4.
-apply (Intersection_intro {n : nat | n < N}).
-move=> H5.
-apply H1.
-rewrite - H2.
-suff: (p = m).
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
 move=> H6.
-rewrite H6.
-elim H5.
-reflexivity.
-elim H4.
-reflexivity.
-apply (Full_intro {n : nat | n < N} m).
-move=> H3.
-apply False_ind.
-apply H3.
-reflexivity.
-move=> m H3.
-apply (Full_intro {n : nat | n < N} m).
-move=> H2.
-rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} y)).
-rewrite MySumF2Singleton.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
-move=> H3.
-rewrite MySumF2O.
-rewrite (Fmul_I_r f (A x y)).
-apply (Fadd_O_r f (A x y)).
-move=> u.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) c (A u)).
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
+move=> H6.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
+move=> v.
 elim.
-move=> u0 H4 H5.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig y)).
+move=> x H3.
+rewrite H3.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end)))).
+move=> cm u H4 H5.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end))).
+apply H5.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end))) (proj1_sig x u) (A u)).
+elim (classic (proj1_sig u = proj1_sig p)).
 move=> H6.
-apply False_ind.
-apply H4.
-suff: (u0 = y).
+suff: (A u = Fnmul f N (Finv f c) ((fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end) u)).
 move=> H7.
 rewrite H7.
-apply (In_singleton {n : nat | n < N} y).
-apply sig_map.
-apply H6.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end))) (Finv f c)).
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end) u).
+rewrite - {1} (Vmul_I_l f (FnVS f N) (A u)).
+rewrite - (Finv_l f c H1).
+rewrite - (Vmul_assoc f (FnVS f N) (Finv f c) c (A u)).
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
+move=> H7.
+reflexivity.
+move=> H7.
+elim (H7 H6).
 move=> H6.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig p)).
-move=> H7.
-apply (Fmul_O_r f (A x u0)).
-move=> H7.
-apply (Fmul_O_r f (A x u0)).
-move=> H3.
-apply False_ind.
-apply H3.
-reflexivity.
-move=> u H3.
-apply (Full_intro {n : nat | n < N} u).
-Qed.
-
-Lemma ElementaryMatrixMultiplyNatureL : forall (f : Field) (M N : nat) (A : Matrix f M N) (p : {n : nat | n < M}) (c : FT f), Mmult f M M N (ElementaryMatrixMultiply f M p c) A = (fun (x : {n : nat | (n < M)}) (y : {n : nat | (n < N)}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => Fmul f c (A x y)
   | right _ => A x y
-end).
-Proof.
-move=> f M N A p c.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold Mmult.
-unfold ElementaryMatrixMultiply.
-rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} x)).
-rewrite MySumF2Singleton.
-rewrite MySumF2O.
-rewrite (CM_O_r (FPCM f)).
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig x)).
-move=> H1.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
-move=> H2.
-reflexivity.
-move=> H2.
-apply (Fmul_I_l f (A x y)).
-move=> H1.
-apply False_ind.
-apply H1.
-reflexivity.
-move=> u.
-elim.
-move=> u0 H1 H2.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig u0)).
-move=> H3.
-apply False_ind.
-apply H1.
-suff: (x = u0).
-move=> H4.
-rewrite H4.
-apply (In_singleton {n : nat | n < M} u0).
-apply sig_map.
-apply H3.
-move=> H3.
-apply (Fmul_O_l f (A u0 y)).
-move=> m H1.
-apply (Full_intro {n : nat | n < M} m).
-Qed.
-
-Lemma ElementaryMatrixMultiplyNatureR : forall (f : Field) (M N : nat) (A : Matrix f M N) (p : {n : nat | n < N}) (c : FT f), Mmult f M N N A (ElementaryMatrixMultiply f N p c) = (fun (x : {n : nat | (n < M)}) (y : {n : nat | (n < N)}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+end) u).
+move=> H7.
+rewrite H7.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => Fmul f c (A x y)
   | right _ => A x y
-end).
-Proof.
-move=> f M N A p c.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold Mmult.
-unfold ElementaryMatrixMultiply.
-rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} y)).
-rewrite MySumF2Singleton.
-rewrite MySumF2O.
-rewrite (CM_O_r (FPCM f)).
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
-move=> H1.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
-move=> H2.
-apply (Fmul_comm f (A x y) c).
-move=> H2.
-apply (Fmul_I_r f (A x y)).
-move=> H1.
-apply False_ind.
-apply H1.
+end) u).
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
+move=> H7.
+elim (H6 H7).
+move=> H7.
 reflexivity.
-move=> u.
-elim.
-move=> u0 H1 H2.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig y)).
-move=> H3.
-apply False_ind.
-apply H1.
-suff: (u0 = y).
-move=> H4.
-rewrite H4.
-apply (In_singleton {n : nat | n < N} y).
-apply sig_map.
-apply H3.
-move=> H3.
-apply (Fmul_O_r f (A x u0)).
-move=> m H1.
-apply (Full_intro {n : nat | n < N} m).
+move=> W1 W2 H2.
+rewrite H2.
+move=> H3 H4.
+suff: (H3 = H4).
+move=> H5.
+rewrite H5.
+move=> H6 H7.
+suff: (H6 = H7).
+move=> H8.
+rewrite H8.
+reflexivity.
+apply proof_irrelevance.
+apply proof_irrelevance.
 Qed.
 
-Lemma ElementaryMatrixSwapNatureL : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < M}), Mmult f M M N (ElementaryMatrixSwap f M p q) A = (fun (x : {n : nat | (n < M)}) (y : {n : nat | (n < N)}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+Lemma RankMultiplyTransformW : forall (f : Field) (M N : nat) (A : Matrix f M N) (p : {n : nat | n < N}) (c : FT f), c <> FO f -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+  | left _ => Fmul f c (A x y)
+  | right _ => A x y
+end) = Rank f M N A.
+Proof.
+move=> f M N A p c H1.
+rewrite - (ElementaryMatrixMultiplyNatureR f M N A p c).
+rewrite - (RankTrans f M N (Mmult f M N N A (ElementaryMatrixMultiply f N p c))).
+rewrite (MTransMult f M N N A (ElementaryMatrixMultiply f N p c)).
+rewrite (ElementaryMatrixMultiplyTrans f N p c).
+rewrite (ElementaryMatrixMultiplyNatureL f N M (MTranspose f M N A) p c).
+rewrite (RankMultiplyTransformH f N M (MTranspose f M N A) p c H1).
+apply (RankTrans f M N A).
+Qed.
+
+Lemma RankSwapH : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < M}), proj1_sig p <> proj1_sig q -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
   | left _ => A q y
   | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
     | left _ => A p y
     | right _ => A x y
   end
-end).
+end) = Rank f M N A.
 Proof.
-move=> f M N A p q.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold Mmult.
-unfold ElementaryMatrixSwap.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig p)).
-move=> H1.
-rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} q)).
-rewrite MySumF2Singleton.
-rewrite MySumF2O.
-rewrite (CM_O_r (FPCM f)).
-elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
+move=> f M N A p q H1.
+suff: (forall (W1 W2 : Ensemble (Fn f N)), W1 = W2 -> forall (H1 : SubspaceVS f (FnVS f N) W1) (H2 : SubspaceVS f (FnVS f N) W2) (H3 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W1 H1)) (H4 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W2 H2)), DimensionSubspaceVS f (FnVS f N) W1 H1 H3 = DimensionSubspaceVS f (FnVS f N) W2 H2 H4).
 move=> H2.
-apply (Fmul_I_l f (A q y)).
-move=> H2.
-apply False_ind.
 apply H2.
-reflexivity.
-move=> u.
+apply Extensionality_Ensembles.
+apply conj.
+move=> v.
 elim.
-move=> u0 H2 H3.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig q)).
-move=> H4.
+move=> x H3.
+rewrite H3.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A))).
+move=> cm u H4 H5.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)).
+apply H5.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} A)) (proj1_sig x u)).
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
+move=> H6.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A q).
+move=> H6.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
+move=> H7.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A p).
+move=> H7.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} A u).
+move=> v.
+elim.
+move=> x H3.
+rewrite H3.
+apply MySumF2Induction.
+apply conj.
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end)))).
+move=> cm u H4 H5.
+apply (proj1 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end)) cm (Vmul f (FnVS f N) (proj1_sig x u) (A u))).
+apply H5.
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end))) (proj1_sig x u) (A u)).
+elim (classic (proj1_sig u = proj1_sig p)).
+move=> H6.
+suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) q).
+move=> H7.
+rewrite H7.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) q).
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig p)).
+move=> H7.
 apply False_ind.
-apply H2.
-suff: (u0 = q).
+apply H1.
+rewrite H7.
+reflexivity.
+move=> H7.
+elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
+move=> H8.
+suff: (u = p).
+move=> H9.
+rewrite H9.
+reflexivity.
+apply sig_map.
+apply H6.
+move=> H8.
+apply False_ind.
+apply H8.
+reflexivity.
+move=> H6.
+elim (classic (proj1_sig u = proj1_sig q)).
+move=> H7.
+suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) p).
+move=> H8.
+rewrite H8.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) p).
+elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
+move=> H8.
+suff: (u = q).
+move=> H9.
+rewrite H9.
+reflexivity.
+apply sig_map.
+apply H7.
+move=> H8.
+apply False_ind.
+apply H8.
+reflexivity.
+move=> H7.
+suff: (A u = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) u).
+move=> H8.
+rewrite H8.
+apply (SpanContainSelfVS f (FnVS f N) {n : nat | n < M} (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig p) with
+  | left _ => A q y
+  | right _ => match Nat.eq_dec (proj1_sig x) (proj1_sig q) with
+    | left _ => A p y
+    | right _ => A x y
+  end
+end) u).
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig p)).
+move=> H8.
+elim (H6 H8).
+move=> H8.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig q)).
+move=> H9.
+elim (H7 H9).
+move=> H9.
+reflexivity.
+move=> W1 W2 H2.
+rewrite H2.
+move=> H3 H4.
+suff: (H3 = H4).
 move=> H5.
 rewrite H5.
-apply (In_singleton {n : nat | n < M} q).
-apply sig_map.
-apply H4.
-move=> H4.
-apply (Fmul_O_l f (A u0 y)).
-move=> m H2.
-apply (Full_intro {n : nat | n < M} m).
-move=> H1.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig q)).
-move=> H2.
-rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} p)).
-rewrite MySumF2Singleton.
-rewrite MySumF2O.
-rewrite (CM_O_r (FPCM f)).
-elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
-move=> H3.
-apply (Fmul_I_l f (A p y)).
-move=> H3.
-apply False_ind.
-apply H3.
+move=> H6 H7.
+suff: (H6 = H7).
+move=> H8.
+rewrite H8.
 reflexivity.
-move=> u.
-elim.
-move=> u0 H3 H4.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig p)).
-move=> H5.
-apply False_ind.
-apply H3.
-suff: (u0 = p).
-move=> H6.
-rewrite H6.
-apply (In_singleton {n : nat | n < M} p).
-apply sig_map.
-apply H5.
-move=> H5.
-apply (Fmul_O_l f (A u0 y)).
-move=> m H3.
-apply (Full_intro {n : nat | n < M} m).
-move=> H2.
-rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} x)).
-rewrite MySumF2Singleton.
-rewrite MySumF2O.
-rewrite (CM_O_r (FPCM f)).
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig x)).
-move=> H3.
-apply (Fmul_I_l f (A x y)).
-move=> H3.
-apply False_ind.
-apply H3.
-reflexivity.
-move=> u.
-elim.
-move=> u0 H3 H4.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig u0)).
-move=> H5.
-apply False_ind.
-apply H3.
-suff: (x = u0).
-move=> H6.
-rewrite H6.
-apply (In_singleton {n : nat | n < M} u0).
-apply sig_map.
-apply H5.
-move=> H5.
-apply (Fmul_O_l f (A u0 y)).
-move=> m H3.
-apply (Full_intro {n : nat | n < M} m).
+apply proof_irrelevance.
+apply proof_irrelevance.
 Qed.
 
-Lemma ElementaryMatrixSwapNatureR : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < N}), Mmult f M N N A (ElementaryMatrixSwap f N p q) = (fun (x : {n : nat | (n < M)}) (y : {n : nat | (n < N)}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
+Lemma RankSwapW : forall (f : Field) (M N : nat) (A : Matrix f M N) (p q : {n : nat | n < N}), proj1_sig p <> proj1_sig q -> Rank f M N (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig y) (proj1_sig p) with
   | left _ => A x q
   | right _ => match Nat.eq_dec (proj1_sig y) (proj1_sig q) with
     | left _ => A x p
     | right _ => A x y
   end
-end).
+end) = Rank f M N A.
 Proof.
-move=> f M N A p q.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold Mmult.
-unfold ElementaryMatrixSwap.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
-move=> H1.
-rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} q)).
-rewrite MySumF2Singleton.
-rewrite MySumF2O.
-rewrite (CM_O_r (FPCM f)).
-elim (Nat.eq_dec (proj1_sig q) (proj1_sig q)).
-move=> H2.
-elim (Nat.eq_dec (proj1_sig q) (proj1_sig p)).
-move=> H3.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
-move=> H4.
-apply (Fmul_I_r f (A x q)).
-move=> H4.
-apply False_ind.
-apply H4.
-rewrite H3.
-apply H1.
-move=> H3.
-apply (Fmul_I_r f (A x q)).
-move=> H2.
-apply False_ind.
-apply H2.
-reflexivity.
-move=> u.
-elim.
-move=> u0 H2 H3.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig q)).
-move=> H4.
-apply False_ind.
-apply H2.
-suff: (u0 = q).
-move=> H5.
-rewrite H5.
-apply (In_singleton {n : nat | n < N} q).
-apply sig_map.
-apply H4.
-move=> H4.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig p)).
-move=> H5.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
-move=> H6.
-apply False_ind.
-apply H4.
-rewrite - H6.
-rewrite H1.
-apply H5.
-move=> H6.
-apply (Fmul_O_r f (A x u0)).
-move=> H5.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig y)).
-move=> H6.
-apply False_ind.
-apply H5.
-rewrite - H1.
-apply H6.
-move=> H6.
-apply (Fmul_O_r f (A x u0)).
-move=> m H2.
-apply (Full_intro {n : nat | n < N} m).
-move=> H1.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
-move=> H2.
-rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} p)).
-rewrite MySumF2Singleton.
-rewrite MySumF2O.
-rewrite (CM_O_r (FPCM f)).
-elim (Nat.eq_dec (proj1_sig p) (proj1_sig p)).
-move=> H3.
-apply (Fmul_I_r f (A x p)).
-move=> H3.
-apply False_ind.
-apply H3.
-reflexivity.
-move=> u.
-elim.
-move=> u0 H3 H4.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig p)).
-move=> H5.
-apply False_ind.
-apply H3.
-suff: (u0 = p).
-move=> H6.
-rewrite H6.
-apply (In_singleton {n : nat | n < N} p).
-apply sig_map.
-apply H5.
-move=> H5.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig q)).
-move=> H6.
-apply (Fmul_O_r f (A x u0)).
-move=> H6.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig y)).
-move=> H7.
-apply False_ind.
-apply H6.
-rewrite H7.
-apply H2.
-move=> H7.
-apply (Fmul_O_r f (A x u0)).
-move=> m H3.
-apply (Full_intro {n : nat | n < N} m).
-move=> H2.
-rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} y)).
-rewrite MySumF2Singleton.
-rewrite MySumF2O.
-rewrite (CM_O_r (FPCM f)).
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
-move=> H3.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig p)).
-move=> H4.
-elim (H1 H4).
-move=> H4.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig q)).
-move=> H5.
-elim (H2 H5).
-move=> H5.
-apply (Fmul_I_r f (A x y)).
-move=> H3.
-apply False_ind.
-apply H3.
-reflexivity.
-move=> u.
-elim.
-move=> u0 H3 H4.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig y)).
-move=> H5.
-apply False_ind.
-apply H3.
-suff: (u0 = y).
-move=> H6.
-rewrite H6.
-apply (In_singleton {n : nat | n < N} y).
-apply sig_map.
-apply H5.
-move=> H5.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig p)).
-move=> H6.
-apply (Fmul_O_r f (A x u0)).
-move=> H6.
-elim (Nat.eq_dec (proj1_sig u0) (proj1_sig q)).
-move=> H7.
-apply (Fmul_O_r f (A x u0)).
-move=> H7.
-apply (Fmul_O_r f (A x u0)).
-move=> m H3.
-apply (Full_intro {n : nat | n < N} m).
+move=> f M N A p q H1.
+rewrite - (ElementaryMatrixSwapNatureR f M N A p q).
+rewrite - (RankTrans f M N (Mmult f M N N A (ElementaryMatrixSwap f N p q))).
+rewrite (MTransMult f M N N A (ElementaryMatrixSwap f N p q)).
+rewrite (ElementaryMatrixSwapTrans f N p q).
+rewrite (ElementaryMatrixSwapNatureL f N M (MTranspose f M N A) p q).
+rewrite (RankSwapH f N M (MTranspose f M N A) p q H1).
+apply (RankTrans f M N A).
 Qed.
 
 Definition RankNormalForm (f : Field) (M N r : nat) := fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => match Nat.eq_dec (proj1_sig x) (proj1_sig y) with
@@ -12875,6 +13224,404 @@ apply (Full_intro (Count 1) m).
 reflexivity.
 move=> K A.
 elim.
+move=> p q c H8 H9.
+suff: (MBlockH f 1 K (1 + K)
+     (MBlockW f 1 1 K (fun _ _ : Count 1 => FI f) (MO f 1 K))
+     (MBlockW f K 1 K (MO f K 1) (ElementaryMatrixAdd f K p q c)) = ElementaryMatrixAdd f (1 + K) (AddConnect 1 K (inr p)) (AddConnect 1 K (inr q)) c).
+move=> H10.
+rewrite H10.
+apply (ElementaryMatrixAdd_intro f (1 + K) (AddConnect 1 K (inr p))
+     (AddConnect 1 K (inr q)) c).
+rewrite - (proj2 (AddConnectNature 1 K) p).
+rewrite - (proj2 (AddConnectNature 1 K) q).
+move=> H11.
+apply (H8 (plus_reg_l (proj1_sig p) (proj1_sig q) 1 H11)).
+apply H9.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MBlockH.
+unfold MBlockW.
+unfold ElementaryMatrixAdd.
+elim (le_or_lt 1 (proj1_sig x)).
+move=> H10.
+suff: (match AddConnectInv 1 K x return Prop with
+        | inl _ => False
+        | inr k => proj1_sig x = 1 + proj1_sig k
+        end).
+elim (AddConnectInv 1 K x).
+move=> x0.
+elim.
+move=> x0 H11.
+elim (le_or_lt 1 (proj1_sig y)).
+move=> H12.
+suff: (match AddConnectInv 1 K y return Prop with
+        | inl _ => False
+        | inr k => proj1_sig y = 1 + proj1_sig k
+        end).
+elim (AddConnectInv 1 K y).
+move=> y0.
+elim.
+move=> y0 H13.
+elim (Nat.eq_dec (proj1_sig x0) (proj1_sig y0)).
+move=> H14.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H15.
+elim (Nat.eq_dec (proj1_sig x0) (proj1_sig p)).
+move=> H16.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
+move=> H17.
+reflexivity.
+move=> H17.
+reflexivity.
+move=> H16.
+reflexivity.
+move=> H15.
+apply False_ind.
+apply H15.
+rewrite H11.
+rewrite H13.
+rewrite H14.
+reflexivity.
+move=> H14.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+rewrite H11.
+rewrite H13.
+move=> H15.
+apply False_ind.
+apply H14.
+apply (plus_reg_l (proj1_sig x0) (proj1_sig y0) 1 H15).
+move=> H15.
+elim (Nat.eq_dec (proj1_sig x0) (proj1_sig p)).
+move=> H16.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
+move=> H17.
+elim (Nat.eq_dec (proj1_sig y0) (proj1_sig q)).
+move=> H18.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
+move=> H19.
+reflexivity.
+elim.
+rewrite H13.
+rewrite H18.
+apply (proj2 (AddConnectNature 1 K) q).
+move=> H18.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
+rewrite H13.
+rewrite - (proj2 (AddConnectNature 1 K) q).
+move=> H19.
+elim H18.
+apply (plus_reg_l (proj1_sig y0) (proj1_sig q) 1 H19).
+move=> H19.
+reflexivity.
+elim.
+rewrite H11.
+rewrite H16.
+apply (proj2 (AddConnectNature 1 K) p).
+move=> H16.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
+rewrite H11.
+rewrite - (proj2 (AddConnectNature 1 K) p).
+move=> H17.
+elim H16.
+apply (plus_reg_l (proj1_sig x0) (proj1_sig p) 1 H17).
+move=> H17.
+elim (Nat.eq_dec (proj1_sig y0) (proj1_sig q)).
+move=> H18.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
+move=> H19.
+reflexivity.
+move=> H19.
+reflexivity.
+move=> H18.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
+move=> H19.
+reflexivity.
+move=> H19.
+reflexivity.
+apply (proj2 (AddConnectInvNature 1 K) y H12).
+move=> H12.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H13.
+elim (le_not_lt 1 (proj1_sig y)).
+rewrite - H13.
+rewrite H11.
+apply (le_plus_l 1 (proj1_sig x0)).
+apply H12.
+move=> H13.
+suff: (match AddConnectInv 1 K y return Prop with
+        | inl k => proj1_sig y = proj1_sig k
+        | inr _ => False
+        end).
+elim (AddConnectInv 1 K y).
+move=> y0 H14.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
+move=> H15.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
+rewrite H14.
+rewrite - (proj2 (AddConnectNature 1 K) q).
+move=> H16.
+suff: (O = S (proj1_sig q)).
+discriminate.
+rewrite - (le_antisym (proj1_sig y0) O (le_S_n (proj1_sig y0) O (proj2_sig y0)) (le_0_n (proj1_sig y0))).
+apply H16.
+move=> H16.
+reflexivity.
+move=> H15.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
+move=> H16.
+reflexivity.
+move=> H16.
+reflexivity.
+move=> y0.
+elim.
+apply (proj1 (AddConnectInvNature 1 K) y H12).
+apply (proj2 (AddConnectInvNature 1 K) x H10).
+move=> H10.
+suff: (match AddConnectInv 1 K x return Prop with
+        | inl k => proj1_sig x = proj1_sig k
+        | inr _ => False
+        end).
+elim (AddConnectInv 1 K x).
+move=> x0 H11.
+elim (le_or_lt 1 (proj1_sig y)).
+move=> H12.
+suff: (match AddConnectInv 1 K y return Prop with
+        | inl _ => False
+        | inr k => proj1_sig y = 1 + proj1_sig k
+        end).
+elim (AddConnectInv 1 K y).
+move=> y0.
+elim.
+move=> y0 H13.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+rewrite H11.
+rewrite H13.
+move=> H14.
+suff: (O = S (proj1_sig y0)).
+discriminate.
+rewrite - (le_antisym (proj1_sig x0) O (le_S_n (proj1_sig x0) O (proj2_sig x0)) (le_0_n (proj1_sig x0))).
+apply H14.
+move=> H14.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
+rewrite H11.  
+rewrite - (proj2 (AddConnectNature 1 K) p).
+move=> H15.
+suff: (O = S (proj1_sig p)).
+discriminate.
+rewrite - (le_antisym (proj1_sig x0) O (le_S_n (proj1_sig x0) O (proj2_sig x0)) (le_0_n (proj1_sig x0))).
+apply H15.
+move=> H15.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
+move=> H16.
+reflexivity.
+move=> H16.
+reflexivity.
+apply (proj2 (AddConnectInvNature 1 K) y H12).
+move=> H12.
+suff: (match AddConnectInv 1 K y return Prop with
+        | inl k => proj1_sig y = proj1_sig k
+        | inr _ => False
+        end).
+elim (AddConnectInv 1 K y).
+move=> y0 H13.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
+move=> H14.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
+rewrite H13.
+rewrite - (proj2 (AddConnectNature 1 K) q).
+move=> H15.
+suff: (O = S (proj1_sig q)).
+discriminate.
+rewrite - (le_antisym (proj1_sig y0) O (le_S_n (proj1_sig y0) O (proj2_sig y0)) (le_0_n (proj1_sig y0))).
+apply H15.
+move=> H15.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H16.
+reflexivity.
+elim.
+rewrite H11.
+rewrite H13.
+suff: (forall (m : nat), m < 1 -> m = 0).
+move=> H16.
+rewrite (H16 (proj1_sig y0) (proj2_sig y0)).
+apply (H16 (proj1_sig x0) (proj2_sig x0)).
+move=> m H16.
+apply (le_antisym m O (le_S_n m O H16) (le_0_n m)).
+move=> H14.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H15.
+reflexivity.
+elim.
+suff: (forall (m : nat), m < 1 -> m = 0).
+move=> H15.
+rewrite (H15 (proj1_sig y) H12).
+apply (H15 (proj1_sig x) H10).
+move=> m H15.
+apply (le_antisym m O (le_S_n m O H15) (le_0_n m)).
+move=> y0.
+elim.
+apply (proj1 (AddConnectInvNature 1 K) y H12).
+move=> x0.
+elim.
+apply (proj1 (AddConnectInvNature 1 K) x H10).
+move=> p c H8.
+suff: (MBlockH f 1 K (1 + K)
+     (MBlockW f 1 1 K (fun _ _ : Count 1 => FI f) (MO f 1 K))
+     (MBlockW f K 1 K (MO f K 1) (ElementaryMatrixMultiply f K p c)) = ElementaryMatrixMultiply f (1 + K) (AddConnect 1 K (inr p)) c).
+move=> H9.
+rewrite H9.
+apply (ElementaryMatrixMultiply_intro f (1 + K) (AddConnect 1 K (inr p)) c H8).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MBlockH.
+unfold MBlockW.
+unfold ElementaryMatrixMultiply.
+elim (le_or_lt 1 (proj1_sig x)).
+move=> H9.
+suff: (match AddConnectInv 1 K x return Prop with
+        | inl _ => False
+        | inr k => proj1_sig x = 1 + proj1_sig k
+        end).
+elim (AddConnectInv 1 K x).
+move=> x0.
+elim.
+move=> x0 H10.
+elim (le_or_lt 1 (proj1_sig y)).
+move=> H11.
+suff: (match AddConnectInv 1 K y return Prop with
+        | inl _ => False
+        | inr k => proj1_sig y = 1 + proj1_sig k
+        end).
+elim (AddConnectInv 1 K y).
+move=> y0.
+elim.
+move=> y0 H12.
+elim (Nat.eq_dec (proj1_sig x0) (proj1_sig y0)).
+move=> H13.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H14.
+elim (Nat.eq_dec (proj1_sig x0) (proj1_sig p)).
+move=> H15.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
+move=> H16.
+reflexivity.
+move=> H16.
+apply False_ind.
+apply H16.
+rewrite H10.
+rewrite H15.
+apply (proj2 (AddConnectNature 1 K) p).
+move=> H15.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
+rewrite - (proj2 (AddConnectNature 1 K) p).
+rewrite H10.
+move=> H16.
+apply False_ind.
+apply H15.
+apply (plus_reg_l (proj1_sig x0) (proj1_sig p) 1 H16).
+move=> H16.
+reflexivity.
+move=> H14.
+apply False_ind.
+apply H14.
+rewrite H10.
+rewrite H13.
+rewrite H12.
+reflexivity.
+move=> H13.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+rewrite H10.
+rewrite H12.
+move=> H14.
+apply False_ind.
+apply H13.
+apply (plus_reg_l (proj1_sig x0) (proj1_sig y0) 1 H14).
+move=> H14.
+reflexivity.
+apply (proj2 (AddConnectInvNature 1 K) y H11).
+move=> H11.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H12.
+elim (le_not_lt 1 (proj1_sig y)).
+rewrite - H12.
+rewrite H10.
+apply (le_plus_l 1 (proj1_sig x0)).
+apply H11.
+move=> H12.
+suff: (match AddConnectInv 1 K y return Prop with
+        | inl k => proj1_sig y = proj1_sig k
+        | inr _ => False
+        end).
+elim (AddConnectInv 1 K y).
+reflexivity.
+move=> y0.
+elim.
+apply (proj1 (AddConnectInvNature 1 K) y H11).
+apply (proj2 (AddConnectInvNature 1 K) x H9).
+move=> H9.
+suff: (match AddConnectInv 1 K x return Prop with
+        | inl k => proj1_sig x = proj1_sig k
+        | inr _ => False
+        end).
+elim (AddConnectInv 1 K x).
+move=> x0 H10.
+elim (le_or_lt 1 (proj1_sig y)).
+move=> H11.
+suff: (match AddConnectInv 1 K y return Prop with
+        | inl _ => False
+        | inr k => proj1_sig y = 1 + proj1_sig k
+        end).
+elim (AddConnectInv 1 K y).
+move=> y0.
+elim.
+move=> y0 H12.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H13.
+elim (le_not_lt 1 (proj1_sig x)).
+rewrite H13.
+apply H11.
+apply H9.
+move=> H13.
+reflexivity.
+apply (proj2 (AddConnectInvNature 1 K) y H11).
+move=> H11.
+suff: (match AddConnectInv 1 K y return Prop with
+        | inl k => proj1_sig y = proj1_sig k
+        | inr _ => False
+        end).
+elim (AddConnectInv 1 K y).
+move=> y0 H12.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H13.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
+rewrite - (proj2 (AddConnectNature 1 K) p).
+move=> H14.
+suff: (O = S (proj1_sig p)).
+discriminate.
+rewrite - (le_antisym (proj1_sig x0) O (le_S_n (proj1_sig x0) O (proj2_sig x0)) (le_0_n (proj1_sig x0))).
+rewrite - H10.
+apply H14.
+move=> H14.
+reflexivity.
+elim.
+rewrite H10.
+rewrite H12.
+suff: (forall (m : nat), m < 1 -> m = 0).
+move=> H13.
+rewrite (H13 (proj1_sig y0) (proj2_sig y0)).
+apply (H13 (proj1_sig x0) (proj2_sig x0)).
+move=> m H13.
+apply (le_antisym m O (le_S_n m O H13) (le_0_n m)).
+move=> y0.
+elim.
+apply (proj1 (AddConnectInvNature 1 K) y H11).
+move=> x0.
+elim.
+apply (proj1 (AddConnectInvNature 1 K) x H9).
 move=> p q H8.
 suff: (MBlockH f 1 K (1 + K)
      (MBlockW f 1 1 K (fun _ _ : Count 1 => FI f) (MO f 1 K))
@@ -13255,404 +14002,6 @@ apply (proj1 (AddConnectInvNature 1 K) y H11).
 move=> y0.
 elim.
 apply (proj1 (AddConnectInvNature 1 K) x H9).
-move=> p c H8.
-suff: (MBlockH f 1 K (1 + K)
-     (MBlockW f 1 1 K (fun _ _ : Count 1 => FI f) (MO f 1 K))
-     (MBlockW f K 1 K (MO f K 1) (ElementaryMatrixMultiply f K p c)) = ElementaryMatrixMultiply f (1 + K) (AddConnect 1 K (inr p)) c).
-move=> H9.
-rewrite H9.
-apply (ElementaryMatrixMultiply_intro f (1 + K) (AddConnect 1 K (inr p)) c H8).
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold MBlockH.
-unfold MBlockW.
-unfold ElementaryMatrixMultiply.
-elim (le_or_lt 1 (proj1_sig x)).
-move=> H9.
-suff: (match AddConnectInv 1 K x return Prop with
-        | inl _ => False
-        | inr k => proj1_sig x = 1 + proj1_sig k
-        end).
-elim (AddConnectInv 1 K x).
-move=> x0.
-elim.
-move=> x0 H10.
-elim (le_or_lt 1 (proj1_sig y)).
-move=> H11.
-suff: (match AddConnectInv 1 K y return Prop with
-        | inl _ => False
-        | inr k => proj1_sig y = 1 + proj1_sig k
-        end).
-elim (AddConnectInv 1 K y).
-move=> y0.
-elim.
-move=> y0 H12.
-elim (Nat.eq_dec (proj1_sig x0) (proj1_sig y0)).
-move=> H13.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H14.
-elim (Nat.eq_dec (proj1_sig x0) (proj1_sig p)).
-move=> H15.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
-move=> H16.
-reflexivity.
-move=> H16.
-apply False_ind.
-apply H16.
-rewrite H10.
-rewrite H15.
-apply (proj2 (AddConnectNature 1 K) p).
-move=> H15.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
-rewrite - (proj2 (AddConnectNature 1 K) p).
-rewrite H10.
-move=> H16.
-apply False_ind.
-apply H15.
-apply (plus_reg_l (proj1_sig x0) (proj1_sig p) 1 H16).
-move=> H16.
-reflexivity.
-move=> H14.
-apply False_ind.
-apply H14.
-rewrite H10.
-rewrite H13.
-rewrite H12.
-reflexivity.
-move=> H13.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-rewrite H10.
-rewrite H12.
-move=> H14.
-apply False_ind.
-apply H13.
-apply (plus_reg_l (proj1_sig x0) (proj1_sig y0) 1 H14).
-move=> H14.
-reflexivity.
-apply (proj2 (AddConnectInvNature 1 K) y H11).
-move=> H11.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H12.
-elim (le_not_lt 1 (proj1_sig y)).
-rewrite - H12.
-rewrite H10.
-apply (le_plus_l 1 (proj1_sig x0)).
-apply H11.
-move=> H12.
-suff: (match AddConnectInv 1 K y return Prop with
-        | inl k => proj1_sig y = proj1_sig k
-        | inr _ => False
-        end).
-elim (AddConnectInv 1 K y).
-reflexivity.
-move=> y0.
-elim.
-apply (proj1 (AddConnectInvNature 1 K) y H11).
-apply (proj2 (AddConnectInvNature 1 K) x H9).
-move=> H9.
-suff: (match AddConnectInv 1 K x return Prop with
-        | inl k => proj1_sig x = proj1_sig k
-        | inr _ => False
-        end).
-elim (AddConnectInv 1 K x).
-move=> x0 H10.
-elim (le_or_lt 1 (proj1_sig y)).
-move=> H11.
-suff: (match AddConnectInv 1 K y return Prop with
-        | inl _ => False
-        | inr k => proj1_sig y = 1 + proj1_sig k
-        end).
-elim (AddConnectInv 1 K y).
-move=> y0.
-elim.
-move=> y0 H12.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H13.
-elim (le_not_lt 1 (proj1_sig x)).
-rewrite H13.
-apply H11.
-apply H9.
-move=> H13.
-reflexivity.
-apply (proj2 (AddConnectInvNature 1 K) y H11).
-move=> H11.
-suff: (match AddConnectInv 1 K y return Prop with
-        | inl k => proj1_sig y = proj1_sig k
-        | inr _ => False
-        end).
-elim (AddConnectInv 1 K y).
-move=> y0 H12.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H13.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
-rewrite - (proj2 (AddConnectNature 1 K) p).
-move=> H14.
-suff: (O = S (proj1_sig p)).
-discriminate.
-rewrite - (le_antisym (proj1_sig x0) O (le_S_n (proj1_sig x0) O (proj2_sig x0)) (le_0_n (proj1_sig x0))).
-rewrite - H10.
-apply H14.
-move=> H14.
-reflexivity.
-elim.
-rewrite H10.
-rewrite H12.
-suff: (forall (m : nat), m < 1 -> m = 0).
-move=> H13.
-rewrite (H13 (proj1_sig y0) (proj2_sig y0)).
-apply (H13 (proj1_sig x0) (proj2_sig x0)).
-move=> m H13.
-apply (le_antisym m O (le_S_n m O H13) (le_0_n m)).
-move=> y0.
-elim.
-apply (proj1 (AddConnectInvNature 1 K) y H11).
-move=> x0.
-elim.
-apply (proj1 (AddConnectInvNature 1 K) x H9).
-move=> p q c H8 H9.
-suff: (MBlockH f 1 K (1 + K)
-     (MBlockW f 1 1 K (fun _ _ : Count 1 => FI f) (MO f 1 K))
-     (MBlockW f K 1 K (MO f K 1) (ElementaryMatrixAdd f K p q c)) = ElementaryMatrixAdd f (1 + K) (AddConnect 1 K (inr p)) (AddConnect 1 K (inr q)) c).
-move=> H10.
-rewrite H10.
-apply (ElementaryMatrixAdd_intro f (1 + K) (AddConnect 1 K (inr p))
-     (AddConnect 1 K (inr q)) c).
-rewrite - (proj2 (AddConnectNature 1 K) p).
-rewrite - (proj2 (AddConnectNature 1 K) q).
-move=> H11.
-apply (H8 (plus_reg_l (proj1_sig p) (proj1_sig q) 1 H11)).
-apply H9.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold MBlockH.
-unfold MBlockW.
-unfold ElementaryMatrixAdd.
-elim (le_or_lt 1 (proj1_sig x)).
-move=> H10.
-suff: (match AddConnectInv 1 K x return Prop with
-        | inl _ => False
-        | inr k => proj1_sig x = 1 + proj1_sig k
-        end).
-elim (AddConnectInv 1 K x).
-move=> x0.
-elim.
-move=> x0 H11.
-elim (le_or_lt 1 (proj1_sig y)).
-move=> H12.
-suff: (match AddConnectInv 1 K y return Prop with
-        | inl _ => False
-        | inr k => proj1_sig y = 1 + proj1_sig k
-        end).
-elim (AddConnectInv 1 K y).
-move=> y0.
-elim.
-move=> y0 H13.
-elim (Nat.eq_dec (proj1_sig x0) (proj1_sig y0)).
-move=> H14.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H15.
-elim (Nat.eq_dec (proj1_sig x0) (proj1_sig p)).
-move=> H16.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
-move=> H17.
-reflexivity.
-move=> H17.
-reflexivity.
-move=> H16.
-reflexivity.
-move=> H15.
-apply False_ind.
-apply H15.
-rewrite H11.
-rewrite H13.
-rewrite H14.
-reflexivity.
-move=> H14.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-rewrite H11.
-rewrite H13.
-move=> H15.
-apply False_ind.
-apply H14.
-apply (plus_reg_l (proj1_sig x0) (proj1_sig y0) 1 H15).
-move=> H15.
-elim (Nat.eq_dec (proj1_sig x0) (proj1_sig p)).
-move=> H16.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
-move=> H17.
-elim (Nat.eq_dec (proj1_sig y0) (proj1_sig q)).
-move=> H18.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
-move=> H19.
-reflexivity.
-elim.
-rewrite H13.
-rewrite H18.
-apply (proj2 (AddConnectNature 1 K) q).
-move=> H18.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
-rewrite H13.
-rewrite - (proj2 (AddConnectNature 1 K) q).
-move=> H19.
-elim H18.
-apply (plus_reg_l (proj1_sig y0) (proj1_sig q) 1 H19).
-move=> H19.
-reflexivity.
-elim.
-rewrite H11.
-rewrite H16.
-apply (proj2 (AddConnectNature 1 K) p).
-move=> H16.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
-rewrite H11.
-rewrite - (proj2 (AddConnectNature 1 K) p).
-move=> H17.
-elim H16.
-apply (plus_reg_l (proj1_sig x0) (proj1_sig p) 1 H17).
-move=> H17.
-elim (Nat.eq_dec (proj1_sig y0) (proj1_sig q)).
-move=> H18.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
-move=> H19.
-reflexivity.
-move=> H19.
-reflexivity.
-move=> H18.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
-move=> H19.
-reflexivity.
-move=> H19.
-reflexivity.
-apply (proj2 (AddConnectInvNature 1 K) y H12).
-move=> H12.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H13.
-elim (le_not_lt 1 (proj1_sig y)).
-rewrite - H13.
-rewrite H11.
-apply (le_plus_l 1 (proj1_sig x0)).
-apply H12.
-move=> H13.
-suff: (match AddConnectInv 1 K y return Prop with
-        | inl k => proj1_sig y = proj1_sig k
-        | inr _ => False
-        end).
-elim (AddConnectInv 1 K y).
-move=> y0 H14.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
-move=> H15.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
-rewrite H14.
-rewrite - (proj2 (AddConnectNature 1 K) q).
-move=> H16.
-suff: (O = S (proj1_sig q)).
-discriminate.
-rewrite - (le_antisym (proj1_sig y0) O (le_S_n (proj1_sig y0) O (proj2_sig y0)) (le_0_n (proj1_sig y0))).
-apply H16.
-move=> H16.
-reflexivity.
-move=> H15.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
-move=> H16.
-reflexivity.
-move=> H16.
-reflexivity.
-move=> y0.
-elim.
-apply (proj1 (AddConnectInvNature 1 K) y H12).
-apply (proj2 (AddConnectInvNature 1 K) x H10).
-move=> H10.
-suff: (match AddConnectInv 1 K x return Prop with
-        | inl k => proj1_sig x = proj1_sig k
-        | inr _ => False
-        end).
-elim (AddConnectInv 1 K x).
-move=> x0 H11.
-elim (le_or_lt 1 (proj1_sig y)).
-move=> H12.
-suff: (match AddConnectInv 1 K y return Prop with
-        | inl _ => False
-        | inr k => proj1_sig y = 1 + proj1_sig k
-        end).
-elim (AddConnectInv 1 K y).
-move=> y0.
-elim.
-move=> y0 H13.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-rewrite H11.
-rewrite H13.
-move=> H14.
-suff: (O = S (proj1_sig y0)).
-discriminate.
-rewrite - (le_antisym (proj1_sig x0) O (le_S_n (proj1_sig x0) O (proj2_sig x0)) (le_0_n (proj1_sig x0))).
-apply H14.
-move=> H14.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
-rewrite H11.  
-rewrite - (proj2 (AddConnectNature 1 K) p).
-move=> H15.
-suff: (O = S (proj1_sig p)).
-discriminate.
-rewrite - (le_antisym (proj1_sig x0) O (le_S_n (proj1_sig x0) O (proj2_sig x0)) (le_0_n (proj1_sig x0))).
-apply H15.
-move=> H15.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
-move=> H16.
-reflexivity.
-move=> H16.
-reflexivity.
-apply (proj2 (AddConnectInvNature 1 K) y H12).
-move=> H12.
-suff: (match AddConnectInv 1 K y return Prop with
-        | inl k => proj1_sig y = proj1_sig k
-        | inr _ => False
-        end).
-elim (AddConnectInv 1 K y).
-move=> y0 H13.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect 1 K (inr p)))).
-move=> H14.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect 1 K (inr q)))).
-rewrite H13.
-rewrite - (proj2 (AddConnectNature 1 K) q).
-move=> H15.
-suff: (O = S (proj1_sig q)).
-discriminate.
-rewrite - (le_antisym (proj1_sig y0) O (le_S_n (proj1_sig y0) O (proj2_sig y0)) (le_0_n (proj1_sig y0))).
-apply H15.
-move=> H15.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H16.
-reflexivity.
-elim.
-rewrite H11.
-rewrite H13.
-suff: (forall (m : nat), m < 1 -> m = 0).
-move=> H16.
-rewrite (H16 (proj1_sig y0) (proj2_sig y0)).
-apply (H16 (proj1_sig x0) (proj2_sig x0)).
-move=> m H16.
-apply (le_antisym m O (le_S_n m O H16) (le_0_n m)).
-move=> H14.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H15.
-reflexivity.
-elim.
-suff: (forall (m : nat), m < 1 -> m = 0).
-move=> H15.
-rewrite (H15 (proj1_sig y) H12).
-apply (H15 (proj1_sig x) H10).
-move=> m H15.
-apply (le_antisym m O (le_S_n m O H15) (le_0_n m)).
-move=> y0.
-elim.
-apply (proj1 (AddConnectInvNature 1 K) y H12).
-move=> x0.
-elim.
-apply (proj1 (AddConnectInvNature 1 K) x H10).
 apply (le_n_S O N (le_0_n N)).
 apply (le_n_S O M (le_0_n M)).
 reflexivity.
@@ -13716,6 +14065,523 @@ apply (proj1 (proj2 H4)).
 rewrite (Mmult_assoc f (S M) (S M) (S M) (S N) C B (Mmult f (S M) (S N) (S N) A D)).
 rewrite - (Mmult_assoc f (S M) (S M) (S N) (S N) B A D).
 apply (proj2 (proj2 H4)).
+Qed.
+
+Lemma RankElementaryMatrixL : forall (f : Field) (M N : nat) (A : Matrix f M N) (B : Matrix f M M), ElementaryMatrix f M B -> Rank f M N (Mmult f M M N B A) = Rank f M N A.
+Proof.
+move=> f M N A B.
+elim.
+move=> p q c H1 H2.
+rewrite (ElementaryMatrixAddNatureL f M N A p q c H1).
+apply (RankAddTransformH f M N A q p c).
+move=> H3.
+apply H1.
+rewrite H3.
+reflexivity.
+move=> p c H1.
+rewrite (ElementaryMatrixMultiplyNatureL f M N A p c).
+apply (RankMultiplyTransformH f M N A p c H1).
+move=> p q H1.
+rewrite (ElementaryMatrixSwapNatureL f M N A p q).
+apply (RankSwapH f M N A p q H1).
+Qed.
+
+Lemma RankElementaryTransformableL : forall (f : Field) (M N : nat) (A : Matrix f M N) (B : Matrix f M M), ElementaryTransformable f M B -> Rank f M N (Mmult f M M N B A) = Rank f M N A.
+Proof.
+move=> f M N.
+suff: (forall (BL : list (Matrix f M M)), Forall (ElementaryMatrix f M) BL -> forall (A : Matrix f M N), Rank f M N (Mmult f M M N (MyProdFL (MMM f M) BL) A) = Rank f M N A).
+move=> H1 A B.
+elim.
+move=> BL H2.
+rewrite (proj2 H2).
+apply (H1 BL (proj1 H2) A).
+elim.
+move=> H1 A.
+simpl.
+rewrite (Mmult_I_l f M N A).
+reflexivity.
+move=> a l H1 H2 A.
+simpl.
+rewrite (Mmult_assoc f M M M N a (MyProdFL (MMM f M) l) A).
+rewrite (RankElementaryMatrixL f M N (Mmult f M M N (MyProdFL (MMM f M) l) A) a (Forall_inv H2)).
+apply (H1 (Forall_inv_tail H2) A).
+Qed.
+
+Lemma RankElementaryMatrixR : forall (f : Field) (M N : nat) (A : Matrix f M N) (B : Matrix f N N), ElementaryMatrix f N B -> Rank f M N (Mmult f M N N A B) = Rank f M N A.
+Proof.
+move=> f M N A B.
+elim.
+move=> p q c H1 H2.
+rewrite (ElementaryMatrixAddNatureR f M N A p q c H1).
+apply (RankAddTransformW f M N A p q c H1).
+move=> p c H1.
+rewrite (ElementaryMatrixMultiplyNatureR f M N A p c).
+apply (RankMultiplyTransformW f M N A p c H1).
+move=> p q H1.
+rewrite (ElementaryMatrixSwapNatureR f M N A p q).
+apply (RankSwapW f M N A p q H1).
+Qed.
+
+Lemma RankElementaryTransformableR : forall (f : Field) (M N : nat) (A : Matrix f M N) (B : Matrix f N N), ElementaryTransformable f N B -> Rank f M N (Mmult f M N N A B) = Rank f M N A.
+Proof.
+move=> f M N.
+suff: (forall (BL : list (Matrix f N N)), Forall (ElementaryMatrix f N) BL -> forall (A : Matrix f M N), Rank f M N (Mmult f M N N A (MyProdFL (MMM f N) BL)) = Rank f M N A).
+move=> H1 A B.
+elim.
+move=> BL H2.
+rewrite (proj2 H2).
+apply (H1 BL (proj1 H2) A).
+elim.
+move=> H1 A.
+simpl.
+rewrite (Mmult_I_r f M N A).
+reflexivity.
+move=> a l H1 H2 A.
+simpl.
+rewrite - (Mmult_assoc f M N N N A a (MyProdFL (MMM f N) l)).
+rewrite (H1 (Forall_inv_tail H2) (Mmult f M N N A a)).
+apply (RankElementaryMatrixR f M N A a (Forall_inv H2)).
+Qed.
+
+Lemma RankNormalFormRank : forall (f : Field) (M N : nat) (r : nat), r <= M -> r <= N -> Rank f M N (RankNormalForm f M N r) = r.
+Proof.
+move=> f M N r H1 H2.
+apply (proj2 (RankDef2 f M N (RankNormalForm f M N r) r)).
+apply conj.
+exists (fun (m : {n : nat | n < r}) => exist (fun (n : nat) => n < M) (proj1_sig m) (le_trans (S (proj1_sig m)) r M (proj2_sig m) H1)).
+apply (FiniteLinearlyIndependentVS f (FnVS f N) r).
+move=> a H3.
+suff: (forall (m : Count r), a m = MySumF2 (Count r)
+       (exist (Finite (Count r)) (Full_set (Count r)) (CountFinite r))
+       (VSPCM f (FnVS f N))
+       (fun (n : Count r) =>
+        Vmul f (FnVS f N) (a n)
+          (RankNormalForm f M N r
+             (exist (fun (n0 : nat) => n0 < M) (proj1_sig n)
+                (Nat.le_trans (S (proj1_sig n)) r M (proj2_sig n) H1)))) (exist (fun (n : nat) => n < N) (proj1_sig m) (le_trans (S (proj1_sig m)) r N (proj2_sig m) H2))).
+move=> H4 m.
+rewrite (H4 m).
+rewrite H3.
+reflexivity.
+move=> m.
+suff: (MySumF2 (Count r)
+  (exist (Finite (Count r)) (Full_set (Count r)) (CountFinite r))
+  (VSPCM f (FnVS f N))
+  (fun (n : Count r) =>
+   Vmul f (FnVS f N) (a n)
+     (RankNormalForm f M N r
+        (exist (fun (n0 : nat) => n0 < M) (proj1_sig n)
+           (Nat.le_trans (S (proj1_sig n)) r M (proj2_sig n) H1))))
+  (exist (fun (n : nat) => n < N) (proj1_sig m)
+     (Nat.le_trans (S (proj1_sig m)) r N (proj2_sig m) H2)) = MySumF2 (Count r)
+  (exist (Finite (Count r)) (Full_set (Count r)) (CountFinite r))
+  (FPCM f)
+  (fun (n : Count r) =>
+   Fmul f (a n)
+     (RankNormalForm f M N r
+        (exist (fun (n0 : nat) => n0 < M) (proj1_sig n)
+           (Nat.le_trans (S (proj1_sig n)) r M (proj2_sig n) H1)) (exist (fun (n : nat) => n < N) (proj1_sig m)
+     (Nat.le_trans (S (proj1_sig m)) r N (proj2_sig m) H2))))).
+move=> H5.
+rewrite H5.
+rewrite (MySumF2Included (Count r) (FiniteSingleton (Count r) m)).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+unfold RankNormalForm.
+simpl.
+elim (Nat.eq_dec (proj1_sig m) (proj1_sig m)).
+move=> H6.
+elim (excluded_middle_informative (proj1_sig m < r)).
+move=> H7.
+rewrite (Fmul_I_r f (a m)).
+rewrite (Fadd_O_r f (a m)).
+reflexivity.
+move=> H7.
+elim (H7 (proj2_sig m)).
+move=> H6.
+apply False_ind.
+apply H6.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H6 H7.
+unfold RankNormalForm.
+simpl.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig m)).
+move=> H8.
+apply False_ind.
+apply H6.
+suff: (u0 = m).
+move=> H9.
+rewrite H9.
+apply (In_singleton (Count r) m).
+apply sig_map.
+apply H8.
+move=> H8.
+apply (Fmul_O_r f (a u0)).
+move=> u H6.
+apply (Full_intro (Count r) u).
+apply (FiniteSetInduction (Count r) (exist (Finite (Count r)) (Full_set (Count r)) (CountFinite r))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H4 H5 H6 H7.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+simpl.
+rewrite - H7.
+reflexivity.
+apply H6.
+apply H6.
+move=> k.
+elim.
+move=> G H3.
+suff: (forall (m : Count k), proj1_sig (G m) < r).
+move=> H4.
+apply (CountInjectiveLe k r (fun (m : Count k) => exist (fun (n : nat) => n < r) (proj1_sig (G m)) (H4 m))).
+move=> m1 m2 H5.
+apply (LinearlyIndependentInjectiveVS f (FnVS f N) {n : nat | n < k}
+       (fun m : {n : nat | n < k} => RankNormalForm f M N r (G m)) H3).
+suff: (G m1 = G m2).
+move=> H6.
+rewrite H6.
+reflexivity.
+apply sig_map.
+suff: (proj1_sig (G m1) = proj1_sig (exist (fun (n : nat) => n < r) (proj1_sig (G m1)) (H4 m1))).
+move=> H6.
+rewrite H6.
+rewrite H5.
+reflexivity.
+reflexivity.
+move=> m.
+elim (le_or_lt r (proj1_sig (G m))).
+move=> H4.
+apply False_ind.
+apply (FI_neq_FO f).
+suff: (FI f = match excluded_middle_informative (m = m) with
+  | left _ => FI f
+  | right _ => FO f
+end).
+move=> H5.
+rewrite H5.
+suff: (MySumF2 (Count k)
+          (exist (Finite (Count k)) (Full_set (Count k)) (CountFinite k))
+          (VSPCM f (FnVS f N))
+          (fun (n : Count k) =>
+           Vmul f (FnVS f N) (match excluded_middle_informative (m = n) with
+  | left _ => FI f
+  | right _ => FO f
+end) (RankNormalForm f M N r (G n))) =
+        VO f (FnVS f N)).
+move=> H6.
+apply (proj1 (FiniteLinearlyIndependentVS f (FnVS f N) k
+  (fun (m : {n : nat | n < k}) => RankNormalForm f M N r (G m))) H3 (fun (l : Count k) => match excluded_middle_informative (m = l) with
+  | left _ => FI f
+  | right _ => FO f
+end) H6 m).
+apply MySumF2O.
+move=> u H6.
+elim (excluded_middle_informative (m = u)).
+move=> H7.
+rewrite - H7.
+unfold RankNormalForm.
+rewrite (Vmul_I_l f (FnVS f N)).
+apply functional_extensionality.
+move=> l.
+elim (Nat.eq_dec (proj1_sig (G m)) (proj1_sig l)).
+move=> H8.
+elim (excluded_middle_informative (proj1_sig (G m) < r)).
+move=> H9.
+elim (le_not_lt r (proj1_sig (G m)) H4 H9).
+move=> H9.
+reflexivity.
+move=> H8.
+reflexivity.
+move=> H7.
+apply (Vmul_O_l f (FnVS f N)).
+elim (excluded_middle_informative (m = m)).
+move=> H5.
+reflexivity.
+move=> H5.
+apply False_ind.
+apply H5.
+reflexivity.
+apply.
+Qed.
+
+Lemma RankNormalFormNature : forall (f : Field) (M N : nat) (A : Matrix f M N) (r : nat), r <= M -> r <= N ->
+       Rank f M N A = r <-> exists (B : Matrix f M M) (C : Matrix f N N), ElementaryTransformable f M B /\ ElementaryTransformable f N C /\ Mmult f M M N B (Mmult f M N N A C) = RankNormalForm f M N r.
+Proof.
+move=> f M N A r H1 H2.
+apply conj.
+move=> H3.
+elim (TransformableToRankNormalForm f M N A).
+move=> r0 H4.
+suff: (r = r0).
+move=> H5.
+rewrite H5.
+apply (proj2 (proj2 H4)).
+suff: (Rank f M N A = r0).
+move=> H5.
+rewrite - H5.
+rewrite H3.
+reflexivity.
+elim (proj2 (proj2 H4)).
+move=> B.
+elim.
+move=> C H6.
+rewrite - (RankElementaryTransformableR f M N A C (proj1 (proj2 H6))).
+rewrite - (RankElementaryTransformableL f M N (Mmult f M N N A C) B (proj1 H6)).
+rewrite (proj2 (proj2 H6)).
+apply (RankNormalFormRank f M N r0 (proj1 H4) (proj1 (proj2 H4))).
+elim.
+move=> B.
+elim.
+move=> C H3.
+rewrite - (RankElementaryTransformableR f M N A C (proj1 (proj2 H3))).
+rewrite - (RankElementaryTransformableL f M N (Mmult f M N N A C) B (proj1 H3)).
+rewrite (proj2 (proj2 H3)). 
+apply (RankNormalFormRank f M N r H1 H2).
+Qed.
+
+Lemma ElementaryTransformableRegular : forall (f : Field) (N : nat) (A : Matrix f N N),
+      ElementaryTransformable f N A <-> RegularMatrix f N A.
+Proof.
+suff: (forall (f : Field) (N : nat) (A : Matrix f N N),
+ElementaryTransformable f N A -> RegularMatrix f N A).
+move=> H1.
+suff: (forall (f : Field) (N : nat) (A : Matrix f N N),
+ElementaryTransformable f N A -> ElementaryTransformable f N (InvMatrix f N A)).
+move=> H2 f N A.
+apply conj.
+apply (H1 f N A).
+move=> H3.
+elim (TransformableToRankNormalForm f N N A).
+move=> r H4.
+elim (proj2 (proj2 H4)).
+move=> B.
+elim.
+move=> C H5.
+suff: (A = Mmult f N N N (InvMatrix f N B) (InvMatrix f N C)).
+move=> H6.
+rewrite H6.
+apply (ElementaryTransformableConnect f N (InvMatrix f N B) (InvMatrix f N C)).
+apply (H2 f N B (proj1 H5)).
+apply (H2 f N C (proj1 (proj2 H5))).
+suff: (MI f N = Mmult f N N N B (Mmult f N N N A C)).
+move=> H6.
+rewrite - (Mmult_I_r f N N (InvMatrix f N B)).
+rewrite H6.
+rewrite - (Mmult_assoc f N N N N (InvMatrix f N B) B (Mmult f N N N A C)).
+rewrite (InvMatrixMultL f N B (H1 f N B (proj1 H5))).
+rewrite (Mmult_I_l f N N (Mmult f N N N A C)).
+rewrite (Mmult_assoc f N N N N A C (InvMatrix f N C)).
+rewrite (InvMatrixMultR f N C (H1 f N C (proj1 (proj2 H5)))).
+rewrite (Mmult_I_r f N N A).
+reflexivity.
+rewrite (proj2 (proj2 H5)).
+suff: (r = N).
+move=> H6.
+rewrite H6.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MI.
+unfold RankNormalForm.
+elim (excluded_middle_informative (proj1_sig x < N)).
+move=> H7.
+reflexivity.
+move=> H7.
+elim (H7 (proj2_sig x)).
+elim (le_lt_or_eq r N (proj1 H4)).
+move=> H6.
+apply False_ind.
+suff: (RegularMatrix f N (Mmult f N N N B (Mmult f N N N A C))).
+move=> H7.
+apply H7.
+rewrite (proj2 (proj2 H5)).
+unfold Determinant.
+apply MySumF2O.
+move=> u H8.
+rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} (exist (fun (k : nat) => k < N) r H6))).
+rewrite MySumF2Singleton.
+unfold RankNormalForm.
+simpl.
+elim (Nat.eq_dec r
+         (proj1_sig (proj1_sig u (exist (fun k : nat => k < N) r H6)))).
+move=> H9.
+elim (excluded_middle_informative (r < r)).
+move=> H10.
+elim (lt_irrefl r H10).
+move=> H10.
+rewrite (Fmul_O_l f).
+apply (Fmul_O_r f).
+move=> H9.
+rewrite (Fmul_O_l f).
+apply (Fmul_O_r f).
+move=> m H9.
+apply (Full_intro {n : nat | n < N} m).
+apply (RegularMatrixChain f N B (Mmult f N N N A C) (H1 f N B (proj1 H5)) (RegularMatrixChain f N A C H3 (H1 f N C (proj1 (proj2 H5))))).
+apply.
+suff: (forall (f : Field) (N : nat) (AL : list (Matrix f N N)), Forall (ElementaryMatrix f N) AL -> ElementaryTransformable f N (InvMatrix f N (MyProdFL (MMM f N) AL))).
+move=> H2 f N A.
+elim.
+move=> AL H3.
+rewrite (proj2 H3).
+apply (H2 f N AL (proj1 H3)).
+move=> f N.
+elim.
+simpl.
+suff: (InvMatrix f N (MI f N) = MI f N).
+move=> H2.
+rewrite H2.
+exists nil.
+apply conj.
+apply Forall_nil.
+reflexivity.
+rewrite {2} (InvMatrixMultUniqueRStrong f N (MI f N) (MI f N)).
+reflexivity.
+apply (Mmult_I_l f N N (MI f N)).
+move=> a l H2 H3.
+simpl.
+rewrite (InvMatrixMult f N a (MyProdFL (MMM f N) l)).
+apply (ElementaryTransformableConnect f N (InvMatrix f N (MyProdFL (MMM f N) l))
+     (InvMatrix f N a)).
+apply (H2 (Forall_inv_tail H3)).
+exists ((InvMatrix f N a) :: nil).
+apply conj.
+apply Forall_cons.
+elim (Forall_inv H3).
+move=> p q c H4 H5.
+rewrite (InvMatrixElementaryMatrixAdd f N p q c H4).
+apply (ElementaryMatrixAdd_intro f N p q (Fopp f c) H4).
+apply (Fopp_neq_O_compat f c H5).
+move=> p c H4.
+rewrite (InvMatrixElementaryMatrixMultiply f N p c H4).
+apply (ElementaryMatrixMultiply_intro f N p (Finv f c)).
+apply (Finv_neq_O_compat f c H4).
+move=> p q H4.
+rewrite (InvMatrixElementaryMatrixSwap f N p q).
+apply (ElementaryMatrixSwap_intro f N p q H4).
+apply Forall_nil.
+simpl.
+rewrite (Mmult_I_r f N N (InvMatrix f N a)).
+reflexivity.
+apply (H1 f N a).
+exists (a :: nil).
+apply conj.
+apply Forall_cons.
+apply (Forall_inv H3).
+apply Forall_nil.
+simpl.
+rewrite (Mmult_I_r f N N a).
+reflexivity.
+apply (H1 f N).
+exists l.
+apply conj.
+apply (Forall_inv_tail H3).
+reflexivity.
+suff: (forall (f : Field) (N : nat) (AL : list (Matrix f N N)), Forall (ElementaryMatrix f N) AL ->
+RegularMatrix f N (MyProdFL (MMM f N) AL)).
+move=> H1 f N A.
+elim.
+move=> AL H2.
+rewrite (proj2 H2).
+apply (H1 f N AL (proj1 H2)).
+move=> f N.
+elim.
+move=> H1.
+simpl.
+unfold RegularMatrix.
+rewrite (DeterminantI f N).
+apply (FI_neq_FO f).
+move=> a l H1 H2.
+apply (RegularMatrixChain f N a (MyProdFL (MMM f N) l)).
+apply (ElementaryMatrixRegular f N a).
+apply (Forall_inv H2).
+apply (H1 (Forall_inv_tail H2)).
+Qed.
+
+Lemma RegularMatrixRank : forall (f : Field) (N : nat) (A : Matrix f N N),
+       RegularMatrix f N A <-> Rank f N N A = N.
+Proof.
+move=> f N A.
+apply conj.
+move=> H1.
+elim (TransformableToRankNormalForm f N N A).
+move=> r H2.
+elim (proj2 (proj2 H2)).
+move=> B.
+elim.
+move=> C H3.
+suff: (N = r).
+move=> H4.
+rewrite {3} H4.
+apply (RankNormalFormNature f N N A r (proj1 H2) (proj1 H2)).
+exists B.
+exists C.
+apply H3.
+elim (le_lt_or_eq r N (proj1 H2)).
+move=> H4.
+apply False_ind.
+suff: (RegularMatrix f N (Mmult f N N N B (Mmult f N N N A C))).
+move=> H5.
+apply H5.
+rewrite (proj2 (proj2 H3)).
+unfold Determinant.
+apply MySumF2O.
+move=> u H6.
+rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} (exist (fun (k : nat) => k < N) r H4))).
+rewrite MySumF2Singleton.
+unfold RankNormalForm.
+simpl.
+elim (Nat.eq_dec r
+         (proj1_sig (proj1_sig u (exist (fun k : nat => k < N) r H4)))).
+move=> H7.
+elim (excluded_middle_informative (r < r)).
+move=> H8.
+elim (lt_irrefl r H8).
+move=> H8.
+rewrite (Fmul_O_l f).
+apply (Fmul_O_r f).
+move=> H7.
+rewrite (Fmul_O_l f).
+apply (Fmul_O_r f).
+move=> m H7.
+apply (Full_intro {n : nat | n < N} m).
+apply (RegularMatrixChain f N B (Mmult f N N N A C) (proj1 (ElementaryTransformableRegular f N B) (proj1 H3)) (RegularMatrixChain f N A C H1 (proj1 (ElementaryTransformableRegular f N C) (proj1 (proj2 H3))))).
+move=> H4.
+rewrite H4.
+reflexivity.
+move=> H1.
+elim (proj1 (RankNormalFormNature f N N A N (le_n N) (le_n N)) H1).
+move=> B.
+elim.
+move=> C H2 H3.
+apply (FI_neq_FO f).
+rewrite - (DeterminantI f N).
+suff: (MI f N = RankNormalForm f N N N).
+move=> H4.
+rewrite H4.
+rewrite - (proj2 (proj2 H2)).
+rewrite (DeterminantMult f N B (Mmult f N N N A C)).
+rewrite (DeterminantMult f N A C).
+rewrite H3.
+rewrite (Fmul_O_l f).
+apply (Fmul_O_r f).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MI.
+unfold RankNormalForm.
+elim (excluded_middle_informative (proj1_sig x < N)).
+move=> H4.
+reflexivity.
+move=> H4.
+elim (H4 (proj2_sig x)).
 Qed.
 
 End Matrix.
