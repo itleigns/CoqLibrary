@@ -25,45 +25,65 @@ Require Import LinearAlgebra.SenkeiDaisuunoSekai.SenkeiDaisuunoSekai1.
 Require Import Tools.MySum.
 Local Open Scope R_scope.
 
-Record CInner_Product_Space : Type := {
-  Cip_base : VectorSpace Cfield;
-  Cip : VT Cfield Cip_base -> VT Cfield Cip_base -> C;
-  Cip_sym : forall (x y : VT Cfield Cip_base), Cip x y = Conjugate (Cip y x);
-  Cip_linear_mult_l : forall (c : C) (x y : VT Cfield Cip_base), Cip (Vmul Cfield Cip_base c x) y = Cmult c (Cip x y);
-  Cip_linear_plus_l : forall (x1 x2 y : VT Cfield Cip_base), Cip (Vadd Cfield Cip_base x1 x2) y = Cplus (Cip x1 y) (Cip x2 y);
-  Cip_pos_re : forall (x : VT Cfield Cip_base), (Cip x x) CRe >= 0;
-  Cip_pos_im : forall (x : VT Cfield Cip_base), (Cip x x) CIm = 0;
-  Cip_refl : forall (x : VT Cfield Cip_base), Cip x x = CO <-> x = VO Cfield Cip_base
+Record CInner_Product_Space (V : VectorSpace Cfield) : Type := {
+  Cip : VT Cfield V -> VT Cfield V -> C;
+  Cip_sym : forall (x y : VT Cfield V), Cip x y = Conjugate (Cip y x);
+  Cip_linear_mult_l : forall (c : C) (x y : VT Cfield V), Cip (Vmul Cfield V c x) y = Cmult c (Cip x y);
+  Cip_linear_plus_l : forall (x1 x2 y : VT Cfield V), Cip (Vadd Cfield V x1 x2) y = Cplus (Cip x1 y) (Cip x2 y);
+  Cip_pos_re : forall (x : VT Cfield V), (Cip x x) CRe >= 0;
+  Cip_refl : forall (x : VT Cfield V), Cip x x = CO <-> x = VO Cfield V
 }.
 
-Lemma Cip_linear_mult_r : forall (I : CInner_Product_Space) (c : C) (x y : VT Cfield (Cip_base I)), Cip I x (Vmul Cfield (Cip_base I) c y) = Cmult (Conjugate c) (Cip I x y).
+Lemma Cip_pos_im : forall (V : VectorSpace Cfield) (I : CInner_Product_Space V) (x : VT Cfield V), (Cip V I x x) CIm = 0.
 Proof.
-move=> I c x y.
-rewrite (Cip_sym I x (Vmul Cfield (Cip_base I) c y)).
-rewrite (Cip_linear_mult_l I c y x).
-rewrite (Cip_sym I x y).
-apply (Proposition_4_8_2 c (Cip I y x)).
+move=> V I x.
+suff: (Cip V I x x CIm = - Cip V I x x CIm).
+move=> H1.
+elim (Rmult_integral (Cip V I x x CIm) (1 + 1)).
+apply.
+move=> H2.
+apply False_ind.
+apply (Rlt_not_eq 0 (1 + 1)).
+apply (Rlt_trans 0 1 (1 + 1) Rlt_0_1 (Rlt_plus_1 1)).
+rewrite H2.
+reflexivity.
+rewrite (Rmult_plus_distr_l (Cip V I x x CIm) 1 1).
+rewrite (Rmult_1_r (Cip V I x x CIm)).
+rewrite {1} H1.
+apply (Rplus_opp_l (Cip V I x x CIm)).
+rewrite {1} (Cip_sym V I x x).
+unfold Conjugate.
+apply CmakeIm.
 Qed.
 
-Lemma Cip_linear_plus_r : forall (I : CInner_Product_Space) (x y1 y2 : VT Cfield (Cip_base I)), Cip I x (Vadd Cfield (Cip_base I) y1 y2) = Cplus (Cip I x y1) (Cip I x y2).
+Lemma Cip_linear_mult_r : forall (V : VectorSpace Cfield) (I : CInner_Product_Space V) (c : C) (x y : VT Cfield V), Cip V I x (Vmul Cfield V c y) = Cmult (Conjugate c) (Cip V I x y).
 Proof.
-move=> I x y1 y2.
-rewrite (Cip_sym I x (Vadd Cfield (Cip_base I) y1 y2)).
-rewrite (Cip_linear_plus_l I y1 y2 x).
-rewrite (Cip_sym I x y1).
-rewrite (Cip_sym I x y2).
-apply (Proposition_4_8_1_1 (Cip I y1 x) (Cip I y2 x)).
+move=> V I c x y.
+rewrite (Cip_sym V I x (Vmul Cfield V c y)).
+rewrite (Cip_linear_mult_l V I c y x).
+rewrite (Cip_sym V I x y).
+apply (Proposition_4_8_2 c (Cip V I y x)).
 Qed.
 
-Lemma Cip_mult_0_l : forall (I : CInner_Product_Space) (x : VT Cfield (Cip_base I)), Cip I (VO Cfield (Cip_base I)) x = CO.
+Lemma Cip_linear_plus_r : forall (V : VectorSpace Cfield) (I : CInner_Product_Space V) (x y1 y2 : VT Cfield V), Cip V I x (Vadd Cfield V y1 y2) = Cplus (Cip V I x y1) (Cip V I x y2).
 Proof.
-move=> I x.
-suff: (VO Cfield (Cip_base I) = Vmul Cfield (Cip_base I) CO (VO Cfield (Cip_base I))).
+move=> V I x y1 y2.
+rewrite (Cip_sym V I x (Vadd Cfield V y1 y2)).
+rewrite (Cip_linear_plus_l V I y1 y2 x).
+rewrite (Cip_sym V I x y1).
+rewrite (Cip_sym V I x y2).
+apply (Proposition_4_8_1_1 (Cip V I y1 x) (Cip V I y2 x)).
+Qed.
+
+Lemma Cip_mult_0_l : forall (V : VectorSpace Cfield) (I : CInner_Product_Space V) (x : VT Cfield V), Cip V I (VO Cfield V) x = CO.
+Proof.
+move=> V I x.
+suff: (VO Cfield V = Vmul Cfield V CO (VO Cfield V)).
 move=> H1.
 rewrite H1.
-rewrite (Cip_linear_mult_l I CO).
+rewrite (Cip_linear_mult_l V I CO).
 apply (Fmul_O_l Cfield).
-rewrite (Vmul_O_r Cfield (Cip_base I) CO).
+rewrite (Vmul_O_r Cfield V CO).
 reflexivity.
 Qed.
 
@@ -101,54 +121,54 @@ rewrite CmakeIm.
 apply (Ropp_involutive (c CIm)).
 Qed.
 
-Lemma Cip_mult_0_r : forall (I : CInner_Product_Space) (x : VT Cfield (Cip_base I)), Cip I x (VO Cfield (Cip_base I)) = CO.
+Lemma Cip_mult_0_r : forall (V : VectorSpace Cfield) (I : CInner_Product_Space V) (x : VT Cfield V), Cip V I x (VO Cfield V) = CO.
 Proof.
-move=> I x.
-rewrite (Cip_sym I x (VO Cfield (Cip_base I))).
-rewrite (Cip_mult_0_l I x).
+move=> V I x.
+rewrite (Cip_sym V I x (VO Cfield V)).
+rewrite (Cip_mult_0_l V I x).
 apply ConjugateCO.
 Qed.
 
-Lemma Cip_linear_opp_l : forall (I : CInner_Product_Space) (x y : VT Cfield (Cip_base I)), Cip I (Vopp Cfield (Cip_base I) x) y = Copp (Cip I x y).
+Lemma Cip_linear_opp_l : forall (V : VectorSpace Cfield) (I : CInner_Product_Space V) (x y : VT Cfield V), Cip V I (Vopp Cfield V x) y = Copp (Cip V I x y).
 Proof.
-move=> I x y.
-apply (Fadd_opp_r_uniq Cfield (Cip I x y) (Cip I (Vopp Cfield (Cip_base I) x) y)).
+move=> V I x y.
+apply (Fadd_opp_r_uniq Cfield (Cip V I x y) (Cip V I (Vopp Cfield V x) y)).
 simpl.
-rewrite - (Cip_linear_plus_l I x (Vopp Cfield (Cip_base I) x) y).
-rewrite (Vadd_opp_r Cfield (Cip_base I) x).
-apply (Cip_mult_0_l I y).
+rewrite - (Cip_linear_plus_l V I x (Vopp Cfield V x) y).
+rewrite (Vadd_opp_r Cfield V x).
+apply (Cip_mult_0_l V I y).
 Qed.
 
-Lemma Cip_linear_opp_r : forall (I : CInner_Product_Space) (x y : VT Cfield (Cip_base I)), Cip I x (Vopp Cfield (Cip_base I) y) = Copp (Cip I x y).
+Lemma Cip_linear_opp_r : forall (V : VectorSpace Cfield) (I : CInner_Product_Space V) (x y : VT Cfield V), Cip V I x (Vopp Cfield V y) = Copp (Cip V I x y).
 Proof.
-move=> I x y.
-apply (Fadd_opp_r_uniq Cfield (Cip I x y) (Cip I x (Vopp Cfield (Cip_base I) y))).
+move=> V I x y.
+apply (Fadd_opp_r_uniq Cfield (Cip V I x y) (Cip V I x (Vopp Cfield V y))).
 simpl.
-rewrite - (Cip_linear_plus_r I x y (Vopp Cfield (Cip_base I) y)).
-rewrite (Vadd_opp_r Cfield (Cip_base I) y).
-apply (Cip_mult_0_r I x).
+rewrite - (Cip_linear_plus_r V I x y (Vopp Cfield V y)).
+rewrite (Vadd_opp_r Cfield V y).
+apply (Cip_mult_0_r V I x).
 Qed.
 
-Definition OrthonormalSystemC (I : CInner_Product_Space) (T : Type) (V : T -> VT Cfield (Cip_base I)) := (forall (t : T), Cip I (V t) (V t) = CI) /\ (forall (t1 t2 : T), t1 <> t2 -> Cip I (V t1) (V t2) = CO).
+Definition OrthonormalSystemC (V : VectorSpace Cfield) (I : CInner_Product_Space V) (T : Type) (W : T -> VT Cfield V) := (forall (t : T), Cip V I (W t) (W t) = CI) /\ (forall (t1 t2 : T), t1 <> t2 -> Cip V I (W t1) (W t2) = CO).
 
-Lemma OrthonormalSystemLinearlyIndependentC : forall (I : CInner_Product_Space) (T : Type) (V : T -> VT Cfield (Cip_base I)), OrthonormalSystemC I T V -> LinearlyIndependentVS Cfield (Cip_base I) T V.
+Lemma OrthonormalSystemLinearlyIndependentC : forall (V : VectorSpace Cfield) (I : CInner_Product_Space V) (T : Type) (W : T -> VT Cfield V), OrthonormalSystemC V I T W -> LinearlyIndependentVS Cfield V T W.
 Proof.
-move=> I T V H1.
-apply (proj2 (LinearlyIndependentVSDef3 Cfield (Cip_base I) T V)).
+move=> V I T W H1.
+apply (proj2 (LinearlyIndependentVSDef3 Cfield V T W)).
 move=> a A H2 t H3.
-suff: (a t = Cip I (MySumF2 T A (VSPCM Cfield (Cip_base I))
-       (fun (t : T) => Vmul Cfield (Cip_base I) (a t) (V t))) (V t)).
+suff: (a t = Cip V I (MySumF2 T A (VSPCM Cfield V)
+       (fun (t : T) => Vmul Cfield V (a t) (W t))) (W t)).
 move=> H4.
 rewrite H4.
 rewrite H2.
-apply (Cip_mult_0_l I (V t)).
-suff: (Cip I
+apply (Cip_mult_0_l V I (W t)).
+suff: (Cip V I
   (MySumF2 T
-      A (VSPCM Cfield (Cip_base I))
-     (fun (t0 : T) => Vmul Cfield (Cip_base I) (a t0) (V t0)))
-  (V t) = MySumF2 T
+      A (VSPCM Cfield V)
+     (fun (t0 : T) => Vmul Cfield V (a t0) (W t0)))
+  (W t) = MySumF2 T
      A (FPCM Cfield)
-     (fun (t0 : T) => Cmult (a t0) (Cip I (V t0) (V t)))).
+     (fun (t0 : T) => Cmult (a t0) (Cip V I (W t0) (W t)))).
 move=> H4.
 rewrite H4.
 rewrite (MySumF2Included T (FiniteSingleton T t)).
@@ -177,35 +197,35 @@ apply (FiniteSetInduction T A).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
-apply (Cip_mult_0_l I (V t)).
+apply (Cip_mult_0_l V I (W t)).
 move=> B b H4 H5 H6 H7.
 rewrite MySumF2Add.
 rewrite MySumF2Add.
-rewrite (Cip_linear_plus_l I).
+rewrite (Cip_linear_plus_l V I).
 rewrite H7.
-rewrite (Cip_linear_mult_l I).
+rewrite (Cip_linear_mult_l V I).
 reflexivity.
 apply H6.
 apply H6.
 Qed.
 
-Lemma GramSchmidtLinearlyIndepententC_sub : forall (I : CInner_Product_Space) (N : nat) (V : Count N -> VT Cfield (Cip_base I)), LinearlyIndependentVS Cfield (Cip_base I) (Count N) V -> {W : Count N -> VT Cfield (Cip_base I) | OrthonormalSystemC I (Count N) W /\ forall (m : Count N), In (VT Cfield (Cip_base I)) (SpanVS Cfield (Cip_base I) {k : Count N | (proj1_sig k <= proj1_sig m)%nat} (fun (x : {k : Count N | (proj1_sig k <= proj1_sig m)%nat}) => V (proj1_sig x))) (W m)}.
+Lemma GramSchmidtLinearlyIndepententC_sub : forall (V : VectorSpace Cfield) (I : CInner_Product_Space V) (N : nat) (W : Count N -> VT Cfield V), LinearlyIndependentVS Cfield V (Count N) W -> {Z : Count N -> VT Cfield V | OrthonormalSystemC V I (Count N) Z /\ forall (m : Count N), In (VT Cfield V) (SpanVS Cfield V {k : Count N | (proj1_sig k <= proj1_sig m)%nat} (fun (x : {k : Count N | (proj1_sig k <= proj1_sig m)%nat}) => W (proj1_sig x))) (Z m)}.
 Proof.
-suff: (forall (I : CInner_Product_Space) (N : nat) (V : Count N -> VT Cfield (Cip_base I)), LinearlyIndependentVS Cfield (Cip_base I) (Count N) V -> {W : Count N -> VT Cfield (Cip_base I) | LinearlyIndependentVS Cfield (Cip_base I) (Count N) W /\ (forall (t1 t2 : Count N), t1 <> t2 -> Cip I (W t1) (W t2) = CO) /\ forall (m : Count N), In (VT Cfield (Cip_base I)) (SpanVS Cfield (Cip_base I) {k : Count N | (proj1_sig k <= proj1_sig m)%nat} (fun (x : {k : Count N | (proj1_sig k <= proj1_sig m)%nat}) => V (proj1_sig x))) (W m)}).
-move=> H1 I N V H2.
-elim (H1 I N V H2).
-move=> W H3.
-exists (fun (m : Count N) => Vmul Cfield (Cip_base I) (IRC (/ MySqrt (exist (fun (r : R) => r >= 0) (Cip I (W m) (W m) CRe) (Cip_pos_re I (W m))))) (W m)).
+suff: (forall (V : VectorSpace Cfield) (I : CInner_Product_Space V) (N : nat) (W : Count N -> VT Cfield V), LinearlyIndependentVS Cfield V (Count N) W -> {Z : Count N -> VT Cfield V | LinearlyIndependentVS Cfield V (Count N) Z /\ (forall (t1 t2 : Count N), t1 <> t2 -> Cip V I (Z t1) (Z t2) = CO) /\ forall (m : Count N), In (VT Cfield V) (SpanVS Cfield V {k : Count N | (proj1_sig k <= proj1_sig m)%nat} (fun (x : {k : Count N | (proj1_sig k <= proj1_sig m)%nat}) => W (proj1_sig x))) (Z m)}).
+move=> H1 V I N W H2.
+elim (H1 V I N W H2).
+move=> Z H3.
+exists (fun (m : Count N) => Vmul Cfield V (IRC (/ MySqrt (exist (fun (r : R) => r >= 0) (Cip V I (Z m) (Z m) CRe) (Cip_pos_re V I (Z m))))) (Z m)).
 apply conj.
 apply conj.
 move=> t.
-rewrite (Cip_linear_mult_l I).
-rewrite (Cip_linear_mult_r I).
+rewrite (Cip_linear_mult_l V I).
+rewrite (Cip_linear_mult_r V I).
 rewrite - Cmult_assoc.
-suff: (Cip I (W t) (W t) CRe <> 0).
+suff: (Cip V I (Z t) (Z t) CRe <> 0).
 move=> H4.
 suff: (MySqrt
-  (exist (fun (r : R) => r >= 0) (Cip I (W t) (W t) CRe) (Cip_pos_re I (W t))) <> 0).
+  (exist (fun (r : R) => r >= 0) (Cip V I (Z t) (Z t) CRe) (Cip_pos_re V I (Z t))) <> 0).
 move=> H5.
 unfold Conjugate.
 unfold IRC.
@@ -217,9 +237,9 @@ rewrite CmakeRe.
 rewrite CmakeIm.
 rewrite CmakeIm.
 rewrite - (Rinv_mult_distr (MySqrt
-  (exist (fun (r : R) => r >= 0) (Cip I (W t) (W t) CRe) (Cip_pos_re I (W t)))) (MySqrt
-  (exist (fun (r : R) => r >= 0) (Cip I (W t) (W t) CRe) (Cip_pos_re I (W t)))) H5 H5).
-rewrite - (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (Cip I (W t) (W t) CRe) (Cip_pos_re I (W t))))).
+  (exist (fun (r : R) => r >= 0) (Cip V I (Z t) (Z t) CRe) (Cip_pos_re V I (Z t)))) (MySqrt
+  (exist (fun (r : R) => r >= 0) (Cip V I (Z t) (Z t) CRe) (Cip_pos_re V I (Z t)))) H5 H5).
+rewrite - (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (Cip V I (Z t) (Z t) CRe) (Cip_pos_re V I (Z t))))).
 rewrite Rmult_0_l.
 rewrite Rmult_0_l.
 rewrite Ropp_mult_distr_r_reverse.
@@ -230,27 +250,27 @@ rewrite Rminus_0_r.
 unfold Cmult.
 rewrite CmakeRe.
 rewrite CmakeIm.
-rewrite (Rinv_l (Cip I (W t) (W t) CRe) H4).
+rewrite (Rinv_l (Cip V I (Z t) (Z t) CRe) H4).
 rewrite Rmult_0_l.
 rewrite Rmult_0_l.
-rewrite (Cip_pos_im I (W t)).
+rewrite (Cip_pos_im V I (Z t)).
 rewrite Rmult_0_r.
 rewrite Rminus_0_r.
 rewrite Rplus_0_r.
 reflexivity.
 move=> H5.
 apply H4.
-suff: (Cip I (W t) (W t) CRe = proj1_sig
-       (exist (fun (r : R) => r >= 0) (Cip I (W t) (W t) CRe) (Cip_pos_re I (W t)))).
+suff: (Cip V I (Z t) (Z t) CRe = proj1_sig
+       (exist (fun (r : R) => r >= 0) (Cip V I (Z t) (Z t) CRe) (Cip_pos_re V I (Z t)))).
 move=> H6.
 rewrite H6.
-rewrite (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (Cip I (W t) (W t) CRe) (Cip_pos_re I (W t))))).
+rewrite (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (Cip V I (Z t) (Z t) CRe) (Cip_pos_re V I (Z t))))).
 rewrite H5.
 apply (Rmult_0_r 0).
 reflexivity.
 move=> H4.
-apply (LinearlyIndependentNotContainVOVS Cfield (Cip_base I) (Count N) W (proj1 H3) t).
-apply (proj1 (Cip_refl I (W t))).
+apply (LinearlyIndependentNotContainVOVS Cfield V (Count N) Z (proj1 H3) t).
+apply (proj1 (Cip_refl V I (Z t))).
 apply functional_extensionality.
 move=> m.
 elim (CReorCIm m).
@@ -259,32 +279,32 @@ rewrite H5.
 apply H4.
 move=> H5.
 rewrite H5.
-apply (Cip_pos_im I (W t)).
+apply (Cip_pos_im V I (Z t)).
 move=> t1 t2 H4.
-rewrite (Cip_linear_mult_l I).
-rewrite (Cip_linear_mult_r I).
+rewrite (Cip_linear_mult_l V I).
+rewrite (Cip_linear_mult_r V I).
 rewrite (proj1 (proj2 H3) t1 t2 H4).
 suff: (Cmult
      (Conjugate
         (IRC
            (/
             MySqrt
-              (exist (fun (r : R) => r >= 0) (Cip I (W t2) (W t2) CRe)
-                 (Cip_pos_re I (W t2)))))) CO = CO).
+              (exist (fun (r : R) => r >= 0) (Cip V I (Z t2) (Z t2) CRe)
+                 (Cip_pos_re V I (Z t2)))))) CO = CO).
 move=> H5.
 rewrite H5.
 apply (Fmul_O_r Cfield).
 apply (Fmul_O_r Cfield).
 move=> m.
-apply (proj1 (proj2 (SpanSubspaceVS Cfield (Cip_base I)
+apply (proj1 (proj2 (SpanSubspaceVS Cfield V
      {k : Count N | (proj1_sig k <= proj1_sig m)%nat}
      (fun (x : {k : Count N | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig x))))).
+      W (proj1_sig x))))).
 apply (proj2 (proj2 H3) m).
-move=> I.
+move=> V I.
 elim.
-move=> V H1.
-exists V.
+move=> W H1.
+exists W.
 apply conj.
 apply H1.
 apply conj.
@@ -292,20 +312,20 @@ move=> t1.
 elim (le_not_lt 0 (proj1_sig t1) (le_0_n (proj1_sig t1)) (proj2_sig t1)).
 move=> m.
 elim (le_not_lt 0 (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)).
-move=> N H1 V H2.
+move=> N H1 W H2.
 suff: (forall m : Count N, (proj1_sig m < S N)%nat).
 move=> H3.
 suff: ((N < S N)%nat).
 move=> H4.
 elim (H1 (fun (m : Count N) =>
-          V (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m)))).
+          W (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m)))).
 move=> W0 H5.
 exists (fun (m : Count (S N)) => match excluded_middle_informative (proj1_sig m < N)%nat with
   | left H => W0 (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m) H)
-  | right _ => Vadd Cfield (Cip_base I) (V (exist (fun (k : nat) => (k < S N)%nat) N H4)) (Vopp Cfield (Cip_base I) (MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM Cfield (Cip_base I)) (fun (m : Count N) => Vmul Cfield (Cip_base I) (Conjugate (Cmult (Cip I (W0 m) (V (exist (fun (k : nat) => (k < S N)%nat) N H4))) (Cinv (Cip I (W0 m) (W0 m))))) (W0 m))))
+  | right _ => Vadd Cfield V (W (exist (fun (k : nat) => (k < S N)%nat) N H4)) (Vopp Cfield V (MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (VSPCM Cfield V) (fun (m : Count N) => Vmul Cfield V (Conjugate (Cmult (Cip V I (W0 m) (W (exist (fun (k : nat) => (k < S N)%nat) N H4))) (Cinv (Cip V I (W0 m) (W0 m))))) (W0 m))))
 end).
 apply conj.
-apply (Proposition_5_2 Cfield (Cip_base I) N H3 H4).
+apply (Proposition_5_2 Cfield V N H3 H4).
 apply conj.
 suff: ((fun (m : Count N) =>
    match
@@ -320,12 +340,12 @@ suff: ((fun (m : Count N) =>
                (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m)))
             H)
    | right _ =>
-       Vadd Cfield (Cip_base I)
-         (V (exist (fun (k : nat) => (k < S N)%nat) N H4))
-         (Vopp Cfield (Cip_base I)
+       Vadd Cfield V
+         (W (exist (fun (k : nat) => (k < S N)%nat) N H4))
+         (Vopp Cfield V
             (MySumF2 (Count N)
                (exist (Finite (Count N)) (Full_set (Count N))
-                  (CountFinite N)) (VSPCM Cfield (Cip_base I)) (fun (m : Count N) => Vmul Cfield (Cip_base I) (Conjugate (Cmult (Cip I (W0 m) (V (exist (fun (k : nat) => (k < S N)%nat) N H4))) (Cinv (Cip I (W0 m) (W0 m))))) (W0 m))))
+                  (CountFinite N)) (VSPCM Cfield V) (fun (m : Count N) => Vmul Cfield V (Conjugate (Cmult (Cip V I (W0 m) (W (exist (fun (k : nat) => (k < S N)%nat) N H4))) (Cinv (Cip V I (W0 m) (W0 m))))) (W0 m))))
    end) = W0).
 move=> H6.
 rewrite H6.
@@ -350,9 +370,9 @@ elim (excluded_middle_informative
 move=> H6.
 elim (lt_irrefl N H6).
 move=> H6 H7.
-apply (proj2 (proj1 (Proposition_5_2 Cfield (Cip_base I) N H3 H4 V) H2)).
-suff: (In (VT Cfield (Cip_base I))
-       (SpanVS Cfield (Cip_base I) (Count N)
+apply (proj2 (proj1 (Proposition_5_2 Cfield V N H3 H4 W) H2)).
+suff: (In (VT Cfield V)
+       (SpanVS Cfield V (Count N)
           (fun (m : Count N) =>
            match
              excluded_middle_informative
@@ -367,22 +387,22 @@ suff: (In (VT Cfield (Cip_base I))
                        (exist (fun (n : nat) => (n < S N)%nat)
                           (proj1_sig m) (H3 m))) H)
            | right _ =>
-               Vadd Cfield (Cip_base I)
-                 (V (exist (fun (k : nat) => (k < S N)%nat) N H4))
-                 (Vopp Cfield (Cip_base I)
+               Vadd Cfield V
+                 (W (exist (fun (k : nat) => (k < S N)%nat) N H4))
+                 (Vopp Cfield V
                     (MySumF2 (Count N)
                        (exist (Finite (Count N)) 
                           (Full_set (Count N)) (CountFinite N))
-                       (VSPCM Cfield (Cip_base I))
+                       (VSPCM Cfield V)
                        (fun (m0 : Count N) =>
-                        Vmul Cfield (Cip_base I)
-                          (Conjugate (Cmult (Cip I (W0 m0)
-                             (V
+                        Vmul Cfield V
+                          (Conjugate (Cmult (Cip V I (W0 m0)
+                             (W
                                 (exist (fun (k : nat) => (k < S N)%nat) N
-                                   H4))) (Cinv (Cip I (W0 m0) (W0 m0)))))
+                                   H4))) (Cinv (Cip V I (W0 m0) (W0 m0)))))
                           (W0 m0))))
            end))
-          (V (exist (fun (k : nat) => (k < S N)%nat) N H4))
+          (W (exist (fun (k : nat) => (k < S N)%nat) N H4))
           ).
 elim.
 move=> x H8.
@@ -393,18 +413,18 @@ apply (FiniteSetInduction (Count N)
         (proj2_sig x))).
 apply conj.
 rewrite MySumF2Empty.
-apply (proj2 (proj2 (SpanSubspaceVS Cfield (Cip_base I) (Count N)
+apply (proj2 (proj2 (SpanSubspaceVS Cfield V (Count N)
      (fun (m : Count N) =>
-      V (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m)))))).
+      W (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m)))))).
 move=> B b H9 H10 H11 H12.
 rewrite MySumF2Add.
-apply (proj1 (SpanSubspaceVS Cfield (Cip_base I) (Count N)
+apply (proj1 (SpanSubspaceVS Cfield V (Count N)
      (fun (m : Count N) =>
-      V (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m))))).
+      W (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m))))).
 apply H12.
-apply (proj1 (proj2 (SpanSubspaceVS Cfield (Cip_base I) (Count N)
+apply (proj1 (proj2 (SpanSubspaceVS Cfield V (Count N)
      (fun (m : Count N) =>
-      V (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m)))))).
+      W (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m)))))).
 elim (excluded_middle_informative
       (proj1_sig (exist (fun (n : nat) => n < S N) (proj1_sig b) (H3 b)) <
        N)%nat).
@@ -424,56 +444,56 @@ apply (FiniteSetInduction {k : Count N | (proj1_sig k <= proj1_sig b)%nat}
          proj1_sig y t <> FO Cfield) (proj2_sig y))).
 apply conj.
 rewrite MySumF2Empty.
-apply (proj2 (proj2 (SpanSubspaceVS Cfield (Cip_base I) (Count N)
+apply (proj2 (proj2 (SpanSubspaceVS Cfield V (Count N)
      (fun (m : Count N) =>
-      V (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m)))))).
-move=> C c H16 H17 H18 H19.
+      W (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m)))))).
+move=> D d H16 H17 H18 H19.
 rewrite MySumF2Add.
-apply (proj1 (SpanSubspaceVS Cfield (Cip_base I) (Count N)
+apply (proj1 (SpanSubspaceVS Cfield V (Count N)
      (fun (m : Count N) =>
-      V (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m))))).
+      W (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m))))).
 apply H19.
-apply (proj1 (proj2 (SpanSubspaceVS Cfield (Cip_base I) (Count N)
+apply (proj1 (proj2 (SpanSubspaceVS Cfield V (Count N)
      (fun (m : Count N) =>
-      V (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m)))))).
-apply (SpanContainSelfVS Cfield (Cip_base I) (Count N)
+      W (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m)))))).
+apply (SpanContainSelfVS Cfield V (Count N)
      (fun (m : Count N) =>
-      V (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m))) (proj1_sig c)).
+      W (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig m) (H3 m))) (proj1_sig d)).
 apply H18.
 apply sig_map.
 reflexivity.
 move=> H13.
 elim (H13 (proj2_sig b)).
 apply H11.
-rewrite - {3} (Vadd_O_r Cfield (Cip_base I) (V (exist (fun (k : nat) => (k < S N)%nat) N H4))).
-rewrite - (Vadd_opp_l Cfield (Cip_base I) (MySumF2 (Count N)
+rewrite - {3} (Vadd_O_r Cfield V (W (exist (fun (k : nat) => (k < S N)%nat) N H4))).
+rewrite - (Vadd_opp_l Cfield V (MySumF2 (Count N)
                 (exist (Finite (Count N)) (Full_set (Count N))
-                   (CountFinite N)) (VSPCM Cfield (Cip_base I))
+                   (CountFinite N)) (VSPCM Cfield V)
                 (fun (m : Count N) =>
-                 Vmul Cfield (Cip_base I)
-                   (Conjugate (Cmult (Cip I (W0 m)
-                      (V (exist (fun (k : nat) => (k < S N)%nat) N H4))) 
-                    (Cinv (Cip I (W0 m) (W0 m))))) (W0 m)))).
-rewrite - (Vadd_assoc Cfield (Cip_base I) (V (exist (fun (k : nat) => (k < S N)%nat) N H4)) (Vopp Cfield (Cip_base I) (MySumF2 (Count N)
+                 Vmul Cfield V
+                   (Conjugate (Cmult (Cip V I (W0 m)
+                      (W (exist (fun (k : nat) => (k < S N)%nat) N H4))) 
+                    (Cinv (Cip V I (W0 m) (W0 m))))) (W0 m)))).
+rewrite - (Vadd_assoc Cfield V (W (exist (fun (k : nat) => (k < S N)%nat) N H4)) (Vopp Cfield V (MySumF2 (Count N)
                 (exist (Finite (Count N)) (Full_set (Count N))
-                   (CountFinite N)) (VSPCM Cfield (Cip_base I))
+                   (CountFinite N)) (VSPCM Cfield V)
                 (fun (m : Count N) =>
-                 Vmul Cfield (Cip_base I)
-                   (Conjugate (Cmult (Cip I (W0 m)
-                      (V (exist (fun (k : nat) => (k < S N)%nat) N H4))) 
-                    (Cinv (Cip I (W0 m) (W0 m))))) (W0 m)))) (MySumF2 (Count N)
+                 Vmul Cfield V
+                   (Conjugate (Cmult (Cip V I (W0 m)
+                      (W (exist (fun (k : nat) => (k < S N)%nat) N H4))) 
+                    (Cinv (Cip V I (W0 m) (W0 m))))) (W0 m)))) (MySumF2 (Count N)
                 (exist (Finite (Count N)) (Full_set (Count N))
-                   (CountFinite N)) (VSPCM Cfield (Cip_base I))
+                   (CountFinite N)) (VSPCM Cfield V)
                 (fun (m : Count N) =>
-                 Vmul Cfield (Cip_base I)
-                   (Conjugate (Cmult (Cip I (W0 m)
-                      (V (exist (fun (k : nat) => (k < S N)%nat) N H4)))
-                    (Cinv (Cip I (W0 m) (W0 m))))) (W0 m)))).
-apply (SpanSubspaceVS Cfield (Cip_base I)).
+                 Vmul Cfield V
+                   (Conjugate (Cmult (Cip V I (W0 m)
+                      (W (exist (fun (k : nat) => (k < S N)%nat) N H4)))
+                    (Cinv (Cip V I (W0 m) (W0 m))))) (W0 m)))).
+apply (SpanSubspaceVS Cfield V).
 apply H7.
 apply (FiniteSetInduction (Count N)
-     (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (P : {X : Ensemble (Count N) | Finite (Count N) X}) => In (VT Cfield (Cip_base I))
-  (SpanVS Cfield (Cip_base I) (Count N)
+     (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (P : {X : Ensemble (Count N) | Finite (Count N) X}) => In (VT Cfield V)
+  (SpanVS Cfield V (Count N)
      (fun (m : Count N) =>
       match
         excluded_middle_informative
@@ -487,33 +507,33 @@ apply (FiniteSetInduction (Count N)
                   (exist (fun (n : nat) => (n < S N)%nat) 
                      (proj1_sig m) (H3 m))) H)
       | right _ =>
-          Vadd Cfield (Cip_base I)
-            (V (exist (fun (k : nat) => (k < S N)%nat) N H4))
-            (Vopp Cfield (Cip_base I)
+          Vadd Cfield V
+            (W (exist (fun (k : nat) => (k < S N)%nat) N H4))
+            (Vopp Cfield V
                (MySumF2 (Count N)
                   (exist (Finite (Count N)) (Full_set (Count N))
-                     (CountFinite N)) (VSPCM Cfield (Cip_base I))
+                     (CountFinite N)) (VSPCM Cfield V)
                   (fun (m0 : Count N) =>
-                   Vmul Cfield (Cip_base I)
-                     (Conjugate (Cmult (Cip I (W0 m0)
-                        (V (exist (fun (k : nat) => (k < S N)%nat) N H4))) 
-                      (Cinv (Cip I (W0 m0) (W0 m0))))) (W0 m0))))
+                   Vmul Cfield V
+                     (Conjugate (Cmult (Cip V I (W0 m0)
+                        (W (exist (fun (k : nat) => (k < S N)%nat) N H4))) 
+                      (Cinv (Cip V I (W0 m0) (W0 m0))))) (W0 m0))))
       end))
   (MySumF2 (Count N)
      P
-     (VSPCM Cfield (Cip_base I))
+     (VSPCM Cfield V)
      (fun (m : Count N) =>
-      Vmul Cfield (Cip_base I)
-        (Conjugate (Cmult (Cip I (W0 m) (V (exist (fun (k : nat) => (k < S N)%nat) N H4)))
-         (Cinv (Cip I (W0 m) (W0 m))))) (W0 m))))).
+      Vmul Cfield V
+        (Conjugate (Cmult (Cip V I (W0 m) (W (exist (fun (k : nat) => (k < S N)%nat) N H4)))
+         (Cinv (Cip V I (W0 m) (W0 m))))) (W0 m))))).
 apply conj.
 rewrite MySumF2Empty.
-apply (SpanSubspaceVS Cfield (Cip_base I) (Count N)).
+apply (SpanSubspaceVS Cfield V (Count N)).
 move=> B b H8 H9 H10 H11.
 rewrite MySumF2Add.
-apply (SpanSubspaceVS Cfield (Cip_base I) (Count N)).
+apply (SpanSubspaceVS Cfield V (Count N)).
 apply H11.
-apply (SpanSubspaceVS Cfield (Cip_base I) (Count N)).
+apply (SpanSubspaceVS Cfield V (Count N)).
 suff: ((fun (m : Count N) =>
       match
         excluded_middle_informative
@@ -527,21 +547,21 @@ suff: ((fun (m : Count N) =>
                   (exist (fun (n : nat) => (n < S N)%nat) 
                      (proj1_sig m) (H3 m))) H)
       | right _ =>
-          Vadd Cfield (Cip_base I)
-            (V (exist (fun (k : nat) => (k < S N)%nat) N H4))
-            (Vopp Cfield (Cip_base I)
+          Vadd Cfield V
+            (W (exist (fun (k : nat) => (k < S N)%nat) N H4))
+            (Vopp Cfield V
                (MySumF2 (Count N)
                   (exist (Finite (Count N)) (Full_set (Count N))
-                     (CountFinite N)) (VSPCM Cfield (Cip_base I))
+                     (CountFinite N)) (VSPCM Cfield V)
                   (fun (m0 : Count N) =>
-                   Vmul Cfield (Cip_base I)
-                     (Conjugate (Cmult (Cip I (W0 m0)
-                        (V (exist (fun k : nat => (k < S N)%nat) N H4)))
-                      (Cinv (Cip I (W0 m0) (W0 m0))))) (W0 m0))))
+                   Vmul Cfield V
+                     (Conjugate (Cmult (Cip V I (W0 m0)
+                        (W (exist (fun k : nat => (k < S N)%nat) N H4)))
+                      (Cinv (Cip V I (W0 m0) (W0 m0))))) (W0 m0))))
       end) = W0).
 move=> H12.
 rewrite H12.
-apply (SpanContainSelfVS Cfield (Cip_base I) (Count N) W0 b).
+apply (SpanContainSelfVS Cfield V (Count N) W0 b).
 apply functional_extensionality.
 move=> m.
 elim (excluded_middle_informative
@@ -561,39 +581,39 @@ apply H10.
 apply conj.
 suff: (forall (t1 t2 : Count (S N)),
 (proj1_sig t1 < proj1_sig t2)%nat ->
-Cip I
+Cip V I
   match excluded_middle_informative (proj1_sig t1 < N)%nat with
   | left H => W0 (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H)
   | right _ =>
-      Vadd Cfield (Cip_base I)
-        (V (exist (fun (k : nat) => (k < S N)%nat) N H4))
-        (Vopp Cfield (Cip_base I)
+      Vadd Cfield V
+        (W (exist (fun (k : nat) => (k < S N)%nat) N H4))
+        (Vopp Cfield V
            (MySumF2 (Count N)
               (exist (Finite (Count N)) (Full_set (Count N))
-                 (CountFinite N)) (VSPCM Cfield (Cip_base I))
+                 (CountFinite N)) (VSPCM Cfield V)
               (fun (m : Count N) =>
-               Vmul Cfield (Cip_base I)
+               Vmul Cfield V
                  (Conjugate (Cmult
-                    (Cip I (W0 m)
-                       (V (exist (fun (k : nat) => (k < S N)%nat) N H4)))
-                    (Cinv (Cip I (W0 m) (W0 m))))) 
+                    (Cip V I (W0 m)
+                       (W (exist (fun (k : nat) => (k < S N)%nat) N H4)))
+                    (Cinv (Cip V I (W0 m) (W0 m))))) 
                  (W0 m))))
   end
   match excluded_middle_informative (proj1_sig t2 < N)%nat with
   | left H => W0 (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t2) H)
   | right _ =>
-      Vadd Cfield (Cip_base I)
-        (V (exist (fun (k : nat) => (k < S N)%nat) N H4))
-        (Vopp Cfield (Cip_base I)
+      Vadd Cfield V
+        (W (exist (fun (k : nat) => (k < S N)%nat) N H4))
+        (Vopp Cfield V
            (MySumF2 (Count N)
               (exist (Finite (Count N)) (Full_set (Count N))
-                 (CountFinite N)) (VSPCM Cfield (Cip_base I))
+                 (CountFinite N)) (VSPCM Cfield V)
               (fun (m : Count N) =>
-               Vmul Cfield (Cip_base I)
+               Vmul Cfield V
                  (Conjugate (Cmult
-                    (Cip I (W0 m)
-                       (V (exist (fun (k : nat) => (k < S N)%nat) N H4)))
-                    (Cinv (Cip I (W0 m) (W0 m))))) 
+                    (Cip V I (W0 m)
+                       (W (exist (fun (k : nat) => (k < S N)%nat) N H4)))
+                    (Cinv (Cip V I (W0 m) (W0 m))))) 
                  (W0 m))))
   end = CO).
 move=> H6 t1 t2 H7.
@@ -607,7 +627,7 @@ apply H7.
 apply sig_map.
 apply H9.
 move=> H8.
-rewrite (Cip_sym I).
+rewrite (Cip_sym V I).
 rewrite (H6 t2 t1 H8).
 apply ConjugateCO.
 move=> t1 t2 H6.
@@ -625,47 +645,47 @@ rewrite H9.
 apply H6.
 reflexivity.
 move=> H8.
-rewrite (Cip_linear_plus_r I).
-rewrite (Cip_linear_opp_r I).
-suff: (Cip I (W0 (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H7))
+rewrite (Cip_linear_plus_r V I).
+rewrite (Cip_linear_opp_r V I).
+suff: (Cip V I (W0 (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H7))
   (MySumF2 (Count N)
      (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))
-     (VSPCM Cfield (Cip_base I))
+     (VSPCM Cfield V)
      (fun (m : Count N) =>
-      Vmul Cfield (Cip_base I)
-        (Conjugate (Cmult (Cip I (W0 m) (V (exist (fun (k : nat) => (k < S N)%nat) N H4)))
-         (Cinv (Cip I (W0 m) (W0 m))))) (W0 m))) = MySumF2 (Count N)
+      Vmul Cfield V
+        (Conjugate (Cmult (Cip V I (W0 m) (W (exist (fun (k : nat) => (k < S N)%nat) N H4)))
+         (Cinv (Cip V I (W0 m) (W0 m))))) (W0 m))) = MySumF2 (Count N)
      (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (FPCM Cfield) (fun (m : Count N) =>
-      Cip I (W0 (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H7)) (Vmul Cfield (Cip_base I)
-        (Conjugate (Cmult (Cip I (W0 m) (V (exist (fun (k : nat) => (k < S N)%nat) N H4))) 
-         (Cinv (Cip I (W0 m) (W0 m))))) (W0 m)))).
+      Cip V I (W0 (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H7)) (Vmul Cfield V
+        (Conjugate (Cmult (Cip V I (W0 m) (W (exist (fun (k : nat) => (k < S N)%nat) N H4))) 
+         (Cinv (Cip V I (W0 m) (W0 m))))) (W0 m)))).
 move=> H9.
 rewrite H9.
 rewrite (MySumF2Included (Count N) (FiniteSingleton (Count N) (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H7)) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
 rewrite MySumF2Singleton.
 rewrite MySumF2O.
-rewrite (Cip_linear_mult_r I).
+rewrite (Cip_linear_mult_r V I).
 rewrite ConjugateInvolutive.
 rewrite Cmult_assoc.
 rewrite Cinv_l.
 suff: (Cmult
-           (Cip I
+           (Cip V I
               (W0 (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H7))
-              (V (exist (fun (k : nat) => (k < S N)%nat) N H4))) CI = Cip I
+              (W (exist (fun (k : nat) => (k < S N)%nat) N H4))) CI = Cip V I
               (W0 (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H7))
-              (V (exist (fun (k : nat) => (k < S N)%nat) N H4))).
+              (W (exist (fun (k : nat) => (k < S N)%nat) N H4))).
 move=> H10.
 rewrite H10.
 rewrite (CM_O_r (FPCM Cfield)).
 apply Cplus_opp_r.
 apply (Fmul_I_r Cfield).
 move=> H10.
-apply (LinearlyIndependentNotContainVOVS Cfield (Cip_base I) (Count N) W0 (proj1 H5) (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H7)).
-apply (proj1 (Cip_refl I (W0 (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H7))) H10).
+apply (LinearlyIndependentNotContainVOVS Cfield V (Count N) W0 (proj1 H5) (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H7)).
+apply (proj1 (Cip_refl V I (W0 (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H7))) H10).
 move=> u.
 elim.
 move=> u0 H10 H11.
-rewrite (Cip_linear_mult_r I).
+rewrite (Cip_linear_mult_r V I).
 rewrite (proj1 (proj2 H5) (exist (fun (k : nat) => (k < N)%nat) (proj1_sig t1) H7) u0).
 apply (Fmul_O_r Cfield).
 move=> H12.
@@ -679,11 +699,11 @@ apply (FiniteSetInduction (Count N)
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
-apply (Cip_mult_0_r I).
+apply (Cip_mult_0_r V I).
 move=> B b H9 H10 H11 H12.
 rewrite MySumF2Add.
 rewrite MySumF2Add.
-rewrite (Cip_linear_plus_r I).
+rewrite (Cip_linear_plus_r V I).
 rewrite H12.
 reflexivity.
 apply H11.
@@ -713,67 +733,67 @@ apply (FiniteSetInduction {k : Count N
          => proj1_sig x t <> FO Cfield) (proj2_sig x))).
 apply conj.
 rewrite MySumF2Empty.
-apply (SpanSubspaceVS Cfield (Cip_base I)).
+apply (SpanSubspaceVS Cfield V).
 move=> B b H8 H9 H10 H11.
 rewrite MySumF2Add.
-apply (SpanSubspaceVS Cfield (Cip_base I)).
+apply (SpanSubspaceVS Cfield V).
 apply H11.
-apply (SpanSubspaceVS Cfield (Cip_base I)).
+apply (SpanSubspaceVS Cfield V).
 suff: (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig (proj1_sig b))
         (H3 (proj1_sig b)) = proj1_sig (exist (fun (k : Count (S N)) => (proj1_sig k <= proj1_sig m)%nat) (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig (proj1_sig b))
         (H3 (proj1_sig b))) (proj2_sig b))).
 move=> H12.
 rewrite H12.
-apply (SpanContainSelfVS Cfield (Cip_base I) {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
+apply (SpanContainSelfVS Cfield V {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
      (fun (x0 : {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig x0)) (exist (fun (k : Count (S N)) => (proj1_sig k <= proj1_sig m)%nat) (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig (proj1_sig b))
+      W (proj1_sig x0)) (exist (fun (k : Count (S N)) => (proj1_sig k <= proj1_sig m)%nat) (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig (proj1_sig b))
         (H3 (proj1_sig b))) (proj2_sig b))).
 reflexivity.
 apply H10.
 move=> H6.
-apply (SpanSubspaceVS Cfield (Cip_base I) {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
+apply (SpanSubspaceVS Cfield V {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
      (fun (x : {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig x))).
+      W (proj1_sig x))).
 suff: (proj1_sig (exist (fun (k : nat) => (k < S N)%nat) N H4) <= proj1_sig m)%nat.
 move=> H7.
 suff: (exist (fun (k : nat) => (k < S N)%nat) N H4 = proj1_sig (exist (fun (k : Count (S N)) => (proj1_sig k <= proj1_sig m)%nat) (exist (fun (k : nat) => (k < S N)%nat) N H4) H7)).
 move=> H8.
 rewrite H8.
-apply (SpanContainSelfVS Cfield (Cip_base I)
+apply (SpanContainSelfVS Cfield V
      {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
      (fun (x : {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig x)) (exist (fun (k : Count (S N)) => (proj1_sig k <= proj1_sig m)%nat) (exist (fun (k : nat) => (k < S N)%nat) N H4) H7)).
+      W (proj1_sig x)) (exist (fun (k : Count (S N)) => (proj1_sig k <= proj1_sig m)%nat) (exist (fun (k : nat) => (k < S N)%nat) N H4) H7)).
 reflexivity.
 elim (le_or_lt N (proj1_sig m)).
 apply.
 move=> H7.
 elim (H6 H7).
-apply (SubspaceMakeVSVoppSub Cfield (Cip_base I) (SpanVS Cfield (Cip_base I)
+apply (SubspaceMakeVSVoppSub Cfield V (SpanVS Cfield V
      {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
      (fun (x : {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig x))) (SpanSubspaceVS Cfield (Cip_base I)
+      W (proj1_sig x))) (SpanSubspaceVS Cfield V
      {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
      (fun (x : {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig x)))).
+      W (proj1_sig x)))).
 apply (FiniteSetInduction (Count N)
      (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
 apply conj.
 rewrite MySumF2Empty.
-apply (proj2 (proj2 (SpanSubspaceVS Cfield (Cip_base I)
+apply (proj2 (proj2 (SpanSubspaceVS Cfield V
      {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
      (fun (x : {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig x))))).
+      W (proj1_sig x))))).
 move=> B b H7 H8 H9 H10.
 rewrite MySumF2Add.
-apply (proj1 (SpanSubspaceVS Cfield (Cip_base I)
+apply (proj1 (SpanSubspaceVS Cfield V
      {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
      (fun (x : {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig x)))).
+      W (proj1_sig x)))).
 apply H10.
-apply (proj1 (proj2 (SpanSubspaceVS Cfield (Cip_base I)
+apply (proj1 (proj2 (SpanSubspaceVS Cfield V
      {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
      (fun (x : {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig x))))).
+      W (proj1_sig x))))).
 elim (proj2 (proj2 H5) b).
 move=> x H11.
 rewrite H11.
@@ -783,21 +803,21 @@ apply (FiniteSetInduction {k : Count N | (proj1_sig k <= proj1_sig b)%nat}
          proj1_sig x t <> FO Cfield) (proj2_sig x))).
 apply conj.
 rewrite MySumF2Empty.
-apply (proj2 (proj2 (SpanSubspaceVS Cfield (Cip_base I)
+apply (proj2 (proj2 (SpanSubspaceVS Cfield V
      {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
      (fun (x : {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig x))))).
+      W (proj1_sig x))))).
 move=> D d H12 H13 H14 H15.
 rewrite MySumF2Add.
-apply (proj1 (SpanSubspaceVS Cfield (Cip_base I)
+apply (proj1 (SpanSubspaceVS Cfield V
      {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
      (fun (x : {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig x)))).
+      W (proj1_sig x)))).
 apply H15.
-apply (proj1 (proj2 (SpanSubspaceVS Cfield (Cip_base I)
+apply (proj1 (proj2 (SpanSubspaceVS Cfield V
      {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}
      (fun (x : {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig x))))).
+      W (proj1_sig x))))).
 suff: (proj1_sig (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig (proj1_sig d))
         (H3 (proj1_sig d))) <= proj1_sig m)%nat.
 move=> H16.
@@ -806,9 +826,9 @@ suff: (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig (proj1_sig d))
         (H3 (proj1_sig d))) H16)).
 move=> H17.
 rewrite H17.
-apply (SpanContainSelfVS Cfield (Cip_base I)
+apply (SpanContainSelfVS Cfield V
      {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat} (fun (y : {k : Count (S N) | (proj1_sig k <= proj1_sig m)%nat}) =>
-      V (proj1_sig y)) (exist (fun (k : Count (S N)) => (proj1_sig k <= proj1_sig m)%nat) (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig (proj1_sig d))
+      W (proj1_sig y)) (exist (fun (k : Count (S N)) => (proj1_sig k <= proj1_sig m)%nat) (exist (fun (n : nat) => (n < S N)%nat) (proj1_sig (proj1_sig d))
         (H3 (proj1_sig d))) H16)).
 reflexivity.
 apply (le_trans (proj1_sig (proj1_sig d)) (proj1_sig b) (proj1_sig m) (proj2_sig d)).
@@ -821,38 +841,38 @@ move=> H16.
 elim (H6 H16).
 apply H14.
 apply H9.
-apply (proj1 (proj1 (Proposition_5_2 Cfield (Cip_base I) N H3 H4 V) H2)).
-elim (Proposition_5_2_exists Cfield (Cip_base I) N).
+apply (proj1 (proj1 (Proposition_5_2 Cfield V N H3 H4 W) H2)).
+elim (Proposition_5_2_exists Cfield V N).
 move=> H4.
 elim.
 move=> H5 H6.
 apply H5.
-elim (Proposition_5_2_exists Cfield (Cip_base I) N).
+elim (Proposition_5_2_exists Cfield V N).
 move=> H4 H5.
 apply H4.
 Qed.
 
-Lemma GramSchmidtLinearlyIndepententC : forall (I : CInner_Product_Space) (N : nat) (V : Count N -> VT Cfield (Cip_base I)), LinearlyIndependentVS Cfield (Cip_base I) (Count N) V -> {W : Count N -> VT Cfield (Cip_base I) | OrthonormalSystemC I (Count N) W /\ SpanVS Cfield (Cip_base I) (Count N) V = SpanVS Cfield (Cip_base I) (Count N) W}.
+Lemma GramSchmidtLinearlyIndepententC : forall (V : VectorSpace Cfield) (I : CInner_Product_Space V) (N : nat) (W : Count N -> VT Cfield V), LinearlyIndependentVS Cfield V (Count N) W -> {Z : Count N -> VT Cfield V | OrthonormalSystemC V I (Count N) Z /\ SpanVS Cfield V (Count N) W = SpanVS Cfield V (Count N) Z}.
 Proof.
-move=> I N V H1.
-elim (GramSchmidtLinearlyIndepententC_sub I N V H1).
-move=> W H2.
-exists W.
-suff: (forall (U : Count N -> VT Cfield (Cip_base I)), LinearlyIndependentVS Cfield (Cip_base I) (Count N) U -> FiniteDimensionVS Cfield (SubspaceMakeVS Cfield (Cip_base I) (SpanVS Cfield (Cip_base I) (Count N) U) (SpanSubspaceVS Cfield (Cip_base I) (Count N) U))).
+move=> V I N W H1.
+elim (GramSchmidtLinearlyIndepententC_sub V I N W H1).
+move=> Z H2.
+exists Z.
+suff: (forall (U : Count N -> VT Cfield V), LinearlyIndependentVS Cfield V (Count N) U -> FiniteDimensionVS Cfield (SubspaceMakeVS Cfield V (SpanVS Cfield V (Count N) U) (SpanSubspaceVS Cfield V (Count N) U))).
 move=> H3.
-suff: (forall (U : Count N -> VT Cfield (Cip_base I)) (H : LinearlyIndependentVS Cfield (Cip_base I) (Count N) U), DimensionSubspaceVS Cfield (Cip_base I)
-  (SpanVS Cfield (Cip_base I) (Count N) U)
-  (SpanSubspaceVS Cfield (Cip_base I) (Count N) U) 
+suff: (forall (U : Count N -> VT Cfield V) (H : LinearlyIndependentVS Cfield V (Count N) U), DimensionSubspaceVS Cfield V
+  (SpanVS Cfield V (Count N) U)
+  (SpanSubspaceVS Cfield V (Count N) U) 
   (H3 U H) = N).
 move=> H4.
 apply conj.
 apply (proj1 H2).
-suff: (Included (VT Cfield (Cip_base I)) (SpanVS Cfield (Cip_base I) (Count N) W) (SpanVS Cfield (Cip_base I) (Count N) V)).
+suff: (Included (VT Cfield V) (SpanVS Cfield V (Count N) Z) (SpanVS Cfield V (Count N) W)).
 move=> H5.
-rewrite (proj1 (Proposition_5_9_1_3_subspace Cfield (Cip_base I) (SpanVS Cfield (Cip_base I) (Count N) W) (SpanVS Cfield (Cip_base I) (Count N) V) (SpanSubspaceVS Cfield (Cip_base I) (Count N) W) (SpanSubspaceVS Cfield (Cip_base I) (Count N) V) H5 (H3 V H1) (H3 W (OrthonormalSystemLinearlyIndependentC I (Count N) W (proj1 H2))))).
+rewrite (proj1 (Proposition_5_9_1_3_subspace Cfield V (SpanVS Cfield V (Count N) Z) (SpanVS Cfield V (Count N) W) (SpanSubspaceVS Cfield V (Count N) Z) (SpanSubspaceVS Cfield V (Count N) W) H5 (H3 W H1) (H3 Z (OrthonormalSystemLinearlyIndependentC V I (Count N) Z (proj1 H2))))).
 reflexivity.
-rewrite (H4 V H1).
-apply (H4 W (OrthonormalSystemLinearlyIndependentC I (Count N) W (proj1 H2))).
+rewrite (H4 W H1).
+apply (H4 Z (OrthonormalSystemLinearlyIndependentC V I (Count N) Z (proj1 H2))).
 move=> v.
 elim.
 move=> x H5.
@@ -863,12 +883,12 @@ apply (FiniteSetInduction (Count N)
         (proj2_sig x))).
 apply conj.
 rewrite MySumF2Empty.
-apply (proj2 (proj2 (SpanSubspaceVS Cfield (Cip_base I) (Count N) V))).
+apply (proj2 (proj2 (SpanSubspaceVS Cfield V (Count N) W))).
 move=> B b H6 H7 H8 H9.
 rewrite MySumF2Add.
-apply (proj1 (SpanSubspaceVS Cfield (Cip_base I) (Count N) V)).
+apply (proj1 (SpanSubspaceVS Cfield V (Count N) W)).
 apply H9.
-apply (proj1 (proj2 (SpanSubspaceVS Cfield (Cip_base I) (Count N) V))).
+apply (proj1 (proj2 (SpanSubspaceVS Cfield V (Count N) W))).
 elim (proj2 H2 b).
 move=> y H10.
 rewrite H10.
@@ -878,43 +898,43 @@ apply (FiniteSetInduction {k : Count N | (proj1_sig k <= proj1_sig b)%nat}
          proj1_sig y t <> FO Cfield) (proj2_sig y))).
 apply conj.
 rewrite MySumF2Empty.
-apply (proj2 (proj2 (SpanSubspaceVS Cfield (Cip_base I) (Count N) V))).
+apply (proj2 (proj2 (SpanSubspaceVS Cfield V (Count N) W))).
 move=> D d H11 H12 H13 H14.
 rewrite MySumF2Add.
-apply (proj1 (SpanSubspaceVS Cfield (Cip_base I) (Count N) V)).
+apply (proj1 (SpanSubspaceVS Cfield V (Count N) W)).
 apply H14.
-apply (proj1 (proj2 (SpanSubspaceVS Cfield (Cip_base I) (Count N) V))).
-apply (SpanContainSelfVS Cfield (Cip_base I) (Count N) V (proj1_sig d)).
+apply (proj1 (proj2 (SpanSubspaceVS Cfield V (Count N) W))).
+apply (SpanContainSelfVS Cfield V (Count N) W (proj1_sig d)).
 apply H13.
 apply H8.
 move=> U H4.
-apply (DimensionVSNature2 Cfield (SubspaceMakeVS Cfield (Cip_base I)
-     (SpanVS Cfield (Cip_base I) (Count N) U)
-     (SpanSubspaceVS Cfield (Cip_base I) (Count N) U)) (H3 U H4) N (fun (m : Count N) => exist (SpanVS Cfield (Cip_base I) (Count N) U) (U m) (SpanContainSelfVS Cfield (Cip_base I) (Count N) U m)) H4).
+apply (DimensionVSNature2 Cfield (SubspaceMakeVS Cfield V
+     (SpanVS Cfield V (Count N) U)
+     (SpanSubspaceVS Cfield V (Count N) U)) (H3 U H4) N (fun (m : Count N) => exist (SpanVS Cfield V (Count N) U) (U m) (SpanContainSelfVS Cfield V (Count N) U m)) H4).
 move=> U H3.
 exists N.
-exists (fun (m : Count N) => exist (SpanVS Cfield (Cip_base I) (Count N) U) (U m) (SpanContainSelfVS Cfield (Cip_base I) (Count N) U m)).
+exists (fun (m : Count N) => exist (SpanVS Cfield V (Count N) U) (U m) (SpanContainSelfVS Cfield V (Count N) U m)).
 apply H3.
 Qed.
 
-Lemma GramSchmidtBasisC : forall (I : CInner_Product_Space) (N : nat) (V : Count N -> VT Cfield (Cip_base I)), BasisVS Cfield (Cip_base I) (Count N) V -> {W : Count N -> VT Cfield (Cip_base I) | OrthonormalSystemC I (Count N) W /\ BasisVS Cfield (Cip_base I) (Count N) W /\ forall (m : Count N), In (VT Cfield (Cip_base I)) (SpanVS Cfield (Cip_base I) {k : Count N | (proj1_sig k <= proj1_sig m)%nat} (fun (x : {k : Count N | (proj1_sig k <= proj1_sig m)%nat}) => V (proj1_sig x))) (W m)}.
+Lemma GramSchmidtBasisC : forall (V : VectorSpace Cfield) (I : CInner_Product_Space V) (N : nat) (W : Count N -> VT Cfield V), BasisVS Cfield V (Count N) W -> {Z : Count N -> VT Cfield V | OrthonormalSystemC V I (Count N) Z /\ BasisVS Cfield V (Count N) Z /\ forall (m : Count N), In (VT Cfield V) (SpanVS Cfield V {k : Count N | (proj1_sig k <= proj1_sig m)%nat} (fun (x : {k : Count N | (proj1_sig k <= proj1_sig m)%nat}) => W (proj1_sig x))) (Z m)}.
 Proof.
-move=> I N V H1.
-elim (GramSchmidtLinearlyIndepententC_sub I N V).
-move=> W H2.
-exists W.
+move=> V I N W H1.
+elim (GramSchmidtLinearlyIndepententC_sub V I N W).
+move=> Z H2.
+exists Z.
 apply conj.
 apply (proj1 H2).
 apply conj.
-suff: (FiniteDimensionVS Cfield (Cip_base I)).
+suff: (FiniteDimensionVS Cfield V).
 move=> H3.
-apply (Corollary_5_8_2_3 Cfield (Cip_base I) N W H3).
+apply (Corollary_5_8_2_3 Cfield V N Z H3).
 apply conj.
-apply (OrthonormalSystemLinearlyIndependentC I (Count N) W (proj1 H2)).
-apply (DimensionVSNature2 Cfield (Cip_base I) H3 N V H1).
+apply (OrthonormalSystemLinearlyIndependentC V I (Count N) Z (proj1 H2)).
+apply (DimensionVSNature2 Cfield V H3 N W H1).
 exists N.
-exists V.
+exists W.
 apply H1.
 apply (proj2 H2).
-apply (proj1 (proj1 (BasisLIGeVS Cfield (Cip_base I) (Count N) V) H1)).
+apply (proj1 (proj1 (BasisLIGeVS Cfield V (Count N) W) H1)).
 Qed.
