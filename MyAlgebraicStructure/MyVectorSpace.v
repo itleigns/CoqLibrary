@@ -3,6 +3,7 @@ Add LoadPath "BasicProperty" as BasicProperty.
 
 From mathcomp Require Import ssreflect.
 Require Import Classical.
+Require Import Coq.Logic.FunctionalExtensionality.
 Require Import MyAlgebraicStructure.MyField.
 Require Import BasicProperty.MappingProperty.
 
@@ -493,5 +494,85 @@ rewrite (proj2 (proj2 H1) c (g x)).
 rewrite (proj2 H2 x).
 apply (proj2 H2 (Vmul F v2 c x)).
 Qed.
+
+Definition Fn (F : Field) (N : nat) := ({m : nat | m < N} -> FT F).
+
+Definition Fnadd (F : Field) (N : nat) := fun (f1 f2 : Fn F N) => (fun (n : {m : nat | m < N}) => Fadd F (f1 n) (f2 n)).
+
+Definition Fnmul (F : Field) (N : nat) := fun (c : FT F) (f : Fn F N) => (fun (n : {m : nat | m < N}) => Fmul F c (f n)).
+
+Definition Fnopp (F : Field) (N : nat) := fun (f : (Fn F N)) => (fun (n : {m : nat | m < N}) => Fopp F (f n)).
+
+Definition Fnminus (F : Field) (N : nat) := fun (f1 f2 : (Fn F N)) => (Fnadd F N f1 (Fnopp F N f2)).
+
+Definition FnO (F : Field) (N : nat) := (fun (n : {m : nat | m < N}) => FO F).
+
+Lemma Fnadd_comm : forall (F : Field) (N : nat) (f1 f2 : Fn F N), (Fnadd F N f1 f2) = (Fnadd F N f2 f1).
+Proof.
+move=> F N f1 f2.
+apply functional_extensionality.
+move=> n.
+apply (Fadd_comm F (f1 n) (f2 n)).
+Qed.
+
+Lemma Fnadd_assoc : forall (F : Field) (N : nat) (f1 f2 f3 : Fn F N), (Fnadd F N (Fnadd F N f1 f2) f3) = (Fnadd F N f1 (Fnadd F N f2 f3)).
+Proof.
+move=> F N f1 f2 f3.
+apply functional_extensionality.
+move=> n.
+apply (Fadd_assoc F (f1 n) (f2 n) (f3 n)).
+Qed.
+
+Lemma Fnadd_O_l : forall (F : Field) (N : nat) (f : Fn F N), (Fnadd F N (FnO F N) f) = f.
+Proof.
+move=> F N f.
+apply functional_extensionality.
+move=> n.
+apply (Fadd_O_l F (f n)).
+Qed.
+
+Lemma Fnadd_opp_r : forall (F : Field) (N : nat) (f : Fn F N), (Fnadd F N f (Fnopp F N f)) = (FnO F N).
+Proof.
+move=> F N f.
+apply functional_extensionality.
+move=> n.
+apply (Fadd_opp_r F (f n)).
+Qed.
+
+Lemma Fnadd_distr_l : forall (F : Field) (N : nat) (c : FT F) (f1 f2 : Fn F N), (Fnmul F N c (Fnadd F N f1 f2)) = (Fnadd F N (Fnmul F N c f1) (Fnmul F N c f2)).
+Proof.
+move=> F N c f1 f2.
+apply functional_extensionality.
+move=> n.
+apply (Fmul_add_distr_l F c (f1 n) (f2 n)).
+Qed.
+
+Lemma Fnadd_distr_r : forall (F : Field) (N : nat) (c1 c2 : FT F) (f : Fn F N), (Fnmul F N (Fadd F c1 c2) f) = (Fnadd F N (Fnmul F N c1 f) (Fnmul F N c2 f)).
+Proof.
+move=> F N c1 c2 f.
+apply functional_extensionality.
+move=> n.
+apply (Fmul_add_distr_r F c1 c2 (f n)).
+Qed.
+
+Lemma Fnmul_assoc : forall (F : Field) (N : nat) (c1 c2 : FT F) (f : Fn F N), (Fnmul F N c1 (Fnmul F N c2 f)) = (Fnmul F N (Fmul F c1 c2) f).
+Proof.
+move=> F N c1 c2 f.
+apply functional_extensionality.
+move=> n.
+unfold Fnmul.
+rewrite (Fmul_assoc F c1 c2 (f n)).
+reflexivity.
+Qed.
+
+Lemma Fnmul_I_l : forall (F : Field) (N : nat) (f : Fn F N), (Fnmul F N (FI F) f) = f.
+Proof.
+move=> F N f.
+apply functional_extensionality.
+move=> n.
+apply (Fmul_I_l F (f n)).
+Qed.
+
+Definition FnVS (F : Field) (N : nat) := mkVectorSpace F (Fn F N) (FnO F N) (Fnadd F N) (Fnmul F N) (Fnopp F N) (Fnadd_comm F N) (Fnadd_assoc F N) (Fnadd_O_l F N) (Fnadd_opp_r F N) (Fnadd_distr_l F N) (Fnadd_distr_r F N) (Fnmul_assoc F N) (Fnmul_I_l F N).
 
 End VectorSpace.

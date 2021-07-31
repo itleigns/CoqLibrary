@@ -6857,7 +6857,7 @@ move=> n.
 apply Rmult_1_l.
 Qed.
 
-Definition RnVS (N : nat) := mkVectorSpace Rfield (Rn N) (RnO N) (Rnplus N) (Rnmult N) (Rnopp N) (Rnplus_comm N) (Rnplus_assoc N) (Rnplus_O_l N) (Rnplus_opp_r N) (Rnmult_plus_distr_l N) (Rnmult_plus_distr_r N) (Rnmult_assoc N) (Rnmult_I_l N).
+Definition RnVS := FnVS Rfield.
 
 Definition my_sum_f_R := fix my_sum_f_R (f : nat -> R) (N : nat) {struct N} : R := match N with
   | 0%nat => 0
@@ -7244,7 +7244,7 @@ rewrite (Rplus_assoc (RnInnerProduct N x x) (- (2 * RnInnerProduct N x y)) (RnIn
 apply (Rplus_eq_compat_l (RnInnerProduct N x x) (RnInnerProduct N x (Rnopp N y) + (RnInnerProduct N (Rnopp N y) x + RnInnerProduct N (Rnopp N y) (Rnopp N y))) (- (2 * RnInnerProduct N x y) + RnInnerProduct N y y)).
 rewrite - (Vmul_I_l Rfield (RnVS N) (Rnopp N y)).
 simpl.
-have: ((Rnmult N 1 (Rnopp N y)) = (Vmul Rfield (RnVS N) 1 (Vopp Rfield (RnVS N) y))).
+have: (Fnmul Rfield N 1 (Rnopp N y) = (Vmul Rfield (RnVS N) 1 (Vopp Rfield (RnVS N) y))).
 simpl.
 reflexivity.
 move=> H1.
@@ -12196,7 +12196,7 @@ rewrite H6.
 rewrite Vopp_add_distr.
 rewrite Vopp_involutive.
 simpl.
-rewrite (Rnplus_comm N (Rnopp N s) (sum_f_Rn N an k)).
+rewrite (Fnadd_comm Rfield N (Fnopp Rfield N s) (sum_f_Rn N an k)).
 rewrite - Rnplus_assoc.
 rewrite (Rnplus_comm N (sum_f_Rn N (fun n0 : nat => an (n0 + S k)%nat) n) (sum_f_Rn N an k)).
 rewrite (H1 n).

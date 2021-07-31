@@ -590,9 +590,9 @@ move=> H2.
 reflexivity.
 Qed.
 
-Lemma MTransO : forall (f : Field) (N : nat), MTranspose f N N (MO f N N) = MO f N N.
+Lemma MTransO : forall (f : Field) (M N : nat), MTranspose f M N (MO f M N) = MO f N M.
 Proof.
-move=> f N.
+move=> f M N.
 reflexivity.
 Qed.
 
