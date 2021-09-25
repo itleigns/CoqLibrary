@@ -959,6 +959,18 @@ Qed.
 
 Definition AdjointMatrix (M N : nat) (A : Matrix Cfield M N) := (fun (x : {n : nat | (n < N)%nat}) (y : {n : nat | (n < M)%nat}) => Conjugate (A y x)).
 
+Lemma AdjointMatrixPlus : forall (M N : nat) (A B : Matrix Cfield M N), AdjointMatrix M N (Mplus Cfield M N A B) = Mplus Cfield N M (AdjointMatrix M N A) (AdjointMatrix M N B).
+Proof.
+move=> M N A B.
+unfold AdjointMatrix.
+unfold Mplus.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply (Proposition_4_8_1_1 (A y x) (B y x)).
+Qed.
+
 Lemma AdjointMatrixMult : forall (M N K : nat) (A : Matrix Cfield M N) (B : Matrix Cfield N K), AdjointMatrix M K (Mmult Cfield M N K A B) = Mmult Cfield K N M (AdjointMatrix N K B) (AdjointMatrix M N A).
 Proof.
 move=> M N K A B.
@@ -986,6 +998,28 @@ rewrite Cmult_comm.
 reflexivity.
 apply H3.
 apply H3.
+Qed.
+
+Lemma AdjointMatrixVMmult : forall (M N : nat) (c : C) (A : Matrix Cfield M N), AdjointMatrix M N (VMmult Cfield M N c A) = VMmult Cfield N M (Conjugate c) (AdjointMatrix M N A).
+Proof.
+move=> M N c A.
+unfold AdjointMatrix.
+unfold VMmult.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply (Proposition_4_8_2 c (A y x)).
+Qed.
+
+Lemma AdjointMatrixInvolutive : forall (M N : nat) (A : Matrix Cfield M N), AdjointMatrix N M (AdjointMatrix M N A) = A.
+Proof.
+move=> M N A.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply (ConjugateInvolutive (A x y)).
 Qed.
 
 Definition HermitianMatrix (N : nat) (A : Matrix Cfield N N) := AdjointMatrix N N A = A.
@@ -1289,6 +1323,8 @@ rewrite (Rmult_0_l 0).
 rewrite (Rmult_0_l (- 0)).
 apply (Rplus_0_r 0).
 Qed.
+
+Definition CnNorm (N : nat) (x : Fn Cfield N) := MySqrt (exist (fun r : R => r >= 0) (CnInnerProduct N x x CRe) (Cnip_pos_re N x)).
 
 Definition CnInner_Product_Space (N : nat) := mkCInner_Product_Space (FnVS Cfield N) (CnInnerProduct N) (Cnip_sym N) (Cnip_linear_mult_l N) (Cnip_linear_plus_l N) (Cnip_pos_re N) (Cnip_refl N).
 
@@ -4559,5 +4595,3592 @@ rewrite dist_sym.
 apply (Rn_dist_tri (S N * 2) x (RnO (S N * 2)) u).
 Qed.
 
+Definition UpperTriangularMatrix (f : Field) (M N : nat) (A : Matrix f M N) := forall (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N)%nat}), (proj1_sig x > proj1_sig y)%nat -> A x y = FO f.
 
+Definition UpperTriangularMatrixStrong (f : Field) (M N : nat) (A : Matrix f M N) := forall (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N)%nat}), A x y <> FO f -> forall (z : {n : nat | (n < M)%nat}), (proj1_sig z < proj1_sig x)%nat -> exists (w : {n : nat | (n < N)%nat}), (proj1_sig w < proj1_sig y)%nat /\ A z w <> FO f.
 
+Lemma UpperTriangularMatrixStrongUpperTriangular : forall (f : Field) (M N : nat) (A : Matrix f M N), UpperTriangularMatrixStrong f M N A -> UpperTriangularMatrix f M N A.
+Proof.
+move=> f M N A H1.
+unfold UpperTriangularMatrix.
+suff: (forall (m : nat), (m <= N)%nat -> forall (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N)%nat}), (proj1_sig y < m)%nat -> (proj1_sig x > proj1_sig y)%nat -> A x y = FO f).
+move=> H2 x y H3.
+apply (H2 N (le_n N) x y (proj2_sig y) H3).
+elim.
+move=> H2 x y H3.
+elim (le_not_lt O (proj1_sig y) (le_0_n (proj1_sig y)) H3).
+move=> n H2 H3 x y H4 H5.
+elim (le_lt_or_eq (proj1_sig y) n (le_S_n (proj1_sig y) n H4)).
+move=> H6.
+apply (H2 (le_trans n (S n) N (le_S n n (le_n n)) H3) x y H6 H5).
+move=> H6.
+apply NNPP.
+move=> H7.
+suff: (exists (xpre : {n : nat | (n < M)%nat}), proj1_sig x = S (proj1_sig xpre)).
+elim.
+move=> xpre H8.
+elim (H1 x y H7 xpre).
+move=> y0 H9.
+apply (proj2 H9).
+apply (H2 (le_trans n (S n) N (le_S n n (le_n n)) H3) xpre y0).
+rewrite - H6.
+apply (proj1 H9).
+apply (le_trans (S (proj1_sig y0)) (proj1_sig y) (proj1_sig xpre)).
+apply (proj1 H9).
+apply (le_S_n (proj1_sig y) (proj1_sig xpre)).
+rewrite - H8.
+apply H5.
+rewrite H8.
+apply (le_n (S (proj1_sig xpre))).
+suff: (forall (w z : nat), (w > z)%nat -> exists (prew : nat), w = S prew).
+move=> H8.
+elim (H8 (proj1_sig x) (proj1_sig y) H5).
+move=> prew H9.
+suff: (prew < M)%nat.
+move=> H10.
+exists (exist (fun (k : nat) => (k < M)%nat) prew H10).
+apply H9.
+apply (le_trans (S prew) (S (proj1_sig x)) M).
+rewrite H9.
+apply (le_S (S prew) (S prew) (le_n (S prew))).
+apply (proj2_sig x).
+elim.
+move=> z H8.
+elim (le_not_lt O z (le_0_n z) H8).
+move=> w0 H8 z H9.
+exists w0.
+reflexivity.
+Qed.
+
+Definition UpperTriangularNormalFormC (M N : nat) (A : Matrix Cfield M N) := UpperTriangularMatrixStrong Cfield M N A /\ forall (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N)%nat}), (forall (z : {n : nat | (n < N)%nat}), (proj1_sig y > proj1_sig z)%nat -> A x z = CO) -> (A x y CRe >= 0 /\ A x y CIm = 0).
+
+Lemma UpperTriangularNormalFormCholeskyC : forall (M N : nat) (A B : Matrix Cfield M N), UpperTriangularNormalFormC M N A -> UpperTriangularNormalFormC M N B -> Mmult Cfield N M N (AdjointMatrix M N A) A = Mmult Cfield N M N (AdjointMatrix M N B) B -> A = B.
+Proof.
+elim.
+move=> N A B H1 H2 H3.
+apply functional_extensionality.
+move=> x.
+elim (le_not_lt O (proj1_sig x) (le_0_n (proj1_sig x)) (proj2_sig x)).
+move=> M H1.
+elim.
+move=> A B H2 H3 H4.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+elim (le_not_lt O (proj1_sig y) (le_0_n (proj1_sig y)) (proj2_sig y)).
+move=> N H2 A B H3 H4 H5.
+elim (classic (Mmult Cfield (S N) (S M) (S N) (AdjointMatrix (S M) (S N) A) A (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))) (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))) = CO)).
+move=> H6.
+suff: (forall (D : Matrix Cfield (S M) (S N)), UpperTriangularNormalFormC (S M) (S N) D -> (Mmult Cfield (S N) (S M) (S N) (AdjointMatrix (S M) (S N) D) D (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))) (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))) = CO) -> forall (m : {n : nat | (n < S M)%nat}), D m (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))) = CO).
+move=> H7.
+suff: (forall (m : {n : nat | (n < S M)%nat}) (k : {n : nat | (n < 1)%nat}), A m (AddConnect 1 N (inl k)) = CO).
+move=> H8.
+suff: (forall (m : {n : nat | (n < S M)%nat}) (k : {n : nat | (n < 1)%nat}), B m (AddConnect 1 N (inl k)) = CO).
+move=> H9.
+suff: ((fun (m : {n : nat | (n < S M)%nat}) (k : {n : nat | (n < N)%nat}) => A m (AddConnect 1 N (inr k))) = (fun (m : {n : nat | (n < S M)%nat}) (k : {n : nat | (n < N)%nat}) => B m (AddConnect 1 N (inr k)))).
+move=> H10.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+rewrite - (proj2 (AddConnectInvRelation 1 N) y).
+elim (AddConnectInv 1 N y).
+move=> y0.
+rewrite (H9 x y0).
+apply (H8 x y0).
+move=> y0.
+suff: (A x (AddConnect 1 N (inr y0)) = let temp := (fun (m : {n : nat | (n < S M)%nat}) (k : {n : nat | (n < N)%nat}) => A m (AddConnect 1 N (inr k))) in temp x y0).
+move=> H11.
+rewrite H11.
+rewrite H10.
+reflexivity.
+reflexivity.
+apply H2.
+apply conj.
+move=> x y H10 z H11.
+elim (proj1 H3 x (AddConnect 1 N (inr y)) H10 z).
+move=> w.
+rewrite - (proj2 (AddConnectInvRelation 1 N) w).
+elim (AddConnectInv 1 N w).
+move=> w0 H12.
+elim (proj2 H12 (H8 z w0)).
+move=> w0 H12.
+exists w0.
+apply conj.
+apply (plus_lt_reg_l (proj1_sig w0) (proj1_sig y) 1).
+rewrite (proj2 (AddConnectNature 1 N) w0).
+rewrite (proj2 (AddConnectNature 1 N) y).
+apply (proj1 H12).
+apply (proj2 H12).
+apply H11.
+move=> x y H10.
+apply (proj2 H3 x (AddConnect 1 N (inr y))).
+move=> z.
+rewrite - (proj2 (AddConnectInvRelation 1 N) z).
+elim (AddConnectInv 1 N z).
+move=> z0 H11.
+apply (H8 x z0).
+move=> z0 H11.
+apply (H10 z0).
+apply (plus_lt_reg_l (proj1_sig z0) (proj1_sig y) 1).
+rewrite (proj2 (AddConnectNature 1 N) z0).
+rewrite (proj2 (AddConnectNature 1 N) y).
+apply H11.
+apply conj.
+move=> x y H10 z H11.
+elim (proj1 H4 x (AddConnect 1 N (inr y)) H10 z).
+move=> w.
+rewrite - (proj2 (AddConnectInvRelation 1 N) w).
+elim (AddConnectInv 1 N w).
+move=> w0 H12.
+elim (proj2 H12 (H9 z w0)).
+move=> w0 H12.
+exists w0.
+apply conj.
+apply (plus_lt_reg_l (proj1_sig w0) (proj1_sig y) 1).
+rewrite (proj2 (AddConnectNature 1 N) w0).
+rewrite (proj2 (AddConnectNature 1 N) y).
+apply (proj1 H12).
+apply (proj2 H12).
+apply H11.
+move=> x y H10.
+apply (proj2 H4 x (AddConnect 1 N (inr y))).
+move=> z.
+rewrite - (proj2 (AddConnectInvRelation 1 N) z).
+elim (AddConnectInv 1 N z).
+move=> z0 H11.
+apply (H9 x z0).
+move=> z0 H11.
+apply (H10 z0).
+apply (plus_lt_reg_l (proj1_sig z0) (proj1_sig y) 1).
+rewrite (proj2 (AddConnectNature 1 N) z0).
+rewrite (proj2 (AddConnectNature 1 N) y).
+apply H11.
+suff: (forall (D : Matrix Cfield (S M) (S N)), (forall (m : {n : nat | (n < S M)%nat}) (k : {n : nat | (n < 1)%nat}),
+     D m (AddConnect 1 N (inl k)) = CO) -> Mmult Cfield N (S M) N
+  (AdjointMatrix (S M) N
+     (fun (m : {n : nat | (n < S M)%nat}) (k : {n : nat | (n < N)%nat}) =>
+      D m (AddConnect 1 N (inr k))))
+  (fun (m : {n : nat | (n < S M)%nat}) (k : {n : nat | (n < N)%nat}) =>
+   D m (AddConnect 1 N (inr k))) = (fun (x y : {n : nat | (n < N)%nat}) => Mmult Cfield (S N) (S M) (S N) (AdjointMatrix (S M) (S N) D) D (AddConnect 1 N (inr x)) (AddConnect 1 N (inr y)))).
+move=> H10.
+rewrite (H10 A H8).
+rewrite (H10 B H9).
+rewrite H5.
+reflexivity.
+move=> D H10.
+suff: (D = MBlockW Cfield (S M) 1 N (fun (m : {n : nat | (n < S M)%nat}) (k : {n : nat | (n < 1)%nat}) =>
+      D m (AddConnect 1 N (inl k))) (fun (m : {n : nat | (n < S M)%nat}) (k : {n : nat | (n < N)%nat}) =>
+      D m (AddConnect 1 N (inr k)))).
+move=> H11.
+rewrite {4} H11.
+rewrite {3} H11.
+rewrite (BlockWAdjointMatrix (S M) 1 N).
+rewrite (MBlockHMult Cfield 1 N (S M) (S N)).
+rewrite (MBlockWMult Cfield N (S M) 1 N).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MBlockH.
+rewrite (proj1 (AddConnectInvRelation 1 N) (inr x)).
+unfold MBlockW.
+rewrite (proj1 (AddConnectInvRelation 1 N) (inr y)).
+reflexivity.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MBlockW.
+rewrite - {1} (proj2 (AddConnectInvRelation 1 N) y).
+elim (AddConnectInv 1 N y).
+move=> y0.
+reflexivity.
+move=> y0.
+reflexivity.
+move=> m k.
+suff: (AddConnect 1 N (inl k) = (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N)))).
+move=> H9.
+rewrite H9.
+apply (H7 B H4).
+rewrite - H5.
+apply H6.
+apply sig_map.
+rewrite - (proj1 (AddConnectNature 1 N) k).
+elim (le_lt_or_eq (proj1_sig k) O (le_S_n (proj1_sig k) O (proj2_sig k))).
+move=> H9.
+elim (le_not_lt O (proj1_sig k) (le_0_n (proj1_sig k)) H9).
+apply.
+move=> m k.
+suff: (AddConnect 1 N (inl k) = (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N)))).
+move=> H8.
+rewrite H8.
+apply (H7 A H3).
+apply H6.
+apply sig_map.
+rewrite - (proj1 (AddConnectNature 1 N) k).
+elim (le_lt_or_eq (proj1_sig k) O (le_S_n (proj1_sig k) O (proj2_sig k))).
+move=> H8.
+elim (le_not_lt O (proj1_sig k) (le_0_n (proj1_sig k)) H8).
+apply.
+move=> D H7 H8.
+suff: (forall (m : {n : nat | (n < S M)%nat}), (proj1_sig m > O)%nat -> D m (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))) = CO).
+move=> H9 m.
+elim (le_lt_or_eq O (proj1_sig m) (le_0_n (proj1_sig m))).
+move=> H10.
+apply (H9 m H10).
+move=> H10.
+suff: (Cmult (Conjugate (D m (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))))) (D m (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N)))) = CO).
+move=> H11.
+elim (Fmul_integral Cfield (Conjugate (D m (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))))) (D m (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N)))) H11).
+move=> H12.
+rewrite - (ConjugateInvolutive (D m (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))))).
+rewrite H12.
+apply ConjugateCO.
+apply.
+rewrite - H8.
+unfold Mmult.
+rewrite (MySumF2Included {n : nat | (n < S M)%nat} (FiniteSingleton {n : nat | (n < S M)%nat} m)).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite CM_O_r.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H11 H12.
+unfold AdjointMatrix.
+rewrite (H9 u0).
+apply (Fmul_O_r Cfield).
+elim (le_lt_or_eq O (proj1_sig u0) (le_0_n (proj1_sig u0))).
+apply.
+move=> H13.
+elim H11.
+suff: (m = u0).
+move=> H14.
+rewrite H14.
+apply In_singleton.
+apply sig_map.
+rewrite - H10.
+apply H13.
+move=> u H11.
+apply (Full_intro {n : nat | (n < S M)%nat} u).
+move=> m H9.
+apply (UpperTriangularMatrixStrongUpperTriangular Cfield (S M) (S N) D (proj1 H7)).
+apply H9.
+move=> H6.
+suff: (forall (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < 1)%nat}), A (AddConnect 1 M (inr x)) (AddConnect 1 N (inl y)) = CO).
+move=> H7.
+suff: (forall (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < 1)%nat}), B (AddConnect 1 M (inr x)) (AddConnect 1 N (inl y)) = CO).
+move=> H8.
+suff: (forall (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < S N)%nat}), A (AddConnect 1 M (inl x)) y = B (AddConnect 1 M (inl x)) y).
+move=> H9.
+suff: ((fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N)%nat}) => A (AddConnect 1 M (inr x)) (AddConnect 1 N (inr y))) = (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N)%nat}) => B (AddConnect 1 M (inr x)) (AddConnect 1 N (inr y)))).
+move=> H10.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+rewrite - (proj2 (AddConnectInvRelation 1 M) x).
+elim (AddConnectInv 1 M x).
+move=> x0.
+apply (H9 x0 y).
+move=> x0.
+rewrite - (proj2 (AddConnectInvRelation 1 N) y).
+elim (AddConnectInv 1 N y).
+move=> y0.
+rewrite (H8 x0 y0).
+apply (H7 x0 y0).
+move=> y0.
+suff: (A (AddConnect 1 M (inr x0)) (AddConnect 1 N (inr y0)) = let temp := (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N)%nat}) => A (AddConnect 1 M (inr x)) (AddConnect 1 N (inr y))) in temp x0 y0).
+move=> H11.
+rewrite H11.
+rewrite H10.
+reflexivity.
+reflexivity.
+apply (H1 N).
+apply conj.
+move=> x y H10 z H11.
+elim (proj1 H3 (AddConnect 1 M (inr x)) (AddConnect 1 N (inr y)) H10 (AddConnect 1 M (inr z))).
+move=> w.
+rewrite - (proj2 (AddConnectInvRelation 1 N) w).
+elim (AddConnectInv 1 N w).
+move=> w0 H12.
+elim (proj2 H12 (H7 z w0)).
+move=> w0 H12.
+exists w0.
+apply conj.
+apply (plus_lt_reg_l (proj1_sig w0) (proj1_sig y) 1).
+rewrite (proj2 (AddConnectNature 1 N) w0).
+rewrite (proj2 (AddConnectNature 1 N) y).
+apply (proj1 H12).
+apply (proj2 H12).
+rewrite - (proj2 (AddConnectNature 1 M) z).
+rewrite - (proj2 (AddConnectNature 1 M) x).
+apply (plus_lt_compat_l (proj1_sig z) (proj1_sig x) 1 H11).
+move=> x y H10.
+apply (proj2 H3 (AddConnect 1 M (inr x)) (AddConnect 1 N (inr y))).
+move=> z.
+rewrite - (proj2 (AddConnectInvRelation 1 N) z).
+elim (AddConnectInv 1 N z).
+move=> z0 H11.
+apply (H7 x z0).
+move=> z0 H11.
+apply (H10 z0).
+apply (plus_lt_reg_l (proj1_sig z0) (proj1_sig y) 1).
+rewrite (proj2 (AddConnectNature 1 N) z0).
+rewrite (proj2 (AddConnectNature 1 N) y).
+apply H11.
+apply conj.
+move=> x y H10 z H11.
+elim (proj1 H4 (AddConnect 1 M (inr x)) (AddConnect 1 N (inr y)) H10 (AddConnect 1 M (inr z))).
+move=> w.
+rewrite - (proj2 (AddConnectInvRelation 1 N) w).
+elim (AddConnectInv 1 N w).
+move=> w0 H12.
+elim (proj2 H12 (H8 z w0)).
+move=> w0 H12.
+exists w0.
+apply conj.
+apply (plus_lt_reg_l (proj1_sig w0) (proj1_sig y) 1).
+rewrite (proj2 (AddConnectNature 1 N) w0).
+rewrite (proj2 (AddConnectNature 1 N) y).
+apply (proj1 H12).
+apply (proj2 H12).
+rewrite - (proj2 (AddConnectNature 1 M) z).
+rewrite - (proj2 (AddConnectNature 1 M) x).
+apply (plus_lt_compat_l (proj1_sig z) (proj1_sig x) 1 H11).
+move=> x y H10.
+apply (proj2 H4 (AddConnect 1 M (inr x)) (AddConnect 1 N (inr y))).
+move=> z.
+rewrite - (proj2 (AddConnectInvRelation 1 N) z).
+elim (AddConnectInv 1 N z).
+move=> z0 H11.
+apply (H8 x z0).
+move=> z0 H11.
+apply (H10 z0).
+apply (plus_lt_reg_l (proj1_sig z0) (proj1_sig y) 1).
+rewrite (proj2 (AddConnectNature 1 N) z0).
+rewrite (proj2 (AddConnectNature 1 N) y).
+apply H11.
+suff: (forall (D : Matrix Cfield (S M) (S N)), (forall (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < 1)%nat}),
+     D (AddConnect 1 M (inr x)) (AddConnect 1 N (inl y)) = CO) -> Mmult Cfield N M N
+  (AdjointMatrix M N
+     (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N)%nat}) =>
+      D (AddConnect 1 M (inr x)) (AddConnect 1 N (inr y))))
+  (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N)%nat}) =>
+   D (AddConnect 1 M (inr x)) (AddConnect 1 N (inr y))) = (fun (x y : {n : nat | (n < N)%nat}) => Mmult Cfield (S N) M (S N) (AdjointMatrix M (S N)
+     (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+      D (AddConnect 1 M (inr x)) y))
+  (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+   D (AddConnect 1 M (inr x)) y) (AddConnect 1 N (inr x)) (AddConnect 1 N (inr y)))).
+move=> H10.
+rewrite (H10 A H7).
+rewrite (H10 B H8).
+suff: (Mmult Cfield (S N) M (S N)
+   (AdjointMatrix M (S N)
+      (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat})
+       => A (AddConnect 1 M (inr x)) y))
+   (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+    A (AddConnect 1 M (inr x)) y) = Mmult Cfield (S N) M (S N)
+   (AdjointMatrix M (S N)
+      (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat})
+       => B (AddConnect 1 M (inr x)) y))
+   (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+    B (AddConnect 1 M (inr x)) y)).
+move=> H11.
+rewrite H11.
+reflexivity.
+rewrite - (Mplus_O_l Cfield (S N) (S N) (Mmult Cfield (S N) M (S N)
+  (AdjointMatrix M (S N)
+     (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+      A (AddConnect 1 M (inr x)) y))
+  (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+   A (AddConnect 1 M (inr x)) y))).
+rewrite - (Mplus_O_l Cfield (S N) (S N) (Mmult Cfield (S N) M (S N)
+  (AdjointMatrix M (S N)
+     (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+      B (AddConnect 1 M (inr x)) y))
+  (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+   B (AddConnect 1 M (inr x)) y))).
+rewrite - (Mplus_opp_r Cfield (S N) (S N) (Mmult Cfield (S N) 1 (S N)
+     (AdjointMatrix 1 (S N)
+        (fun (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < S N)%nat})
+         => A (AddConnect 1 M (inl x)) y))
+     (fun (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+      A (AddConnect 1 M (inl x)) y))).
+rewrite (Mplus_comm Cfield (S N) (S N) (Mmult Cfield (S N) 1 (S N)
+     (AdjointMatrix 1 (S N)
+        (fun (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < S N)%nat})
+         => A (AddConnect 1 M (inl x)) y))
+     (fun (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+      A (AddConnect 1 M (inl x)) y))).
+rewrite Mplus_assoc.
+rewrite Mplus_assoc.
+suff: (Mplus Cfield (S N) (S N)
+     (Mmult Cfield (S N) 1 (S N)
+        (AdjointMatrix 1 (S N)
+           (fun (x : {n : nat | (n < 1)%nat})
+              (y : {n : nat | (n < S N)%nat}) =>
+            A (AddConnect 1 M (inl x)) y))
+        (fun (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < S N)%nat})
+         => A (AddConnect 1 M (inl x)) y))
+     (Mmult Cfield (S N) M (S N)
+        (AdjointMatrix M (S N)
+           (fun (x : {n : nat | (n < M)%nat})
+              (y : {n : nat | (n < S N)%nat}) =>
+            A (AddConnect 1 M (inr x)) y))
+        (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat})
+         => A (AddConnect 1 M (inr x)) y)) = Mplus Cfield (S N) (S N)
+     (Mmult Cfield (S N) 1 (S N)
+        (AdjointMatrix 1 (S N)
+           (fun (x : {n : nat | (n < 1)%nat})
+              (y : {n : nat | (n < S N)%nat}) =>
+            A (AddConnect 1 M (inl x)) y))
+        (fun (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < S N)%nat})
+         => A (AddConnect 1 M (inl x)) y))
+     (Mmult Cfield (S N) M (S N)
+        (AdjointMatrix M (S N)
+           (fun (x : {n : nat | (n < M)%nat})
+              (y : {n : nat | (n < S N)%nat}) =>
+            B (AddConnect 1 M (inr x)) y))
+        (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat})
+         => B (AddConnect 1 M (inr x)) y))).
+move=> H11.
+rewrite H11.
+reflexivity.
+suff: ((fun (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < S N)%nat})
+         => A (AddConnect 1 M (inl x)) y) = (fun (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < S N)%nat})
+         => B (AddConnect 1 M (inl x)) y)).
+move=> H12.
+rewrite {3} H12.
+rewrite {3} H12.
+suff: (forall (D : Matrix Cfield (S M) (S N)), Mplus Cfield (S N) (S N)
+  (Mmult Cfield (S N) 1 (S N)
+     (AdjointMatrix 1 (S N)
+        (fun (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < S N)%nat})
+         => D (AddConnect 1 M (inl x)) y))
+     (fun (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+      D (AddConnect 1 M (inl x)) y))
+  (Mmult Cfield (S N) M (S N)
+     (AdjointMatrix M (S N)
+        (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat})
+         => D (AddConnect 1 M (inr x)) y))
+     (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+      D (AddConnect 1 M (inr x)) y)) = Mmult Cfield (S N) (S M) (S N) (AdjointMatrix (S M) (S N) D) D).
+move=> H13.
+rewrite (H13 A).
+rewrite (H13 B).
+apply H5.
+move=> D.
+suff: (D = MBlockH Cfield 1 M (S N) (fun (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < S N)%nat})
+         => D (AddConnect 1 M (inl x)) y) (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat})
+         => D (AddConnect 1 M (inr x)) y)).
+move=> H13.
+rewrite {5} H13.
+rewrite {7} H13.
+rewrite (BlockHAdjointMatrix 1 M (S N)).
+rewrite (MBlockHWMult Cfield (S N) 1 M (S N)).
+reflexivity.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MBlockH.
+rewrite - {1} (proj2 (AddConnectInvRelation 1 M) x).
+elim (AddConnectInv 1 M x).
+move=> x0.
+reflexivity.
+move=> x0.
+reflexivity.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply (H9 x y).
+move=> D H10.
+suff: ((fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < S N)%nat}) =>
+    D (AddConnect 1 M (inr x)) y) = MBlockW Cfield M 1 N (MO Cfield M 1) (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N)%nat}) =>
+      D (AddConnect 1 M (inr x)) (AddConnect 1 N (inr y)))).
+move=> H11.
+rewrite H11.
+rewrite (BlockWAdjointMatrix M 1 N).
+rewrite (MBlockHMult Cfield 1 N M (S N)).
+rewrite (MBlockWMult Cfield N M 1 N).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MBlockH.
+unfold MBlockW.
+rewrite (proj1 (AddConnectInvRelation 1 N) (inr x)).
+rewrite (proj1 (AddConnectInvRelation 1 N) (inr y)).
+reflexivity.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MBlockW.
+rewrite - {1} (proj2 (AddConnectInvRelation 1 N) y).
+elim (AddConnectInv 1 N y).
+move=> y0.
+apply (H10 x y0).
+move=> y0.
+reflexivity.
+suff: (forall (D : Matrix Cfield (S M) (S N)), UpperTriangularNormalFormC (S M) (S N) D -> (forall (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < 1)%nat}),
+     D (AddConnect 1 M (inr x)) (AddConnect 1 N (inl y)) = CO) -> forall (x y : {n : nat | (n < 1)%nat}), Cmult (Conjugate (D (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)))) (D (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y))) = Mmult Cfield (S N) (S M) (S N) (AdjointMatrix (S M) (S N) D) D (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))) (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N)))).
+move=> H9.
+suff: (forall (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < 1)%nat}), A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CIm = 0).
+move=> H10.
+suff: (forall (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < 1)%nat}), A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe > 0).
+move=> H11.
+suff: (forall (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < 1)%nat}), A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) = B (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y))).
+move=> H12.
+suff: (forall (K : nat) (x : {n : nat | (n < 1)%nat}), AddConnect 1 K (inl x) = (exist (fun (n : nat) => (n < S K)%nat) O (le_n_S O K (le_0_n K)))).
+move=> H13 x y.
+rewrite - (proj2 (AddConnectInvRelation 1 N) y).
+elim (AddConnectInv 1 N y).
+move=> y0.
+apply (H12 x y0).
+move=> y0.
+rewrite - (Cmult_1_l (A (AddConnect 1 M (inl x)) (AddConnect 1 N (inr y0)))).
+rewrite - (Cmult_1_l (B (AddConnect 1 M (inl x)) (AddConnect 1 N (inr y0)))).
+rewrite - (Cinv_l (Conjugate (A (AddConnect 1 M (inl x)) (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N)))))).
+rewrite Cmult_assoc.
+rewrite Cmult_assoc.
+apply (Fmul_eq_compat_l Cfield).
+suff: (A (AddConnect 1 M (inl x)) (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))) = B (AddConnect 1 M (inl x)) (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N)))).
+move=> H14.
+rewrite {2} H14.
+suff: (forall (D : Matrix Cfield (S M) (S N)), (D (exist (fun n : nat => (n < S M)%nat) 0%nat
+           (le_n_S 0 M (le_0_n M))) (exist (fun n : nat => (n < S N)%nat) 0%nat
+           (le_n_S 0 N (le_0_n N))) CRe > 0) -> (forall (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < 1)%nat}),
+     D (AddConnect 1 M (inr x)) (AddConnect 1 N (inl y)) = CO) -> Cmult (Conjugate (D (AddConnect 1 M (inl x))
+  (exist (fun n : nat => (n < S N)%nat) 0%nat (le_n_S 0 N (le_0_n N)))))
+(D (AddConnect 1 M (inl x)) (AddConnect 1 N (inr y0))) = Mmult Cfield (S N) (S M) (S N) (AdjointMatrix (S M) (S N) D) D (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))) (AddConnect 1 N (inr y0))).
+move=> H15.
+rewrite (H15 A).
+rewrite (H15 B).
+rewrite H5.
+reflexivity.
+rewrite - (H13 M x).
+rewrite - H14.
+rewrite - (H13 N x).
+apply (H11 x x).
+apply H8.
+rewrite - (H13 M x).
+rewrite - (H13 N x).
+apply (H11 x x).
+apply H7.
+move=> D H15 H16.
+unfold Mmult.
+rewrite (MySumF2Included {n : nat | (n < S M)%nat} (FiniteSingleton {n : nat | (n < S M)%nat} (exist (fun (n : nat) => (n < S M)%nat) O (le_n_S O M (le_0_n M))))).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+unfold AdjointMatrix.
+rewrite CM_O_r.
+rewrite - (H13 M x).
+reflexivity.
+move=> u.
+elim.
+move=> u0.
+rewrite - (proj2 (AddConnectInvRelation 1 M) u0).
+elim (AddConnectInv 1 M u0).
+move=> u1.
+elim.
+rewrite (H13 M u1).
+apply In_singleton.
+move=> u1 H17 H18.
+unfold AdjointMatrix.
+rewrite - (H13 N x).
+rewrite (H16 u1 x).
+rewrite ConjugateCO.
+apply (Fmul_O_l Cfield).
+move=> u H17.
+apply (Full_intro {n : nat | (n < S M)%nat} u).
+rewrite - (H13 N x).
+apply (H12 x x).
+rewrite - (H13 N x).
+move=> H14.
+apply (Rgt_not_eq (Conjugate (A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl x))) CRe) 0).
+unfold Conjugate.
+rewrite CmakeRe.
+apply (H11 x x).
+rewrite H14.
+reflexivity.
+move=> K x.
+apply sig_map.
+rewrite - (proj1 (AddConnectNature 1 K) x).
+elim (le_lt_or_eq (proj1_sig x) O (le_S_n (proj1_sig x) O (proj2_sig x))).
+move=> H13.
+elim (le_not_lt O (proj1_sig x) (le_0_n (proj1_sig x)) H13).
+apply.
+move=> x y.
+suff: (B (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe > 0).
+move=> H12.
+suff: (B (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CIm = 0).
+move=> H13.
+suff: (Cmult (Conjugate (A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y))))
+(A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y))) =
+Cmult (Conjugate (B (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y))))
+(B (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)))).
+move=> H14.
+elim (Rle_or_lt (A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe) (B (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe)).
+elim.
+move=> H15.
+elim (Rlt_not_eq (A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe * A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe) (B (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe * B (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe)).
+apply Rmult_gt_0_lt_compat.
+apply (H11 x y).
+apply H12.
+apply H15.
+apply H15.
+suff: (A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe *
+A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe = Cmult
+        (Conjugate (A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y))))
+        (A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y))) CRe).
+move=> H16.
+rewrite H16.
+rewrite H14.
+unfold Cmult.
+rewrite CmakeRe.
+rewrite H13.
+rewrite Rmult_0_r.
+unfold Rminus.
+rewrite Ropp_0.
+rewrite Rplus_0_r.
+unfold Conjugate.
+rewrite CmakeRe.
+reflexivity.
+unfold Cmult.
+rewrite CmakeRe.
+rewrite (H10 x y).
+rewrite Rmult_0_r.
+unfold Rminus.
+rewrite Ropp_0.
+rewrite Rplus_0_r.
+unfold Conjugate.
+rewrite CmakeRe.
+reflexivity.
+move=> H15.
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H16.
+rewrite H16.
+apply H15.
+move=> H16.
+rewrite H16.
+rewrite H13.
+apply (H10 x y).
+move=> H15.
+elim (Rlt_not_eq (B (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe * B (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe) (A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe * A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe)).
+apply Rmult_gt_0_lt_compat.
+apply H12.
+apply (H11 x y).
+apply H15.
+apply H15.
+suff: (A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe *
+A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) CRe = Cmult
+        (Conjugate (A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y))))
+        (A (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y))) CRe).
+move=> H16.
+rewrite H16.
+rewrite H14.
+unfold Cmult.
+rewrite CmakeRe.
+rewrite H13.
+rewrite Rmult_0_r.
+unfold Rminus.
+rewrite Ropp_0.
+rewrite Rplus_0_r.
+unfold Conjugate.
+rewrite CmakeRe.
+reflexivity.
+unfold Cmult.
+rewrite CmakeRe.
+rewrite (H10 x y).
+rewrite Rmult_0_r.
+unfold Rminus.
+rewrite Ropp_0.
+rewrite Rplus_0_r.
+unfold Conjugate.
+rewrite CmakeRe.
+reflexivity.
+rewrite (H9 A H3 H7).
+rewrite (H9 B H4 H8).
+rewrite H5.
+reflexivity.
+suff: (forall (z : {n : nat | (n < S N)%nat}),
+        (proj1_sig (AddConnect 1 N (inl y)) > proj1_sig z)%nat ->
+        B (AddConnect 1 M (inl x)) z = CO).
+move=> H13.
+apply (proj2 (proj2 H4 (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) H13)).
+move=> z.
+rewrite - (proj1 (AddConnectNature 1 N) y).
+move=> H13.
+elim (le_not_lt (proj1_sig y) (proj1_sig z)).
+elim (le_lt_or_eq (proj1_sig y) O (le_S_n (proj1_sig y) O (proj2_sig y))).
+move=> H14.
+elim (le_not_lt O (proj1_sig y) (le_0_n (proj1_sig y)) H14).
+move=> H14.
+rewrite H14.
+apply (le_0_n (proj1_sig z)).
+apply H13.
+suff: (forall (z : {n : nat | (n < S N)%nat}),
+        (proj1_sig (AddConnect 1 N (inl y)) > proj1_sig z)%nat ->
+        B (AddConnect 1 M (inl x)) z = CO).
+move=> H12.
+elim (proj1 (proj2 H4 (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) H12)).
+apply.
+move=> H13.
+apply False_ind.
+apply H6.
+rewrite H5.
+rewrite - (H9 B H4 H8 x y).
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H14.
+rewrite H14.
+unfold Cmult.
+rewrite CmakeRe.
+rewrite H13.
+rewrite (proj2 (proj2 H4 (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) H12)).
+rewrite Rmult_0_r.
+rewrite Rmult_0_r.
+apply (Rplus_opp_r 0).
+move=> H14.
+rewrite H14.
+unfold Cmult.
+rewrite CmakeIm.
+rewrite H13.
+rewrite (proj2 (proj2 H4 (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) H12)).
+rewrite Rmult_0_r.
+rewrite Rmult_0_r.
+apply (Rplus_0_r 0).
+move=> z.
+rewrite - (proj1 (AddConnectNature 1 N) y).
+move=> H12.
+elim (le_not_lt (proj1_sig y) (proj1_sig z)).
+elim (le_lt_or_eq (proj1_sig y) O (le_S_n (proj1_sig y) O (proj2_sig y))).
+move=> H13.
+elim (le_not_lt O (proj1_sig y) (le_0_n (proj1_sig y)) H13).
+move=> H13.
+rewrite H13.
+apply (le_0_n (proj1_sig z)).
+apply H12.
+move=> x y.
+suff: (forall (z : {n : nat | (n < S N)%nat}),
+        (proj1_sig (AddConnect 1 N (inl y)) > proj1_sig z)%nat ->
+        A (AddConnect 1 M (inl x)) z = CO).
+move=> H11.
+elim (proj1 (proj2 H3 (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) H11)).
+apply.
+move=> H12.
+apply False_ind.
+apply H6.
+rewrite - (H9 A H3 H7 x y).
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H13.
+rewrite H13.
+unfold Cmult.
+rewrite CmakeRe.
+rewrite H12.
+rewrite (proj2 (proj2 H3 (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) H11)).
+rewrite Rmult_0_r.
+rewrite Rmult_0_r.
+apply (Rplus_opp_r 0).
+move=> H13.
+rewrite H13.
+unfold Cmult.
+rewrite CmakeIm.
+rewrite H12.
+rewrite (proj2 (proj2 H3 (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) H11)).
+rewrite Rmult_0_r.
+rewrite Rmult_0_r.
+apply (Rplus_0_r 0).
+move=> z.
+rewrite - (proj1 (AddConnectNature 1 N) y).
+move=> H11.
+elim (le_not_lt (proj1_sig y) (proj1_sig z)).
+elim (le_lt_or_eq (proj1_sig y) O (le_S_n (proj1_sig y) O (proj2_sig y))).
+move=> H12.
+elim (le_not_lt O (proj1_sig y) (le_0_n (proj1_sig y)) H12).
+move=> H12.
+rewrite H12.
+apply (le_0_n (proj1_sig z)).
+apply H11.
+move=> x y.
+suff: (forall (z : {n : nat | (n < S N)%nat}),
+        (proj1_sig (AddConnect 1 N (inl y)) > proj1_sig z)%nat ->
+        A (AddConnect 1 M (inl x)) z = CO).
+move=> H10.
+apply (proj2 (proj2 H3 (AddConnect 1 M (inl x)) (AddConnect 1 N (inl y)) H10)).
+move=> z.
+rewrite - (proj1 (AddConnectNature 1 N) y).
+move=> H10.
+elim (le_not_lt (proj1_sig y) (proj1_sig z)).
+elim (le_lt_or_eq (proj1_sig y) O (le_S_n (proj1_sig y) O (proj2_sig y))).
+move=> H11.
+elim (le_not_lt O (proj1_sig y) (le_0_n (proj1_sig y)) H11).
+move=> H11.
+rewrite H11.
+apply (le_0_n (proj1_sig z)).
+apply H10.
+move=> D H9 H10 x y.
+unfold Mmult.
+rewrite (MySumF2Included {n : nat | (n < S M)%nat} (FiniteSingleton {n : nat | (n < S M)%nat} (AddConnect 1 M (inl x)))).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite CM_O_r.
+suff: (AddConnect 1 N (inl y) = (exist (fun (n : nat) => (n < S N)%nat) 0%nat
+        (le_n_S 0 N (le_0_n N)))).
+move=> H11.
+rewrite H11.
+reflexivity.
+apply sig_map.
+rewrite - (proj1 (AddConnectNature 1 N) y).
+elim (le_lt_or_eq (proj1_sig y) O (le_S_n (proj1_sig y) O (proj2_sig y))).
+move=> H11.
+elim (le_not_lt O (proj1_sig y) (le_0_n (proj1_sig y)) H11).
+move=> H11.
+rewrite H11.
+reflexivity.
+move=> u.
+elim.
+move=> u0.
+rewrite - (proj2 (AddConnectInvRelation 1 M) u0).
+elim (AddConnectInv 1 M u0).
+move=> u1.
+elim.
+suff: (x = u1).
+move=> H11.
+rewrite H11.
+apply In_singleton.
+apply sig_map.
+elim (le_lt_or_eq (proj1_sig u1) O (le_S_n (proj1_sig u1) O (proj2_sig u1))).
+move=> H11.
+elim (le_not_lt O (proj1_sig u1) (le_0_n (proj1_sig u1)) H11).
+move=> H11.
+rewrite H11.
+elim (le_lt_or_eq (proj1_sig x) O (le_S_n (proj1_sig x) O (proj2_sig x))).
+move=> H12.
+elim (le_not_lt O (proj1_sig x) (le_0_n (proj1_sig x)) H12).
+apply.
+move=> u1 H11 H12.
+suff: ((exist (fun (n : nat) => (n < S N)%nat) 0%nat
+        (le_n_S 0 N (le_0_n N))) = (AddConnect 1 N (inl (exist (fun (n : nat) => (n < 1)%nat) 0%nat
+        (le_n 1))))).
+move=> H13.
+rewrite H13.
+rewrite H10.
+apply (Fmul_O_r Cfield).
+apply sig_map.
+rewrite - (proj1 (AddConnectNature 1 N)).
+reflexivity.
+move=> u H11.
+apply (Full_intro {n : nat | (n < S M)%nat} u).
+move=> x y.
+apply (UpperTriangularMatrixStrongUpperTriangular Cfield (S M) (S N) B (proj1 H4)).
+rewrite - (proj1 (AddConnectNature 1 N) y).
+rewrite - (proj2 (AddConnectNature 1 M) x).
+apply (le_trans (S (proj1_sig y)) 1 (1 + proj1_sig x) (proj2_sig y) (le_plus_l 1 (proj1_sig x))).
+move=> x y.
+apply (UpperTriangularMatrixStrongUpperTriangular Cfield (S M) (S N) A (proj1 H3)).
+rewrite - (proj1 (AddConnectNature 1 N) y).
+rewrite - (proj2 (AddConnectNature 1 M) x).
+apply (le_trans (S (proj1_sig y)) 1 (1 + proj1_sig x) (proj2_sig y) (le_plus_l 1 (proj1_sig x))).
+Qed.
+
+Lemma HouseholderCSig : forall (N : nat) (x y : {n : nat | (n < N)%nat} -> C), CnInnerProduct N x x = CnInnerProduct N y y -> CnInnerProduct N x y = CnInnerProduct N y x -> {Q : Matrix Cfield N N | UnitaryMatrix N Q /\ Mmult Cfield N N 1 Q (MVectorToMatrix Cfield N x) = MVectorToMatrix Cfield N y /\ Mmult Cfield N N 1 Q (MVectorToMatrix Cfield N y) = MVectorToMatrix Cfield N x}.
+Proof.
+suff: (forall (N : nat) (x y : {n : nat | (n < N)%nat} -> C),
+CnInnerProduct N x y = CO ->
+{Q : Matrix Cfield N N
+| UnitaryMatrix N Q /\
+  Mmult Cfield N N 1 Q (MVectorToMatrix Cfield N x) =
+  MVectorToMatrix Cfield N x /\
+  Mmult Cfield N N 1 Q (MVectorToMatrix Cfield N y) =
+  Mopp Cfield N 1 (MVectorToMatrix Cfield N y)}).
+move=> H1 N x y H2 H3.
+elim (H1 N (Fnadd Cfield N x y) (Fnadd Cfield N x (Fnopp Cfield N y))).
+move=> Q H4.
+exists Q.
+suff: (forall (a b : C), Cmult (Cmake (/ (1 + 1)) 0) (Cminus (Cplus a b) (Cminus a b)) = b).
+move=> H5.
+suff: (forall (a b : C), Cmult (Cmake (/ (1 + 1)) 0) (Cplus (Cplus a b) (Cminus a b)) = a).
+move=> H6.
+apply conj.
+apply (proj1 H4).
+apply conj.
+suff: (VMmult Cfield N 1 (Cmake (/ (1 + 1)) 0) (Mplus Cfield N 1 (MVectorToMatrix Cfield N (Fnadd Cfield N x y)) (MVectorToMatrix Cfield N (Fnadd Cfield N x (Fnopp Cfield N y)))) = MVectorToMatrix Cfield N x).
+move=> H7.
+rewrite - H7.
+rewrite (VMmult_assoc_r Cfield N N 1 (Cmake (/ (1 + 1)) 0) Q).
+rewrite (Mmult_plus_distr_l Cfield N N 1 Q).
+rewrite (proj1 (proj2 H4)).
+rewrite (proj2 (proj2 H4)).
+apply functional_extensionality.
+move=> h.
+apply functional_extensionality.
+move=> w.
+apply H5.
+apply functional_extensionality.
+move=> h.
+apply functional_extensionality.
+move=> w.
+apply H6.
+suff: (VMmult Cfield N 1 (Cmake (/ (1 + 1)) 0) (Mplus Cfield N 1 (MVectorToMatrix Cfield N (Fnadd Cfield N x y)) (VMmult Cfield N 1 (Copp CI) (MVectorToMatrix Cfield N (Fnadd Cfield N x (Fnopp Cfield N y))))) = MVectorToMatrix Cfield N y).
+move=> H7.
+rewrite - H7.
+rewrite (VMmult_assoc_r Cfield N N 1 (Cmake (/ (1 + 1)) 0) Q).
+rewrite (Mmult_plus_distr_l Cfield N N 1 Q).
+rewrite (VMmult_assoc_r Cfield N N 1 (Copp CI) Q).
+rewrite (proj1 (proj2 H4)).
+rewrite (proj2 (proj2 H4)).
+suff: (forall (a b : C), Cmult (Cmake (/ (1 + 1)) 0) (Cplus (Cplus a b) (Cmult (Copp CI) (Copp (Cminus a b)))) = a).
+move=> H8.
+apply functional_extensionality.
+move=> h.
+apply functional_extensionality.
+move=> w.
+apply H8.
+move=> a b.
+suff: (Cmult (Copp CI) (Copp (Cminus a b)) = Cmult CI (Cminus a b)).
+move=> H8.
+rewrite H8.
+rewrite (Cmult_1_l (Cminus a b)).
+apply (H6 a b).
+apply (Fmul_opp_opp Cfield CI (Cminus a b)).
+suff: (forall (a b : C), Cmult (Cmake (/ (1 + 1)) 0) (Cplus (Cplus a b) (Cmult (Copp CI) (Cminus a b))) = b).
+move=> H7.
+apply functional_extensionality.
+move=> h.
+apply functional_extensionality.
+move=> w.
+apply H7.
+move=> a b.
+suff: (Cmult (Copp CI) (Cminus a b) = Copp (Cmult CI (Cminus a b))).
+move=> H7.
+rewrite H7.
+rewrite (Cmult_1_l (Cminus a b)).
+apply (H5 a b).
+apply (Fopp_mul_distr_l_reverse Cfield CI (Cminus a b)).
+move=> a b.
+suff: (Copp (Cminus b a) = Cminus a b).
+move=> H6.
+rewrite - H6.
+rewrite (Cplus_comm a b).
+apply (H5 b a).
+apply (Fopp_minus_distr Cfield b a).
+move=> a b.
+suff: (Cminus (Cplus a b) (Cminus a b) = Cplus b b).
+move=> H5.
+rewrite H5.
+rewrite - (Cmult_1_l b).
+suff: (Cmult (Cplus CI CI) b = Cplus (Cmult CI b) (Cmult CI b)).
+move=> H6.
+rewrite - H6.
+rewrite - Cmult_assoc.
+unfold CI.
+unfold Cmult at 2.
+unfold Cplus.
+unfold Rnplus.
+rewrite CmakeRe.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite CmakeIm.
+rewrite (Rplus_0_r 0).
+rewrite (Rinv_l (1 + 1)).
+rewrite (Rmult_0_r 0).
+rewrite (Rmult_0_r (/ (1 + 1))).
+rewrite (Rmult_0_l (1 + 1)).
+rewrite (Rminus_0_r 1).
+rewrite (Rplus_0_r 0).
+reflexivity.
+apply (Rgt_not_eq (1 + 1) 0).
+apply (Rlt_trans 0 1 (1 + 1) Rlt_0_1 (Rlt_plus_1 1)).
+apply (Fmul_add_distr_r Cfield CI CI b).
+unfold Cminus.
+unfold Cplus.
+unfold Rnminus.
+unfold Rnopp.
+unfold Rnplus.
+apply functional_extensionality.
+move=> z.
+rewrite (Ropp_plus_distr (a z) (- b z)).
+rewrite (Ropp_involutive (b z)).
+rewrite - (Rplus_assoc (a z + b z) (- a z) (b z)).
+rewrite (Rplus_comm (a z + b z) (- a z)).
+rewrite - (Rplus_assoc (- a z) (a z) (b z)).
+rewrite (Rplus_opp_l (a z)).
+rewrite (Rplus_0_l (b z)).
+reflexivity.
+suff: (forall (x y1 y2 : Cn N),
+       CnInnerProduct N x (Fnadd Cfield N y1 y2) =
+       Cplus (CnInnerProduct N x y1) (CnInnerProduct N x y2)).
+move=> H4.
+suff: (forall (x y : Cn N),
+       CnInnerProduct N x (Fnopp Cfield N y) =
+       Copp (CnInnerProduct N x y)).
+move=> H5.
+rewrite (Cnip_linear_plus_l N x y).
+rewrite (H4 x x (Fnopp Cfield N y)).
+rewrite (H4 y x (Fnopp Cfield N y)).
+rewrite (H5 x y).
+rewrite (H5 y y).
+rewrite H3.
+rewrite - Cplus_assoc.
+rewrite (Cplus_assoc (CnInnerProduct N x x)).
+rewrite (Cplus_comm (Copp (CnInnerProduct N y x))).
+rewrite Cplus_opp_r.
+rewrite (Cplus_comm (CnInnerProduct N x x)).
+rewrite Cplus_0_l.
+rewrite H2.
+apply Cplus_opp_r.
+apply (Cip_linear_opp_r (FnVS Cfield N) (CnInner_Product_Space N)).
+apply (Cip_linear_plus_r (FnVS Cfield N) (CnInner_Product_Space N)).
+move=> N x y H1.
+elim (excluded_middle_informative (y = FnO Cfield N)).
+move=> H2.
+exists (MI Cfield N).
+apply conj.
+unfold UnitaryMatrix.
+rewrite (AdjointMatrixI N).
+apply (Mmult_I_r Cfield N N (MI Cfield N)).
+apply conj.
+apply (Mmult_I_l Cfield N 1 (MVectorToMatrix Cfield N x)).
+rewrite (Mmult_I_l Cfield N 1 (MVectorToMatrix Cfield N y)).
+apply functional_extensionality.
+move=> h.
+apply functional_extensionality.
+move=> w.
+rewrite H2.
+suff: (CO = Copp CO).
+apply.
+suff: (Copp CO = CO).
+move=> H3.
+rewrite H3.
+reflexivity.
+apply (Fopp_O Cfield).
+move=> H2.
+exists (Mplus Cfield N N (MI Cfield N) (VMmult Cfield N N (Cmake (- (2 / CnInnerProduct N y y CRe)) 0) (Mmult Cfield N 1 N (MVectorToMatrix Cfield N y) (AdjointMatrix N 1 (MVectorToMatrix Cfield N y))))).
+apply conj.
+suff: (Conjugate (Cmake (- (2 / CnInnerProduct N y y CRe)) 0) = Cmake (- (2 / CnInnerProduct N y y CRe)) 0).
+move=> H3.
+unfold UnitaryMatrix.
+rewrite (AdjointMatrixPlus N N).
+rewrite (AdjointMatrixVMmult N N).
+rewrite (AdjointMatrixI N).
+rewrite (AdjointMatrixMult N 1 N).
+rewrite (AdjointMatrixInvolutive N 1).
+rewrite (Mmult_plus_distr_l Cfield N N N).
+rewrite (Mmult_plus_distr_r Cfield N N N).
+rewrite (Mmult_plus_distr_r Cfield N N N).
+rewrite (Mmult_I_r Cfield N N (MI Cfield N)).
+rewrite (Mmult_I_r Cfield N N).
+rewrite (Mmult_I_l Cfield N N).
+rewrite (Mplus_assoc Cfield N N (MI Cfield N)).
+rewrite H3.
+rewrite - (Mplus_assoc Cfield N N (VMmult Cfield N N (Cmake (- (2 / CnInnerProduct N y y CRe)) 0)
+        (Mmult Cfield N 1 N (MVectorToMatrix Cfield N y)
+           (AdjointMatrix N 1 (MVectorToMatrix Cfield N y))))).
+rewrite - (VMmult_plus_distr_r Cfield N N (Cmake (- (2 / CnInnerProduct N y y CRe)) 0) (Cmake (- (2 / CnInnerProduct N y y CRe)) 0)).
+suff: (Mmult Cfield N N N
+        (VMmult Cfield N N (Cmake (- (2 / CnInnerProduct N y y CRe)) 0)
+           (Mmult Cfield N 1 N (MVectorToMatrix Cfield N y)
+              (AdjointMatrix N 1 (MVectorToMatrix Cfield N y))))
+        (VMmult Cfield N N (Cmake (- (2 / CnInnerProduct N y y CRe)) 0)
+           (Mmult Cfield N 1 N (MVectorToMatrix Cfield N y)
+              (AdjointMatrix N 1 (MVectorToMatrix Cfield N y)))) = Mopp Cfield N N (VMmult Cfield N N
+        (Fadd Cfield (Cmake (- (2 / CnInnerProduct N y y CRe)) 0)
+           (Cmake (- (2 / CnInnerProduct N y y CRe)) 0))
+        (Mmult Cfield N 1 N (MVectorToMatrix Cfield N y)
+           (AdjointMatrix N 1 (MVectorToMatrix Cfield N y))))).
+move=> H4.
+rewrite H4.
+rewrite (Mplus_opp_r Cfield N N).
+rewrite (Mplus_comm Cfield N N).
+apply (Mplus_O_l Cfield N N).
+rewrite (VMmult_assoc_l Cfield N N N (Cmake (- (2 / CnInnerProduct N y y CRe)) 0)).
+rewrite (VMmult_assoc_r Cfield N N N (Cmake (- (2 / CnInnerProduct N y y CRe)) 0)).
+rewrite (VMmult_assoc_reverse Cfield N N (Cmake (- (2 / CnInnerProduct N y y CRe)) 0) (Cmake (- (2 / CnInnerProduct N y y CRe)) 0)).
+rewrite (Mmult_assoc Cfield N 1 N N).
+rewrite - (Mmult_assoc Cfield 1 N 1 N).
+suff: (Mmult Cfield 1 1 N
+        (Mmult Cfield 1 N 1
+           (AdjointMatrix N 1 (MVectorToMatrix Cfield N y))
+           (MVectorToMatrix Cfield N y))
+        (AdjointMatrix N 1 (MVectorToMatrix Cfield N y)) = VMmult Cfield 1 N (CnInnerProduct N y y)
+        (AdjointMatrix N 1 (MVectorToMatrix Cfield N y))).
+move=> H4.
+rewrite H4.
+rewrite (VMmult_assoc_r Cfield N 1 N (CnInnerProduct N y y)).
+rewrite (VMmult_assoc_reverse Cfield N N).
+suff: (Fmul Cfield
+     (Fmul Cfield (Cmake (- (2 / CnInnerProduct N y y CRe)) 0)
+        (Cmake (- (2 / CnInnerProduct N y y CRe)) 0)) (CnInnerProduct N y y) = Copp (Fadd Cfield (Cmake (- (2 / CnInnerProduct N y y CRe)) 0)
+        (Cmake (- (2 / CnInnerProduct N y y CRe)) 0))).
+move=> H5.
+rewrite H5.
+apply functional_extensionality.
+move=> h.
+apply functional_extensionality.
+move=> w.
+apply (Fopp_mul_distr_l_reverse Cfield).
+simpl.
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H5.
+rewrite H5.
+unfold Cmult at 2.
+rewrite CmakeIm.
+rewrite (Rmult_0_r 0).
+rewrite Rmult_0_r.
+rewrite Rmult_0_l.
+rewrite Rminus_0_r.
+rewrite (Rplus_0_r 0).
+rewrite CmakeRe.
+unfold Cmult.
+suff: (CnInnerProduct N y y CIm = 0).
+move=> H6.
+rewrite H6.
+rewrite CmakeRe.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite (Rmult_0_r 0).
+rewrite Rminus_0_r.
+rewrite Rmult_opp_opp.
+rewrite Rmult_assoc.
+rewrite (Rmult_assoc 2 (/ CnInnerProduct N y y CRe) (CnInnerProduct N y y CRe)).
+rewrite (Rinv_l (CnInnerProduct N y y CRe)).
+rewrite (Rmult_1_r 2).
+unfold Copp.
+unfold Rnopp.
+unfold Cplus.
+unfold Rnplus.
+rewrite CmakeRe.
+rewrite Ropp_plus_distr.
+rewrite (Ropp_involutive (2 / CnInnerProduct N y y CRe)).
+rewrite {2} /2.
+rewrite - (INR_IPR 2).
+simpl.
+rewrite (Rmult_plus_distr_l (2 / CnInnerProduct N y y CRe) 1 1).
+rewrite (Rmult_1_r (2 / CnInnerProduct N y y CRe)).
+reflexivity.
+move=> H7.
+apply H2.
+apply (proj1 (Cnip_refl N y)).
+apply functional_extensionality.
+move=> w.
+elim (CReorCIm w).
+move=> H8.
+rewrite H8.
+apply H7.
+move=> H8.
+rewrite H8.
+apply H6.
+apply (Cip_pos_im (FnVS Cfield N) (CnInner_Product_Space N) y).
+move=> H5.
+rewrite H5.
+unfold Cmult at 2.
+rewrite CmakeIm.
+rewrite (Rmult_0_r 0).
+rewrite Rmult_0_r.
+rewrite Rmult_0_l.
+rewrite Rminus_0_r.
+rewrite (Rplus_0_r 0).
+rewrite CmakeRe.
+unfold Cmult.
+suff: (CnInnerProduct N y y CIm = 0).
+move=> H6.
+rewrite H6.
+rewrite CmakeIm.
+rewrite CmakeIm.
+rewrite CmakeRe.
+rewrite Rmult_0_l.
+rewrite Rmult_0_r.
+rewrite Rplus_0_r.
+unfold Copp.
+unfold Rnopp.
+unfold Cplus.
+unfold Rnplus.
+rewrite CmakeIm.
+rewrite (Rplus_0_l 0).
+rewrite Ropp_0.
+reflexivity.
+apply (Cip_pos_im (FnVS Cfield N) (CnInner_Product_Space N) y).
+apply functional_extensionality.
+move=> h.
+apply functional_extensionality.
+move=> w.
+unfold Mmult at 1.
+suff: (exist (Finite (Count 1)) (Full_set {n : nat | (n < 1)%nat})
+     (CountFinite 1) = FiniteSingleton (Count 1) h).
+move=> H4.
+rewrite H4.
+rewrite MySumF2Singleton.
+apply (Fmul_eq_compat_r Cfield).
+unfold Mmult.
+unfold CnInnerProduct.
+unfold Count.
+apply (FiniteSetInduction {n : nat | (n < N)%nat}
+  (exist (Finite {n : nat | (n < N)%nat}) (Full_set {n : nat | (n < N)%nat}) (CountFinite N))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H5 H6 H7 H8.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H8.
+rewrite (Cmult_comm (y b) (Conjugate (y b))).
+reflexivity.
+apply H7.
+apply H7.
+apply sig_map.
+apply Extensionality_Ensembles.
+apply conj.
+move=> u H4.
+suff: (u = h).
+move=> H5.
+rewrite H5.
+apply In_singleton.
+apply sig_map.
+elim (le_lt_or_eq (proj1_sig u) O (le_S_n (proj1_sig u) O (proj2_sig u))).
+move=> H5.
+elim (le_not_lt O (proj1_sig u) (le_0_n (proj1_sig u)) H5).
+move=> H5.
+elim (le_lt_or_eq (proj1_sig h) O (le_S_n (proj1_sig h) O (proj2_sig h))).
+move=> H6.
+elim (le_not_lt O (proj1_sig h) (le_0_n (proj1_sig h)) H6).
+move=> H6.
+rewrite H6.
+apply H5.
+move=> u H4.
+apply Full_intro.
+unfold Conjugate.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite Ropp_0.
+reflexivity.
+apply conj.
+rewrite (Mmult_plus_distr_r Cfield N N 1).
+rewrite (VMmult_assoc_l Cfield N N 1).
+rewrite (Mmult_assoc Cfield N 1 N 1).
+suff: (Mmult Cfield 1 N 1
+           (AdjointMatrix N 1 (MVectorToMatrix Cfield N y))
+           (MVectorToMatrix Cfield N x) = MO Cfield 1 1).
+move=> H3.
+rewrite H3.
+rewrite - (VMmult_assoc_l Cfield N 1 1).
+rewrite (Mmult_O_r Cfield N 1 1).
+rewrite (Mplus_comm Cfield N 1).
+rewrite (Mmult_I_l Cfield N 1).
+apply (Mplus_O_l Cfield N 1).
+apply functional_extensionality.
+move=> h.
+apply functional_extensionality.
+move=> w.
+unfold Mmult.
+simpl.
+rewrite - H1.
+unfold CnInnerProduct.
+unfold Count.
+apply (FiniteSetInduction {n : nat | (n < N)%nat}
+  (exist (Finite {n : nat | (n < N)%nat}) (Full_set {n : nat | (n < N)%nat}) (CountFinite N))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H3 H4 H5 H6.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H6.
+rewrite (Cmult_comm (x b) (Conjugate (y b))).
+reflexivity.
+apply H5.
+apply H5.
+rewrite (Mmult_plus_distr_r Cfield N N 1).
+rewrite (Mmult_I_l Cfield N 1).
+rewrite (VMmult_assoc_l Cfield N N 1).
+rewrite (Mmult_assoc Cfield N 1 N 1).
+apply functional_extensionality.
+move=> h.
+apply functional_extensionality.
+move=> w.
+unfold Mplus.
+unfold VMmult.
+unfold Mmult at 1.
+suff: (exist (Finite (Count 1)) (Full_set {n : nat | (n < 1)%nat})
+     (CountFinite 1) = FiniteSingleton (Count 1) w).
+move=> H3.
+rewrite H3.
+rewrite MySumF2Singleton.
+suff: (Mmult Cfield 1 N 1
+           (AdjointMatrix N 1 (MVectorToMatrix Cfield N y))
+           (MVectorToMatrix Cfield N y) w w = Conjugate (CnInnerProduct N y y)).
+move=> H4.
+rewrite H4.
+simpl.
+rewrite (Cmult_comm (MVectorToMatrix Cfield N y h w)).
+rewrite - Cmult_assoc.
+unfold Conjugate.
+unfold Cmult at 2.
+suff: (CnInnerProduct N y y CIm = 0).
+move=> H5.
+rewrite H5.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite (Rmult_0_l (- 0)).
+rewrite Rminus_0_r.
+rewrite Ropp_0.
+rewrite Rmult_0_r.
+rewrite Rmult_0_l.
+rewrite Rplus_0_r.
+rewrite - Ropp_mult_distr_l.
+rewrite (Rmult_assoc 2).
+rewrite Rinv_l.
+rewrite Rmult_1_r.
+suff: (Cmake (- (2)) 0 = Cplus (Copp CI) (Copp CI)).
+move=> H6.
+rewrite H6.
+rewrite Cmult_comm.
+rewrite Cmult_plus_distr_l.
+suff: (Cmult (MVectorToMatrix Cfield N y h w) (Copp CI) = Copp (Cmult (MVectorToMatrix Cfield N y h w) CI)).
+move=> H7.
+rewrite H7.
+rewrite Cmult_comm.
+rewrite Cmult_1_l.
+rewrite - Cplus_assoc.
+rewrite Cplus_opp_r.
+apply Cplus_0_l.
+apply (Fopp_mul_distr_r_reverse Cfield).
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H6.
+rewrite H6.
+unfold Cplus.
+unfold Rnplus.
+unfold Copp.
+unfold Rnopp.
+unfold CI.
+rewrite CmakeRe.
+rewrite CmakeRe.
+rewrite /2.
+rewrite - (INR_IPR 2).
+apply (Ropp_plus_distr 1 1).
+move=> H6.
+rewrite H6.
+unfold Cplus.
+unfold Rnplus.
+unfold Copp.
+unfold Rnopp.
+unfold CI.
+rewrite CmakeIm.
+rewrite CmakeIm.
+rewrite Ropp_0.
+rewrite (Rplus_0_l 0).
+reflexivity.
+move=> H6.
+apply H2.
+apply (proj1 (Cnip_refl N y)).
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H7.
+rewrite H7.
+apply H6.
+move=> H7.
+rewrite H7.
+apply H5.
+apply (Cip_pos_im (FnVS Cfield N) (CnInner_Product_Space N) y).
+unfold Mmult.
+unfold CnInnerProduct.
+unfold Count.
+apply (FiniteSetInduction {n : nat | (n < N)%nat}
+  (exist (Finite {n : nat | (n < N)%nat}) (Full_set {n : nat | (n < N)%nat}) (CountFinite N))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+simpl.
+rewrite ConjugateCO.
+reflexivity.
+move=> B b H4 H5 H6 H7.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H7.
+rewrite Proposition_4_8_1_1.
+rewrite (Proposition_4_8_2 (y b) (Conjugate (y b))).
+rewrite (ConjugateInvolutive (y b)).
+reflexivity.
+apply H6.
+apply H6.
+apply sig_map.
+apply Extensionality_Ensembles.
+apply conj.
+move=> u H3.
+suff: (u = w).
+move=> H4.
+rewrite H4.
+apply In_singleton.
+apply sig_map.
+elim (le_lt_or_eq (proj1_sig u) O (le_S_n (proj1_sig u) O (proj2_sig u))).
+move=> H4.
+elim (le_not_lt O (proj1_sig u) (le_0_n (proj1_sig u)) H4).
+move=> H4.
+elim (le_lt_or_eq (proj1_sig w) O (le_S_n (proj1_sig w) O (proj2_sig w))).
+move=> H5.
+elim (le_not_lt O (proj1_sig w) (le_0_n (proj1_sig w)) H5).
+move=> H5.
+rewrite H5.
+apply H4.
+move=> u H3.
+apply Full_intro.
+Qed.
+
+Definition HouseholderC (N : nat) (x y : {n : nat | (n < N)%nat} -> C) (H1 : CnInnerProduct N x x = CnInnerProduct N y y) (H2 : CnInnerProduct N x y = CnInnerProduct N y x) := proj1_sig (HouseholderCSig N x y H1 H2).
+
+Lemma MmultILRSame : forall (f : Field) (N : nat) (A B : Matrix f N N), Mmult f N N N A B = MI f N <-> Mmult f N N N B A = MI f N .
+Proof.
+suff: (forall (f : Field) (N : nat) (A B : Matrix f N N),
+Mmult f N N N A B = MI f N -> Mmult f N N N B A = MI f N).
+move=> H1 f N A B.
+apply conj.
+apply (H1 f N A B).
+apply (H1 f N B A).
+move=> f N A B H1.
+suff: (B = InvMatrix f N A).
+move=> H2.
+rewrite H2.
+apply (InvMatrixMultL f N A).
+apply (proj2 (RegularInvRExistRelation f N A)).
+exists B.
+apply H1.
+apply (InvMatrixMultUniqueRStrong f N A B H1).
+Qed.
+
+Lemma SameNormConvertUnitaryCSig : forall (N : nat) (x y : {n : nat | (n < N)%nat} -> C), CnInnerProduct N x x = CnInnerProduct N y y -> {Q : Matrix Cfield N N | UnitaryMatrix N Q /\ Mmult Cfield N N 1 Q (MVectorToMatrix Cfield N x) = MVectorToMatrix Cfield N y}.
+Proof.
+move=> N x y H1.
+elim (excluded_middle_informative (CnInnerProduct N x y = CnInnerProduct N y x)).
+move=> H2.
+elim (HouseholderCSig N x y H1 H2).
+move=> Q H3.
+exists Q.
+apply conj.
+apply (proj1 H3).
+apply (proj1 (proj2 H3)).
+move=> H2.
+suff: (CnInnerProduct N x y CIm <> 0).
+move=> H3.
+suff: (Cnorm (CnInnerProduct N x y) <> 0).
+move=> H4.
+elim (HouseholderCSig N x (Fnmul Cfield N (Rnmult 2 (/ Cnorm (CnInnerProduct N x y)) (CnInnerProduct N x y)) y)).
+move=> Q H5.
+exists (Mmult Cfield N N N (VMmult Cfield N N (Rnmult 2 (/ Cnorm (CnInnerProduct N x y)) (Conjugate (CnInnerProduct N x y))) (MI Cfield N)) Q).
+suff: (Cnorm (CnInnerProduct N x y) <> 0).
+move=> H6.
+apply conj.
+apply (UnitaryMatrixChain N).
+unfold UnitaryMatrix.
+rewrite (AdjointMatrixVMmult N N).
+rewrite (AdjointMatrixI N).
+rewrite (VMmult_assoc_l Cfield N N N).
+rewrite (VMmult_assoc_r Cfield N N N).
+rewrite (VMmult_assoc_reverse Cfield N N).
+suff: (Fmul Cfield
+     (Conjugate
+        (Rnmult 2 (/ Cnorm (CnInnerProduct N x y))
+           (Conjugate (CnInnerProduct N x y))))
+     (Rnmult 2 (/ Cnorm (CnInnerProduct N x y))
+        (Conjugate (CnInnerProduct N x y))) = CI).
+move=> H7.
+rewrite H7.
+rewrite (Mmult_I_l Cfield N N (MI Cfield N)).
+apply functional_extensionality.
+move=> h.
+apply functional_extensionality.
+move=> w.
+apply (Cmult_1_l (MI Cfield N h w)).
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H7.
+rewrite H7.
+simpl.
+unfold Cmult.
+unfold Rnmult.
+rewrite CmakeRe.
+unfold Conjugate.
+rewrite CmakeRe.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite CmakeIm.
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CRe)).
+rewrite (Rmult_comm (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CRe)).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+unfold Rminus.
+rewrite Ropp_mult_distr_l_reverse.
+rewrite Ropp_involutive.
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * - CnInnerProduct N x y CIm)).
+rewrite (Rmult_comm (/ Cnorm (CnInnerProduct N x y) * - CnInnerProduct N x y CIm)).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+rewrite - Rmult_plus_distr_l.
+rewrite (Rmult_opp_opp (CnInnerProduct N x y CIm) (CnInnerProduct N x y CIm)).
+suff: (CnInnerProduct N x y CRe * CnInnerProduct N x y CRe +
+ CnInnerProduct N x y CIm * CnInnerProduct N x y CIm = Cnorm (CnInnerProduct N x y) * Cnorm (CnInnerProduct N x y)).
+move=> H8.
+rewrite H8.
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rinv_l (Cnorm (CnInnerProduct N x y)) H4).
+rewrite (Rmult_1_r (/ Cnorm (CnInnerProduct N x y))).
+unfold CI.
+rewrite CmakeRe.
+apply (Rinv_l (Cnorm (CnInnerProduct N x y)) H4).
+rewrite CnormDefinition.
+apply (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0)
+     (CnInnerProduct N x y CRe * CnInnerProduct N x y CRe +
+      CnInnerProduct N x y CIm * CnInnerProduct N x y CIm)
+     (CnormSqrtSub (CnInnerProduct N x y))))).
+move=> H7.
+rewrite H7.
+simpl.
+unfold Cmult.
+unfold Rnmult.
+rewrite CmakeIm.
+unfold Conjugate.
+rewrite CmakeRe.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite CmakeIm.
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CRe)).
+rewrite (Rmult_comm (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CRe)).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+rewrite Ropp_mult_distr_r.
+rewrite Ropp_involutive.
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CIm)).
+rewrite (Rmult_comm (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CIm)).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+rewrite - Rmult_plus_distr_l.
+rewrite (Rmult_comm (CnInnerProduct N x y CIm) (CnInnerProduct N x y CRe)).
+rewrite - Rmult_plus_distr_l.
+rewrite (Rplus_opp_l (CnInnerProduct N x y CIm)).
+rewrite Rmult_0_r.
+unfold CI.
+rewrite CmakeIm.
+apply Rmult_0_r.
+apply (proj1 H5).
+rewrite (Mmult_assoc Cfield N N N 1).
+rewrite (proj1 (proj2 H5)).
+rewrite (VMmult_assoc_l Cfield N N 1).
+rewrite (Mmult_I_l Cfield N 1).
+apply functional_extensionality.
+move=> h.
+apply functional_extensionality.
+move=> w.
+unfold VMmult.
+unfold MVectorToMatrix.
+unfold Fnmul.
+unfold Rnmult.
+simpl.
+rewrite - Cmult_assoc.
+unfold Cmult at 2.
+unfold Conjugate.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CRe)).
+rewrite (Rmult_comm (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CRe)).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+unfold Rminus.
+rewrite Ropp_mult_distr_l.
+rewrite Ropp_mult_distr_r.
+rewrite Ropp_involutive.
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CIm)).
+rewrite (Rmult_comm (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CIm)).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+rewrite - Rmult_plus_distr_l.
+suff: (CnInnerProduct N x y CRe * CnInnerProduct N x y CRe +
+ CnInnerProduct N x y CIm * CnInnerProduct N x y CIm = Cnorm (CnInnerProduct N x y) * Cnorm (CnInnerProduct N x y)).
+move=> H7.
+rewrite H7.
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rinv_l (Cnorm (CnInnerProduct N x y)) H4).
+rewrite (Rmult_1_r (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rinv_l (Cnorm (CnInnerProduct N x y)) H4).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CRe)).
+rewrite (Rmult_comm (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CRe)).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * - CnInnerProduct N x y CIm)).
+rewrite (Rmult_comm (/ Cnorm (CnInnerProduct N x y) * - CnInnerProduct N x y CIm)).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+rewrite - Rmult_plus_distr_l.
+rewrite (Rmult_comm (CnInnerProduct N x y CRe) (CnInnerProduct N x y CIm)).
+rewrite - Rmult_plus_distr_r.
+rewrite (Rplus_opp_r (CnInnerProduct N x y CIm)).
+rewrite (Rmult_0_l (CnInnerProduct N x y CRe)).
+rewrite Rmult_0_r.
+apply (Cmult_1_l (y h)).
+rewrite CnormDefinition.
+apply (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0)
+     (CnInnerProduct N x y CRe * CnInnerProduct N x y CRe +
+      CnInnerProduct N x y CIm * CnInnerProduct N x y CIm)
+     (CnormSqrtSub (CnInnerProduct N x y))))).
+apply H4.
+suff: (forall (c : C) (x y : Cn N),
+       CnInnerProduct N x (Fnmul Cfield N c y) =
+       Cmult (Conjugate c) (CnInnerProduct N x y)).
+move=> H5.
+rewrite H5.
+rewrite (Cnip_linear_mult_l N).
+rewrite H1.
+rewrite - Cmult_assoc.
+unfold Cmult at 2.
+unfold Conjugate.
+unfold Rnmult.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CRe)).
+rewrite (Rmult_comm (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CRe)).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+unfold Rminus.
+rewrite Ropp_mult_distr_l.
+rewrite Ropp_involutive.
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CIm)).
+rewrite (Rmult_comm (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CIm)).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+rewrite - Rmult_plus_distr_l.
+suff: (CnInnerProduct N x y CRe * CnInnerProduct N x y CRe +
+ CnInnerProduct N x y CIm * CnInnerProduct N x y CIm = Cnorm (CnInnerProduct N x y) * Cnorm (CnInnerProduct N x y)).
+move=> H6.
+rewrite H6.
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rinv_l (Cnorm (CnInnerProduct N x y)) H4).
+rewrite (Rmult_1_r (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rinv_l (Cnorm (CnInnerProduct N x y)) H4).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CRe)).
+rewrite (Rmult_comm (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CRe)).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+rewrite - Ropp_mult_distr_l.
+rewrite Ropp_mult_distr_r.
+rewrite Ropp_mult_distr_r.
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CIm)).
+rewrite (Rmult_comm (/ Cnorm (CnInnerProduct N x y) * CnInnerProduct N x y CIm)).
+rewrite - (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y) * / Cnorm (CnInnerProduct N x y))).
+rewrite - Rmult_plus_distr_l.
+rewrite (Rmult_comm (CnInnerProduct N x y CRe) (CnInnerProduct N x y CIm)).
+rewrite - Rmult_plus_distr_l.
+rewrite (Rplus_opp_r (CnInnerProduct N x y CRe)).
+rewrite (Rmult_0_r (CnInnerProduct N x y CIm)).
+rewrite Rmult_0_r.
+suff: (Cmult (Cmake 1 0) (CnInnerProduct N y y) = CnInnerProduct N y y).
+move=> H7.
+rewrite H7.
+reflexivity.
+apply Cmult_1_l.
+rewrite CnormDefinition.
+apply (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0)
+     (CnInnerProduct N x y CRe * CnInnerProduct N x y CRe +
+      CnInnerProduct N x y CIm * CnInnerProduct N x y CIm)
+     (CnormSqrtSub (CnInnerProduct N x y))))).
+apply (Cip_linear_mult_r (FnVS Cfield N) (CnInner_Product_Space N)).
+rewrite (Cnip_linear_mult_l N).
+rewrite (Cnip_sym N).
+rewrite (Cnip_linear_mult_l N).
+unfold Conjugate.
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H5.
+rewrite H5.
+rewrite CmakeRe.
+reflexivity.
+move=> H5.
+rewrite H5.
+rewrite CmakeIm.
+unfold Cmult.
+unfold Rnmult.
+rewrite CmakeIm.
+suff: (CnInnerProduct N y x CIm = - CnInnerProduct N x y CIm).
+move=> H6.
+rewrite H6.
+suff: (CnInnerProduct N y x CRe = CnInnerProduct N x y CRe).
+move=> H7.
+rewrite H7.
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_assoc (/ Cnorm (CnInnerProduct N x y))).
+rewrite (Rmult_comm (CnInnerProduct N x y CIm) (CnInnerProduct N x y CRe)).
+rewrite - Ropp_mult_distr_r.
+rewrite - Ropp_mult_distr_r.
+rewrite Rplus_opp_l.
+apply Ropp_0.
+rewrite (Cnip_sym N y x).
+unfold Conjugate.
+apply CmakeRe.
+rewrite (Cnip_sym N y x).
+unfold Conjugate.
+apply CmakeIm.
+move=> H4.
+apply (Rgt_not_eq (CnInnerProduct N x y CRe * CnInnerProduct N x y CRe +
+      CnInnerProduct N x y CIm * CnInnerProduct N x y CIm) 0).
+rewrite - (Rplus_0_l 0).
+apply (Rplus_ge_gt_compat (CnInnerProduct N x y CRe * CnInnerProduct N x y CRe) 0 (CnInnerProduct N x y CIm * CnInnerProduct N x y CIm) 0).
+apply Formula_1_3.
+elim (Rle_or_lt (CnInnerProduct N x y CIm) 0).
+elim.
+move=> H5.
+rewrite - (Rmult_opp_opp (CnInnerProduct N x y CIm) (CnInnerProduct N x y CIm)).
+apply (Rmult_gt_0_compat (- CnInnerProduct N x y CIm) (- CnInnerProduct N x y CIm)).
+apply (Ropp_gt_lt_0_contravar (CnInnerProduct N x y CIm) H5).
+apply (Ropp_gt_lt_0_contravar (CnInnerProduct N x y CIm) H5).
+move=> H5.
+elim (H3 H5).
+move=> H5.
+apply (Rmult_gt_0_compat (CnInnerProduct N x y CIm) (CnInnerProduct N x y CIm) H5 H5).
+suff: (CnInnerProduct N x y CRe * CnInnerProduct N x y CRe +
+CnInnerProduct N x y CIm * CnInnerProduct N x y CIm = Cnorm (CnInnerProduct N x y) * Cnorm (CnInnerProduct N x y)).
+move=> H5.
+rewrite H5.
+rewrite H4.
+apply (Rmult_0_r 0).
+rewrite CnormDefinition.
+apply (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0)
+     (CnInnerProduct N x y CRe * CnInnerProduct N x y CRe +
+      CnInnerProduct N x y CIm * CnInnerProduct N x y CIm)
+     (CnormSqrtSub (CnInnerProduct N x y))))).
+move=> H3.
+apply H2.
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H4.
+rewrite H4.
+rewrite (Cnip_sym N x y).
+unfold Conjugate.
+apply CmakeRe.
+move=> H4.
+rewrite H4.
+rewrite (Cnip_sym N y x).
+unfold Conjugate.
+rewrite CmakeIm.
+rewrite H3.
+rewrite Ropp_0.
+reflexivity.
+Qed.
+
+Lemma QRStrong1 : forall (M N : nat) (A : Matrix Cfield M N), exists (Q : Matrix Cfield M M), (UnitaryMatrix M Q) /\ exists (U : Matrix Cfield M N), UpperTriangularNormalFormC M N U /\ A = Mmult Cfield M M N Q U.
+Proof.
+suff: (forall (M N : nat) (A : Matrix Cfield M N),
+exists (Q : Matrix Cfield M M),
+  UnitaryMatrix M Q /\
+     UpperTriangularNormalFormC M N (Mmult Cfield M M N Q A)).
+move=> H1 M N A.
+elim (H1 M N A).
+move=> Q H2.
+exists (AdjointMatrix M M Q).
+apply conj.
+unfold UnitaryMatrix.
+rewrite (AdjointMatrixInvolutive M M Q).
+suff: (AdjointMatrix M M Q = InvMatrix Cfield M Q).
+move=> H3.
+rewrite H3.
+apply (InvMatrixMultR Cfield M Q).
+apply (proj2 (RegularInvLExistRelation Cfield M Q)).
+exists (AdjointMatrix M M Q).
+apply (proj1 H2).
+apply (InvMatrixMultUniqueLStrong Cfield M Q (AdjointMatrix M M Q) (proj1 H2)).
+exists (Mmult Cfield M M N Q A).
+apply conj.
+apply (proj2 H2).
+rewrite - (Mmult_assoc Cfield M M M N).
+rewrite (proj1 H2).
+rewrite (Mmult_I_l Cfield M N A).
+reflexivity.
+elim.
+move=> N A.
+exists (MI Cfield O).
+apply conj.
+unfold UnitaryMatrix.
+rewrite (AdjointMatrixI O).
+apply (Mmult_I_r Cfield O O (MI Cfield O)).
+apply conj.
+move=> x.
+elim (le_not_lt O (proj1_sig x) (le_0_n (proj1_sig x)) (proj2_sig x)).
+move=> x.
+elim (le_not_lt O (proj1_sig x) (le_0_n (proj1_sig x)) (proj2_sig x)).
+move=> M H1.
+elim.
+move=> A.
+exists (MI Cfield (S M)).
+apply conj.
+unfold UnitaryMatrix.
+rewrite (AdjointMatrixI (S M)).
+apply (Mmult_I_r Cfield (S M) (S M) (MI Cfield (S M))).
+apply conj.
+move=> x y.
+elim (le_not_lt O (proj1_sig y) (le_0_n (proj1_sig y)) (proj2_sig y)).
+move=> x y.
+elim (le_not_lt O (proj1_sig y) (le_0_n (proj1_sig y)) (proj2_sig y)).
+move=> N H2 A.
+elim (classic (AdjointMatrix (S M) (S N) A (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S O N (le_0_n N))) = FnO Cfield (S M))).
+move=> H3.
+elim (H2 (fun (x : {n : nat | (n < S M)%nat}) (y : {n : nat | (n < N)%nat}) => A x (AddConnect 1 N (inr y)))).
+move=> Q H4.
+exists Q.
+apply conj.
+apply (proj1 H4).
+apply conj.
+move=> x y.
+rewrite - (proj2 (AddConnectInvRelation 1 N) y).
+elim (AddConnectInv 1 N y).
+move=> y0.
+elim.
+apply (MySumF2O {n : nat | (n < S M)%nat} (exist (Finite (Count (S M))) (Full_set {n : nat | (n < S M)%nat})
+     (CountFinite (S M))) (FPCM Cfield)).
+move=> u H5.
+suff: (Conjugate (AdjointMatrix (S M) (S N) A
+       (exist (fun (n : nat) => (n < S N)%nat) O
+          (le_n_S 0 N (le_0_n N))) u) = A u (AddConnect 1 N (inl y0))).
+move=> H6.
+rewrite - H6.
+rewrite H3.
+simpl.
+rewrite ConjugateCO.
+apply (Fmul_O_r Cfield (Q x u)).
+suff: ((exist (fun (n : nat) => (n < S N)%nat) O
+          (le_n_S 0 N (le_0_n N))) = AddConnect 1 N (inl y0)).
+move=> H6.
+rewrite H6.
+apply (ConjugateInvolutive (A u (AddConnect 1 N (inl y0)))).
+apply sig_map.
+rewrite - (proj1 (AddConnectNature 1 N) y0).
+elim (le_lt_or_eq (proj1_sig y0) O (le_S_n (proj1_sig y0) O (proj2_sig y0))).
+move=> H6.
+elim (le_not_lt O (proj1_sig y0) (le_0_n (proj1_sig y0)) H6).
+move=> H6.
+rewrite H6.
+reflexivity.
+move=> y0 H5 z H6.
+elim (proj1 (proj2 H4) x y0 H5 z).
+move=> w H7.
+exists (AddConnect 1 N (inr w)).
+apply conj.
+rewrite - (proj2 (AddConnectNature 1 N) w).
+rewrite - (proj2 (AddConnectNature 1 N) y0).
+apply (plus_lt_compat_l (proj1_sig w) (proj1_sig y0) 1 (proj1 H7)).
+apply (proj2 H7).
+apply H6.
+move=> x y.
+rewrite - (proj2 (AddConnectInvRelation 1 N) y).
+elim (AddConnectInv 1 N y).
+move=> y0 H5.
+suff: (Mmult Cfield (S M) (S M) (S N) Q A x (AddConnect 1 N (inl y0)) = CO).
+move=> H6.
+rewrite H6.
+apply conj.
+right.
+reflexivity.
+reflexivity.
+apply (MySumF2O {n : nat | (n < S M)%nat} (exist (Finite (Count (S M))) (Full_set {n : nat | (n < S M)%nat})
+     (CountFinite (S M))) (FPCM Cfield)).
+move=> u H6.
+suff: (Conjugate (AdjointMatrix (S M) (S N) A
+       (exist (fun (n : nat) => (n < S N)%nat) O
+          (le_n_S 0 N (le_0_n N))) u) = A u (AddConnect 1 N (inl y0))).
+move=> H7.
+rewrite - H7.
+rewrite H3.
+simpl.
+rewrite ConjugateCO.
+apply (Fmul_O_r Cfield (Q x u)).
+suff: ((exist (fun (n : nat) => (n < S N)%nat) O
+          (le_n_S 0 N (le_0_n N))) = AddConnect 1 N (inl y0)).
+move=> H7.
+rewrite H7.
+apply (ConjugateInvolutive (A u (AddConnect 1 N (inl y0)))).
+apply sig_map.
+rewrite - (proj1 (AddConnectNature 1 N) y0).
+elim (le_lt_or_eq (proj1_sig y0) O (le_S_n (proj1_sig y0) O (proj2_sig y0))).
+move=> H7.
+elim (le_not_lt O (proj1_sig y0) (le_0_n (proj1_sig y0)) H7).
+move=> H7.
+rewrite H7.
+reflexivity.
+move=> y0 H5.
+apply (proj2 (proj2 H4) x y0).
+move=> z H6.
+apply (H5 (AddConnect 1 N (inr z))).
+rewrite - (proj2 (AddConnectNature 1 N) y0).
+rewrite - (proj2 (AddConnectNature 1 N) z).
+apply (plus_lt_compat_l (proj1_sig z) (proj1_sig y0) 1 H6).
+move=> H3.
+elim (SameNormConvertUnitaryCSig (S M) (MTranspose Cfield (S M) (S N) A
+       (exist (fun (n : nat) => (n < S N)%nat) O
+          (le_n_S 0 N (le_0_n N)))) (fun (m : Count (S M)) => match AddConnectInv 1 M m with 
+  | inl _ => Cmake (CnNorm (S M) (AdjointMatrix (S M) (S N) A
+       (exist (fun (n : nat) => (n < S N)%nat) O
+          (le_n_S 0 N (le_0_n N))))) 0
+  | inr _ => CO
+end)).
+move=> Q1 H4.
+elim (H1 N (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N)%nat}) => Mmult Cfield (S M) (S M) (S N) Q1 A (AddConnect 1 M (inr x)) (AddConnect 1 N (inr y)))).
+move=> Q2 H5.
+exists (Mmult Cfield (S M) (S M) (S M) (MBlockH Cfield 1 M (S M) (MBlockW Cfield 1 1 M (MI Cfield 1) (MO Cfield 1 M)) (MBlockW Cfield M 1 M (MO Cfield M 1) Q2)) Q1).
+apply conj.
+apply (UnitaryMatrixChain (S M)).
+unfold UnitaryMatrix.
+rewrite (BlockHAdjointMatrix 1 M (S M)).
+rewrite (BlockWAdjointMatrix 1 1 M).
+rewrite (BlockWAdjointMatrix M 1 M).
+rewrite (MBlockHWMult Cfield (S M) 1 M (S M)).
+rewrite (AdjointMatrixI 1).
+rewrite (AdjointMatrixO 1 M).
+rewrite (MBlockHMult Cfield 1 M 1 (S M)).
+rewrite (MBlockHMult Cfield 1 M M (S M)).
+rewrite (MBlockWMult Cfield 1 1 1 M).
+rewrite (MBlockWMult Cfield M 1 1 M).
+rewrite (MBlockWMult Cfield 1 M 1 M).
+rewrite (MBlockWMult Cfield M M 1 M).
+rewrite (Mmult_I_l Cfield 1 1 (MI Cfield 1)).
+rewrite (Mmult_I_l Cfield 1 M (MO Cfield 1 M)).
+rewrite (Mmult_I_r Cfield M 1 (MO Cfield M 1)).
+rewrite (Mmult_O_r Cfield M 1 M (MO Cfield M 1)).
+rewrite (Mmult_O_r Cfield 1 M 1).
+rewrite (AdjointMatrixO M 1).
+rewrite (Mmult_O_l Cfield 1 M M Q2).
+rewrite (Mmult_O_r Cfield M M 1 (AdjointMatrix M M Q2)).
+rewrite (proj1 H5).
+rewrite (MBlockHPlus Cfield 1 M (S M)).
+rewrite (MBlockWPlus Cfield 1 1 M).
+rewrite (MBlockWPlus Cfield M 1 M).
+rewrite (Mplus_O_l Cfield 1 M (MO Cfield 1 M)).
+rewrite (Mplus_O_l Cfield M 1 (MO Cfield M 1)).
+rewrite (Mplus_O_l Cfield M M (MI Cfield M)).
+rewrite (Mplus_comm Cfield 1 1).
+rewrite (Mplus_O_l Cfield 1 1 (MI Cfield 1)).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+rewrite - {2} (proj2 (AddConnectInvRelation 1 M) x).
+rewrite - {2} (proj2 (AddConnectInvRelation 1 M) y).
+unfold MBlockH.
+unfold MBlockW.
+elim (AddConnectInv 1 M x).
+move=> x0.
+elim (AddConnectInv 1 M y).
+move=> y0.
+unfold MI.
+rewrite - (proj1 (AddConnectNature 1 M) x0).
+rewrite - (proj1 (AddConnectNature 1 M) y0).
+reflexivity.
+move=> y0.
+unfold MI.
+rewrite - (proj1 (AddConnectNature 1 M) x0).
+rewrite - (proj2 (AddConnectNature 1 M) y0).
+elim (Nat.eq_dec (proj1_sig x0) (1 + proj1_sig y0)).
+move=> H6.
+elim (lt_irrefl (proj1_sig x0)).
+apply (le_trans (S (proj1_sig x0)) 1 (proj1_sig x0)).
+apply (proj2_sig x0).
+rewrite H6.
+apply (le_plus_l 1 (proj1_sig y0)).
+move=> H6.
+reflexivity.
+move=> x0.
+elim (AddConnectInv 1 M y).
+move=> y0.
+unfold MI.
+rewrite - (proj2 (AddConnectNature 1 M) x0).
+rewrite - (proj1 (AddConnectNature 1 M) y0).
+elim (Nat.eq_dec (1 + proj1_sig x0) (proj1_sig y0)).
+move=> H6.
+elim (lt_irrefl (1 + proj1_sig x0)).
+apply (le_trans (S (1 + proj1_sig x0)) 1 (1 + proj1_sig x0)).
+rewrite H6.
+apply (proj2_sig y0).
+apply (le_plus_l 1 (proj1_sig x0)).
+move=> H6.
+reflexivity.
+move=> y0.
+unfold MI.
+rewrite - (proj2 (AddConnectNature 1 M) x0).
+rewrite - (proj2 (AddConnectNature 1 M) y0).
+elim (Nat.eq_dec (proj1_sig x0) (proj1_sig y0)).
+move=> H6.
+elim (Nat.eq_dec (1 + proj1_sig x0) (1 + proj1_sig y0)).
+move=> H7.
+reflexivity.
+elim.
+rewrite H6.
+reflexivity.
+move=> H6.
+elim (Nat.eq_dec (1 + proj1_sig x0) (1 + proj1_sig y0)).
+move=> H7.
+elim H6.
+apply (plus_reg_l (proj1_sig x0) (proj1_sig y0) 1 H7).
+move=> H7.
+reflexivity.
+apply (proj1 H4).
+rewrite (Mmult_assoc Cfield (S M) (S M) (S M) (S N)).
+suff: (exists (c : C), (c CRe > 0 /\ c CIm = 0) /\ exists (a : Matrix Cfield 1 N), Mmult Cfield (S M) (S M) (S N) Q1 A = MBlockH Cfield 1 M (S N) (MBlockW Cfield 1 1 N (fun (x y : {n : nat | (n < 1)%nat}) => c) a) (MBlockW Cfield M 1 N (MO Cfield M 1) (fun (x : {n : nat | (n < M)%nat}) (y : {n : nat | (n < N)%nat})
+           =>
+           Mmult Cfield (S M) (S M) (S N) Q1 A (AddConnect 1 M (inr x))
+             (AddConnect 1 N (inr y))))).
+elim.
+move=> c H6.
+elim (proj2 H6).
+move=> a H7.
+rewrite H7.
+rewrite (MBlockHWWHSame Cfield 1 M 1 M).
+rewrite (MBlockHWMult Cfield (S M) 1 M (S N)).
+rewrite (MBlockHMult Cfield 1 M 1 (S N)).
+rewrite (MBlockHMult Cfield 1 M M (S N)).
+rewrite (MBlockWMult Cfield 1 1 1 N).
+rewrite (MBlockWMult Cfield 1 M 1 N).
+rewrite (MBlockWMult Cfield M 1 1 N).
+rewrite (MBlockWMult Cfield M M 1 N).
+rewrite (MBlockHPlus Cfield 1 M (S N)).
+rewrite (MBlockWPlus Cfield 1 1 N).
+rewrite (MBlockWPlus Cfield M 1 N).
+rewrite (Mmult_I_l Cfield 1 1).
+rewrite (Mmult_O_l Cfield 1 M 1 (MO Cfield M 1)).
+rewrite (Mmult_I_l Cfield 1 N a).
+rewrite (Mmult_O_l Cfield 1 M N).
+rewrite (Mmult_O_l Cfield M 1 1).
+rewrite (Mmult_O_r Cfield M M 1 Q2).
+rewrite (Mmult_O_l Cfield M 1 N a).
+rewrite (Mplus_O_l Cfield M 1 (MO Cfield M 1)).
+rewrite (Mplus_O_l Cfield M N).
+rewrite (Mplus_comm Cfield 1 1).
+rewrite (Mplus_O_l Cfield 1 1).
+rewrite (Mplus_comm Cfield 1 N a (MO Cfield 1 N)).
+rewrite (Mplus_O_l Cfield 1 N a).
+apply conj.
+move=> x.
+rewrite - (proj2 (AddConnectInvRelation 1 M) x).
+elim (AddConnectInv 1 M x).
+move=> x0 y H8 z.
+rewrite - (proj1 (AddConnectNature 1 M) x0).
+suff: (proj1_sig x0 = O).
+move=> H9.
+rewrite H9.
+move=> H10.
+elim (le_not_lt O (proj1_sig z) (le_0_n (proj1_sig z)) H10).
+elim (le_lt_or_eq (proj1_sig x0) O (le_S_n (proj1_sig x0) O (proj2_sig x0))).
+move=> H9.
+elim (le_not_lt O (proj1_sig x0) (le_0_n (proj1_sig x0)) H9).
+apply.
+move=> x0 y.
+rewrite - (proj2 (AddConnectInvRelation 1 N) y).
+elim (AddConnectInv 1 N y).
+move=> y0.
+unfold MBlockH.
+unfold MBlockW.
+rewrite (proj1 (AddConnectInvRelation 1 M) (inr x0)).
+rewrite (proj1 (AddConnectInvRelation 1 N) (inl y0)).
+elim.
+reflexivity.
+move=> y0.
+unfold MBlockH at 1.
+rewrite (proj1 (AddConnectInvRelation 1 M) (inr x0)).
+unfold MBlockW at 1.
+rewrite (proj1 (AddConnectInvRelation 1 N) (inr y0)).
+move=> H8 z.
+rewrite - (proj2 (AddConnectInvRelation 1 M) z).
+elim (AddConnectInv 1 M z).
+move=> z0 H9.
+exists (AddConnect 1 N (inl z0)).
+apply conj.
+rewrite - (proj1 (AddConnectNature 1 N) z0).
+rewrite - (proj2 (AddConnectNature 1 N) y0).
+apply (le_trans (S (proj1_sig z0)) 1 (1 + proj1_sig y0) (proj2_sig z0) (le_plus_l 1 (proj1_sig y0))).
+unfold MBlockH.
+unfold MBlockW.
+rewrite (proj1 (AddConnectInvRelation 1 M) (inl z0)).
+rewrite (proj1 (AddConnectInvRelation 1 N) (inl z0)).
+move=> H10.
+apply (Rgt_not_eq (c CRe) 0 (proj1 (proj1 H6))).
+rewrite H10.
+reflexivity.
+move=> z0.
+rewrite - (proj2 (AddConnectNature 1 M) x0).
+rewrite - (proj2 (AddConnectNature 1 N) y0).
+rewrite - (proj2 (AddConnectNature 1 M) z0).
+move=> H9.
+elim (proj1 (proj2 H5) x0 y0 H8 z0 (plus_lt_reg_l (proj1_sig z0) (proj1_sig x0) 1 H9)).
+move=> w0 H10.
+exists (AddConnect 1 N (inr w0)).
+apply conj.
+rewrite - (proj2 (AddConnectNature 1 N) w0).
+apply (plus_lt_compat_l (proj1_sig w0) (proj1_sig y0) 1 (proj1 H10)).
+unfold MBlockH.
+unfold MBlockW.
+rewrite (proj1 (AddConnectInvRelation 1 M) (inr z0)).
+rewrite (proj1 (AddConnectInvRelation 1 N) (inr w0)).
+apply (proj2 H10).
+move=> x.
+rewrite - (proj2 (AddConnectInvRelation 1 M) x).
+elim (AddConnectInv 1 M x).
+move=> x0 y.
+rewrite - (proj2 (AddConnectInvRelation 1 N) y).
+elim (AddConnectInv 1 N y).
+move=> y0 H8.
+unfold MBlockH.
+unfold MBlockW.
+rewrite (proj1 (AddConnectInvRelation 1 M) (inl x0)).
+rewrite (proj1 (AddConnectInvRelation 1 N) (inl y0)).
+apply conj.
+left.
+apply (proj1 (proj1 H6)).
+apply (proj2 (proj1 H6)).
+move=> y0.
+unfold MBlockH at 1.
+rewrite (proj1 (AddConnectInvRelation 1 M) (inl x0)).
+unfold MBlockW at 1.
+move=> H8.
+apply False_ind.
+apply (Rgt_not_eq (c CRe) 0 (proj1 (proj1 H6))).
+suff: (match AddConnectInv 1 N (AddConnect 1 N (inl x0)) with
+  | inl _ => c
+  | inr y0 => a x0 y0
+end = CO).
+rewrite (proj1 (AddConnectInvRelation 1 N) (inl x0)).
+move=> H9.
+rewrite H9.
+reflexivity.
+apply (H8 (AddConnect 1 N (inl x0))).
+rewrite - (proj1 (AddConnectNature 1 N) x0).
+rewrite - (proj2 (AddConnectNature 1 N) y0).
+apply (le_trans (S (proj1_sig x0)) 1 (1 + proj1_sig y0) (proj2_sig x0) (le_plus_l 1 (proj1_sig y0))).
+move=> x0 y.
+rewrite - (proj2 (AddConnectInvRelation 1 N) y).
+elim (AddConnectInv 1 N y).
+move=> y0 H8.
+unfold MBlockH.
+unfold MBlockW.
+rewrite (proj1 (AddConnectInvRelation 1 M) (inr x0)).
+rewrite (proj1 (AddConnectInvRelation 1 N) (inl y0)).
+apply conj.
+right.
+reflexivity.
+reflexivity.
+move=> y0 H8.
+unfold MBlockH.
+unfold MBlockW.
+rewrite (proj1 (AddConnectInvRelation 1 M) (inr x0)).
+rewrite (proj1 (AddConnectInvRelation 1 N) (inr y0)).
+apply (proj2 (proj2 H5) x0 y0).
+move=> z0 H9.
+suff: (MBlockH Cfield 1 M (S N)
+       (MBlockW Cfield 1 1 N (fun (x y : {n : nat | (n < 1)%nat}) => c) a)
+       (MBlockW Cfield M 1 N (MO Cfield M 1)
+          (Mmult Cfield M M N Q2
+             (fun (x : {n : nat | (n < M)%nat})
+                (y : {n : nat | (n < N)%nat}) =>
+              Mmult Cfield (S M) (S M) (S N) Q1 A 
+                (AddConnect 1 M (inr x)) (AddConnect 1 N (inr y)))))
+       (AddConnect 1 M (inr x0)) (AddConnect 1 N (inr z0)) = CO).
+unfold MBlockH.
+unfold MBlockW.
+rewrite (proj1 (AddConnectInvRelation 1 M) (inr x0)).
+rewrite (proj1 (AddConnectInvRelation 1 N) (inr z0)).
+apply.
+apply (H8 (AddConnect 1 N (inr z0))).
+rewrite - (proj2 (AddConnectNature 1 N) y0).
+rewrite - (proj2 (AddConnectNature 1 N) z0).
+apply (plus_lt_compat_l (proj1_sig z0) (proj1_sig y0) 1 H9).
+exists (Cmake
+              (CnNorm (S M)
+                 (AdjointMatrix (S M) (S N) A
+                    (exist (fun (n : nat) => (n < S N)%nat) O
+                       (le_n_S 0 N (le_0_n N))))) 0).
+apply conj.
+apply conj.
+rewrite CmakeRe.
+elim (proj1 (MySqrtNature
+  (exist (fun (r : R) => r >= 0)
+     (CnInnerProduct (S M)
+        (AdjointMatrix (S M) (S N) A
+           (exist (fun (n : nat) => (n < S N)%nat) O
+              (le_n_S 0 N (le_0_n N))))
+        (AdjointMatrix (S M) (S N) A
+           (exist (fun (n : nat) => (n < S N)%nat) O
+              (le_n_S 0 N (le_0_n N)))) CRe)
+     (Cnip_pos_re (S M)
+        (AdjointMatrix (S M) (S N) A
+           (exist (fun (n : nat) => (n < S N)%nat) O
+              (le_n_S 0 N (le_0_n N)))))))).
+apply.
+move=> H6.
+elim H3.
+apply (proj1 (Cnip_refl (S M) (AdjointMatrix (S M) (S N) A
+  (exist (fun (n : nat) => (n < S N)%nat) O (le_n_S 0 N (le_0_n N)))))).
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H7.
+rewrite H7.
+unfold CO.
+unfold RnO.
+rewrite - (Rmult_0_r 0).
+rewrite - H6.
+apply (proj2 (MySqrtNature
+  (exist (fun (r : R) => r >= 0)
+     (CnInnerProduct (S M)
+        (AdjointMatrix (S M) (S N) A
+           (exist (fun (n : nat) => (n < S N)%nat) O
+              (le_n_S 0 N (le_0_n N))))
+        (AdjointMatrix (S M) (S N) A
+           (exist (fun (n : nat) => (n < S N)%nat) O
+              (le_n_S 0 N (le_0_n N)))) CRe)
+     (Cnip_pos_re (S M)
+        (AdjointMatrix (S M) (S N) A
+           (exist (fun (n : nat) => (n < S N)%nat) O
+              (le_n_S 0 N (le_0_n N)))))))).
+move=> H7.
+rewrite H7.
+apply (Cip_pos_im (FnVS Cfield (S M)) (CnInner_Product_Space (S M))).
+apply CmakeIm.
+exists (fun (x : {n : nat | (n < 1)%nat}) (y : {n : nat | (n < N)%nat}) => Mmult Cfield (S M) (S M) (S N) Q1 A (AddConnect 1 M (inl x)) (AddConnect 1 N (inr y))).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MBlockH.
+unfold MBlockW.
+rewrite - {1} (proj2 (AddConnectInvRelation 1 N) y).
+elim (AddConnectInv 1 N y).
+move=> y0.
+suff: (Mmult Cfield (S M) (S M) (S N) Q1 A x (AddConnect 1 N (inl y0)) = let temp := (fun (m : Count (S M)) =>
+match AddConnectInv 1 M m with
+| inl _ =>
+    Cmake
+      (CnNorm (S M)
+         (AdjointMatrix (S M) (S N) A
+            (exist (fun (n : nat) => (n < S N)%nat) O
+               (le_n_S 0 N (le_0_n N))))) 0
+| inr x0 => MO Cfield M 1 x0 y0
+end) in temp x).
+apply.
+rewrite - (proj1 (MVectorMatrixRelation Cfield (S M)) (fun (m : Count (S M)) =>
+match AddConnectInv 1 M m with
+| inl _ =>
+    Cmake
+      (CnNorm (S M)
+         (AdjointMatrix (S M) (S N) A
+            (exist (fun (n : nat) => (n < S N)%nat) O
+               (le_n_S 0 N (le_0_n N))))) 0
+| inr x0 => MO Cfield M 1 x0 y0
+end)).
+rewrite - (proj2 H4).
+suff: (AddConnect 1 N (inl y0) = (exist (fun (n : nat) => (n < S N)%nat) 0%nat
+            (le_n_S 0 N (le_0_n N)))).
+move=> H6.
+rewrite H6.
+reflexivity.
+apply sig_map.
+rewrite - (proj1 (AddConnectNature 1 N) y0).
+elim (le_lt_or_eq (proj1_sig y0) O (le_S_n (proj1_sig y0) O (proj2_sig y0))).
+move=> H6.
+elim (le_not_lt O (proj1_sig y0) (le_0_n (proj1_sig y0)) H6).
+apply.
+move=> y0.
+rewrite - {1} (proj2 (AddConnectInvRelation 1 M) x).
+elim (AddConnectInv 1 M x).
+move=> H6.
+reflexivity.
+move=> H6.
+reflexivity.
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H4.
+rewrite H4.
+unfold CnInnerProduct at 2.
+rewrite (MySumF2Included (Count (S M)) (FiniteSingleton (Count (S M)) (exist (fun (n : nat) => (n < S M)%nat) O
+               (le_n_S 0 M (le_0_n M))))).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite CM_O_r.
+suff: (exist (fun (n : nat) => (n < S M)%nat) O
+               (le_n_S 0 M (le_0_n M)) = AddConnect 1 M (inl (exist (fun (n : nat) => (n < 1)%nat) O (le_n 1)))).
+move=> H5.
+rewrite H5.
+rewrite (proj1 (AddConnectInvRelation 1 M)).
+unfold Cmult.
+rewrite CmakeRe.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite Rmult_0_l.
+unfold Conjugate.
+rewrite CmakeRe.
+rewrite CmakeRe.
+unfold CnNorm.
+rewrite - (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0)
+     (CnInnerProduct (S M)
+        (AdjointMatrix (S M) (S N) A
+           (exist (fun (n : nat) => (n < S N)%nat) O
+              (le_n_S 0 N (le_0_n N))))
+        (AdjointMatrix (S M) (S N) A
+           (exist (fun (n : nat) => (n < S N)%nat) O
+              (le_n_S 0 N (le_0_n N)))) CRe)
+     (Cnip_pos_re (S M)
+        (AdjointMatrix (S M) (S N) A
+           (exist (fun (n : nat) => (n < S N)%nat) O
+              (le_n_S 0 N (le_0_n N)))))))).
+simpl.
+rewrite Rminus_0_r.
+unfold CnInnerProduct.
+apply (FiniteSetInduction (Count (S M))
+  (exist (Finite (Count (S M))) (Full_set (Count (S M)))
+     (CountFinite (S M)))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+reflexivity.
+move=> B b H6 H7 H8 H9.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+simpl.
+unfold Cplus.
+unfold Rnplus.
+rewrite H9.
+rewrite Cmult_comm.
+unfold AdjointMatrix.
+rewrite ConjugateInvolutive.
+reflexivity.
+apply H8.
+apply H8.
+apply sig_map.
+apply (proj1 (AddConnectNature 1 M) (exist (fun (n : nat) => (n < 1)%nat) O (le_n 1))).
+move=> u.
+elim.
+move=> u0.
+rewrite - (proj2 (AddConnectInvRelation 1 M) u0).
+elim (AddConnectInv 1 M u0).
+move=> u1 H5 H6.
+elim H5.
+suff: (exist (fun (n : nat) => (n < S M)%nat) O
+               (le_n_S 0 M (le_0_n M)) = AddConnect 1 M (inl u1)).
+move=> H7.
+rewrite H7.
+apply In_singleton.
+apply sig_map.
+rewrite - (proj1 (AddConnectNature 1 M) u1).
+elim (le_lt_or_eq (proj1_sig u1) O (le_S_n (proj1_sig u1) O (proj2_sig u1))).
+move=> H7.
+elim (le_not_lt O (proj1_sig u1) (le_0_n (proj1_sig u1)) H7).
+move=> H7.
+rewrite H7.
+reflexivity.
+move=> u1 H5 H6.
+rewrite (proj1 (AddConnectInvRelation 1 M) (inr u1)).
+apply (Fmul_O_l Cfield (Conjugate CO)).
+move=> u H5.
+apply (Full_intro (Count (S M)) u).
+move=> H4.
+rewrite H4.
+suff: (CnInnerProduct (S M)
+  (fun (m : Count (S M)) =>
+   match AddConnectInv 1 M m with
+   | inl _ =>
+       Cmake
+         (CnNorm (S M)
+            (AdjointMatrix (S M) (S N) A
+               (exist (fun (n : nat) => (n < S N)%nat) O
+                  (le_n_S 0 N (le_0_n N))))) 0
+   | inr _ => CO
+   end)
+  (fun (m : Count (S M)) =>
+   match AddConnectInv 1 M m with
+   | inl _ =>
+       Cmake
+         (CnNorm (S M)
+            (AdjointMatrix (S M) (S N) A
+               (exist (fun (n : nat) => (n < S N)%nat) O
+                  (le_n_S 0 N (le_0_n N))))) 0
+   | inr _ => CO
+   end) CIm = 0).
+move=> H5.
+rewrite H5.
+apply (Cip_pos_im (FnVS Cfield (S M)) (CnInner_Product_Space (S M))).
+apply (Cip_pos_im (FnVS Cfield (S M)) (CnInner_Product_Space (S M))).
+Qed.
+
+Lemma MDiagMult : forall (f : Field) (N : nat) (a b : {n : nat | (n < N)%nat} -> FT f), Mmult f N N N (MDiag f N a) (MDiag f N b) = MDiag f N (fun (m : {n : nat | (n < N)%nat}) => Fmul f (a m) (b m)).
+Proof.
+move=> f N a b.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MDiag.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H1.
+unfold Mmult.
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} x)).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite H1.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
+move=> H2.
+apply (CM_O_r (FPCM f)).
+elim.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H2 H3.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig u0)).
+move=> H4.
+elim H2.
+suff: (x = u0).
+move=> H5.
+rewrite H5.
+apply (In_singleton {n : nat | (n < N)%nat} u0).
+apply sig_map.
+apply H4.
+move=> H4.
+apply (Fmul_O_l f).
+move=> u H2.
+apply (Full_intro {n : nat | (n < N)%nat} u).
+move=> H1.
+apply MySumF2O.
+move=> u H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig u)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig y)).
+move=> H4.
+elim H1.
+rewrite H3.
+apply H4.
+move=> H4.
+apply (Fmul_O_r f (a x)).
+move=> H3.
+apply (Fmul_O_l f).
+Qed.
+
+Lemma MDiagTrans : forall (f : Field) (N : nat) (a : {n : nat | (n < N)%nat} -> FT f), MTranspose f N N (MDiag f N a) = (MDiag f N a).
+Proof.
+move=> f N a.
+unfold MTranspose.
+unfold MDiag.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H2.
+suff: (y = x).
+move=> H3.
+rewrite H3.
+reflexivity.
+apply sig_map.
+apply H1.
+elim.
+rewrite H1.
+reflexivity.
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H2.
+elim H1.
+rewrite H2.
+reflexivity.
+move=> H2.
+reflexivity.
+Qed.
+
+Lemma SingularDecompositionCH : forall (M N : nat) (A : Matrix Cfield (M + N) M), exists (U : Matrix Cfield (M + N)%nat (M + N)%nat), (UnitaryMatrix (M + N)%nat U) /\ exists (V : Matrix Cfield M M), (UnitaryMatrix M V) /\ exists (sigma : {n : nat | (n < M)%nat} -> R), ((forall (m : {n : nat | (n < M)%nat}), sigma m >= 0) /\ (forall (m1 m2 : {n : nat | (n < M)%nat}), (proj1_sig m1 <= proj1_sig m2)%nat -> sigma m1 >= sigma m2) /\ A = Mmult Cfield (M + N)%nat (M + N)%nat M U (Mmult Cfield (M + N)%nat M M (MBlockH Cfield M N M (MDiag Cfield M (fun (m : {n : nat | (n < M)%nat}) => Cmake (sigma m) 0)) (MO Cfield N M)) (AdjointMatrix M M V))).
+Proof.
+suff: (forall (M N : nat) (A : Matrix Cfield (M + N) M),
+exists (U : Matrix Cfield (M + N) (M + N)),
+  UnitaryMatrix (M + N) U /\
+  (exists (V : Matrix Cfield M M),
+     UnitaryMatrix M V /\
+     (exists (sigma : {n : nat | (n < M)%nat} -> R),
+        (forall (m : {n : nat | (n < M)%nat}), sigma m >= 0) /\
+        A =
+        Mmult Cfield (M + N) (M + N) M U
+          (Mmult Cfield (M + N) M M
+             (MBlockH Cfield M N M (MDiag Cfield M (fun (m : {n : nat | (n < M)%nat}) => Cmake (sigma m) 0)) (MO Cfield N M))
+             (AdjointMatrix M M V))))).
+move=> H1 M N A.
+suff: (forall (k : nat), (k <= M)%nat -> exists (U : Matrix Cfield (M + N) (M + N)),
+  UnitaryMatrix (M + N) U /\ (exists (V : Matrix Cfield M M),
+  UnitaryMatrix M V /\
+  (exists (sigma : {n : nat | (n < M)%nat} -> R),
+     (forall (m : {n : nat | (n < M)%nat}), sigma m >= 0) /\
+     (forall (m1 m2 : {n : nat | (n < M)%nat}),
+      (proj1_sig m2 < k)%nat -> (proj1_sig m1 <= proj1_sig m2)%nat -> sigma m1 >= sigma m2) /\
+(forall (m1 m2 : {n : nat | (n < M)%nat}),
+      (proj1_sig m1 < k)%nat -> (proj1_sig m2 >= k)%nat -> sigma m1 >= sigma m2) /\
+     A =
+     Mmult Cfield (M + N) (M + N) M U
+       (Mmult Cfield (M + N) M M
+          (MBlockH Cfield M N M (MDiag Cfield M (fun (m : {n : nat | (n < M)%nat}) => Cmake (sigma m) 0)) (MO Cfield N M))
+          (AdjointMatrix M M V))))).
+move=> H2.
+elim (H2 M (le_n M)).
+move=> U H3.
+elim (proj2 H3).
+move=> V H4.
+elim (proj2 H4).
+move=> sigma H5.
+exists U.
+apply conj.
+apply (proj1 H3).
+exists V.
+apply conj.
+apply (proj1 H4).
+exists sigma.
+apply conj.
+apply (proj1 H5).
+apply conj.
+move=> m1 m2.
+apply (proj1 (proj2 H5) m1 m2 (proj2_sig m2)).
+apply (proj2 (proj2 H5)).
+elim.
+move=> H2.
+elim (H1 M N A).
+move=> U H3.
+exists U.
+apply conj.
+apply (proj1 H3).
+elim (proj2 H3).
+move=> V H4.
+exists V.
+apply conj.
+apply (proj1 H4).
+elim (proj2 H4).
+move=> sigma H5.
+exists sigma.
+apply conj.
+apply (proj1 H5).
+apply conj.
+move=> m1 m2 H6.
+elim (le_not_lt O (proj1_sig m2) (le_0_n (proj1_sig m2)) H6).
+apply conj.
+move=> m1 m2 H6.
+elim (le_not_lt O (proj1_sig m1) (le_0_n (proj1_sig m1)) H6).
+apply (proj2 H5).
+move=> k H2 H3.
+elim (H2 (le_trans k (S k) M (le_S k k (le_n k)) H3)).
+move=> U H4.
+elim (proj2 H4).
+move=> V H5.
+elim (proj2 H5).
+move=> sigma H6.
+suff: (exists (m : {n : nat | (n < M)%nat}), (proj1_sig m >= k)%nat /\ forall (l : {n : nat | (n < M)%nat}), (proj1_sig l >= k)%nat -> sigma m >= sigma l).
+elim.
+move=> m H7.
+exists (Mmult Cfield (M + N) (M + N) (M + N) U (ElementaryMatrixSwap Cfield (M + N) (AddConnect M N (inl (exist (fun (n : nat) => (n < M)%nat) k H3))) (AddConnect M N (inl m)))).
+apply conj.
+apply (UnitaryMatrixChain (M + N)).
+apply (proj1 H4).
+unfold UnitaryMatrix.
+suff: (AdjointMatrix (M + N) (M + N)
+     (ElementaryMatrixSwap Cfield (M + N)
+        (AddConnect M N (inl (exist (fun n : nat => (n < M)%nat) k H3)))
+        (AddConnect M N (inl m))) = MTranspose Cfield (M + N) (M + N)
+     (ElementaryMatrixSwap Cfield (M + N)
+        (AddConnect M N (inl (exist (fun n : nat => (n < M)%nat) k H3)))
+        (AddConnect M N (inl m)))).
+move=> H8.
+rewrite H8.
+rewrite (ElementaryMatrixSwapTrans Cfield (M + N)).
+rewrite - {1} (InvMatrixElementaryMatrixSwap Cfield (M + N)).
+apply (InvMatrixMultL Cfield (M + N)).
+elim (classic (k = proj1_sig m)).
+move=> H9.
+suff: (ElementaryMatrixSwap Cfield (M + N)
+     (AddConnect M N (inl (exist (fun (n : nat) => (n < M)%nat) k H3)))
+     (AddConnect M N (inl m)) = MI Cfield (M + N)).
+move=> H10.
+rewrite H10.
+unfold RegularMatrix.
+rewrite (DeterminantI Cfield (M + N)).
+apply (FI_neq_FO Cfield).
+suff: (exist (fun (n : nat) => (n < M)%nat) k H3 = m).
+move=> H10.
+rewrite H10.
+unfold ElementaryMatrixSwap.
+unfold MI.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H11.
+rewrite H11.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect M N (inl m)))).
+move=> H12.
+reflexivity.
+move=> H12.
+reflexivity.
+move=> H11.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect M N (inl m)))).
+move=> H12.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect M N (inl m)))).
+move=> H13.
+elim H11.
+rewrite H13.
+apply H12.
+move=> H13.
+reflexivity.
+move=> H12.
+reflexivity.
+apply sig_map.
+apply H9.
+move=> H9.
+unfold RegularMatrix.
+rewrite (DeterminantElementaryMatrixSwap Cfield (M + N)).
+move=> H10.
+apply (FI_neq_FO Cfield).
+rewrite - (Fopp_involutive Cfield (FI Cfield)).
+rewrite H10.
+apply (Fopp_O Cfield).
+rewrite - (proj1 (AddConnectNature M N)).
+rewrite - (proj1 (AddConnectNature M N)).
+apply H9.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold AdjointMatrix.
+unfold MTranspose.
+unfold ElementaryMatrixSwap.
+elim (Nat.eq_dec (proj1_sig y)
+      (proj1_sig
+         (AddConnect M N (inl (exist (fun n : nat => (n < M)%nat) k H3))))).
+move=> H8.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (AddConnect M N (inl m)))).
+move=> H9.
+apply ConjugateCI.
+move=> H9.
+apply ConjugateCO.
+move=> H8.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig (AddConnect M N (inl m)))).
+move=> H9.
+elim (Nat.eq_dec (proj1_sig x)
+      (proj1_sig
+         (AddConnect M N (inl (exist (fun n : nat => (n < M)%nat) k H3))))).
+move=> H10.
+apply ConjugateCI.
+move=> H10.
+apply ConjugateCO.
+move=> H9.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H10.
+apply ConjugateCI.
+move=> H10.
+apply ConjugateCO.
+exists (Mmult Cfield M M M V (ElementaryMatrixSwap Cfield M (exist (fun (n : nat) => (n < M)%nat) k H3) m)).
+apply conj.
+apply (UnitaryMatrixChain M).
+apply (proj1 H5).
+unfold UnitaryMatrix.
+suff: (AdjointMatrix M M
+     (ElementaryMatrixSwap Cfield M
+        (exist (fun n : nat => (n < M)%nat) k H3) m) = MTranspose Cfield M M
+     (ElementaryMatrixSwap Cfield M
+        (exist (fun n : nat => (n < M)%nat) k H3) m)).
+move=> H8.
+rewrite H8.
+rewrite (ElementaryMatrixSwapTrans Cfield M).
+rewrite - {1} (InvMatrixElementaryMatrixSwap Cfield M).
+apply (InvMatrixMultL Cfield M).
+elim (classic (k = proj1_sig m)).
+move=> H9.
+suff: (ElementaryMatrixSwap Cfield M
+     (exist (fun (n : nat) => (n < M)%nat) k H3)
+     m = MI Cfield M).
+move=> H10.
+rewrite H10.
+unfold RegularMatrix.
+rewrite (DeterminantI Cfield M).
+apply (FI_neq_FO Cfield).
+suff: (exist (fun (n : nat) => (n < M)%nat) k H3 = m).
+move=> H10.
+rewrite H10.
+unfold ElementaryMatrixSwap.
+unfold MI.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H11.
+rewrite H11.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig m)).
+move=> H12.
+reflexivity.
+move=> H12.
+reflexivity.
+move=> H11.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig m)).
+move=> H12.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig m)).
+move=> H13.
+elim H11.
+rewrite H13.
+apply H12.
+move=> H13.
+reflexivity.
+move=> H12.
+reflexivity.
+apply sig_map.
+apply H9.
+move=> H9.
+unfold RegularMatrix.
+rewrite (DeterminantElementaryMatrixSwap Cfield M).
+move=> H10.
+apply (FI_neq_FO Cfield).
+rewrite - (Fopp_involutive Cfield (FI Cfield)).
+rewrite H10.
+apply (Fopp_O Cfield).
+apply H9.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold AdjointMatrix.
+unfold MTranspose.
+unfold ElementaryMatrixSwap.
+elim (Nat.eq_dec (proj1_sig y)
+      (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+move=> H8.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig m)).
+move=> H9.
+apply ConjugateCI.
+move=> H9.
+apply ConjugateCO.
+move=> H8.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig m)).
+move=> H9.
+elim (Nat.eq_dec (proj1_sig x)
+      (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+move=> H10.
+apply ConjugateCI.
+move=> H10.
+apply ConjugateCO.
+move=> H9.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H10.
+apply ConjugateCI.
+move=> H10.
+apply ConjugateCO.
+exists (fun (l : {n : nat | (n < M)%nat}) => match excluded_middle_informative (l = exist (fun (n : nat) => (n < M)%nat) k H3) with
+  | left _ => sigma m
+  | right _ => match excluded_middle_informative (l = m) with
+    | left _ => sigma (exist (fun (n : nat) => (n < M)%nat) k H3)
+    | right _ => sigma l
+  end
+end).
+apply conj.
+move=> l.
+elim (excluded_middle_informative (l = exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H8.
+apply (proj1 H6 m).
+move=> H8.
+elim (excluded_middle_informative (l = m)).
+move=> H9.
+apply (proj1 H6 (exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H9.
+apply (proj1 H6 l).
+apply conj.
+move=> m1 m2 H8.
+elim (le_lt_or_eq (proj1_sig m2) k (le_S_n (proj1_sig m2) k H8)).
+move=> H9 H10.
+elim (excluded_middle_informative
+    (m1 = exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H11.
+elim (lt_irrefl (proj1_sig m1)).
+rewrite {2} H11.
+apply (le_trans (S (proj1_sig m1)) (S (proj1_sig m2)) k (le_n_S (proj1_sig m1) (proj1_sig m2) H10) H9).
+move=> H11.
+elim (excluded_middle_informative (m1 = m)).
+move=> H12.
+elim (lt_irrefl (proj1_sig m1)).
+rewrite {2} H12.
+apply (le_trans (S (proj1_sig m1)) (S (proj1_sig m2)) (proj1_sig m) (le_n_S (proj1_sig m1) (proj1_sig m2) H10) (le_trans (S (proj1_sig m2)) k (proj1_sig m) H9 (proj1 H7))).
+move=> H12.
+elim (excluded_middle_informative
+    (m2 = exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H13.
+elim (lt_irrefl (proj1_sig m2)).
+rewrite {2} H13.
+apply H9.
+move=> H13.
+elim (excluded_middle_informative (m2 = m)).
+move=> H14.
+elim (lt_irrefl (proj1_sig m2)).
+rewrite {2} H14.
+apply (le_trans (S (proj1_sig m2)) k (proj1_sig m) H9 (proj1 H7)).
+move=> H14.
+apply (proj1 (proj2 H6) m1 m2 H9 H10).
+move=> H9 H10.
+elim (excluded_middle_informative
+    (m2 = exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H11.
+elim (excluded_middle_informative
+    (m1 = exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H12.
+right.
+reflexivity.
+move=> H12.
+elim (excluded_middle_informative (m1 = m)).
+move=> H13.
+elim (le_not_lt (proj1_sig m1) k).
+rewrite - H9.
+apply H10.
+elim (le_lt_or_eq k (proj1_sig m1)).
+apply.
+move=> H14.
+elim H12.
+apply sig_map.
+rewrite - H14.
+reflexivity.
+rewrite H13.
+apply (proj1 H7).
+move=> H13.
+apply (proj1 (proj2 (proj2 H6)) m1 m).
+elim (le_lt_or_eq (proj1_sig m1) (proj1_sig m2)).
+rewrite H11.
+apply.
+move=> H14.
+elim H12.
+apply sig_map.
+rewrite H14.
+rewrite H11.
+reflexivity.
+apply H10.
+apply (proj1 H7).
+elim.
+apply sig_map.
+apply H9.
+apply conj.
+move=> m1 m2 H8 H9.
+elim (excluded_middle_informative
+    (m1 = exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H10.
+elim (excluded_middle_informative
+    (m2 = exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H11.
+right.
+reflexivity.
+move=> H11.
+elim (excluded_middle_informative (m2 = m)).
+move=> H12.
+apply (proj2 H7).
+apply (le_n k).
+move=> H12.
+apply (proj2 H7).
+apply (le_trans k (S k) (proj1_sig m2) (le_S k k (le_n k)) H9).
+move=> H10.
+elim (excluded_middle_informative (m1 = m)).
+move=> H11.
+elim H10.
+apply sig_map.
+apply (le_antisym (proj1_sig m1) k).
+apply (le_S_n (proj1_sig m1) k H8).
+rewrite H11.
+apply (proj1 H7).
+move=> H11.
+elim (excluded_middle_informative
+    (m2 = exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H12.
+apply (proj1 (proj2 (proj2 H6)) m1 m).
+elim (le_lt_or_eq (proj1_sig m1) k (le_S_n (proj1_sig m1) k H8)).
+apply.
+move=> H13.
+elim H10.
+apply sig_map.
+apply H13.
+apply (proj1 H7).
+move=> H12.
+elim (excluded_middle_informative (m2 = m)).
+move=> H13.
+apply (proj1 (proj2 (proj2 H6)) m1).
+elim (le_lt_or_eq (proj1_sig m1) k (le_S_n (proj1_sig m1) k H8)).
+apply.
+move=> H14.
+elim H10.
+apply sig_map.
+apply H14.
+apply (le_n k).
+move=> H13.
+apply (proj1 (proj2 (proj2 H6)) m1 m2).
+elim (le_lt_or_eq (proj1_sig m1) k (le_S_n (proj1_sig m1) k H8)).
+apply.
+move=> H14.
+elim H10.
+apply sig_map.
+apply H14.
+apply (le_trans k (S k) (proj1_sig m2) (le_S k k (le_n k)) H9).
+rewrite (AdjointMatrixMult M M M V).
+rewrite - (Mmult_assoc Cfield (M + N) M M M).
+rewrite - (Mmult_assoc Cfield (M + N) (M + N) M M).
+rewrite (Mmult_assoc Cfield (M + N) (M + N) (M + N) M).
+rewrite (Mmult_assoc Cfield (M + N) (M + N) M M).
+rewrite (proj2 (proj2 (proj2 H6))).
+suff: (MBlockH Cfield M N M (MDiag Cfield M (fun (l : {n : nat | (n < M)%nat}) => Cmake (sigma l) 0)) (MO Cfield N M) = Mmult Cfield (M + N) (M + N) M
+        (ElementaryMatrixSwap Cfield (M + N)
+           (AddConnect M N (inl (exist (fun (n : nat) => (n < M)%nat) k H3)))
+           (AddConnect M N (inl m)))
+        (Mmult Cfield (M + N) M M
+           (MBlockH Cfield M N M
+              (MDiag Cfield M
+                 (fun (l : {n : nat | (n < M)%nat}) => Cmake match excluded_middle_informative (l = exist (fun (n : nat) => (n < M)%nat) k H3) with
+  | left _ => sigma m
+  | right _ => match excluded_middle_informative (l = m) with
+    | left _ => sigma (exist (fun (n : nat) => (n < M)%nat) k H3)
+    | right _ => sigma l
+  end
+end 0)) (MO Cfield N M))
+           (AdjointMatrix M M
+              (ElementaryMatrixSwap Cfield M
+                 (exist (fun (n : nat) => (n < M)%nat) k H3) m)))).
+move=> H8.
+rewrite H8.
+reflexivity.
+suff: (AdjointMatrix M M
+        (ElementaryMatrixSwap Cfield M
+           (exist (fun n : nat => (n < M)%nat) k H3) m) = MTranspose Cfield M M
+        (ElementaryMatrixSwap Cfield M
+           (exist (fun n : nat => (n < M)%nat) k H3) m)).
+move=> H8.
+rewrite H8.
+rewrite (ElementaryMatrixSwapTrans Cfield M).
+rewrite (MBlockHMult Cfield M N M M).
+rewrite (Mmult_O_l Cfield N M M).
+rewrite (ElementaryMatrixSwapNatureR Cfield M M).
+rewrite (ElementaryMatrixSwapNatureL Cfield (M + N) M).
+unfold MBlockH.
+unfold MDiag.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+rewrite - (proj2 (AddConnectInvRelation M N) x).
+rewrite {1} (proj2 (AddConnectInvRelation M N) x).
+elim (AddConnectInv M N x).
+move=> x0.
+rewrite (proj1 (AddConnectInvRelation M N) (inl m)).
+elim (Nat.eq_dec (proj1_sig x0) (proj1_sig y)).
+move=> H9.
+suff: (x0 = y).
+move=> H10.
+rewrite H10.
+rewrite - (proj1 (AddConnectNature M N) y).
+rewrite - (proj1 (AddConnectNature M N) (exist (fun (n : nat) => (n < M)%nat) k H3)).
+elim (Nat.eq_dec (proj1_sig y)
+    (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+move=> H11.
+elim (Nat.eq_dec (proj1_sig m) (proj1_sig m)).
+move=> H12.
+elim (excluded_middle_informative (m = m)).
+move=> H13.
+elim (excluded_middle_informative (m = exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H14.
+suff: (y = m).
+move=> H15.
+rewrite H15.
+reflexivity.
+rewrite H14.
+apply sig_map.
+apply H11.
+move=> H14.
+suff: (y = exist (fun (n : nat) => (n < M)%nat) k H3).
+move=> H15.
+rewrite H15.
+reflexivity.
+apply sig_map.
+apply H11.
+elim.
+reflexivity.
+elim.
+reflexivity.
+rewrite (proj1 (AddConnectInvRelation M N) (inl (exist (fun (n : nat) => (n < M)%nat) k H3))).
+rewrite - (proj1 (AddConnectNature M N) m).
+move=> H11.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig m)).
+move=> H12.
+elim (Nat.eq_dec (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))
+    (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+move=> H13.
+elim (excluded_middle_informative
+    (exist (fun (n : nat) => (n < M)%nat) k H3 =
+     exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H14.
+suff: (y = m).
+move=> H15.
+rewrite H15.
+reflexivity.
+apply sig_map.
+apply H12.
+elim.
+reflexivity.
+elim.
+reflexivity.
+move=> H12.
+rewrite (proj1 (AddConnectInvRelation M N) (inl y)).
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
+move=> H13.
+elim (excluded_middle_informative (y = exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H14.
+elim H11.
+rewrite H14.
+reflexivity.
+move=> H14.
+elim (excluded_middle_informative (y = m)).
+move=> H15.
+elim H12.
+rewrite H15.
+reflexivity.
+move=> H15.
+reflexivity.
+elim.
+reflexivity.
+apply sig_map.
+apply H9.
+move=> H9.
+rewrite - (proj1 (AddConnectNature M N) x0).
+rewrite - (proj1 (AddConnectNature M N) (exist (fun (n : nat) => (n < M)%nat) k H3)).
+elim (Nat.eq_dec (proj1_sig x0)
+    (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+move=> H10.
+elim (Nat.eq_dec (proj1_sig y)
+    (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+move=> H11.
+elim H9.
+rewrite H11.
+apply H10.
+move=> H11.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig m)).
+move=> H12.
+elim (Nat.eq_dec (proj1_sig m)
+    (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+move=> H13.
+elim H11.
+rewrite H12.
+apply H13.
+move=> H13.
+reflexivity.
+move=> H12.
+elim (Nat.eq_dec (proj1_sig m) (proj1_sig y)).
+move=> H13.
+elim H12.
+rewrite H13.
+reflexivity.
+move=> H13.
+reflexivity.
+move=> H10.
+rewrite (proj1 (AddConnectInvRelation M N) (inl (exist (fun (n : nat) => (n < M)%nat) k H3))).
+rewrite - (proj1 (AddConnectNature M N) m).
+elim (Nat.eq_dec (proj1_sig x0) (proj1_sig m)).
+move=> H11.
+elim (Nat.eq_dec (proj1_sig y)
+    (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+move=> H12.
+elim (Nat.eq_dec (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))
+    (proj1_sig m)).
+move=> H13.
+elim H10.
+rewrite H11.
+rewrite H13.
+reflexivity.
+move=> H13.
+reflexivity.
+move=> H12.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig m)).
+move=> H13.
+elim H9.
+rewrite H13.
+apply H11.
+move=> H13.
+elim (Nat.eq_dec (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))
+    (proj1_sig y)).
+move=> H14.
+elim H12.
+rewrite H14.
+reflexivity.
+move=> H14.
+reflexivity.
+move=> H11.
+rewrite (proj1 (AddConnectInvRelation M N) (inl x0)).
+elim (Nat.eq_dec (proj1_sig x0) (proj1_sig m)).
+move=> H12.
+elim (H11 H12).
+move=> H12.
+elim (excluded_middle_informative
+       (x0 = exist (fun (n : nat) => (n < M)%nat) k H3)).
+move=> H13.
+elim H10.
+rewrite H13.
+reflexivity.
+move=> H13.
+elim (Nat.eq_dec (proj1_sig x0)
+      (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+move=> H14.
+elim H13.
+apply sig_map.
+apply H14.
+move=> H14.
+elim (Nat.eq_dec (proj1_sig y)
+    (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+reflexivity.
+move=> H15.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig m)).
+move=> H16.
+reflexivity.
+move=> H16.
+elim (Nat.eq_dec (proj1_sig x0) (proj1_sig y)).
+move=> H17.
+elim (H9 H17).
+move=> H17.
+reflexivity.
+move=> x0.
+rewrite - (proj1 (AddConnectNature M N) (exist (fun (n : nat) => (n < M)%nat) k H3)).
+rewrite - (proj2 (AddConnectNature M N) x0).
+elim (Nat.eq_dec (M + proj1_sig x0)
+    (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+simpl.
+move=> H9.
+elim (le_not_lt M k).
+rewrite - H9.
+apply (le_plus_l M (proj1_sig x0)).
+apply H3.
+move=> H9.
+rewrite - (proj1 (AddConnectNature M N) m).
+elim (Nat.eq_dec (M + proj1_sig m)
+    (proj1_sig m)).
+simpl.
+move=> H10.
+elim (le_not_lt M (proj1_sig m)).
+rewrite - H10.
+apply (le_plus_l M (proj1_sig m)).
+apply (proj2_sig m).
+move=> H10.
+elim (Nat.eq_dec (M + proj1_sig x0) (proj1_sig m)).
+move=> H11.
+elim (le_not_lt M (proj1_sig m)).
+rewrite - H11.
+apply (le_plus_l M (proj1_sig x0)).
+apply (proj2_sig m).
+move=> H11.
+rewrite (proj1 (AddConnectInvRelation M N) (inr x0)).
+reflexivity.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold AdjointMatrix.
+unfold MTranspose.
+unfold ElementaryMatrixSwap.
+elim (Nat.eq_dec (proj1_sig y)
+      (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+move=> H8.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig m)).
+move=> H9.
+apply ConjugateCI.
+move=> H9.
+apply ConjugateCO.
+move=> H8.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig m)).
+move=> H9.
+elim (Nat.eq_dec (proj1_sig x)
+      (proj1_sig (exist (fun (n : nat) => (n < M)%nat) k H3))).
+move=> H10.
+apply ConjugateCI.
+move=> H10.
+apply ConjugateCO.
+move=> H9.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H10.
+apply ConjugateCI.
+move=> H10.
+apply ConjugateCO.
+suff: (forall (k : nat), (k > O)%nat -> (k <= M)%nat -> exists (m : {n : nat | (n < M)%nat}),
+  (proj1_sig m >= M - k)%nat /\
+  (forall (l : {n : nat | (n < M)%nat}),
+   (proj1_sig l >= M - k)%nat -> sigma m >= sigma l)).
+move=> H7.
+elim (H7 (M - k)%nat).
+rewrite - (plus_minus M (M - k) k).
+move=> m H8.
+exists m.
+apply H8.
+rewrite (plus_comm (M - k) k).
+apply (le_plus_minus k M).
+apply (le_trans k (S k) M (le_S k k (le_n k)) H3).
+apply (plus_lt_reg_l O (M - k) k).
+rewrite (le_plus_minus_r k M).
+rewrite (plus_0_r k).
+apply H3.
+apply (le_trans k (S k) M (le_S k k (le_n k)) H3).
+rewrite - (plus_0_l (M - k)).
+rewrite {2} (le_plus_minus k M).
+apply (plus_le_compat_r 0 k (M - k) (le_0_n k)).
+apply (le_trans k (S k) M (le_S k k (le_n k)) H3).
+elim.
+move=> H7.
+elim (lt_irrefl O H7).
+move=> k0 H7.
+elim k0.
+move=> H8 H9.
+suff: (M - 1 < M)%nat.
+move=> H10.
+exists (exist (fun (n : nat) => (n < M)%nat) (M - 1)%nat H10).
+apply conj.
+apply (le_n (M - 1)%nat).
+move=> l H11.
+suff: (exist (fun (n : nat) => (n < M)%nat) (M - 1)%nat H10 = l).
+move=> H12.
+rewrite H12.
+right.
+reflexivity.
+apply sig_map.
+apply (le_antisym (M - 1) (proj1_sig l) H11).
+apply (plus_le_reg_l (proj1_sig l) (M - 1)%nat 1).
+rewrite (le_plus_minus_r 1 M H9).
+apply (proj2_sig l).
+rewrite {2} (le_plus_minus 1 M H9).
+apply (le_n (S (M - 1))%nat).
+move=> k1 H8 H9 H10.
+elim H8.
+move=> m H11.
+suff: (M - S (S k1) < M)%nat.
+move=> H12.
+elim (Rgt_or_ge (sigma (exist (fun (n : nat) => (n < M)%nat) (M - S (S k1))%nat H12)) (sigma m)).
+move=> H13.
+exists (exist (fun (n : nat) => (n < M)%nat) (M - S (S k1))%nat H12).
+apply conj.
+apply (le_n (M - S (S k1))).
+move=> l H14.
+elim (le_lt_or_eq (M - S (S k1)) (proj1_sig l) H14).
+move=> H15.
+left.
+apply (Rgt_ge_trans (sigma (exist (fun (n : nat) => (n < M)%nat) (M - S (S k1))%nat H12)) (sigma m) (sigma l) H13).
+apply (proj2 H11 l).
+suff: (M - S k1 = S (M - S (S k1)))%nat.
+move=> H16.
+rewrite H16.
+apply H15.
+rewrite (minus_Sn_m M (S (S k1)) H10).
+reflexivity.
+move=> H15.
+suff: (exist (fun (n : nat) => (n < M)%nat) (M - S (S k1))%nat H12 = l).
+move=> H16.
+rewrite H16.
+right.
+reflexivity.
+apply sig_map.
+apply H15.
+move=> H13.
+exists m.
+apply conj.
+apply (le_trans (M - S (S k1)) (M - S k1) (proj1_sig m)).
+suff: (M - S k1 = S (M - S (S k1)))%nat.
+move=> H14.
+rewrite H14.
+apply (le_S (M - S (S k1)) (M - S (S k1)) (le_n (M - S (S k1)))).
+rewrite (minus_Sn_m M (S (S k1)) H10).
+reflexivity.
+apply (proj1 H11).
+move=> l H14.
+elim (le_lt_or_eq (M - S (S k1)) (proj1_sig l)).
+move=> H15.
+apply (proj2 H11 l).
+suff: (M - S k1 = S (M - S (S k1)))%nat.
+move=> H16.
+rewrite H16.
+apply H15.
+rewrite (minus_Sn_m M (S (S k1)) H10).
+reflexivity.
+move=> H15.
+suff: (exist (fun (n : nat) => (n < M)%nat) (M - S (S k1))%nat H12 = l).
+move=> H16.
+rewrite - H16.
+apply H13.
+apply sig_map.
+apply H15.
+apply H14.
+rewrite - (plus_0_l (M - S (S k1))).
+rewrite {2} (le_plus_minus (S (S k1)) M).
+apply (plus_lt_compat_r 0 (S (S k1)) (M - S (S k1)) (le_n_S O (S k1) (le_0_n (S k1)))).
+apply H10.
+apply (le_n_S O k1 (le_0_n k1)).
+apply (le_trans (S k1) (S (S k1)) M (le_S (S k1) (S k1) (le_n (S k1))) H10).
+move=> M N A.
+elim (HermitianMatrixTransformableToDiag M (Mmult Cfield M (M + N) M (AdjointMatrix (M + N) M A) A)).
+move=> V.
+elim.
+move=> sigma H1.
+suff: (forall (m : {n : nat | (n < M)%nat}), sigma m CRe >= 0 /\ sigma m CIm = 0).
+move=> H2.
+suff: (exists (U : Matrix Cfield (M + N) (M + N)), UnitaryMatrix (M + N) U /\ A = Mmult Cfield (M + N) (M + N) M U (Mmult Cfield (M + N) M M (MBlockH Cfield M N M (MDiag Cfield M (fun (m : {n : nat | (n < M)%nat}) => Cmake (MySqrt (exist (fun (r : R) => r >= 0) (sigma m CRe) (proj1 (H2 m)))) 0)) (MO Cfield N M)) (AdjointMatrix M M V))).
+elim.
+move=> U H3.
+exists U.
+apply conj.
+apply (proj1 H3).
+exists V.
+apply conj.
+apply (proj1 H1).
+exists (fun (m : {n : nat | (n < M)%nat}) => MySqrt (exist (fun (r : R) => r >= 0) (sigma m CRe) (proj1 (H2 m)))).
+apply conj.
+move=> m.
+apply (proj1 (MySqrtNature (exist (fun (r : R) => r >= 0) (sigma m CRe) (proj1 (H2 m))))).
+apply (proj2 H3).
+elim (QRStrong1 (M + N) M A).
+move=> Q1.
+elim.
+move=> H3.
+elim.
+move=> U1 H4.
+elim (QRStrong1 (M + N) M (Mmult Cfield (M + N) M M
+       (MBlockH Cfield M N M
+          (MDiag Cfield M
+             (fun (m : {n : nat | (n < M)%nat}) =>
+              Cmake
+                (MySqrt
+                   (exist (fun (r : R) => r >= 0) (sigma m CRe)
+                      (proj1 (H2 m)))) 0)) (MO Cfield N M))
+       (AdjointMatrix M M V))).
+move=> Q2.
+elim.
+move=> H5.
+elim.
+move=> U2 H6.
+exists (Mmult Cfield (M + N) (M + N) (M + N) Q1 (AdjointMatrix (M + N) (M + N) Q2)).
+apply conj.
+apply (UnitaryMatrixChain (M + N) Q1 (AdjointMatrix (M + N) (M + N) Q2)).
+apply H3.
+unfold UnitaryMatrix.
+rewrite (AdjointMatrixInvolutive (M + N) (M + N) Q2).
+apply (proj1 (MmultILRSame Cfield (M + N) (AdjointMatrix (M + N) (M + N) Q2) Q2) H5).
+rewrite (proj2 H6).
+rewrite (Mmult_assoc Cfield (M + N) (M + N) (M + N) M Q1 (AdjointMatrix (M + N) (M + N) Q2) (Mmult Cfield (M + N) (M + N) M Q2 U2)).
+rewrite - (Mmult_assoc Cfield (M + N) (M + N) (M + N) M (AdjointMatrix (M + N) (M + N) Q2) Q2 U2).
+rewrite H5.
+suff: (U2 = U1).
+move=> H7.
+rewrite H7.
+rewrite (Mmult_I_l Cfield (M + N) M U1).
+apply (proj2 H4).
+apply (UpperTriangularNormalFormCholeskyC (M + N) M U2 U1 (proj1 H6) (proj1 H4)).
+rewrite - {2} (Mmult_I_l Cfield (M + N) M U2).
+rewrite - H5.
+rewrite (Mmult_assoc Cfield (M + N) (M + N) (M + N) M
+        (AdjointMatrix (M + N) (M + N) Q2) Q2 U2).
+rewrite - (Mmult_assoc Cfield M (M + N) (M + N) M).
+rewrite - (AdjointMatrixMult (M + N) (M + N) M Q2 U2).
+rewrite - (proj2 H6).
+rewrite (AdjointMatrixMult (M + N) M M).
+rewrite (AdjointMatrixInvolutive M M V).
+rewrite (Mmult_assoc Cfield M M (M + N) M).
+rewrite - (Mmult_assoc Cfield M (M + N) M M).
+suff: (Mmult Cfield M (M + N) M
+        (AdjointMatrix (M + N) M
+           (MBlockH Cfield M N M
+              (MDiag Cfield M
+                 (fun (m : {n : nat | (n < M)%nat}) =>
+                  Cmake
+                    (MySqrt
+                       (exist (fun (r : R) => r >= 0) 
+                          (sigma m CRe) (proj1 (H2 m)))) 0))
+              (MO Cfield N M)))
+        (MBlockH Cfield M N M
+           (MDiag Cfield M
+                 (fun (m : {n : nat | (n < M)%nat}) =>
+                  Cmake
+                    (MySqrt
+                       (exist (fun (r : R) => r >= 0) 
+                          (sigma m CRe) (proj1 (H2 m)))) 0))
+           (MO Cfield N M)) = MDiag Cfield M sigma).
+move=> H7.
+rewrite H7.
+rewrite (proj2 H1).
+rewrite - (Mmult_assoc Cfield M M M M V).
+rewrite - (Mmult_assoc Cfield M M M M V).
+rewrite (proj1 (MmultILRSame Cfield M (AdjointMatrix M M V) V) (proj1 H1)).
+rewrite (Mmult_I_l Cfield M M).
+rewrite (Mmult_assoc Cfield M M M M).
+rewrite (proj1 (MmultILRSame Cfield M (AdjointMatrix M M V) V) (proj1 H1)).
+rewrite (Mmult_I_r Cfield M M).
+rewrite (proj2 H4).
+rewrite (AdjointMatrixMult (M + N) (M + N) M Q1 U1).
+rewrite (Mmult_assoc Cfield M (M + N) (M + N) M).
+rewrite - (Mmult_assoc Cfield (M + N) (M + N) (M + N) M).
+rewrite H3.
+rewrite (Mmult_I_l Cfield (M + N) M U1).
+reflexivity.
+rewrite (BlockHAdjointMatrix M N M).
+rewrite (MBlockHWMult Cfield M M N M).
+rewrite (Mmult_O_r Cfield M N M).
+rewrite (Mplus_comm Cfield M M).
+rewrite (Mplus_O_l Cfield M M).
+suff: (AdjointMatrix M M
+     (MDiag Cfield M
+        (fun (m : {n : nat | (n < M)%nat}) =>
+         Cmake
+           (MySqrt
+              (exist (fun (r : R) => r >= 0) (sigma m CRe) (proj1 (H2 m)))) 0))
+= MDiag Cfield M
+        (fun (m : {n : nat | (n < M)%nat}) =>
+         Cmake
+           (MySqrt
+              (exist (fun (r : R) => r >= 0) (sigma m CRe) (proj1 (H2 m)))) 0)).
+move=> H7.
+rewrite H7.
+rewrite (MDiagMult Cfield M).
+suff: ((fun (m : {n : nat | (n < M)%nat}) =>
+   Fmul Cfield (Cmake
+        (MySqrt (exist (fun (r : R) => r >= 0) (sigma m CRe) (proj1 (H2 m))))
+        0)
+     (Cmake
+        (MySqrt (exist (fun (r : R) => r >= 0) (sigma m CRe) (proj1 (H2 m))))
+        0)) = sigma).
+move=> H8.
+rewrite H8.
+reflexivity.
+apply functional_extensionality.
+move=> m.
+simpl.
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H8.
+rewrite H8.
+unfold Cmult.
+rewrite CmakeRe.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite (Rmult_0_r 0).
+rewrite Rminus_0_r.
+rewrite - (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (sigma m CRe) (proj1 (H2 m))))).
+reflexivity.
+move=> H8.
+rewrite H8.
+unfold Cmult.
+rewrite CmakeIm.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite Rmult_0_r.
+rewrite Rmult_0_l.
+rewrite (proj2 (H2 m)).
+apply (Rplus_0_l 0).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold AdjointMatrix.
+unfold MDiag.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H7.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H8.
+suff: (x = y).
+move=> H9.
+rewrite H9.
+unfold Conjugate.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite Ropp_0.
+reflexivity.
+apply sig_map.
+apply H8.
+elim.
+rewrite H7.
+reflexivity.
+move=> H7.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H8.
+elim H7.
+rewrite H8.
+reflexivity.
+move=> H8.
+apply ConjugateCO.
+move=> m.
+suff: (sigma m = MDiag Cfield M sigma m m).
+move=> H2.
+rewrite H2.
+rewrite (proj2 H1).
+rewrite (Mmult_assoc Cfield M (M + N) M M).
+rewrite - (Mmult_assoc Cfield M M (M + N) M).
+rewrite - (AdjointMatrixMult (M + N) M M).
+unfold Mmult at 1.
+unfold Mmult at 3.
+apply MySumF2Induction.
+apply conj.
+apply conj.
+right.
+reflexivity.
+reflexivity.
+move=> cm u H3 H4.
+rewrite - (Rplus_0_r 0).
+apply conj.
+apply (Rplus_ge_compat (cm CRe) 0).
+apply (proj1 H4).
+simpl.
+unfold Cmult.
+unfold AdjointMatrix.
+unfold Conjugate.
+rewrite CmakeRe.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite - Ropp_mult_distr_l.
+unfold Rminus.
+rewrite Ropp_involutive.
+rewrite - (Rplus_0_r 0).
+apply Rplus_ge_compat.
+apply Formula_1_3.
+apply Formula_1_3.
+simpl.
+unfold Cplus.
+unfold Rnplus.
+rewrite (proj2 H4).
+unfold Cmult.
+unfold AdjointMatrix.
+unfold Conjugate.
+rewrite CmakeIm.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite - Ropp_mult_distr_l.
+rewrite (Rmult_comm (Mmult Cfield (M + N) M M A V u m CRe) (Mmult Cfield (M + N) M M A V u m CIm)).
+rewrite Rplus_opp_r.
+reflexivity.
+unfold MDiag.
+elim (Nat.eq_dec (proj1_sig m) (proj1_sig m)).
+move=> H2.
+reflexivity.
+elim.
+reflexivity.
+unfold HermitianMatrix.
+rewrite (AdjointMatrixMult M (M + N) M).
+rewrite (AdjointMatrixInvolutive (M + N) M A).
+reflexivity.
+Qed.
