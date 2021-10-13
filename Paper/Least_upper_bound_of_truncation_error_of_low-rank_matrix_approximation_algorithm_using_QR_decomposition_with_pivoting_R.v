@@ -7655,3 +7655,135 @@ rewrite (Mmult_I_l Rfield N 1).
 reflexivity.
 Qed.
 
+Lemma SingularValueSig : forall (M N : nat) (A : Matrix Rfield (M + N) M), {sigma : {n : nat | (n < M)%nat} -> R | (forall (m : {n : nat | (n < M)%nat}), sigma m >= 0) /\
+               (forall (m1 m2 : {n : nat | (n < M)%nat}),
+                (proj1_sig m1 <= proj1_sig m2)%nat -> sigma m1 >= sigma m2) /\ exists (U : Matrix Rfield (M + N) (M + N)) (V : Matrix Rfield M M), OrthogonalMatrix (M + N) U /\ OrthogonalMatrix M V /\ A =
+               Mmult Rfield (M + N) (M + N) M U
+                 (Mmult Rfield (M + N) M M
+                    (MBlockH Rfield M N M (MDiag Rfield M sigma)
+                       (MO Rfield N M)) (MTranspose Rfield M M V))}.
+Proof.
+move=> M N A.
+apply constructive_definite_description.
+apply (proj1 (unique_existence (fun (x : {n : nat | (n < M)%nat} -> R) =>
+  (forall m : {n : nat | (n < M)%nat}, x m >= 0) /\
+  (forall m1 m2 : {n : nat | (n < M)%nat},
+   (proj1_sig m1 <= proj1_sig m2)%nat -> x m1 >= x m2) /\
+  exists (U : Matrix Rfield (M + N) (M + N)) (V : Matrix Rfield M M),
+    OrthogonalMatrix (M + N) U /\
+    OrthogonalMatrix M V /\
+    A =
+    Mmult Rfield (M + N) (M + N) M U
+      (Mmult Rfield (M + N) M M
+         (MBlockH Rfield M N M (MDiag Rfield M x) (MO Rfield N M))
+         (MTranspose Rfield M M V))))).
+apply conj.
+elim (SingularDecompositionH M N A).
+move=> U H1.
+elim (proj2 H1).
+move=> V H2.
+elim (proj2 H2).
+move=> sigma H3.
+exists sigma.
+apply conj.
+apply (proj1 H3).
+apply conj.
+apply (proj1 (proj2 H3)).
+exists U.
+exists V.
+apply conj.
+apply (proj1 H1).
+apply conj.
+apply (proj1 H2).
+apply (proj2 (proj2 H3)).
+move=> sigma1 sigma2 H1 H2.
+elim (proj2 (proj2 H1)).
+move=> U1.
+elim.
+move=> V1 H3.
+elim (proj2 (proj2 H2)).
+move=> U2.
+elim.
+move=> V2 H4.
+apply functional_extensionality.
+move=> m.
+apply (max_unique (fun (r0 : R) =>
+          exists
+            (W : Ensemble ({n : nat | (n < M)%nat} -> R)) 
+          (H1 : SubspaceVS Rfield (RnVS M) W) (H2 : 
+                                               FiniteDimensionVS Rfield
+                                                (SubspaceMakeVS Rfield
+                                                (RnVS M) W H1)),
+            DimensionSubspaceVS Rfield (RnVS M) W H1 H2 = S (proj1_sig m) /\
+            is_min
+              (fun (r1 : R) =>
+               exists (x : {n : nat | (n < M)%nat} -> R),
+                 In ({n : nat | (n < M)%nat} -> R) W x /\
+                 RnNorm M x = 1 /\
+                 RnNorm (M + N)
+                   (MMatrixToVector Rfield (M + N)
+                      (Mmult Rfield (M + N) M 1 A
+                         (MVectorToMatrix Rfield M x))) = r1) r0)).
+apply conj.
+apply (SingularValueNatureSub M N A U1 V1 sigma1 (proj1 H3) (proj1 (proj2 H3))).
+apply conj.
+apply (proj1 H1).
+apply (proj1 (proj2 H1)).
+apply (proj2 (proj2 H3)).
+apply (SingularValueNatureSub M N A U2 V2 sigma2 (proj1 H4) (proj1 (proj2 H4))).
+apply conj.
+apply (proj1 H2).
+apply (proj1 (proj2 H2)).
+apply (proj2 (proj2 H4)).
+Qed.
+
+Definition SingularValue (M N : nat) (A : Matrix Rfield (M + N) M) := proj1_sig (SingularValueSig M N A).
+
+Definition SingularValueNature (M N : nat) (A : Matrix Rfield (M + N) M) := proj2_sig (SingularValueSig M N A).
+
+Lemma SingularValueNature2 : forall (M N : nat) (A : Matrix Rfield (M + N) M) (U : Matrix Rfield (M + N) (M + N)) 
+        (V : Matrix Rfield M M) (sigma : {n : nat | (n < M)%nat} -> R), (forall (m : {n : nat | (n < M)%nat}),
+        sigma m >= 0) /\
+       (forall (m1 m2 : {n : nat | (n < M)%nat}),
+        (proj1_sig m1 <= proj1_sig m2)%nat ->
+        sigma m1 >=
+        sigma m2) -> OrthogonalMatrix (M + N) U ->
+          OrthogonalMatrix M V -> A =
+          Mmult Rfield (M + N) (M + N) M U
+            (Mmult Rfield (M + N) M M
+               (MBlockH Rfield M N M
+                  (MDiag Rfield M sigma)
+                  (MO Rfield N M)) (MTranspose Rfield M M V)) -> SingularValue M N A = sigma.
+Proof.
+move=> M N A U V sigma H1 H2 H3 H4.
+apply functional_extensionality.
+move=> m.
+apply (max_unique (fun (r0 : R) =>
+          exists
+            (W : Ensemble ({n : nat | (n < M)%nat} -> R)) 
+          (H1 : SubspaceVS Rfield (RnVS M) W) (H2 : 
+                                               FiniteDimensionVS Rfield
+                                                (SubspaceMakeVS Rfield
+                                                (RnVS M) W H1)),
+            DimensionSubspaceVS Rfield (RnVS M) W H1 H2 = S (proj1_sig m) /\
+            is_min
+              (fun (r1 : R) =>
+               exists (x : {n : nat | (n < M)%nat} -> R),
+                 In ({n : nat | (n < M)%nat} -> R) W x /\
+                 RnNorm M x = 1 /\
+                 RnNorm (M + N)
+                   (MMatrixToVector Rfield (M + N)
+                      (Mmult Rfield (M + N) M 1 A
+                         (MVectorToMatrix Rfield M x))) = r1) r0)).
+apply conj.
+elim (proj2 (proj2 (SingularValueNature M N A))).
+move=> U2.
+elim.
+move=> V2 H6.
+apply (SingularValueNatureSub M N A U2 V2 (SingularValue M N A) (proj1 H6) (proj1 (proj2 H6))).
+apply conj.
+apply (proj1 (SingularValueNature M N A)).
+apply (proj1 (proj2 (SingularValueNature M N A))).
+apply (proj2 (proj2 H6)).
+apply (SingularValueNatureSub M N A U V sigma H2 H3 H1 H4).
+Qed.
