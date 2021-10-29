@@ -7864,9 +7864,9 @@ Definition RCPCM (K : RC) := FPCM (RCfield K).
 
 Definition RCnInnerProduct (K : RC) (N : nat) (a b : RCn K N) := MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (RCPCM K) (fun (n : Count N) => RCmult K (a n) (ConjugateRC K (b n))).
 
-Definition RnInnerProduct : forall (N : nat), (Rn N) -> (Rn N) -> R := RCnInnerProduct RK.
+Definition RnInnerProduct (N : nat) (a b : Rn N) := MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) RPCM (fun (n : Count N) => (a n) * (b n)).
 
-Definition CnInnerProduct : forall (N : nat), (Cn N) -> (Cn N) -> C := RCnInnerProduct CK.
+Definition CnInnerProduct (N : nat) (a b : Cn N) := MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) CPCM (fun (n : Count N) => Cmult (a n) (Conjugate (b n))).
 
 Lemma Proposition_4_2_1_1 : forall (K : RC) (N : nat) (x y z : RCn K N), (RCnInnerProduct K N (RCnplus K N x y) z) = RCplus K (RCnInnerProduct K N x z) (RCnInnerProduct K N y z).
 Proof.
@@ -8070,7 +8070,6 @@ Lemma Proposition_4_2_4_1_R : forall (N : nat) (x : Rn N), (RnInnerProduct N x x
 Proof.
 move=> N x.
 unfold RnInnerProduct.
-unfold RCnInnerProduct.
 simpl.
 apply (FiniteSetInduction (Count N)
   (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
@@ -8091,7 +8090,6 @@ Lemma Proposition_4_2_4_1_C : forall (N : nat) (x : Cn N), Csemipos (CnInnerProd
 Proof.
 move=> N x.
 unfold CnInnerProduct.
-unfold RCnInnerProduct.
 simpl.
 apply (FiniteSetInduction (Count N)
   (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
@@ -8149,7 +8147,6 @@ suff: (exists (m : {n : nat | (n < N)%nat}), x m <> 0).
 elim.
 move=> m H3.
 unfold RnInnerProduct.
-unfold RCnInnerProduct.
 rewrite (MySumF2Included (Count N) (FiniteSingleton (Count N) m)).
 rewrite MySumF2Singleton.
 apply Rplus_lt_le_0_compat.
@@ -8254,7 +8251,6 @@ apply H2.
 apply.
 suff: (CnInnerProduct N x x CRe = 0).
 unfold CnInnerProduct.
-unfold RCnInnerProduct.
 rewrite (MySumF2Included (Count N) (FiniteSingleton (Count N) m)).
 rewrite MySumF2Singleton.
 simpl.
@@ -8367,7 +8363,6 @@ Proof.
 move=> N x.
 unfold CnInnerProduct.
 unfold RnInnerProduct.
-unfold RCnInnerProduct.
 rewrite (MySumF2ImageSum (Count (N * 2)) (Count N) (exist (Finite (Count (N * 2))) (Full_set (Count (N * 2)))
      (CountFinite (N * 2))) (RCPCM RK)
   (fun (n : Count (N * 2)) =>
@@ -9068,7 +9063,6 @@ reflexivity.
 apply sig_map.
 simpl.
 unfold RnInnerProduct.
-unfold RCnInnerProduct.
 rewrite (MySumF2Included (Count 2) (FiniteSingleton (Count 2) CRe)).
 rewrite MySumF2Singleton.
 rewrite (MySumF2Included (Count 2) (FiniteSingleton (Count 2) CIm)).
@@ -11486,7 +11480,6 @@ apply conj.
 apply Rle_ge.
 apply Rabs_pos.
 unfold RnInnerProduct.
-unfold RCnInnerProduct.
 suff: ((exist (Finite (Count 1)) (Full_set (Count 1)) (CountFinite 1)) = FiniteSingleton (Count 1) Single).
 move=> H1.
 rewrite H1.
@@ -20396,7 +20389,6 @@ apply (Rnot_lt_le (RnNorm N (an n)) (Rabs (an n n0))).
 move=> H9.
 apply (Rle_not_lt (RnInnerProduct N (an n) (an n)) (Rabs (an n n0) * Rabs (an n n0))).
 unfold RnInnerProduct.
-unfold RCnInnerProduct.
 rewrite (MySumF2Excluded (Count N) RPCM (fun n1 : Count N => an n n1 * an n n1) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Singleton (Count N) n0)).
 simpl.
 suff: ((FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Singleton (Count N) n0)) = (exist (Finite (Count N)) (Singleton (Count N) n0) (Singleton_is_finite (Count N) n0))).
@@ -21139,7 +21131,6 @@ move=> H12.
 rewrite H12.
 rewrite - (Rplus_0_r (a m * a m)).
 unfold RnInnerProduct.
-unfold RCnInnerProduct.
 rewrite (MySumF2Excluded (Count N) RPCM (fun n1 : Count N => a n1 * a n1) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Singleton (Count N) m)).
 simpl.
 suff: ((FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Singleton (Count N) m)) = (exist (Finite (Count N)) (Singleton (Count N) m) (Singleton_is_finite (Count N) m))).
@@ -21598,7 +21589,6 @@ apply (Rle_ge 0 (Rabs (y Single - x Single))).
 apply (Rabs_pos (y Single - x Single)).
 unfold proj1_sig.
 unfold RnInnerProduct.
-unfold RCnInnerProduct.
 simpl.
 suff: ((exist (Finite (Count 1)) (Full_set (Count 1)) (CountFinite 1)) = FiniteSingleton (Count 1) Single).
 move=> H8.
@@ -21645,7 +21635,6 @@ apply (Rle_ge 0 (Rabs (a Single))).
 apply (Rabs_pos (a Single)).
 unfold proj1_sig.
 unfold RnInnerProduct.
-unfold RCnInnerProduct.
 suff: ((exist (Finite (Count 1)) (Full_set (Count 1)) (CountFinite 1)) = FiniteSingleton (Count 1) Single).
 move=> H4.
 rewrite H4.
@@ -21703,7 +21692,6 @@ apply (Rle_ge 0 (Rabs (x Single - a Single))).
 apply (Rabs_pos (x Single - a Single)).
 unfold proj1_sig.
 unfold RnInnerProduct.
-unfold RCnInnerProduct.
 suff: ((exist (Finite (Count 1)) (Full_set (Count 1)) (CountFinite 1)) = FiniteSingleton (Count 1) Single).
 move=> H5.
 rewrite H5.
