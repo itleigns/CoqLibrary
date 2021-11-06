@@ -1,5 +1,6 @@
 Add LoadPath "MyAlgebraicStructure" as MyAlgebraicStructure.
 Add LoadPath "BasicProperty" as BasicProperty.
+Add LoadPath "Tools" as Tools.
 
 From mathcomp Require Import ssreflect.
 Require Import Classical.
@@ -574,5 +575,7 @@ apply (Fmul_I_l F (f n)).
 Qed.
 
 Definition FnVS (F : Field) (N : nat) := mkVectorSpace F (Fn F N) (FnO F N) (Fnadd F N) (Fnmul F N) (Fnopp F N) (Fnadd_comm F N) (Fnadd_assoc F N) (Fnadd_O_l F N) (Fnadd_opp_r F N) (Fnadd_distr_l F N) (Fnadd_distr_r F N) (Fnmul_assoc F N) (Fnmul_I_l F N).
+
+Definition FVS (F : Field) := mkVectorSpace F (FT F) (FO F) (Fadd F) (Fmul F) (Fopp F) (Fadd_comm F) (Fadd_assoc F) (Fadd_O_l F) (Fadd_opp_r F) (Fmul_add_distr_l F) (Fmul_add_distr_r F) (Fmul_assoc_reverse F) (Fmul_I_l F).
 
 End VectorSpace.

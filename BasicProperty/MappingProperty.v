@@ -1160,6 +1160,16 @@ move=> T A B F.
 apply (ForallSavesInjective_dep T (fun (t : T) => A) (fun (t : T) => B) F).
 Qed.
 
+Definition Single := exist (fun (n : nat) => (n < 1)) O (le_n 1).
+
+Lemma SingleSame : forall (v : {n : nat | n < 1}), v = Single.
+Proof.
+move=> v.
+apply sig_map.
+rewrite (le_antisym (proj1_sig Single) 0 (le_S_n (proj1_sig Single) 0 (proj2_sig Single)) (le_0_n (proj1_sig Single))).
+apply (le_antisym (proj1_sig v) 0 (le_S_n (proj1_sig v) 0 (proj2_sig v)) (le_0_n (proj1_sig v))).
+Qed.
+
 Lemma AddConnectSig : forall (N M : nat), {f : {n : nat | n < N} + {n : nat | n < M} -> {n : nat | n < N + M} | (forall (m : {n : nat | n < N}), proj1_sig m = proj1_sig (f (inl m))) /\ (forall (m : {n : nat | n < M}), N + proj1_sig m = proj1_sig (f (inr m)))}.
 Proof.
 move=> N M.
@@ -1322,101 +1332,128 @@ exists (AddConnectInv N M).
 apply (AddConnectInvRelation N M).
 Qed.
 
+Lemma MultConnectSig : forall (N M : nat), {f : {n : nat | n < N} * {n : nat | n < M} -> {n : nat | n < N * M} | forall (m : {n : nat | n < N} * {n : nat | n < M}), proj1_sig (f m) = proj1_sig (fst m) * M + proj1_sig (snd m)}.
+Proof.
+elim.
+move=> M.
+exists (fun (xy : {n : nat | n < 0} * {n : nat | n < M}) => match (PeanoNat.Nat.nlt_0_r (proj1_sig (fst xy)) (proj2_sig (fst xy))) with
+end).
+move=> m.
+elim (PeanoNat.Nat.nlt_0_r (proj1_sig (fst m)) (proj2_sig (fst m))).
+move=> N H1 M.
+exists (compose (AddConnect M (N * M)) (fun (m : {n : nat | n < S N} * {n : nat | n < M}) => match AddConnectInv 1 N (fst m) with
+  | inl _ => inl (snd m)
+  | inr a => inr (proj1_sig (H1 M) (a, snd m))
+end)).
+move=> m.
+unfold compose.
+rewrite - {2} (proj2 (AddConnectInvRelation 1 N) (fst m)).
+elim (AddConnectInv 1 N (fst m)).
+move=> a.
+rewrite - (proj1 (AddConnectNature 1 N) a).
+rewrite (SingleSame a).
+rewrite - (proj1 (AddConnectNature M (N * M)) (snd m)).
+reflexivity.
+move=> b.
+rewrite - (proj2 (AddConnectNature M (N * M))).
+rewrite - (proj2 (AddConnectNature 1 N)).
+rewrite (proj2_sig (H1 M)).
+simpl.
+apply plus_assoc.
+Qed.
+
+Definition MultConnect (N M : nat) := proj1_sig (MultConnectSig N M).
+
+Definition MultConnectNature (N M : nat) : forall (m : {n : nat | n < N} * {n : nat | n < M}), proj1_sig (MultConnect N M m) = proj1_sig (fst m) * M + proj1_sig (snd m) := proj2_sig (MultConnectSig N M).
+
+Lemma MultConnectInvSig : forall (N M : nat), {f : {n : nat | n < N * M} -> {n : nat | n < N} * {n : nat | n < M} | forall (m : {n : nat | n < N * M}), proj1_sig m = proj1_sig (fst (f m)) * M + proj1_sig (snd (f m))}.
+Proof.
+elim.
+move=> M.
+rewrite (mult_0_l M).
+exists (fun (x : {n : nat | n < 0}) => match (PeanoNat.Nat.nlt_0_r (proj1_sig x) (proj2_sig x)) with
+end).
+move=> x.
+elim (PeanoNat.Nat.nlt_0_r (proj1_sig x) (proj2_sig x)).
+move=> N H1 M.
+exists (compose (fun (m : {n : nat | n < M} + {n : nat | n < N * M}) => match m with
+  | inl a => (AddConnect 1 N (inl Single), a)
+  | inr b => (AddConnect 1 N (inr (fst (proj1_sig (H1 M) b))), snd (proj1_sig (H1 M) b))
+end) (AddConnectInv M (N * M))).
+move=> m.
+unfold compose.
+rewrite - {1} (proj2 (AddConnectInvRelation M (N * M)) m).
+elim (AddConnectInv M (N * M) m).
+move=> a.
+simpl.
+rewrite - (proj1 (AddConnectNature M (N * M)) a).
+rewrite - (proj1 (AddConnectNature 1 N) Single).
+reflexivity.
+move=> b.
+simpl.
+rewrite - (proj2 (AddConnectNature M (N * M)) b).
+rewrite - (proj2 (AddConnectNature 1 N)).
+rewrite (proj2_sig (H1 M) b).
+rewrite plus_assoc.
+reflexivity.
+Qed.
+
+Definition MultConnectInv (N M : nat) := proj1_sig (MultConnectInvSig N M).
+
+Definition MultConnectInvNature (N M : nat) : forall (m : {n : nat | n < N * M}), proj1_sig m = proj1_sig (fst (MultConnectInv N M m)) * M + proj1_sig (snd (MultConnectInv N M m)) := proj2_sig (MultConnectInvSig N M).
+
+Lemma MultConnectInvRelation : forall (N M : nat), (forall (m : {n : nat | n < N} * {n : nat | n < M}), MultConnectInv N M (MultConnect N M m) = m) /\ (forall (m : {n : nat | n < N * M}), MultConnect N M (MultConnectInv N M m) = m).
+Proof.
+suff: (forall (N M : nat) (a b : {n : nat | n < N} * {n : nat | n < M}), proj1_sig (fst a) * M + proj1_sig (snd a) = proj1_sig (fst b) * M + proj1_sig (snd b) -> a = b).
+move=> H1 N M.
+apply conj.
+move=> m.
+apply (H1 N M).
+rewrite - (MultConnectInvNature N M).
+apply (MultConnectNature N M m).
+move=> m.
+apply sig_map.
+rewrite (MultConnectNature N M).
+rewrite (MultConnectInvNature N M).
+reflexivity.
+suff: (forall (N M : nat) (a b : {n : nat | n < N} * {n : nat | n < M}), proj1_sig (fst a) * M + proj1_sig (snd a) = proj1_sig (fst b) * M + proj1_sig (snd b) -> proj1_sig (fst a) <= proj1_sig (fst b)).
+move=> H1 N M a b H2.
+suff: (fst a = fst b).
+move=> H3.
+apply injective_projections.
+apply H3.
+apply sig_map.
+apply (plus_reg_l (proj1_sig (snd a)) (proj1_sig (snd b)) (proj1_sig (fst a) * M)).
+rewrite {2} H3.
+apply H2.
+apply sig_map.
+apply le_antisym.
+apply (H1 N M a b H2).
+apply (H1 N M b a).
+rewrite H2.
+reflexivity.
+move=> N M a b H1.
+elim (le_or_lt (proj1_sig (fst a)) (proj1_sig (fst b))).
+apply.
+move=> H2.
+elim (lt_irrefl (proj1_sig (fst a) * M + proj1_sig (snd a))).
+rewrite {1} H1.
+apply (le_trans (S (proj1_sig (fst b) * M + proj1_sig (snd b))) (proj1_sig (fst a) * M)).
+apply (le_trans (S (proj1_sig (fst b) * M + proj1_sig (snd b))) ((S (proj1_sig (fst b))) * M)).
+simpl.
+rewrite (plus_comm (proj1_sig (fst b) * M) (proj1_sig (snd b))).
+apply (plus_le_compat_r (S (proj1_sig (snd b))) M).
+apply (proj2_sig (snd b)).
+apply (mult_le_compat_r (S (proj1_sig (fst b))) (proj1_sig (fst a)) M H2).
+apply le_plus_l.
+Qed.
+
 Lemma CountMult : forall (N M : nat), {f : {n : nat | n < N} * {n : nat | n < M} -> {n : nat | n < N * M} | Bijective f}.
 Proof.
 move=> N M.
-elim N.
-exists (fun (xy : {n : nat | n < 0} * {n : nat | n < M}) => match (PeanoNat.Nat.nlt_0_r (proj1_sig (fst xy)) (proj2_sig (fst xy))) with
-end).
-suff: (forall (k : {n : nat | n < 0 * N}), False).
-move=> H1.
-exists (fun (k : {n : nat | n < 0 * N}) => match (H1 k) with
-end).
-apply conj.
-move=> x.
-apply False_ind.
-apply (PeanoNat.Nat.nlt_0_r (proj1_sig (fst x)) (proj2_sig (fst x))).
-move=> y.
-apply False_ind.
-apply (PeanoNat.Nat.nlt_0_r (proj1_sig y)).
-rewrite - {2} (mult_0_l N).
-apply (proj2_sig y).
-rewrite (mult_0_l N).
-apply (fun (k : {n : nat | n < 0}) => (PeanoNat.Nat.nlt_0_r (proj1_sig k) (proj2_sig k))).
-simpl.
-move=> K H1.
-suff: {f : {n : nat | n < S K} * {n : nat | n < M} -> {n : nat | n < M} + {n : nat | n < K * M} | Bijective f}.
-move=> H2.
-exists (compose (proj1_sig (CountAdd M (K * M))) (proj1_sig H2)).
-apply BijChain.
-apply (proj2_sig H2).
-apply (proj2_sig (CountAdd M (K * M))).
-exists (fun (xy : {n : nat | n < S K} * {n : nat | n < M}) => match excluded_middle_informative (proj1_sig (fst xy) < K) with
-  | left H => inr (proj1_sig H1 (exist (fun (k : nat) => k < K) (proj1_sig (fst xy)) H, snd xy))
-  | right _ => inl (snd xy)
-end).
-elim (proj2_sig H1).
-move=> g H2.
-exists (fun (x : {n : nat | n < M} + {n : nat | n < K * M}) => match x with
-  | inl k => (exist (fun (n : nat) => n < S K) K (le_n (S K)), k)
-  | inr k => (exist (fun (n : nat) => n < S K) (proj1_sig (fst (g k))) (le_trans (S (proj1_sig (fst (g k)))) K (S K) (proj2_sig (fst (g k))) (le_S K K (le_n K))), snd (g k))
-end).
-apply conj.
-move=> x.
-elim (excluded_middle_informative (proj1_sig (fst x) < K)).
-move=> H3.
-apply injective_projections.
-apply sig_map.
-simpl.
-rewrite (proj1 H2 (exist (fun k : nat => k < K) (proj1_sig (fst x)) H3, snd x)).
-reflexivity.
-simpl.
-rewrite (proj1 H2 (exist (fun k : nat => k < K) (proj1_sig (fst x)) H3, snd x)).
-reflexivity.
-move=> H3.
-apply injective_projections.
-apply sig_map.
-simpl.
-elim (le_lt_or_eq (proj1_sig (fst x)) K).
-move=> H4.
-apply False_ind.
-apply (H3 H4).
-move=> H4.
-rewrite H4.
-reflexivity.
-apply (le_S_n (proj1_sig (fst x)) K (proj2_sig (fst x))).
-reflexivity.
-elim.
-simpl.
-elim (excluded_middle_informative (K < K)).
-move=> H3.
-apply False_ind.
-apply (lt_irrefl K H3).
-move=> H3 H4.
-reflexivity.
-simpl.
-move=> k.
-elim (excluded_middle_informative (proj1_sig (fst (g k)) < K)).
-move=> H4.
-suff: ((proj1_sig H1 (exist (fun n : nat => n < K) (proj1_sig (fst (g k))) H4, snd (g k))) = k).
-move=> H5.
-rewrite H5.
-reflexivity.
-suff: ((exist (fun n : nat => n < K) (proj1_sig (fst (g k))) H4, snd (g k)) = g k).
-move=> H5.
-rewrite H5.
-apply (proj2 H2 k).
-apply injective_projections.
-suff: (exist (fun n : nat => n < K) (proj1_sig (fst (g k))) H4 = fst (g k)).
-move=> H5.
-rewrite H5.
-reflexivity.
-apply sig_map.
-reflexivity.
-reflexivity.
-move=> H3.
-apply False_ind.
-apply (H3 (proj2_sig (fst (g k)))).
+exists (MultConnect N M).
+exists (MultConnectInv N M).
+apply (MultConnectInvRelation N M).
 Qed.
 
 Lemma CountPow : forall (N M : nat), {f : ({n : nat | n < N} -> {n : nat | n < M}) -> {n : nat | n < M ^ N} | Bijective f}.

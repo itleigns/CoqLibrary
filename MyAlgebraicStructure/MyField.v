@@ -1,4 +1,5 @@
 Add LoadPath "BasicProperty" as BasicProperty.
+Add LoadPath "Tools" as Tools.
 
 From mathcomp Require Import ssreflect.
 Require Import Classical.
@@ -6,6 +7,7 @@ Require Import Coq.Logic.ClassicalDescription.
 Require Import Coq.Sets.Ensembles.
 Require Import Coq.Sets.Finite_sets.
 Require Import BasicProperty.NatProperty.
+Require Import Tools.MySum.
 
 Section Field.
 
@@ -29,6 +31,15 @@ Finv_l : forall x : FT, x <> FO -> (Fmul (Finv x) x) = FI;
 Fmul_add_distr_l : forall (x y z : FT), (Fmul x (Fadd y z)) = (Fadd (Fmul x y) (Fmul x z));
 FI_neq_FO : FI <> FO
 }.
+
+Definition Fminus (f : Field) (x y : FT f) := Fadd f x (Fopp f y).
+
+Lemma Fmul_assoc_reverse : forall (f : Field) (x y z : FT f), (Fmul f x (Fmul f y z)) = (Fmul f (Fmul f x y) z).
+Proof.
+move=> f x y z.
+rewrite (Fmul_assoc f x y z).
+reflexivity.
+Qed.
 
 Lemma Fadd_O_r : forall (f : Field) (x : FT f), (Fadd f x (FO f)) = x.
 Proof.
@@ -635,5 +646,9 @@ Definition CharacteristicField := fun (f : Field) => (match excluded_middle_info
   | left H => S (proj1_sig (min_nat_get (fun (n : nat) => NatCorrespondField f (S n) = FO f) H))
   | right _ => O
 end).
+
+Definition FPCM (f : Field) := mkCommutativeMonoid (FT f) (FO f) (Fadd f) (Fadd_comm f) (Fadd_O_r f) (Fadd_assoc f).
+
+Definition FMCM (f : Field) := mkCommutativeMonoid (FT f) (FI f) (Fmul f) (Fmul_comm f) (Fmul_I_r f) (Fmul_assoc f).
 
 End Field.

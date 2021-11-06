@@ -33,10 +33,6 @@ Require Import LinearAlgebra.SenkeiDaisuunoSekai.SenkeiDaisuunoSekai1.
 
 Section Matrix.
 
-Definition FPCM (f : Field) := mkCommutativeMonoid (FT f) (FO f) (Fadd f) (Fadd_comm f) (Fadd_O_r f) (Fadd_assoc f).
-
-Definition FMCM (f : Field) := mkCommutativeMonoid (FT f) (FI f) (Fmul f) (Fmul_comm f) (Fmul_I_r f) (Fmul_assoc f).
-
 Definition Matrix (f : Field) (M N : nat) := {n : nat| (n < M) } -> {n : nat| (n < N) } -> (FT f).
 
 Definition Mplus (f : Field) (M N : nat) := fun (A B : Matrix f M N) (x : {n : nat| (n < M) }) (y : {n : nat| (n < N) }) => (Fadd f (A x y) (B x y)).
