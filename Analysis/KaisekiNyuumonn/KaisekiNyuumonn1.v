@@ -7430,6 +7430,43 @@ Qed.
 
 Definition IRCmult : forall (a b : R), IRC (a * b) = Cmult (IRC a) (IRC b) := IRRCmult CK.
 
+Lemma IRRCinv : forall (K : RC) (a : R), a <> 0 -> IRRC K (/ a) = RCinv K (IRRC K a).
+Proof.
+elim.
+move=> a H1.
+reflexivity.
+move=> a H1.
+apply (Fmul_eq_reg_r Cfield (IRRC CK a)).
+simpl.
+rewrite (Cinv_l (IRC a)).
+rewrite - (IRCmult (/ a) a).
+rewrite (Rinv_l a H1).
+reflexivity.
+move=> H2.
+apply H1.
+suff: (a = IRC a CRe).
+move=> H3.
+rewrite H3.
+rewrite H2.
+reflexivity.
+unfold IRC.
+rewrite (CmakeRe a 0).
+reflexivity.
+move=> H2.
+apply H1.
+suff: (a = IRRC CK a CRe).
+move=> H3.
+rewrite H3.
+rewrite H2.
+reflexivity.
+unfold IRRC.
+unfold IRC.
+rewrite (CmakeRe a 0).
+reflexivity.
+Qed.
+
+Definition IRCinv : forall (a : R), a <> 0 -> IRC (/ a) = Cinv (IRC a) := IRRCinv CK.
+
 Lemma IRRCminus : forall (K : RC) (a b : R), IRRC K (a - b) = RCminus K (IRRC K a) (IRRC K b).
 Proof.
 move=> K a b.
