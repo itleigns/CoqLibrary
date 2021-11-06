@@ -7667,7 +7667,7 @@ Lemma ConjugateRCO : forall (K : RC), ConjugateRC K (RCO K) = RCO K.
 Proof.
 elim.
 reflexivity.
-apply ConjugateCO. 
+apply ConjugateCO.
 Qed.
 
 Lemma ConjugateCI : Conjugate CI = CI.
@@ -7690,7 +7690,7 @@ Lemma ConjugateRCI : forall (K : RC), ConjugateRC K (RCI K) = RCI K.
 Proof.
 elim.
 reflexivity.
-apply ConjugateCI. 
+apply ConjugateCI.
 Qed.
 
 Lemma ConjugateInvolutive : forall (c : C), Conjugate (Conjugate c) = c.
@@ -7909,8 +7909,7 @@ Lemma Proposition_4_2_1_1 : forall (K : RC) (N : nat) (x y z : RCn K N), (RCnInn
 Proof.
 move=> K N x y z.
 unfold RCnInnerProduct.
-apply (FiniteSetInduction (Count N)
-  (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
+apply (FiniteSetInduction (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
@@ -7927,18 +7926,10 @@ rewrite H4.
 suff: (RCmult K (RCnplus K N x y b) (ConjugateRC K (z b)) = RCplus K (RCmult K (x b) (ConjugateRC K (z b))) (RCmult K (y b) (ConjugateRC K (z b)))).
 move=> H5.
 rewrite H5.
-rewrite - (RCplus_assoc K (RCplus K
-     (MySumF2 (Count N) B (RCPCM K)
-        (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (z n))))
-     (MySumF2 (Count N) B (RCPCM K)
-        (fun (n : Count N) => RCmult K (y n) (ConjugateRC K (z n)))))).
-rewrite (RCplus_assoc K (MySumF2 (Count N) B (RCPCM K)
-        (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (z n))))).
-rewrite (RCplus_comm K (MySumF2 (Count N) B (RCPCM K)
-           (fun (n : Count N) => RCmult K (y n) (ConjugateRC K (z n))))).
-rewrite - (RCplus_assoc K (MySumF2 (Count N) B (RCPCM K)
-        (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (z n)))) (RCmult K (x b) (ConjugateRC K (z b))) (MySumF2 (Count N) B (RCPCM K)
-        (fun (n : Count N) => RCmult K (y n) (ConjugateRC K (z n))))).
+rewrite - (RCplus_assoc K (RCplus K (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (z n)))) (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (y n) (ConjugateRC K (z n)))))).
+rewrite (RCplus_assoc K (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (z n))))).
+rewrite (RCplus_comm K (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (y n) (ConjugateRC K (z n))))).
+rewrite - (RCplus_assoc K (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (z n)))) (RCmult K (x b) (ConjugateRC K (z b))) (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (y n) (ConjugateRC K (z n))))).
 apply (RCplus_assoc K).
 apply (Fmul_add_distr_r (RCfield K)).
 apply H3.
@@ -7954,8 +7945,7 @@ Lemma Proposition_4_2_1_2 : forall (K : RC) (N : nat) (x y z : RCn K N), (RCnInn
 Proof.
 move=> K N x y z.
 unfold RCnInnerProduct.
-apply (FiniteSetInduction (Count N)
-  (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
+apply (FiniteSetInduction (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
@@ -7973,18 +7963,10 @@ unfold Fnadd.
 simpl.
 rewrite (Proposition_4_8_1_1_RC K (y b) (z b)).
 rewrite (RCmult_plus_distr_l K (x b) (ConjugateRC K (y b)) (ConjugateRC K (z b))).
-rewrite - (RCplus_assoc K (RCplus K
-     (MySumF2 (Count N) B (RCPCM K)
-        (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (y n))))
-     (MySumF2 (Count N) B (RCPCM K)
-        (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (z n)))))).
-rewrite (RCplus_assoc K (MySumF2 (Count N) B (RCPCM K)
-        (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (y n))))).
-rewrite (RCplus_comm K (MySumF2 (Count N) B (RCPCM K)
-           (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (z n))))).
-rewrite - (RCplus_assoc K (MySumF2 (Count N) B (RCPCM K)
-        (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (y n)))) (RCmult K (x b) (ConjugateRC K (y b))) (MySumF2 (Count N) B (RCPCM K)
-        (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (z n))))).
+rewrite - (RCplus_assoc K (RCplus K (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (y n)))) (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (z n)))))).
+rewrite (RCplus_assoc K (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (y n))))).
+rewrite (RCplus_comm K (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (z n))))).
+rewrite - (RCplus_assoc K (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (y n)))) (RCmult K (x b) (ConjugateRC K (y b))) (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (z n))))).
 apply (RCplus_assoc K).
 apply H3.
 apply H3.
@@ -7999,8 +7981,7 @@ Lemma Proposition_4_2_2_1 : forall (K : RC) (N : nat) (a : RCT K) (x y : RCn K N
 Proof.
 move=> K N a x y.
 unfold RCnInnerProduct.
-apply (FiniteSetInduction (Count N)
-  (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
+apply (FiniteSetInduction (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
@@ -8013,15 +7994,7 @@ move=> B b H1 H2 H3 H4.
 rewrite MySumF2Add.
 rewrite MySumF2Add.
 simpl.
-suff: (RCmult K a
-  (RCplus K
-     (MySumF2 (Count N) B (RCPCM K)
-        (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (y n))))
-     (RCmult K (x b) (ConjugateRC K (y b))))
-= RCplus K
-     (RCmult K a (MySumF2 (Count N) B (RCPCM K)
-        (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (y n)))))
-     (RCmult K a (RCmult K (x b) (ConjugateRC K (y b))))).
+suff: (RCmult K a (RCplus K (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (y n)))) (RCmult K (x b) (ConjugateRC K (y b)))) = RCplus K (RCmult K a (MySumF2 (Count N) B (RCPCM K) (fun (n : Count N) => RCmult K (x n) (ConjugateRC K (y n))))) (RCmult K a (RCmult K (x b) (ConjugateRC K (y b))))).
 move=> H5.
 rewrite H5.
 rewrite H4.
@@ -8043,8 +8016,7 @@ Lemma Proposition_4_2_2_2 : forall (K : RC) (N : nat) (a : RCT K) (x y : RCn K N
 Proof.
 move=> K N a x y.
 unfold RCnInnerProduct.
-apply (FiniteSetInduction (Count N)
-  (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
+apply (FiniteSetInduction (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
@@ -8108,8 +8080,7 @@ Proof.
 move=> N x.
 unfold RnInnerProduct.
 simpl.
-apply (FiniteSetInduction (Count N)
-  (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
+apply (FiniteSetInduction (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
 apply conj.
 rewrite MySumF2Empty.
 right.
@@ -8128,8 +8099,7 @@ Proof.
 move=> N x.
 unfold CnInnerProduct.
 simpl.
-apply (FiniteSetInduction (Count N)
-  (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
+apply (FiniteSetInduction (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))).
 apply conj.
 rewrite MySumF2Empty.
 apply conj.
@@ -8299,12 +8269,7 @@ suff: (forall (n : Count N), 0 <= Cmult (x n) (Conjugate (x n)) CRe).
 move=> H3.
 elim (H3 m).
 move=> H4.
-elim (Rgt_not_eq (Cmult (x m) (Conjugate (x m)) CRe +
-     MySumF2 (Count N)
-       (FiniteIntersection (Count N)
-          (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))
-          (Complement (Count N) (Singleton (Count N) m))) 
-       (FPCM Cfield) (fun (n : Count N) => Cmult (x n) (Conjugate (x n))) CRe) 0).
+elim (Rgt_not_eq (Cmult (x m) (Conjugate (x m)) CRe + MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (Complement (Count N) (Singleton (Count N) m))) (FPCM Cfield) (fun (n : Count N) => Cmult (x n) (Conjugate (x n))) CRe) 0).
 apply Rplus_lt_le_0_compat.
 apply H4.
 apply MySumF2Induction.
@@ -8400,20 +8365,11 @@ Proof.
 move=> N x.
 unfold CnInnerProduct.
 unfold RnInnerProduct.
-rewrite (MySumF2ImageSum (Count (N * 2)) (Count N) (exist (Finite (Count (N * 2))) (Full_set (Count (N * 2)))
-     (CountFinite (N * 2))) (RCPCM RK)
-  (fun (n : Count (N * 2)) =>
-   RCmult RK (CnRnConvert N x n) (ConjugateRC RK (CnRnConvert N x n))) (fun (m : Count (N * 2)) => fst (MultConnectInv N 2 m))).
-suff: ((exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) = (FiniteIm (Count (N * 2)) (Count N)
-     (fun (m : Count (N * 2)) => fst (MultConnectInv N 2 m))
-     (exist (Finite (Count (N * 2))) (Full_set (Count (N * 2)))
-        (CountFinite (N * 2))))).
+rewrite (MySumF2ImageSum (Count (N * 2)) (Count N) (exist (Finite (Count (N * 2))) (Full_set (Count (N * 2))) (CountFinite (N * 2))) (RCPCM RK) (fun (n : Count (N * 2)) => RCmult RK (CnRnConvert N x n) (ConjugateRC RK (CnRnConvert N x n))) (fun (m : Count (N * 2)) => fst (MultConnectInv N 2 m))).
+suff: ((exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) = (FiniteIm (Count (N * 2)) (Count N) (fun (m : Count (N * 2)) => fst (MultConnectInv N 2 m)) (exist (Finite (Count (N * 2))) (Full_set (Count (N * 2))) (CountFinite (N * 2))))).
 move=> H1.
 rewrite H1.
-apply (FiniteSetInduction (Count N) (FiniteIm (Count (N * 2)) (Count N)
-     (fun (m : Count (N * 2)) => fst (MultConnectInv N 2 m))
-     (exist (Finite (Count (N * 2))) (Full_set (Count (N * 2)))
-        (CountFinite (N * 2))))).
+apply (FiniteSetInduction (Count N) (FiniteIm (Count (N * 2)) (Count N) (fun (m : Count (N * 2)) => fst (MultConnectInv N 2 m)) (exist (Finite (Count (N * 2))) (Full_set (Count (N * 2))) (CountFinite (N * 2))))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
@@ -8700,8 +8656,7 @@ rewrite RCReConjugate.
 rewrite (Proposition_4_2_2_2 K N (RCopp K (RCI K)) x y).
 rewrite (Proposition_4_8_1_3_RC K).
 rewrite (ConjugateRCI K).
-have: (RCmult K (RCopp K (RCI K)) (RCnInnerProduct K N x y) = Fmul (RCfield K) (Fopp (RCfield K) (RCI K))
-       (RCnInnerProduct K N x y)).
+have: (RCmult K (RCopp K (RCI K)) (RCnInnerProduct K N x y) = Fmul (RCfield K) (Fopp (RCfield K) (RCI K)) (RCnInnerProduct K N x y)).
 reflexivity.
 move=> H3.
 rewrite H3.
@@ -8710,8 +8665,7 @@ rewrite (Fmul_I_l (RCfield K) (RCnInnerProduct K N x y)).
 rewrite (Rplus_assoc (- RCRe K (RCnInnerProduct K N x y)) (- RCRe K (RCnInnerProduct K N x y)) (RCRe K (RCnInnerProduct K N y y))).
 rewrite (Proposition_4_2_2_2 K N (RCopp K (RCI K)) (RCnmult K N (RCopp K (RCI K)) y) y).
 rewrite (Proposition_4_2_2_1 K N (RCopp K (RCI K)) y y).
-have: (RCmult K (RCopp K (RCI K)) (RCnInnerProduct K N y y) = Fmul (RCfield K) (Fopp (RCfield K) (RCI K))
-       (RCnInnerProduct K N y y)).
+have: (RCmult K (RCopp K (RCI K)) (RCnInnerProduct K N y y) = Fmul (RCfield K) (Fopp (RCfield K) (RCI K)) (RCnInnerProduct K N y y)).
 reflexivity.
 move=> H4.
 rewrite H4.
@@ -8719,9 +8673,7 @@ rewrite (Fopp_mul_distr_l_reverse (RCfield K) (RCI K) (RCnInnerProduct K N y y))
 rewrite (Proposition_4_8_1_3_RC K).
 rewrite (ConjugateRCI K).
 rewrite (Fmul_I_l (RCfield K) (RCnInnerProduct K N y y)).
-have: (RCmult K (RCopp K (RCI K))
-       (Fopp (RCfield K) (RCnInnerProduct K N y y)) = Fmul (RCfield K) (Fopp (RCfield K) (RCI K))
-       (Fopp (RCfield K) (RCnInnerProduct K N y y))).
+have: (RCmult K (RCopp K (RCI K)) (Fopp (RCfield K) (RCnInnerProduct K N y y)) = Fmul (RCfield K) (Fopp (RCfield K) (RCI K)) (Fopp (RCfield K) (RCnInnerProduct K N y y))).
 reflexivity.
 move=> H5.
 rewrite H5.
@@ -9110,9 +9062,7 @@ reflexivity.
 move=> u.
 elim.
 move=> u0 H1 H2.
-suff: (In (Count 2)
-       (Complement (Count 2) (proj1_sig (FiniteSingleton (Count 2) CIm)))
-       u0).
+suff: (In (Count 2) (Complement (Count 2) (proj1_sig (FiniteSingleton (Count 2) CIm))) u0).
 elim H2.
 move=> u1 H3 H4 H5.
 elim (CReorCIm u1).
@@ -9274,17 +9224,12 @@ apply Rabs_Ropp.
 move=> N x.
 simpl.
 unfold RnNorm.
-suff: ((exist (fun (r : R) => r >= 0)
-     (RnInnerProduct N (Rnopp N x) (Rnopp N x))
-     (Proposition_4_2_4_1_R N (Rnopp N x))) = (exist (fun r : R => r >= 0) (RnInnerProduct N x x)
-     (Proposition_4_2_4_1_R N x))).
+suff: ((exist (fun (r : R) => r >= 0) (RnInnerProduct N (Rnopp N x) (Rnopp N x)) (Proposition_4_2_4_1_R N (Rnopp N x))) = (exist (fun r : R => r >= 0) (RnInnerProduct N x x) (Proposition_4_2_4_1_R N x))).
 move=> H1.
 rewrite H1.
 reflexivity.
 apply sig_map.
-apply (MySumF2Same (Count N)
-    (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))
-    (RCPCM RK)).
+apply (MySumF2Same (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (RCPCM RK)).
 move=> u H1.
 apply (Rmult_opp_opp (x u) (x u)).
 Qed.
@@ -9486,8 +9431,7 @@ suff: (4 = 2 * 2).
 move=> H4.
 rewrite {1} H4.
 rewrite - (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y))).
-rewrite - (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) *
- (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y))) (/ (RCnNorm K N x * RCnNorm K N x)) (/ (RCnNorm K N x * RCnNorm K N x))).
+rewrite - (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y))) (/ (RCnNorm K N x * RCnNorm K N x)) (/ (RCnNorm K N x * RCnNorm K N x))).
 rewrite (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (/ (RCnNorm K N x * RCnNorm K N x))).
 rewrite (Rmult_comm (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (/ (RCnNorm K N x * RCnNorm K N x))).
 rewrite - (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (/ (RCnNorm K N x * RCnNorm K N x)) (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y))).
@@ -9500,12 +9444,9 @@ rewrite (Rmult_assoc (2 * (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInner
 rewrite - (Rmult_assoc 2 (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (/ (RCnNorm K N x * RCnNorm K N x))).
 rewrite - (Rmult_assoc 4 (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y))).
 rewrite - (Rmult_assoc 4 (RCabs K (RCnInnerProduct K N x y)) (RCabs K (RCnInnerProduct K N x y))).
-rewrite - (Rmult_assoc (4 * RCabs K (RCnInnerProduct K N x y) *
-RCabs K (RCnInnerProduct K N x y)) (RCnNorm K N y * RCnNorm K N y) (/ (RCnNorm K N x * RCnNorm K N x))).
+rewrite - (Rmult_assoc (4 * RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (RCnNorm K N y * RCnNorm K N y) (/ (RCnNorm K N x * RCnNorm K N x))).
 rewrite - (Rmult_assoc 2 (RCabs K (RCnInnerProduct K N x y)) (RCabs K (RCnInnerProduct K N x y))).
-rewrite - (Rmult_opp_opp (2 * RCabs K (RCnInnerProduct K N x y) *
-RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x)) (2 * RCabs K (RCnInnerProduct K N x y) *
-RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x))).
+rewrite - (Rmult_opp_opp (2 * RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x)) (2 * RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x))).
 apply Rminus_le.
 apply H3.
 rewrite /4.
@@ -9567,14 +9508,7 @@ move=> H6.
 rewrite H6.
 apply (proj2 (Proposition_4_2_4_1_C N z)).
 rewrite Rmult_0_l.
-suff: ((t * t +
- -
- (2 * RCabs K (RCnInnerProduct K N x y) *
-  RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x)) *
- t +
- RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) *
- (RCnNorm K N y * RCnNorm K N y) * / (RCnNorm K N x * RCnNorm K N x)) *
-(RCnNorm K N x * RCnNorm K N x) = RCnNorm K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y)) * RCnNorm K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y))).
+suff: ((t * t + - (2 * RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x)) * t + RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * (RCnNorm K N y * RCnNorm K N y) * / (RCnNorm K N x * RCnNorm K N x)) * (RCnNorm K N x * RCnNorm K N x) = RCnNorm K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y)) * RCnNorm K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y))).
 move=> H3.
 rewrite H3.
 apply Rge_le.
@@ -9586,30 +9520,20 @@ rewrite (Proposition_4_2_2_2 K N).
 rewrite (Proposition_4_2_2_1 K N).
 rewrite (Proposition_4_2_2_2 K N).
 rewrite - (proj2 (RCnNormNature K N (RCnmult K N (IRRC K t) x))).
-rewrite (Rmult_plus_distr_r (t * t +
- -
- (2 * RCabs K (RCnInnerProduct K N x y) *
-  RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x)) * t)).
-rewrite (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) *
-(RCnNorm K N y * RCnNorm K N y))).
+rewrite (Rmult_plus_distr_r (t * t + - (2 * RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x)) * t)).
+rewrite (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * (RCnNorm K N y * RCnNorm K N y))).
 suff: (RCnNorm K N x * RCnNorm K N x <> 0).
 move=> H3.
 rewrite (Rinv_l (RCnNorm K N x * RCnNorm K N x) H3).
 rewrite Rmult_1_r.
-suff: (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) *
-(RCnNorm K N y * RCnNorm K N y) = RCRe K
-  (RCmult K (RCnInnerProduct K N x y)
-     (RCmult K (ConjugateRC K (RCnInnerProduct K N x y))
-        (RCnInnerProduct K N y y)))).
+suff: (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * (RCnNorm K N y * RCnNorm K N y) = RCRe K (RCmult K (RCnInnerProduct K N x y) (RCmult K (ConjugateRC K (RCnInnerProduct K N x y)) (RCnInnerProduct K N y y)))).
 move=> H4.
 rewrite H4.
 apply Rplus_eq_compat_r.
 rewrite (Rmult_plus_distr_r (t * t)).
 rewrite (Proposition_4_2_2_1 K N).
 rewrite (Proposition_4_2_2_2 K N).
-suff: (t * t * (RCnNorm K N x * RCnNorm K N x) = RCRe K
-  (RCmult K (IRRC K t)
-     (RCmult K (ConjugateRC K (IRRC K t)) (RCnInnerProduct K N x x)))).
+suff: (t * t * (RCnNorm K N x * RCnNorm K N x) = RCRe K (RCmult K (IRRC K t) (RCmult K (ConjugateRC K (IRRC K t)) (RCnInnerProduct K N x x)))).
 move=> H5.
 rewrite H5.
 apply Rplus_eq_compat_l.
@@ -9632,8 +9556,7 @@ rewrite (RCmult_comm K (IRRC K t)).
 rewrite - (IRRCmult K).
 suff: (forall (K : RC) (x : R), x = RCRe K (IRRC K x)).
 move=> H6.
-apply (H6 K (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) *
-t)).
+apply (H6 K (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * t)).
 elim.
 move=> z.
 reflexivity.
@@ -9699,12 +9622,10 @@ suff: (forall (K : RC) (x : RCn K N), RCnInnerProduct K N x x = IRRC K (RCRe K (
 move=> H4.
 rewrite (H4 K y).
 rewrite (proj2 (RCnNormNature K N y)).
-rewrite - (IRRCmult K (RCabs K (RCnInnerProduct K N x y) *
-         RCabs K (RCnInnerProduct K N x y)) (RCnNorm K N y * RCnNorm K N y)).
+rewrite - (IRRCmult K (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (RCnNorm K N y * RCnNorm K N y)).
 suff: (forall (K : RC) (x : R), x = RCRe K (IRRC K x)).
 move=> H5.
-apply (H5 K (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) *
-(RCnNorm K N y * RCnNorm K N y))).
+apply (H5 K (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * (RCnNorm K N y * RCnNorm K N y))).
 elim.
 move=> z.
 reflexivity.
@@ -9882,8 +9803,7 @@ suff: (4 = 2 * 2).
 move=> H6.
 rewrite {1} H6.
 rewrite - (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y))).
-rewrite - (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) *
- (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y))) (/ (RCnNorm K N x * RCnNorm K N x)) (/ (RCnNorm K N x * RCnNorm K N x))).
+rewrite - (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y))) (/ (RCnNorm K N x * RCnNorm K N x)) (/ (RCnNorm K N x * RCnNorm K N x))).
 rewrite (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (/ (RCnNorm K N x * RCnNorm K N x))).
 rewrite (Rmult_comm (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (/ (RCnNorm K N x * RCnNorm K N x))).
 rewrite - (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (/ (RCnNorm K N x * RCnNorm K N x)) (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y))).
@@ -9896,12 +9816,9 @@ rewrite (Rmult_assoc (2 * (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInner
 rewrite - (Rmult_assoc 2 (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (/ (RCnNorm K N x * RCnNorm K N x))).
 rewrite - (Rmult_assoc 4 (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y))).
 rewrite - (Rmult_assoc 4 (RCabs K (RCnInnerProduct K N x y)) (RCabs K (RCnInnerProduct K N x y))).
-rewrite - (Rmult_assoc (4 * RCabs K (RCnInnerProduct K N x y) *
-RCabs K (RCnInnerProduct K N x y)) (RCnNorm K N y * RCnNorm K N y) (/ (RCnNorm K N x * RCnNorm K N x))).
+rewrite - (Rmult_assoc (4 * RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (RCnNorm K N y * RCnNorm K N y) (/ (RCnNorm K N x * RCnNorm K N x))).
 rewrite - (Rmult_assoc 2 (RCabs K (RCnInnerProduct K N x y)) (RCabs K (RCnInnerProduct K N x y))).
-rewrite - (Rmult_opp_opp (2 * RCabs K (RCnInnerProduct K N x y) *
-RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x)) (2 * RCabs K (RCnInnerProduct K N x y) *
-RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x))).
+rewrite - (Rmult_opp_opp (2 * RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x)) (2 * RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x))).
 apply Rminus_lt.
 apply H5.
 rewrite /4.
@@ -9962,27 +9879,13 @@ move=> H7.
 rewrite H7.
 apply (proj2 (Proposition_4_2_4_1_C N z)).
 rewrite Rmult_0_l.
-suff: ((t * t +
- -
- (2 * RCabs K (RCnInnerProduct K N x y) *
-  RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x)) *
- t +
- RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) *
- (RCnNorm K N y * RCnNorm K N y) * / (RCnNorm K N x * RCnNorm K N x)) *
-(RCnNorm K N x * RCnNorm K N x) = RCnNorm K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y)) * RCnNorm K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y))).
+suff: ((t * t + - (2 * RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x)) * t + RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * (RCnNorm K N y * RCnNorm K N y) * / (RCnNorm K N x * RCnNorm K N x)) * (RCnNorm K N x * RCnNorm K N x) = RCnNorm K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y)) * RCnNorm K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y))).
 move=> H5.
 rewrite H5.
-suff: (RCnNorm K N
-  (RCnminus K N (RCnmult K N (IRRC K t) x)
-     (RCnmult K N (RCnInnerProduct K N x y) y)) > 0).
+suff: (RCnNorm K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y)) > 0).
 move=> H6.
-apply (Rmult_gt_0_compat (RCnNorm K N
-  (RCnminus K N (RCnmult K N (IRRC K t) x)
-     (RCnmult K N (RCnInnerProduct K N x y) y))) (RCnNorm K N
-  (RCnminus K N (RCnmult K N (IRRC K t) x)
-     (RCnmult K N (RCnInnerProduct K N x y) y))) H6 H6).
-elim (proj1 (RCnNormNature K N (RCnminus K N (RCnmult K N (IRRC K t) x)
-     (RCnmult K N (RCnInnerProduct K N x y) y)))).
+apply (Rmult_gt_0_compat (RCnNorm K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y))) (RCnNorm K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y))) H6 H6).
+elim (proj1 (RCnNormNature K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y)))).
 apply.
 move=> H7.
 elim H3.
@@ -10002,11 +9905,9 @@ rewrite (RCmult_1_l K (IRRC K t)).
 rewrite (RCmult_comm K (y k)).
 rewrite (RCmult_comm K (x k)).
 apply (Fminus_diag_uniq_sym (RCfield K)).
-suff: (RCnminus K N (RCnmult K N (IRRC K t) x)
-          (RCnmult K N (RCnInnerProduct K N x y) y) k = RCO K).
+suff: (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y) k = RCO K).
 apply.
-rewrite (Proposition_4_4_3_2 K N (RCnminus K N (RCnmult K N (IRRC K t) x)
-  (RCnmult K N (RCnInnerProduct K N x y) y)) H7).
+rewrite (Proposition_4_4_3_2 K N (RCnminus K N (RCnmult K N (IRRC K t) x) (RCnmult K N (RCnInnerProduct K N x y) y)) H7).
 reflexivity.
 move=> H8.
 apply H4.
@@ -10023,30 +9924,20 @@ rewrite (Proposition_4_2_2_2 K N).
 rewrite (Proposition_4_2_2_1 K N).
 rewrite (Proposition_4_2_2_2 K N).
 rewrite - (proj2 (RCnNormNature K N (RCnmult K N (IRRC K t) x))).
-rewrite (Rmult_plus_distr_r (t * t +
- -
- (2 * RCabs K (RCnInnerProduct K N x y) *
-  RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x)) * t)).
-rewrite (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) *
-(RCnNorm K N y * RCnNorm K N y))).
+rewrite (Rmult_plus_distr_r (t * t + - (2 * RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * / (RCnNorm K N x * RCnNorm K N x)) * t)).
+rewrite (Rmult_assoc (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * (RCnNorm K N y * RCnNorm K N y))).
 suff: (RCnNorm K N x * RCnNorm K N x <> 0).
 move=> H5.
 rewrite (Rinv_l (RCnNorm K N x * RCnNorm K N x) H5).
 rewrite Rmult_1_r.
-suff: (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) *
-(RCnNorm K N y * RCnNorm K N y) = RCRe K
-  (RCmult K (RCnInnerProduct K N x y)
-     (RCmult K (ConjugateRC K (RCnInnerProduct K N x y))
-        (RCnInnerProduct K N y y)))).
+suff: (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * (RCnNorm K N y * RCnNorm K N y) = RCRe K (RCmult K (RCnInnerProduct K N x y) (RCmult K (ConjugateRC K (RCnInnerProduct K N x y)) (RCnInnerProduct K N y y)))).
 move=> H6.
 rewrite H6.
 apply Rplus_eq_compat_r.
 rewrite (Rmult_plus_distr_r (t * t)).
 rewrite (Proposition_4_2_2_1 K N).
 rewrite (Proposition_4_2_2_2 K N).
-suff: (t * t * (RCnNorm K N x * RCnNorm K N x) = RCRe K
-  (RCmult K (IRRC K t)
-     (RCmult K (ConjugateRC K (IRRC K t)) (RCnInnerProduct K N x x)))).
+suff: (t * t * (RCnNorm K N x * RCnNorm K N x) = RCRe K (RCmult K (IRRC K t) (RCmult K (ConjugateRC K (IRRC K t)) (RCnInnerProduct K N x x)))).
 move=> H7.
 rewrite H7.
 apply Rplus_eq_compat_l.
@@ -10069,8 +9960,7 @@ rewrite (RCmult_comm K (IRRC K t)).
 rewrite - (IRRCmult K).
 suff: (forall (K : RC) (x : R), x = RCRe K (IRRC K x)).
 move=> H8.
-apply (H8 K (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) *
-t)).
+apply (H8 K (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * t)).
 elim.
 move=> z.
 reflexivity.
@@ -10136,12 +10026,10 @@ suff: (forall (K : RC) (x : RCn K N), RCnInnerProduct K N x x = IRRC K (RCRe K (
 move=> H6.
 rewrite (H6 K y).
 rewrite (proj2 (RCnNormNature K N y)).
-rewrite - (IRRCmult K (RCabs K (RCnInnerProduct K N x y) *
-         RCabs K (RCnInnerProduct K N x y)) (RCnNorm K N y * RCnNorm K N y)).
+rewrite - (IRRCmult K (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y)) (RCnNorm K N y * RCnNorm K N y)).
 suff: (forall (K : RC) (x : R), x = RCRe K (IRRC K x)).
 move=> H7.
-apply (H7 K (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) *
-(RCnNorm K N y * RCnNorm K N y))).
+apply (H7 K (RCabs K (RCnInnerProduct K N x y) * RCabs K (RCnInnerProduct K N x y) * (RCnNorm K N y * RCnNorm K N y))).
 elim.
 move=> z.
 reflexivity.
@@ -10318,8 +10206,7 @@ apply (proj1 (RnNormNature 2 z)).
 apply H2.
 apply H2.
 rewrite (CnormDefinition z).
-rewrite - (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (z CRe * z CRe + z CIm * z CIm)
-     (CnormSqrtSub z)))).
+rewrite - (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (z CRe * z CRe + z CIm * z CIm) (CnormSqrtSub z)))).
 rewrite - {1} (Rplus_0_r (z CRe * z CRe)).
 apply (Rplus_le_compat_l (z CRe * z CRe) 0 (z CIm * z CIm)).
 apply Rge_le.
@@ -10368,11 +10255,7 @@ move=> z.
 simpl.
 rewrite CnormDefinition.
 rewrite CnormDefinition.
-suff: ((exist (fun (r : R) => r >= 0)
-     (Conjugate z CRe * Conjugate z CRe +
-      Conjugate z CIm * Conjugate z CIm) (CnormSqrtSub (Conjugate z))) =
-(exist (fun (r : R) => r >= 0) (z CRe * z CRe + z CIm * z CIm)
-     (CnormSqrtSub z))).
+suff: ((exist (fun (r : R) => r >= 0) (Conjugate z CRe * Conjugate z CRe + Conjugate z CIm * Conjugate z CIm) (CnormSqrtSub (Conjugate z))) = (exist (fun (r : R) => r >= 0) (z CRe * z CRe + z CIm * z CIm) (CnormSqrtSub z))).
 move=> H3.
 rewrite H3.
 reflexivity.
@@ -10480,8 +10363,7 @@ apply (proj1 (RnNormNature 2 z)).
 apply H6.
 apply H6.
 rewrite (CnormDefinition z).
-rewrite - (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (z CRe * z CRe + z CIm * z CIm)
-     (CnormSqrtSub z)))).
+rewrite - (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (z CRe * z CRe + z CIm * z CIm) (CnormSqrtSub z)))).
 rewrite - {1} (Rplus_0_r (z CRe * z CRe)).
 apply (Rplus_le_compat_l (z CRe * z CRe) 0 (z CIm * z CIm)).
 apply Rge_le.
@@ -10513,8 +10395,7 @@ apply (proj1 (RnNormNature 2 z)).
 apply H6.
 apply H6.
 rewrite (CnormDefinition z).
-rewrite - (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (z CRe * z CRe + z CIm * z CIm)
-     (CnormSqrtSub z)))).
+rewrite - (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (z CRe * z CRe + z CIm * z CIm) (CnormSqrtSub z)))).
 rewrite - {1} (Rplus_0_r (z CRe * z CRe)).
 apply (Rplus_le_compat_l (z CRe * z CRe) 0 (z CIm * z CIm)).
 apply Rge_le.
@@ -10547,8 +10428,7 @@ rewrite H6.
 apply (Rmult_0_r (/ z CIm)).
 apply (Rplus_eq_reg_l (z CRe * z CRe) (z CIm * z CIm) 0 H5).
 rewrite CnormDefinition.
-apply (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (z CRe * z CRe + z CIm * z CIm)
-     (CnormSqrtSub z)))).
+apply (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (z CRe * z CRe + z CIm * z CIm) (CnormSqrtSub z)))).
 apply H1.
 Qed.
 
@@ -10603,8 +10483,7 @@ elim (proj1 H1).
 move=> k H2.
 rewrite H2.
 rewrite - {2} (Fnmul_I_l (RCfield K) N y).
-suff: (RCnmult K N (RCplus K k (RCI K)) y = RCnplus K N (RCnmult K N k y)
-     (Fnmul (RCfield K) N (FI (RCfield K)) y)).
+suff: (RCnmult K N (RCplus K k (RCI K)) y = RCnplus K N (RCnmult K N k y) (Fnmul (RCfield K) N (FI (RCfield K)) y)).
 move=> H3.
 rewrite - H3.
 rewrite (Proposition_4_4_1 K N (RCplus K k (RCI K)) y).
@@ -10894,12 +10773,7 @@ apply H5.
 apply (H3 n0 H4).
 apply H2.
 move=> H1.
-suff: (forall (eps : R),
-       eps > 0 ->
-       exists (n0 : nat),
-         forall (n1 : nat),
-         (n1 >= n0)%nat ->
-         RnInnerProduct N (Rnminus N (An n1) a) (Rnminus N (An n1) a) < eps).
+suff: (forall (eps : R), eps > 0 -> exists (n0 : nat), forall (n1 : nat), (n1 >= n0)%nat -> RnInnerProduct N (Rnminus N (An n1) a) (Rnminus N (An n1) a) < eps).
 move=> H2 eps H3.
 elim (H2 (eps * eps) (Rmult_gt_0_compat eps eps H3 H3)).
 move=> N1 H4.
@@ -10971,18 +10845,14 @@ reflexivity.
 move=> H10.
 reflexivity.
 apply H4.
-elim (proj1 (MySqrtNature (exist (fun r : R => r >= 0) (eps * / 2)
-     (Rgt_ge (eps * / 2) 0 (eps2_Rgt_R0 eps H6))))).
+elim (proj1 (MySqrtNature (exist (fun r : R => r >= 0) (eps * / 2) (Rgt_ge (eps * / 2) 0 (eps2_Rgt_R0 eps H6))))).
 apply.
 move=> H8.
 elim (Rgt_not_eq (eps * / 2) 0 (eps2_Rgt_R0 eps H6)).
-suff: (eps * / 2 = proj1_sig
-       (exist (fun (r : R) => r >= 0) (eps * / 2)
-          (Rgt_ge (eps * / 2) 0 (eps2_Rgt_R0 eps H6)))).
+suff: (eps * / 2 = proj1_sig (exist (fun (r : R) => r >= 0) (eps * / 2) (Rgt_ge (eps * / 2) 0 (eps2_Rgt_R0 eps H6)))).
 move=> H9.
 rewrite H9.
-rewrite (proj2 (MySqrtNature (exist (fun r : R => r >= 0) (eps * / 2)
-     (Rgt_ge (eps * / 2) 0 (eps2_Rgt_R0 eps H6))))).
+rewrite (proj2 (MySqrtNature (exist (fun r : R => r >= 0) (eps * / 2) (Rgt_ge (eps * / 2) 0 (eps2_Rgt_R0 eps H6))))).
 rewrite H8.
 apply (Rmult_0_r 0).
 reflexivity.
@@ -11067,12 +10937,7 @@ apply H6.
 apply (H3 n0 m0 H4 H5).
 apply H2.
 move=> H1.
-suff: (forall (eps : R),
-       eps > 0 ->
-       exists (n0 : nat),
-         forall (n1 n2 : nat),
-         (n1 >= n0)%nat -> (n2 >= n0)%nat ->
-         RnInnerProduct N (Rnminus N (An n1) (An n2)) (Rnminus N (An n1) (An n2)) < eps).
+suff: (forall (eps : R), eps > 0 -> exists (n0 : nat), forall (n1 n2 : nat), (n1 >= n0)%nat -> (n2 >= n0)%nat -> RnInnerProduct N (Rnminus N (An n1) (An n2)) (Rnminus N (An n1) (An n2)) < eps).
 move=> H2 eps H3.
 elim (H2 (eps * eps) (Rmult_gt_0_compat eps eps H3 H3)).
 move=> N1 H4.
@@ -11088,8 +10953,7 @@ apply (Rlt_le 0 eps H3).
 apply (Rlt_le 0 eps H3).
 apply H8.
 apply H8.
-suff: (RnInnerProduct N (Rnminus N (An n1) (An n2))
-       (Rnminus N (An n1) (An n2)) = dist (Rn_met N) (An n1) (An n2) * dist (Rn_met N) (An n1) (An n2)).
+suff: (RnInnerProduct N (Rnminus N (An n1) (An n2)) (Rnminus N (An n1) (An n2)) = dist (Rn_met N) (An n1) (An n2) * dist (Rn_met N) (An n1) (An n2)).
 move=> H7.
 rewrite - H7.
 apply (H4 n1 n2 H5 H6).
@@ -11151,18 +11015,14 @@ reflexivity.
 move=> H11.
 reflexivity.
 apply H4.
-elim (proj1 (MySqrtNature (exist (fun (r : R) => r >= 0) (eps * / 2)
-     (Rgt_ge (eps * / 2) 0 (eps2_Rgt_R0 eps H6))))).
+elim (proj1 (MySqrtNature (exist (fun (r : R) => r >= 0) (eps * / 2) (Rgt_ge (eps * / 2) 0 (eps2_Rgt_R0 eps H6))))).
 apply.
 move=> H8.
 elim (Rgt_not_eq (eps * / 2) 0 (eps2_Rgt_R0 eps H6)).
-suff: (eps * / 2 = proj1_sig
-       (exist (fun (r : R) => r >= 0) (eps * / 2)
-          (Rgt_ge (eps * / 2) 0 (eps2_Rgt_R0 eps H6)))).
+suff: (eps * / 2 = proj1_sig (exist (fun (r : R) => r >= 0) (eps * / 2) (Rgt_ge (eps * / 2) 0 (eps2_Rgt_R0 eps H6)))).
 move=> H9.
 rewrite H9.
-rewrite (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (eps * / 2)
-     (Rgt_ge (eps * / 2) 0 (eps2_Rgt_R0 eps H6))))).
+rewrite (proj2 (MySqrtNature (exist (fun (r : R) => r >= 0) (eps * / 2) (Rgt_ge (eps * / 2) 0 (eps2_Rgt_R0 eps H6))))).
 rewrite H8.
 apply (Rmult_0_r 0).
 reflexivity.
@@ -24702,8 +24562,7 @@ apply (Rle_ge 0 t (proj1 (proj1 H11))).
 unfold Rnminus.
 unfold Fnminus.
 rewrite (proj2 H11).
-suff: (Fnadd Rfield N (Rnplus N (Rnmult N (1 - t) r) (Rnmult N t a))
-  (Fnopp Rfield N r) = Vadd Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - t) r) (Vmul Rfield (RnVS N) t a)) (Vopp Rfield (RnVS N) r)).
+suff: (Fnadd Rfield N (Rnplus N (Rnmult N (1 - t) r) (Rnmult N t a)) (Fnopp Rfield N r) = Vadd Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - t) r) (Vmul Rfield (RnVS N) t a)) (Vopp Rfield (RnVS N) r)).
 move=> H12.
 rewrite H12.
 suff: (Rnmult N t (Fnadd Rfield N a (Fnopp Rfield N r)) = Vmul Rfield (RnVS N) t (Vadd Rfield (RnVS N) a (Vopp Rfield (RnVS N) r))).
@@ -25149,9 +25008,7 @@ apply (proj2 H11).
 move=> H13.
 apply H8.
 apply (proj1 (dist_refl (Rn_met N) r02 r03) H13).
-suff: (Rnminus N
-  (Rnplus N (Rnmult N (1 - (y - b)) r02) (Rnmult N (y - b) r03))
-  (Rnplus N (Rnmult N (1 - (r - b)) r02) (Rnmult N (r - b) r03)) = Vadd Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (y - b)) r02) (Vmul Rfield (RnVS N) (y - b) r03)) (Vopp Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (r - b)) r02) (Vmul Rfield (RnVS N) (r - b) r03)))).
+suff: (Rnminus N (Rnplus N (Rnmult N (1 - (y - b)) r02) (Rnmult N (y - b) r03)) (Rnplus N (Rnmult N (1 - (r - b)) r02) (Rnmult N (r - b) r03)) = Vadd Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (y - b)) r02) (Vmul Rfield (RnVS N) (y - b) r03)) (Vopp Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - (r - b)) r02) (Vmul Rfield (RnVS N) (r - b) r03)))).
 move=> H12.
 rewrite H12.
 suff: (Rnmult N (r - y) (Rnplus N r02 (Rnopp N r03)) = Vmul Rfield (RnVS N) (r - y) (Vadd Rfield (RnVS N) r02 (Vopp Rfield (RnVS N) r03))).
@@ -25613,8 +25470,7 @@ apply (proj2 H7).
 move=> H9.
 apply H6.
 apply (proj1 (dist_refl (Rn_met N) x y) H9).
-suff: (Rnminus N (Rnplus N (Rnmult N (1 - z) x) (Rnmult N z y))
-  (Rnplus N (Rnmult N (1 - r) x) (Rnmult N r y)) = Vadd Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - z) x) (Vmul Rfield (RnVS N) z y)) (Vopp Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - r) x) (Vmul Rfield (RnVS N) r y)))).
+suff: (Rnminus N (Rnplus N (Rnmult N (1 - z) x) (Rnmult N z y)) (Rnplus N (Rnmult N (1 - r) x) (Rnmult N r y)) = Vadd Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - z) x) (Vmul Rfield (RnVS N) z y)) (Vopp Rfield (RnVS N) (Vadd Rfield (RnVS N) (Vmul Rfield (RnVS N) (1 - r) x) (Vmul Rfield (RnVS N) r y)))).
 move=> H8.
 rewrite H8.
 suff: (Rnmult N (r - z) (Rnminus N x y) = Vmul Rfield (RnVS N) (r - z) (Vadd Rfield (RnVS N) x (Vopp Rfield (RnVS N) y))).
