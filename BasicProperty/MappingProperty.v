@@ -1170,6 +1170,37 @@ rewrite (le_antisym (proj1_sig Single) 0 (le_S_n (proj1_sig Single) 0 (proj2_sig
 apply (le_antisym (proj1_sig v) 0 (le_S_n (proj1_sig v) 0 (proj2_sig v)) (le_0_n (proj1_sig v))).
 Qed.
 
+Lemma CountReverseSig : forall (N : nat), {f : {n : nat | n < N} -> {n : nat | n < N} | forall (m : {n : nat | n < N}), S (proj1_sig m + proj1_sig (f m)) = N}.
+Proof.
+move=> N.
+suff: (forall (k : {n : nat | n < N}), N - S (proj1_sig k) < N).
+move=> H1.
+exists (fun (m : {n : nat | n < N}) => (exist (fun (k : nat) => k < N) (N - S (proj1_sig m)) (H1 m))).
+move=> m.
+simpl.
+apply (le_plus_minus_r (S (proj1_sig m)) N (proj2_sig m)).
+move=> k.
+apply (plus_lt_reg_l (N - S (proj1_sig k)) N (S (proj1_sig k))).
+rewrite (le_plus_minus_r (S (proj1_sig k)) N (proj2_sig k)).
+apply (le_n_S N (proj1_sig k + N)).
+apply (le_plus_r (proj1_sig k) N).
+Qed.
+
+Definition CountReverse (N : nat) := proj1_sig (CountReverseSig N).
+
+Definition CountReverseNature (N : nat) : (forall (m : {n : nat | n < N}), S (proj1_sig m + proj1_sig (CountReverse N m)) = N) := proj2_sig (CountReverseSig N).
+
+Lemma CountReverseInvolutive : forall (N : nat) (m : {n : nat | n < N}), CountReverse N (CountReverse N m) = m.
+Proof.
+move=> N m.
+apply sig_map.
+apply (plus_reg_l (proj1_sig (CountReverse N (CountReverse N m))) (proj1_sig m) (proj1_sig (CountReverse N m))).
+apply eq_add_S.
+rewrite (plus_comm (proj1_sig (CountReverse N m)) (proj1_sig m)).
+rewrite (CountReverseNature N m).
+apply (CountReverseNature N (CountReverse N m)).
+Qed.
+
 Lemma AddConnectSig : forall (N M : nat), {f : {n : nat | n < N} + {n : nat | n < M} -> {n : nat | n < N + M} | (forall (m : {n : nat | n < N}), proj1_sig m = proj1_sig (f (inl m))) /\ (forall (m : {n : nat | n < M}), N + proj1_sig m = proj1_sig (f (inr m)))}.
 Proof.
 move=> N M.
