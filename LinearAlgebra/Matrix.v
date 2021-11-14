@@ -504,6 +504,29 @@ move=> y.
 apply Fmul_I_l.
 Qed.
 
+Definition MVectorToMatrix (f : Field) (N : nat) (v : {n : nat | (n < N)%nat} -> FT f) := fun (x : {n : nat | (n < N)%nat}) (y : {n : nat | (n < 1)%nat}) => v x.
+
+Definition MMatrixToVector (f : Field) (N : nat) (A : Matrix f N 1) := fun (x : {n : nat | (n < N)%nat}) => A x Single.
+
+Lemma MVectorMatrixRelation : forall (f : Field) (N : nat), (forall (v : {n : nat | (n < N)%nat} -> FT f), MMatrixToVector f N (MVectorToMatrix f N v) = v) /\ forall (A : Matrix f N 1), MVectorToMatrix f N (MMatrixToVector f N A) = A.
+Proof.
+move=> f N.
+apply conj.
+move=> v.
+reflexivity.
+move=> A.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MMatrixToVector.
+unfold MVectorToMatrix.
+rewrite (SingleSame y).
+reflexivity.
+Qed.
+
+Definition MVmult (f : Field) (M N : nat) (A : Matrix f M N) (v : {n : nat | (n < N)%nat} -> FT f) := MMatrixToVector f M (Mmult f M N 1 A (MVectorToMatrix f N v)).
+
 Definition MVS (f : Field) (M N : nat) := mkVectorSpace f (Matrix f M N) (MO f M N) (Mplus f M N) (VMmult f M N) (Mopp f M N) (Mplus_comm f M N) (Mplus_assoc f M N) (Mplus_O_l f M N) (Mplus_opp_r f M N) (VMmult_plus_distr_l f M N) (VMmult_plus_distr_r f M N) (VMmult_assoc_reverse f M N) (VMmult_I_l f M N).
 
 Fixpoint PowM (f : Field) (N : nat) (A : Matrix f N N) (r : nat) : Matrix f N N := match r with
@@ -654,6 +677,97 @@ rewrite - (MTransTrans f M N B).
 rewrite H1.
 reflexivity.
 Qed.
+
+Definition MDiag (f : Field) (N : nat) (a : {n : nat | (n < N)%nat} -> FT f) := fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig x) (proj1_sig y) with
+  | left _ => a x
+  | right _ => FO f
+end.
+
+Lemma MDiagMult : forall (f : Field) (N : nat) (a b : {n : nat | (n < N)%nat} -> FT f), Mmult f N N N (MDiag f N a) (MDiag f N b) = MDiag f N (fun (m : {n : nat | (n < N)%nat}) => Fmul f (a m) (b m)).
+Proof.
+move=> f N a b.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MDiag.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H1.
+unfold Mmult.
+rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} x)).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite H1.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
+move=> H2.
+apply (CM_O_r (FPCM f)).
+elim.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H2 H3.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig u0)).
+move=> H4.
+elim H2.
+suff: (x = u0).
+move=> H5.
+rewrite H5.
+apply (In_singleton {n : nat | (n < N)%nat} u0).
+apply sig_map.
+apply H4.
+move=> H4.
+apply (Fmul_O_l f).
+move=> u H2.
+apply (Full_intro {n : nat | (n < N)%nat} u).
+move=> H1.
+apply MySumF2O.
+move=> u H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig u)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig y)).
+move=> H4.
+elim H1.
+rewrite H3.
+apply H4.
+move=> H4.
+apply (Fmul_O_r f (a x)).
+move=> H3.
+apply (Fmul_O_l f).
+Qed.
+
+Lemma MDiagTrans : forall (f : Field) (N : nat) (a : {n : nat | (n < N)%nat} -> FT f), MTranspose f N N (MDiag f N a) = (MDiag f N a).
+Proof.
+move=> f N a.
+unfold MTranspose.
+unfold MDiag.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H2.
+suff: (y = x).
+move=> H3.
+rewrite H3.
+reflexivity.
+apply sig_map.
+apply H1.
+elim.
+rewrite H1.
+reflexivity.
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H2.
+elim H1.
+rewrite H2.
+reflexivity.
+move=> H2.
+reflexivity.
+Qed.
+
+Definition MSymmetric (f : Field) (N : nat) (A : Matrix f N N) := MTranspose f N N A = A.
 
 Definition MBlockH := fun (f : Field) (M1 M2 N : nat) (A1 : Matrix f M1 N) (A2 : Matrix f M2 N) (x : {n : nat | (n < M1 + M2)}) (y : {n : nat | (n < N)}) => match (AddConnectInv M1 M2 x) with
   | inl x0 => A1 x0 y
@@ -1049,6 +1163,8 @@ Definition ElementaryMatrixAdd (f : Field) (N : nat) (p q : {n : nat | n < N}) (
   end
 end).
 
+Definition ReverseMatrix (f : Field) (N : nat) := fun (x y : {n : nat | n < N}) => MI f N x (CountReverse N y).
+
 Inductive ElementaryMatrix (f : Field) (N : nat) : Ensemble (Matrix f N N) :=
   | ElementaryMatrixAdd_intro : forall (p q : {n : nat | n < N}) (c : FT f), proj1_sig p <> proj1_sig q -> c <> FO f -> ElementaryMatrix f N (ElementaryMatrixAdd f N p q c)
   | ElementaryMatrixMultiply_intro : forall (p : {n : nat | n < N}) (c : FT f), c <> FO f -> ElementaryMatrix f N (ElementaryMatrixMultiply f N p c)
@@ -1244,6 +1360,44 @@ apply H3.
 rewrite H6.
 reflexivity.
 move=> H6.
+reflexivity.
+Qed.
+
+Lemma ReverseMatrixTrans : forall (f : Field) (N : nat), MTranspose f N N (ReverseMatrix f N) = ReverseMatrix f N.
+Proof.
+move=> f N.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MTranspose.
+unfold ReverseMatrix.
+unfold MI.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig (CountReverse N x))).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (CountReverse N y))).
+move=> H2.
+reflexivity.
+elim.
+suff: (y = CountReverse N x).
+move=> H2.
+rewrite H2.
+rewrite (CountReverseInvolutive N x).
+reflexivity.
+apply sig_map.
+apply H1.
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (CountReverse N y))).
+move=> H2.
+elim H1.
+suff: (x = CountReverse N y).
+move=> H3.
+rewrite H3.
+rewrite (CountReverseInvolutive N y).
+reflexivity.
+apply sig_map.
+apply H2.
+move=> H2.
 reflexivity.
 Qed.
 
@@ -1915,6 +2069,90 @@ move=> H7.
 apply (Fmul_O_r f (A x u0)).
 move=> m H3.
 apply (Full_intro {n : nat | n < N} m).
+Qed.
+
+Lemma ReverseMatrixNatureL : forall (f : Field) (M N : nat) (A : Matrix f M N), Mmult f M M N (ReverseMatrix f M) A = (fun (x : {n : nat | n < M}) => A (CountReverse M x)).
+Proof.
+move=> f M N A.
+unfold Mmult.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+rewrite (MySumF2Included {n : nat | n < M} (FiniteSingleton {n : nat | n < M} (CountReverse M x))).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite CM_O_r.
+unfold ReverseMatrix.
+rewrite (CountReverseInvolutive M x).
+unfold MI.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig x)).
+move=> H1.
+apply (Fmul_I_l f (A (CountReverse M x) y)).
+elim.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H2 H3.
+unfold ReverseMatrix.
+unfold MI.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (CountReverse M u0))).
+move=> H4.
+elim H2.
+suff: (u0 = CountReverse M x).
+move=> H5.
+rewrite H5.
+apply (In_singleton {n : nat | n < M}).
+suff: (x = CountReverse M u0).
+move=> H5.
+rewrite H5.
+rewrite (CountReverseInvolutive M u0).
+reflexivity.
+apply sig_map.
+apply H4.
+move=> H4.
+apply (Fmul_O_l f (A u0 y)).
+move=> u H2.
+apply (Full_intro {n : nat | n < M} u).
+Qed.
+
+Lemma ReverseMatrixNatureR : forall (f : Field) (M N : nat) (A : Matrix f M N), Mmult f M N N A (ReverseMatrix f N) = (fun (x : {n : nat | n < M}) (y : {n : nat | n < N}) => A x (CountReverse N y)).
+Proof.
+move=> f M N A.
+unfold Mmult.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} (CountReverse N y))).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+rewrite CM_O_r.
+unfold ReverseMatrix.
+unfold MI.
+elim (Nat.eq_dec (proj1_sig (CountReverse N y)) (proj1_sig (CountReverse N y))).
+move=> H1.
+apply (Fmul_I_r f).
+elim.
+reflexivity.
+move=> u.
+elim.
+move=> u0 H1 H2.
+unfold ReverseMatrix.
+unfold MI.
+elim (Nat.eq_dec (proj1_sig u0) (proj1_sig (CountReverse N y))).
+move=> H3.
+elim H1.
+suff: (u0 = CountReverse N y).
+move=> H4.
+rewrite H4.
+apply (In_singleton {n : nat | n < N}).
+apply sig_map.
+apply H3.
+move=> H4.
+apply (Fmul_O_r f (A x u0)).
+move=> u H2.
+apply (Full_intro {n : nat | n < N} u).
 Qed.
 
 Definition Determinant (f : Field) (N : nat) (A : Matrix f N N) := MySumF2 (Permutation N) (exist (Finite (Permutation N)) (Full_set (Permutation N)) (PermutationFinite N)) (FPCM f) (fun (P : Permutation N) => Fmul f (match PermutationParity N P with
@@ -10028,6 +10266,24 @@ apply H2.
 apply H2.
 Qed.
 
+Lemma MmultILRSame : forall (f : Field) (N : nat) (A B : Matrix f N N), Mmult f N N N A B = MI f N <-> Mmult f N N N B A = MI f N .
+Proof.
+suff: (forall (f : Field) (N : nat) (A B : Matrix f N N), Mmult f N N N A B = MI f N -> Mmult f N N N B A = MI f N).
+move=> H1 f N A B.
+apply conj.
+apply (H1 f N A B).
+apply (H1 f N B A).
+move=> f N A B H1.
+suff: (B = InvMatrix f N A).
+move=> H2.
+rewrite H2.
+apply (InvMatrixMultL f N A).
+apply (proj2 (RegularInvRExistRelation f N A)).
+exists B.
+apply H1.
+apply (InvMatrixMultUniqueRStrong f N A B H1).
+Qed.
+
 Lemma DeterminantElementaryMatrixAdd : forall (f : Field) (N : nat) (p q : {n : nat | n < N}) (c : FT f), proj1_sig p <> proj1_sig q -> Determinant f N (ElementaryMatrixAdd f N p q c) = FI f.
 Proof.
 move=> f N p q c H1.
@@ -10302,6 +10558,131 @@ apply False_ind.
 apply H6.
 reflexivity.
 move=> H5.
+reflexivity.
+Qed.
+
+Lemma ReverseMatrixInvolutive : forall (f : Field) (N : nat), Mmult f N N N (ReverseMatrix f N) (ReverseMatrix f N) = MI f N.
+Proof.
+move=> f N.
+unfold Mmult.
+unfold MI.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H1.
+rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} (CountReverse N x))).
+rewrite MySumF2Singleton.
+rewrite MySumF2O.
+unfold ReverseMatrix.
+rewrite (CountReverseInvolutive N x).
+suff: (x = y).
+move=> H2.
+rewrite H2.
+unfold MI.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig (CountReverse N y)) (proj1_sig (CountReverse N y))).
+move=> H4.
+rewrite (Fmul_I_l f (FI f)).
+apply (CM_O_r (FPCM f) (FI f)).
+elim.
+reflexivity.
+elim.
+reflexivity.
+apply sig_map.
+apply H1.
+move=> u.
+elim.
+move=> u0 H2 H3.
+unfold ReverseMatrix.
+unfold MI.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (CountReverse N u0))).
+move=> H4.
+elim H2.
+suff: (u0 = CountReverse N x).
+move=> H5.
+rewrite H5.
+apply (In_singleton {n : nat | n < N} (CountReverse N x)).
+suff: (x = CountReverse N u0).
+move=> H5.
+rewrite H5.
+rewrite (CountReverseInvolutive N u0).
+reflexivity.
+apply sig_map.
+apply H4.
+move=> H4.
+apply (Fmul_O_l f).
+move=> u H2.
+apply (Full_intro {n : nat | n < N} u).
+move=> H1.
+apply MySumF2O.
+move=> u H2.
+unfold ReverseMatrix.
+unfold MI.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig (CountReverse N u))).
+move=> H3.
+elim (Nat.eq_dec (proj1_sig u) (proj1_sig (CountReverse N y))).
+move=> H4.
+elim H1.
+rewrite H3.
+suff: (u = CountReverse N y).
+move=> H5.
+rewrite H5.
+rewrite (CountReverseInvolutive N y).
+reflexivity.
+apply sig_map.
+apply H4.
+move=> H4.
+apply (Fmul_O_r f (FI f)).
+move=> H3.
+apply (Fmul_O_l f).
+Qed.
+
+Lemma InvMatrixReverseMatrix : forall (f : Field) (N : nat), InvMatrix f N (ReverseMatrix f N) = ReverseMatrix f N.
+Proof.
+move=> f N.
+rewrite - (InvMatrixMultUniqueLStrong f N (ReverseMatrix f N) (ReverseMatrix f N)).
+reflexivity.
+apply (ReverseMatrixInvolutive f N).
+Qed.
+
+Lemma MDiagReverseRelation : forall (f : Field) (N : nat) (d : Count N -> FT f), Mmult f N N N (Mmult f N N N (ReverseMatrix f N) (MDiag f N d)) (ReverseMatrix f N) = MDiag f N (fun (m : Count N) => d (CountReverse N m)).
+Proof.
+move=> f N d.
+rewrite (ReverseMatrixNatureL f N N (MDiag f N d)).
+rewrite (ReverseMatrixNatureR f N N).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MDiag.
+elim (Nat.eq_dec (proj1_sig (CountReverse N x)) (proj1_sig (CountReverse N y))).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H2.
+reflexivity.
+elim.
+rewrite - (CountReverseInvolutive N x).
+suff: (CountReverse N x = CountReverse N y).
+move=> H2.
+rewrite H2.
+rewrite (CountReverseInvolutive N y).
+reflexivity.
+apply sig_map.
+apply H1.
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H2.
+elim H1.
+suff: (x = y).
+move=> H3.
+rewrite H3.
+reflexivity.
+apply sig_map.
+apply H2.
+move=> H2.
 reflexivity.
 Qed.
 
