@@ -835,8 +835,6 @@ Definition AdjointMatrixRCInvolutive : forall (K : RC) (M N : nat) (A : Matrix (
   | CK => AdjointMatrixInvolutive
 end.
 
-Definition MSymmetric (f : Field) (N : nat) (A : Matrix f N N) := MTranspose f N N A = A.
-
 Definition HermitianMatrix (N : nat) (A : Matrix Cfield N N) := AdjointMatrix N N A = A.
 
 Definition HermitianMatrixRC (K : RC) (N : nat) (A : Matrix (RCfield K) N N) := AdjointMatrixRC K N N A = A.
@@ -846,34 +844,6 @@ Definition OrthogonalMatrix (N : nat) (A : Matrix Rfield N N) := Mmult Rfield N 
 Definition UnitaryMatrix (N : nat) (A : Matrix Cfield N N) := Mmult Cfield N N N (AdjointMatrix N N A) A = MI Cfield N.
 
 Definition UnitaryMatrixRC (K : RC) (N : nat) (A : Matrix (RCfield K) N N) := Mmult (RCfield K) N N N (AdjointMatrixRC K N N A) A = MI (RCfield K) N.
-
-Definition MDiag (f : Field) (N : nat) (a : {n : nat | (n < N)%nat} -> FT f) := fun (x y : {n : nat | (n < N)%nat}) => match Nat.eq_dec (proj1_sig x) (proj1_sig y) with
-  | left _ => a x
-  | right _ => FO f
-end.
-
-Definition MVectorToMatrix (f : Field) (N : nat) (v : {n : nat | (n < N)%nat} -> FT f) := fun (x : {n : nat | (n < N)%nat}) (y : {n : nat | (n < 1)%nat}) => v x.
-
-Definition MMatrixToVector (f : Field) (N : nat) (A : Matrix f N 1) := fun (x : {n : nat | (n < N)%nat}) => A x Single.
-
-Lemma MVectorMatrixRelation : forall (f : Field) (N : nat), (forall (v : {n : nat | (n < N)%nat} -> FT f), MMatrixToVector f N (MVectorToMatrix f N v) = v) /\ forall (A : Matrix f N 1), MVectorToMatrix f N (MMatrixToVector f N A) = A.
-Proof.
-move=> f N.
-apply conj.
-move=> v.
-reflexivity.
-move=> A.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold MMatrixToVector.
-unfold MVectorToMatrix.
-rewrite (SingleSame y).
-reflexivity.
-Qed.
-
-Definition MVmult (f : Field) (M N : nat) (A : Matrix f M N) (v : {n : nat | (n < N)%nat} -> FT f) := MMatrixToVector f M (Mmult f M N 1 A (MVectorToMatrix f N v)).
 
 Lemma UnitaryMatrixRCChain : forall (K : RC) (N : nat) (A B : Matrix (RCfield K) N N), UnitaryMatrixRC K N A -> UnitaryMatrixRC K N B -> UnitaryMatrixRC K N (Mmult (RCfield K) N N N A B).
 Proof.
@@ -7739,24 +7709,6 @@ Definition HouseholderC (N : nat) (x y : Cn N) (H1 : CnInnerProduct N x x = CnIn
 
 Definition HouseholderRC (K : RC) (N : nat) (x y : RCn K N) (H1 : RCnInnerProduct K N x x = RCnInnerProduct K N y y) (H2 : RCnInnerProduct K N x y = RCnInnerProduct K N y x) := proj1_sig (HouseholderRCSig K N x y H1 H2).
 
-Lemma MmultILRSame : forall (f : Field) (N : nat) (A B : Matrix f N N), Mmult f N N N A B = MI f N <-> Mmult f N N N B A = MI f N .
-Proof.
-suff: (forall (f : Field) (N : nat) (A B : Matrix f N N), Mmult f N N N A B = MI f N -> Mmult f N N N B A = MI f N).
-move=> H1 f N A B.
-apply conj.
-apply (H1 f N A B).
-apply (H1 f N B A).
-move=> f N A B H1.
-suff: (B = InvMatrix f N A).
-move=> H2.
-rewrite H2.
-apply (InvMatrixMultL f N A).
-apply (proj2 (RegularInvRExistRelation f N A)).
-exists B.
-apply H1.
-apply (InvMatrixMultUniqueRStrong f N A B H1).
-Qed.
-
 Lemma SameNormConvertUnitaryCSig : forall (N : nat) (x y : Cn N), CnNorm N x = CnNorm N y -> {Q : Matrix Cfield N N | UnitaryMatrix N Q /\ Mmult Cfield N N 1 Q (MVectorToMatrix Cfield N x) = MVectorToMatrix Cfield N y}.
 Proof.
 move=> N x y H1.
@@ -8695,90 +8647,6 @@ Qed.
 Definition QRStrongC1 : forall (M N : nat) (A : Matrix Cfield M N), exists (Q : Matrix Cfield M M), (UnitaryMatrix M Q) /\ exists (U : Matrix Cfield M N), UpperTriangularNormalFormC M N U /\ A = Mmult Cfield M M N Q U := QRStrongRC1 CK.
 
 Definition QRStrongR1 : forall (M N : nat) (A : Matrix Rfield M N), exists (Q : Matrix Rfield M M), (OrthogonalMatrix M Q) /\ exists (U : Matrix Rfield M N), UpperTriangularNormalFormR M N U /\ A = Mmult Rfield M M N Q U := QRStrongRC1 RK.
-
-Lemma MDiagMult : forall (f : Field) (N : nat) (a b : {n : nat | (n < N)%nat} -> FT f), Mmult f N N N (MDiag f N a) (MDiag f N b) = MDiag f N (fun (m : {n : nat | (n < N)%nat}) => Fmul f (a m) (b m)).
-Proof.
-move=> f N a b.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-unfold MDiag.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H1.
-unfold Mmult.
-rewrite (MySumF2Included {n : nat | (n < N)%nat} (FiniteSingleton {n : nat | (n < N)%nat} x)).
-rewrite MySumF2Singleton.
-rewrite MySumF2O.
-rewrite H1.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
-move=> H2.
-apply (CM_O_r (FPCM f)).
-elim.
-reflexivity.
-move=> u.
-elim.
-move=> u0 H2 H3.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig u0)).
-move=> H4.
-elim H2.
-suff: (x = u0).
-move=> H5.
-rewrite H5.
-apply (In_singleton {n : nat | (n < N)%nat} u0).
-apply sig_map.
-apply H4.
-move=> H4.
-apply (Fmul_O_l f).
-move=> u H2.
-apply (Full_intro {n : nat | (n < N)%nat} u).
-move=> H1.
-apply MySumF2O.
-move=> u H2.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig u)).
-move=> H3.
-elim (Nat.eq_dec (proj1_sig u) (proj1_sig y)).
-move=> H4.
-elim H1.
-rewrite H3.
-apply H4.
-move=> H4.
-apply (Fmul_O_r f (a x)).
-move=> H3.
-apply (Fmul_O_l f).
-Qed.
-
-Lemma MDiagTrans : forall (f : Field) (N : nat) (a : {n : nat | (n < N)%nat} -> FT f), MTranspose f N N (MDiag f N a) = (MDiag f N a).
-Proof.
-move=> f N a.
-unfold MTranspose.
-unfold MDiag.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
-move=> H1.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H2.
-suff: (y = x).
-move=> H3.
-rewrite H3.
-reflexivity.
-apply sig_map.
-apply H1.
-elim.
-rewrite H1.
-reflexivity.
-move=> H1.
-elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
-move=> H2.
-elim H1.
-rewrite H2.
-reflexivity.
-move=> H2.
-reflexivity.
-Qed.
 
 Lemma SingularDecompositionRCH : forall (K : RC) (M N : nat) (A : Matrix (RCfield K) (M + N) M), exists (U : Matrix (RCfield K) (M + N)%nat (M + N)%nat), (UnitaryMatrixRC K (M + N)%nat U) /\ exists (V : Matrix (RCfield K) M M), (UnitaryMatrixRC K M V) /\ exists (sigma : Rn M), ((forall (m : Count M), sigma m >= 0) /\ (forall (m1 m2 : {n : nat | (n < M)%nat}), (proj1_sig m1 <= proj1_sig m2)%nat -> sigma m1 >= sigma m2) /\ A = Mmult (RCfield K) (M + N)%nat (M + N)%nat M U (Mmult (RCfield K) (M + N)%nat M M (MBlockH (RCfield K) M N M (MDiag (RCfield K) M (fun (m : {n : nat | (n < M)%nat}) => IRRC K (sigma m))) (MO (RCfield K) N M)) (AdjointMatrixRC K M M V))).
 Proof.
