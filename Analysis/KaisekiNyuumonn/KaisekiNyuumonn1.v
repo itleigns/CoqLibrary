@@ -8320,7 +8320,7 @@ Definition Proposition_4_2_4_3_R : forall (N : nat) (x : Rn N), x = (RnO N) -> (
 
 Definition Proposition_4_2_4_3_C : forall (N : nat) (x : Cn N), x = (CnO N) -> (CnInnerProduct N x x) = CO := Proposition_4_2_4_3 CK.
 
-Definition RCnNum (K : RC) (N : nat) := match K with 
+Definition RCnNum (K : RC) (N : nat) := match K with
   | RK => N
   | CK => (N * 2)%nat
 end.
@@ -8557,10 +8557,7 @@ Proof.
 move=> N x.
 unfold CnNorm.
 unfold RnNorm.
-suff: ((exist (fun (r : R) => r >= 0) (CnInnerProduct N x x CRe)
-     (proj1 (Proposition_4_2_4_1_C N x))) = (exist (fun (r : R) => r >= 0)
-     (RnInnerProduct (N * 2) (CnRnConvert N x) (CnRnConvert N x))
-     (Proposition_4_2_4_1_R (N * 2) (CnRnConvert N x)))).
+suff: ((exist (fun (r : R) => r >= 0) (CnInnerProduct N x x CRe) (proj1 (Proposition_4_2_4_1_C N x))) = (exist (fun (r : R) => r >= 0) (RnInnerProduct (N * 2) (CnRnConvert N x) (CnRnConvert N x)) (Proposition_4_2_4_1_R (N * 2) (CnRnConvert N x)))).
 move=> H1.
 rewrite H1.
 reflexivity.
@@ -10645,7 +10642,7 @@ Definition C_dist := fun (x y : C) => RnNorm 2 (Cminus x y).
 
 Definition RCn_dist (K : RC) (N : nat) := fun (x y : RCn K N) => RCnNorm K N (RCnminus K N x y).
 
-Definition RRn_dist (K : RRn) := fun (x y : RRnT K) => RRnNorm K (RRnminus K x y). 
+Definition RRn_dist (K : RRn) := fun (x y : RRnT K) => RRnNorm K (RRnminus K x y).
 
 Definition Rn_dist (N : nat) := fun (x y : Rn N) => RnNorm N (Rnminus N x y).
 

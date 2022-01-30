@@ -14218,8 +14218,7 @@ move=> x.
 unfold MMatrixToVector.
 unfold Fnadd.
 unfold Mmult.
-apply (MySumF2Distr {n : nat | n < N}
-  (FPCM f)).
+apply (MySumF2Distr {n : nat | n < N} (FPCM f)).
 move=> u H3.
 apply (Fmul_add_distr_l f (A x u)).
 apply conj.
@@ -14238,8 +14237,7 @@ unfold MVmult.
 unfold MMatrixToVector.
 unfold Fnmul.
 unfold Mmult.
-apply (FiniteSetInduction {n : nat | n < N}
-  (exist (Finite (Count N)) (Full_set {n : nat | n < N}) (CountFinite N))).
+apply (FiniteSetInduction {n : nat | n < N} (exist (Finite (Count N)) (Full_set {n : nat | n < N}) (CountFinite N))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
@@ -14262,8 +14260,7 @@ apply H4.
 apply H4.
 apply functional_extensionality.
 move=> x.
-apply (MySumF2O {n : nat | n < N} (exist (Finite (Count N)) (Full_set {n : nat | n < N}) (CountFinite N))
-  (FPCM f)).
+apply (MySumF2O {n : nat | n < N} (exist (Finite (Count N)) (Full_set {n : nat | n < N}) (CountFinite N)) (FPCM f)).
 move=> u H1.
 apply (Fmul_O_r f).
 Qed.
@@ -14279,107 +14276,36 @@ suff: (forall (m : Count (N - Rank f M N A)), proj1_sig m + Rank f M N A < N).
 move=> H4.
 suff: ((fun (x : Count N -> FT f) => MVmult f M N A x = FnO f M) = SpanVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m)))).
 move=> H5.
-suff: (forall (H1 : SubspaceVS f (FnVS f N)
-       (fun (x : Count N -> FT f) => MVmult f M N A x = FnO f M))
-(H2 : SubspaceVS f (FnVS f N)
-(SpanVS f (FnVS f N) (Count (N - Rank f M N A))
-       (fun (m : Count (N - Rank f M N A)) =>
-        MTranspose f N N C
-          (exist (fun n : nat => n < N) (proj1_sig m + Rank f M N A)
-             (H4 m)))))
-(H3 : FiniteDimensionVS f
-       (SubspaceMakeVS f (FnVS f N)
-          (fun (x : Count N -> FT f) => MVmult f M N A x = FnO f M) H1))
-(H5 : FiniteDimensionVS f
-       (SubspaceMakeVS f (FnVS f N)
-         (SpanVS f (FnVS f N) (Count (N - Rank f M N A))
-       (fun (m : Count (N - Rank f M N A)) =>
-        MTranspose f N N C
-          (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-             (H4 m)))) H2)), DimensionSubspaceVS f (FnVS f N)
-  (fun (x : Count N -> FT f) => MVmult f M N A x = FnO f M) H1 H3
-= DimensionSubspaceVS f (FnVS f N)
-  (SpanVS f (FnVS f N) (Count (N - Rank f M N A))
-       (fun (m : Count (N - Rank f M N A)) =>
-        MTranspose f N N C
-          (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-             (H4 m)))) H2 H5).
+suff: (forall (H1 : SubspaceVS f (FnVS f N) (fun (x : Count N -> FT f) => MVmult f M N A x = FnO f M)) (H2 : SubspaceVS f (FnVS f N) (SpanVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun n : nat => n < N) (proj1_sig m + Rank f M N A) (H4 m))))) (H3 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) (fun (x : Count N -> FT f) => MVmult f M N A x = FnO f M) H1)) (H5 : FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) (SpanVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m)))) H2)), DimensionSubspaceVS f (FnVS f N) (fun (x : Count N -> FT f) => MVmult f M N A x = FnO f M) H1 H3 = DimensionSubspaceVS f (FnVS f N) (SpanVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m)))) H2 H5).
 move=> H6.
-suff: (FiniteDimensionVS f
-       (SubspaceMakeVS f (FnVS f N)
-         (SpanVS f (FnVS f N) (Count (N - Rank f M N A))
-       (fun (m : Count (N - Rank f M N A)) =>
-        MTranspose f N N C
-          (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-             (H4 m)))) (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A))
-       (fun (m : Count (N - Rank f M N A)) =>
-        MTranspose f N N C
-          (exist (fun n : nat => n < N) (proj1_sig m + Rank f M N A)
-             (H4 m)))))).
+suff: (FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) (SpanVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m)))) (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun n : nat => n < N) (proj1_sig m + Rank f M N A) (H4 m)))))).
 move=> H7.
-rewrite (H6 H1 (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A))
-       (fun (m : Count (N - Rank f M N A)) =>
-        MTranspose f N N C
-          (exist (fun n : nat => n < N) (proj1_sig m + Rank f M N A)
-             (H4 m)))) H2 H7).
-apply (DimensionSubspaceVSNature2 f (FnVS f N) (SpanVS f (FnVS f N) (Count (N - Rank f M N A))
-       (fun (m : Count (N - Rank f M N A)) =>
-        MTranspose f N N C
-          (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-             (H4 m)))) (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A))
-       (fun (m : Count (N - Rank f M N A)) =>
-        MTranspose f N N C
-          (exist (fun n : nat => n < N) (proj1_sig m + Rank f M N A)
-             (H4 m)))) H7 (N - Rank f M N A) (fun (m : Count (N - Rank f M N A)) =>
-        MTranspose f N N C
-          (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-             (H4 m)))).
-exists (SpanContainSelfVS f (FnVS f N) (Count (N - Rank f M N A))
-       (fun (m : Count (N - Rank f M N A)) =>
-        MTranspose f N N C
-          (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-             (H4 m)))).
-apply (proj2 (FiniteLinearlyIndependentVS f (FnVS f N) (N - Rank f M N A) (fun (m : Count (N - Rank f M N A)) =>
-        MTranspose f N N C
-          (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-             (H4 m))))).
+rewrite (H6 H1 (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun n : nat => n < N) (proj1_sig m + Rank f M N A) (H4 m)))) H2 H7).
+apply (DimensionSubspaceVSNature2 f (FnVS f N) (SpanVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m)))) (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun n : nat => n < N) (proj1_sig m + Rank f M N A) (H4 m)))) H7 (N - Rank f M N A) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m)))).
+exists (SpanContainSelfVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m)))).
+apply (proj2 (FiniteLinearlyIndependentVS f (FnVS f N) (N - Rank f M N A) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m))))).
 move=> a H8.
 elim (proj1 (RegularInvLExistRelation f N C)).
 move=> D H9.
-suff: (MVmult f N (N - Rank f M N A) (fun (m : Count N) (n : Count (N - Rank f M N A)) => C m (exist (fun (n : nat) => n < N) (proj1_sig n + Rank f M N A)
-             (H4 n))) a = VO f (FnVS f N)).
+suff: (MVmult f N (N - Rank f M N A) (fun (m : Count N) (n : Count (N - Rank f M N A)) => C m (exist (fun (n : nat) => n < N) (proj1_sig n + Rank f M N A) (H4 n))) a = VO f (FnVS f N)).
 move=> H10.
-suff: (a = MVmult f (N - Rank f M N A) N
-        (fun (m : Count (N - Rank f M N A)) (n : Count N) =>
-         D
-           (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-              (H4 m)) n) (VO f (FnVS f N))).
+suff: (a = MVmult f (N - Rank f M N A) N (fun (m : Count (N - Rank f M N A)) (n : Count N) => D (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m)) n) (VO f (FnVS f N))).
 move=> H11.
 rewrite H11.
 move=> k.
-apply (MySumF2O {n : nat | n < N}
-  (exist (Finite (Count N)) (Full_set {n : nat | n < N}) (CountFinite N))
-  (FPCM f)).
+apply (MySumF2O {n : nat | n < N} (exist (Finite (Count N)) (Full_set {n : nat | n < N}) (CountFinite N)) (FPCM f)).
 move=> u H12.
 apply (Fmul_O_r f).
 rewrite - H10.
 apply functional_extensionality.
 move=> m.
-suff: (a m = MVmult f (N - Rank f M N A) (N - Rank f M N A) (Mmult f (N - Rank f M N A) N (N - Rank f M N A) (fun (m : Count (N - Rank f M N A)) (n : Count N) =>
-         D
-           (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-              (H4 m)) n) (fun (m : Count N) (n : Count (N - Rank f M N A)) => C m (exist (fun (n : nat) => n < N) (proj1_sig n + Rank f M N A)
-             (H4 n)))) a m).
+suff: (a m = MVmult f (N - Rank f M N A) (N - Rank f M N A) (Mmult f (N - Rank f M N A) N (N - Rank f M N A) (fun (m : Count (N - Rank f M N A)) (n : Count N) => D (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m)) n) (fun (m : Count N) (n : Count (N - Rank f M N A)) => C m (exist (fun (n : nat) => n < N) (proj1_sig n + Rank f M N A) (H4 n)))) a m).
 move=> H11.
 rewrite H11.
 unfold MVmult.
 rewrite Mmult_assoc.
 reflexivity.
-suff: (Mmult f (N - Rank f M N A) N (N - Rank f M N A) (fun (m : Count (N - Rank f M N A)) (n : Count N) =>
-         D
-           (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-              (H4 m)) n) (fun (m : Count N) (n : Count (N - Rank f M N A)) => C m (exist (fun (n : nat) => n < N) (proj1_sig n + Rank f M N A)
-             (H4 n))) = MI f (N - Rank f M N A)).
+suff: (Mmult f (N - Rank f M N A) N (N - Rank f M N A) (fun (m : Count (N - Rank f M N A)) (n : Count N) => D (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m)) n) (fun (m : Count N) (n : Count (N - Rank f M N A)) => C m (exist (fun (n : nat) => n < N) (proj1_sig n + Rank f M N A) (H4 n))) = MI f (N - Rank f M N A)).
 move=> H11.
 rewrite H11.
 unfold MVmult.
@@ -14389,9 +14315,7 @@ apply functional_extensionality.
 move=> x.
 apply functional_extensionality.
 move=> y.
-suff: (MI f (N - Rank f M N A) x y = MI f N (exist (fun (n : nat) => n < N) (proj1_sig x + Rank f M N A)
-              (H4 x)) (exist (fun (n : nat) => n < N) (proj1_sig y + Rank f M N A)
-              (H4 y))).
+suff: (MI f (N - Rank f M N A) x y = MI f N (exist (fun (n : nat) => n < N) (proj1_sig x + Rank f M N A) (H4 x)) (exist (fun (n : nat) => n < N) (proj1_sig y + Rank f M N A) (H4 y))).
 move=> H11.
 rewrite H11.
 rewrite - H9.
@@ -14424,10 +14348,7 @@ unfold MVmult.
 unfold Mmult.
 unfold MMatrixToVector.
 unfold Count.
-apply (FiniteSetInduction {n : nat | n < N - Rank f M N A}
-  (exist (Finite {n : nat | n < N - Rank f M N A})
-     (Full_set {n : nat | n < N - Rank f M N A})
-     (CountFinite (N - Rank f M N A)))).
+apply (FiniteSetInduction {n : nat | n < N - Rank f M N A} (exist (Finite {n : nat | n < N - Rank f M N A}) (Full_set {n : nat | n < N - Rank f M N A}) (CountFinite (N - Rank f M N A)))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
@@ -14442,8 +14363,7 @@ reflexivity.
 apply H12.
 apply H12.
 apply (proj1 (ElementaryTransformableRegular f N C) (proj1 (proj2 H3))).
-suff: (forall (W : Ensemble (Fn f N)), (W = (fun (x : Count N -> FT f) => MVmult f M N A x = FnO f M)) -> forall (H1 : SubspaceVS f (FnVS f N) W), FiniteDimensionVS f
-       (SubspaceMakeVS f (FnVS f N) W H1)).
+suff: (forall (W : Ensemble (Fn f N)), (W = (fun (x : Count N -> FT f) => MVmult f M N A x = FnO f M)) -> forall (H1 : SubspaceVS f (FnVS f N) W), FiniteDimensionVS f (SubspaceMakeVS f (FnVS f N) W H1)).
 move=> H7.
 apply H7.
 rewrite H5.
@@ -14479,78 +14399,33 @@ move=> H7.
 rewrite H6.
 unfold MVmult.
 unfold Mmult.
-apply (FiniteSetInduction {n : nat | n < N}
-        (exist (Finite (Count N)) (Full_set {n : nat | n < N})
-           (CountFinite N))).
+apply (FiniteSetInduction {n : nat | n < N} (exist (Finite (Count N)) (Full_set {n : nat | n < N}) (CountFinite N))).
 apply conj.
 unfold MMatrixToVector.
-suff: ((fun (m : {n : nat | n < N}) =>
-   MySumF2 {n : nat | n < N} (FiniteEmpty {n : nat | n < N}) 
-     (FPCM f)
-     (fun n : Count N =>
-      Fmul f (C m n) (MVectorToMatrix f N x n Single))) = FnO f N).
+suff: ((fun (m : {n : nat | n < N}) => MySumF2 {n : nat | n < N} (FiniteEmpty {n : nat | n < N}) (FPCM f) (fun n : Count N => Fmul f (C m n) (MVectorToMatrix f N x n Single))) = FnO f N).
 move=> H8.
 rewrite H8.
-apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A))
-     (fun (m : Count (N - Rank f M N A)) =>
-      MTranspose f N N C
-        (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-           (H4 m)))))).
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m)))))).
 apply functional_extensionality.
 move=> m.
 apply MySumF2Empty.
 move=> D d H8 H9 H10 H11.
 unfold MMatrixToVector.
-suff: ((fun (m : {n : nat | n < N}) =>
-   MySumF2 {n : nat | n < N} (FiniteAdd {n : nat | n < N} D d) 
-     (FPCM f)
-     (fun n : Count N =>
-      Fmul f (C m n) (MVectorToMatrix f N x n Single))) = (fun (m : {n : nat | n < N}) =>
-   Fadd f (MySumF2 {n : nat | n < N} D 
-     (FPCM f)
-     (fun n : Count N =>
-      Fmul f (C m n) (MVectorToMatrix f N x n Single))) (Fmul f (MVectorToMatrix f N x d Single) (C m d)))).
+suff: ((fun (m : {n : nat | n < N}) => MySumF2 {n : nat | n < N} (FiniteAdd {n : nat | n < N} D d) (FPCM f) (fun n : Count N => Fmul f (C m n) (MVectorToMatrix f N x n Single))) = (fun (m : {n : nat | n < N}) => Fadd f (MySumF2 {n : nat | n < N} D (FPCM f) (fun n : Count N => Fmul f (C m n) (MVectorToMatrix f N x n Single))) (Fmul f (MVectorToMatrix f N x d Single) (C m d)))).
 move=> H12.
 rewrite H12.
-apply (proj1 (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A))
-     (fun (m : Count (N - Rank f M N A)) =>
-      MTranspose f N N C
-        (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-           (H4 m))))).
+apply (proj1 (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m))))).
 apply H11.
 elim (le_or_lt (Rank f M N A) (proj1_sig d)).
 move=> H13.
-apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A))
-     (fun (m : Count (N - Rank f M N A)) =>
-      MTranspose f N N C
-        (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-           (H4 m))))) (MVectorToMatrix f N x d Single)).
+apply (proj1 (proj2 (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m))))) (MVectorToMatrix f N x d Single)).
 suff: (proj1_sig d - Rank f M N A < N - Rank f M N A).
 move=> H14.
-suff: ((fun (m : {n : nat | n < N}) => C m d) = (MTranspose f N N C
-            (exist (fun (n : nat) => n < N)
-               (proj1_sig
-                  (exist (fun m : nat => m < N - Rank f M N A)
-                     (proj1_sig d - Rank f M N A) H14) + 
-                Rank f M N A)
-               (H4
-                  (exist (fun m : nat => m < N - Rank f M N A)
-                     (proj1_sig d - Rank f M N A) H14))))).
+suff: ((fun (m : {n : nat | n < N}) => C m d) = (MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig (exist (fun m : nat => m < N - Rank f M N A) (proj1_sig d - Rank f M N A) H14) + Rank f M N A) (H4 (exist (fun m : nat => m < N - Rank f M N A) (proj1_sig d - Rank f M N A) H14))))).
 move=> H15.
 rewrite H15.
-apply (SpanContainSelfVS f (FnVS f N) (Count (N - Rank f M N A))
-     (fun (m : Count (N - Rank f M N A)) =>
-      MTranspose f N N C
-        (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-           (H4 m))) (exist (fun (m : nat) => m < N - Rank f M N A) (proj1_sig d - Rank f M N A) H14)).
-suff: ((exist (fun (n : nat) => n < N)
-               (proj1_sig
-                  (exist (fun m : nat => m < N - Rank f M N A)
-                     (proj1_sig d - Rank f M N A) H14) + 
-                Rank f M N A)
-               (H4
-                  (exist (fun m : nat => m < N - Rank f M N A)
-                     (proj1_sig d - Rank f M N A) H14))) = d).
+apply (SpanContainSelfVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m))) (exist (fun (m : nat) => m < N - Rank f M N A) (proj1_sig d - Rank f M N A) H14)).
+suff: ((exist (fun (n : nat) => n < N) (proj1_sig (exist (fun m : nat => m < N - Rank f M N A) (proj1_sig d - Rank f M N A) H14) + Rank f M N A) (H4 (exist (fun m : nat => m < N - Rank f M N A) (proj1_sig d - Rank f M N A) H14))) = d).
 move=> H15.
 rewrite H15.
 reflexivity.
@@ -14564,15 +14439,10 @@ rewrite (le_plus_minus_r (Rank f M N A) (proj1_sig d) H13).
 rewrite (le_plus_minus_r (Rank f M N A) N (RankLeW f M N A)).
 apply (proj2_sig d).
 move=> H13.
-suff: ((fun (m : {n : nat | n < N}) =>
-   Fmul f (MVectorToMatrix f N x d Single) (C m d)) = FnO f N).
+suff: ((fun (m : {n : nat | n < N}) => Fmul f (MVectorToMatrix f N x d Single) (C m d)) = FnO f N).
 move=> H14.
 rewrite H14.
-apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A))
-     (fun (m : Count (N - Rank f M N A)) =>
-      MTranspose f N N C
-        (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A)
-           (H4 m)))))).
+apply (proj2 (proj2 (SpanSubspaceVS f (FnVS f N) (Count (N - Rank f M N A)) (fun (m : Count (N - Rank f M N A)) => MTranspose f N N C (exist (fun (n : nat) => n < N) (proj1_sig m + Rank f M N A) (H4 m)))))).
 apply functional_extensionality.
 move=> m.
 suff: (MVectorToMatrix f N x d Single = x d).
@@ -14600,8 +14470,7 @@ unfold MVmult.
 unfold MMatrixToVector.
 unfold MVectorToMatrix.
 unfold Mmult.
-rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} m)
-  (exist (Finite (Count N)) (Full_set {n : nat | n < N}) (CountFinite N))).
+rewrite (MySumF2Included {n : nat | n < N} (FiniteSingleton {n : nat | n < N} m) (exist (Finite (Count N)) (Full_set {n : nat | n < N}) (CountFinite N))).
 rewrite MySumF2Singleton.
 rewrite MySumF2O.
 rewrite CM_O_r.
@@ -14645,8 +14514,7 @@ rewrite H7.
 rewrite H5.
 apply functional_extensionality.
 move=> m.
-apply (MySumF2O {n : nat | n < M}
-  (exist (Finite (Count M)) (Full_set {n : nat | n < M}) (CountFinite M)) (FPCM f)).
+apply (MySumF2O {n : nat | n < M} (exist (Finite (Count M)) (Full_set {n : nat | n < M}) (CountFinite M)) (FPCM f)).
 move=> u H8.
 apply (Fmul_O_r f).
 rewrite H6.
@@ -14666,39 +14534,21 @@ rewrite FiniteSpanVS.
 move=> v.
 elim.
 move=> x H5.
-suff: (v = MVmult f N (N - Rank f M N A) (fun (m : Count N) (n : Count (N - Rank f M N A)) => C m (exist (fun (k : nat) => k < N)
-                (proj1_sig n + Rank f M N A) (H4 n))) x).
+suff: (v = MVmult f N (N - Rank f M N A) (fun (m : Count N) (n : Count (N - Rank f M N A)) => C m (exist (fun (k : nat) => k < N) (proj1_sig n + Rank f M N A) (H4 n))) x).
 move=> H6.
 rewrite H6.
 unfold In.
-suff: (MVmult f M M B (MVmult f M N A
-  (MVmult f N (N - Rank f M N A)
-     (fun (m : Count N) (n : Count (N - Rank f M N A)) =>
-      C m
-        (exist (fun (k : nat) => k < N) (proj1_sig n + Rank f M N A)
-           (H4 n))) x)) = FnO f M).
+suff: (MVmult f M M B (MVmult f M N A (MVmult f N (N - Rank f M N A) (fun (m : Count N) (n : Count (N - Rank f M N A)) => C m (exist (fun (k : nat) => k < N) (proj1_sig n + Rank f M N A) (H4 n))) x)) = FnO f M).
 move=> H7.
 elim (proj1 (RegularInvLExistRelation f M B)).
 move=> D H8.
-suff: (MVmult f M N A
-  (MVmult f N (N - Rank f M N A)
-     (fun (m : Count N) (n : Count (N - Rank f M N A)) =>
-      C m
-        (exist (fun (k : nat) => k < N) (proj1_sig n + Rank f M N A)
-           (H4 n))) x) = MVmult f M M D (MVmult f M M B (MVmult f M N A
-          (MVmult f N (N - Rank f M N A)
-             (fun (m : Count N) (n : Count (N - Rank f M N A)) =>
-              C m
-                (exist (fun (k : nat) => k < N)
-                   (proj1_sig n + Rank f M N A) 
-                   (H4 n))) x)))).
+suff: (MVmult f M N A (MVmult f N (N - Rank f M N A) (fun (m : Count N) (n : Count (N - Rank f M N A)) => C m (exist (fun (k : nat) => k < N) (proj1_sig n + Rank f M N A) (H4 n))) x) = MVmult f M M D (MVmult f M M B (MVmult f M N A (MVmult f N (N - Rank f M N A) (fun (m : Count N) (n : Count (N - Rank f M N A)) => C m (exist (fun (k : nat) => k < N) (proj1_sig n + Rank f M N A) (H4 n))) x)))).
 move=> H9.
 rewrite H9.
 rewrite H7.
 apply functional_extensionality.
 move=> m.
-apply (MySumF2O {n : nat | n < M}
-  (exist (Finite (Count M)) (Full_set {n : nat | n < M}) (CountFinite M)) (FPCM f)).
+apply (MySumF2O {n : nat | n < M} (exist (Finite (Count M)) (Full_set {n : nat | n < M}) (CountFinite M)) (FPCM f)).
 move=> u H10.
 apply (Fmul_O_r f).
 unfold MVmult.
@@ -14714,16 +14564,7 @@ rewrite (proj2 (MVectorMatrixRelation f M)).
 rewrite (proj2 (MVectorMatrixRelation f N)).
 rewrite - (Mmult_assoc f M N (N - Rank f M N A) 1).
 rewrite - (Mmult_assoc f M M (N - Rank f M N A) 1).
-suff: (Mmult f M M (N - Rank f M N A) B
-        (Mmult f M N (N - Rank f M N A) A
-           (fun (m : Count N) (n : Count (N - Rank f M N A)) =>
-            C m
-              (exist (fun k : nat => k < N) (proj1_sig n + Rank f M N A)
-                 (H4 n))))
-= (fun (m : Count M) (n : Count (N - Rank f M N A)) =>
-            Mmult f M M N B (Mmult f M N N A C) m
-              (exist (fun (k : nat) => k < N) (proj1_sig n + Rank f M N A)
-                 (H4 n)))).
+suff: (Mmult f M M (N - Rank f M N A) B (Mmult f M N (N - Rank f M N A) A (fun (m : Count N) (n : Count (N - Rank f M N A)) => C m (exist (fun k : nat => k < N) (proj1_sig n + Rank f M N A) (H4 n)))) = (fun (m : Count M) (n : Count (N - Rank f M N A)) => Mmult f M M N B (Mmult f M N N A C) m (exist (fun (k : nat) => k < N) (proj1_sig n + Rank f M N A) (H4 n)))).
 move=> H7.
 rewrite H7.
 rewrite (proj2 (proj2 H3)).
@@ -14732,10 +14573,7 @@ unfold MMatrixToVector.
 unfold MVectorToMatrix.
 apply functional_extensionality.
 move=> m.
-apply (MySumF2O {n : nat | n < N - Rank f M N A}
-  (exist (Finite (Count (N - Rank f M N A)))
-     (Full_set {n : nat | n < N - Rank f M N A})
-     (CountFinite (N - Rank f M N A))) (FPCM f)).
+apply (MySumF2O {n : nat | n < N - Rank f M N A} (exist (Finite (Count (N - Rank f M N A))) (Full_set {n : nat | n < N - Rank f M N A}) (CountFinite (N - Rank f M N A))) (FPCM f)).
 move=> u H8.
 unfold RankNormalForm.
 simpl.
@@ -14759,10 +14597,7 @@ unfold MVmult.
 unfold MMatrixToVector.
 unfold Mmult.
 unfold Count.
-apply (FiniteSetInduction {n : nat | n < N - Rank f M N A}
-  (exist (Finite {n : nat | n < N - Rank f M N A})
-     (Full_set {n : nat | n < N - Rank f M N A})
-     (CountFinite (N - Rank f M N A)))).
+apply (FiniteSetInduction {n : nat | n < N - Rank f M N A} (exist (Finite {n : nat | n < N - Rank f M N A}) (Full_set {n : nat | n < N - Rank f M N A}) (CountFinite (N - Rank f M N A)))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
