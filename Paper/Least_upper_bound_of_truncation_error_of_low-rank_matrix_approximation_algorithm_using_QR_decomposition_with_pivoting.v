@@ -15340,7 +15340,7 @@ apply (Rplus_ge_compat cm 0 (SingularValueRCH K M N A u * SingularValueRCH K M N
 apply Formula_1_3.
 Qed.
 
-Lemma UnitaryMarixRCComplementExist : forall (K : RC) (M N : nat) (A : Matrix (RCfield K) (M + N) M), Mmult (RCfield K) M (M + N) M (AdjointMatrixRC K (M + N) M A) A = MI (RCfield K) M -> exists (B : Matrix (RCfield K) (M + N) N), UnitaryMatrixRC K (M + N) (MBlockW (RCfield K) (M + N) M N A B).
+Lemma UnitaryMarixRCComplementExists : forall (K : RC) (M N : nat) (A : Matrix (RCfield K) (M + N) M), Mmult (RCfield K) M (M + N) M (AdjointMatrixRC K (M + N) M A) A = MI (RCfield K) M -> exists (B : Matrix (RCfield K) (M + N) N), UnitaryMatrixRC K (M + N) (MBlockW (RCfield K) (M + N) M N A B).
 Proof.
 move=> K M N A H1.
 suff: (SubspaceVS (RCfield K) (FnVS (RCfield K) (M + N)) (fun (x : RCn K (M + N)) => forall (m : Count M), RCnInnerProduct K (M + N) (MTranspose (RCfield K) (M + N) M A m) x = RCO K)).
@@ -16790,7 +16790,7 @@ elim (proj1 (proj2 H7)).
 move=> a H8.
 suff: (RCnNorm K (S k) a = 1).
 move=> H9.
-elim (UnitaryMarixRCComplementExist K 1 k (fun (m : Count (S k)) (n : Count 1) => a m)).
+elim (UnitaryMarixRCComplementExists K 1 k (fun (m : Count (S k)) (n : Count 1) => a m)).
 move=> U0 H10.
 exists (MTranspose (RCfield K) (S k) (S k) (MBlockW (RCfield K) (1 + k) 1 k (fun (m : Count (S k)) (n : Count 1) => a m) U0)).
 exists v.
@@ -17891,7 +17891,7 @@ suff: (M + N = k + (M + N - k))%nat.
 move=> H2.
 rewrite H2.
 move=> A Q1 H3 B.
-elim (UnitaryMarixRCComplementExist K k (M + N - k) Q1 H3).
+elim (UnitaryMarixRCComplementExists K k (M + N - k) Q1 H3).
 move=> Q2 H4.
 suff: (UnitaryMatrixRC K (k + (M + N - k)) (AdjointMatrixRC K (k + (M + N - k)) (k + (M + N - k)) (MBlockW (RCfield K) (k + (M + N - k)) k (M + N - k) Q1 Q2))).
 move=> H5.
