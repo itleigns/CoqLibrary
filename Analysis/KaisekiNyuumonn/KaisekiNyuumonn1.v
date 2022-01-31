@@ -8320,6 +8320,11 @@ Definition Proposition_4_2_4_3_R : forall (N : nat) (x : Rn N), x = (RnO N) -> (
 
 Definition Proposition_4_2_4_3_C : forall (N : nat) (x : Cn N), x = (CnO N) -> (CnInnerProduct N x x) = CO := Proposition_4_2_4_3 CK.
 
+Definition RCnNum (K : RC) (N : nat) := match K with
+  | RK => N
+  | CK => (N * 2)%nat
+end.
+
 Definition CnRnConvert (N : nat) (x : Cn N) : Rn (N * 2) := fun (m : Count (N * 2)) => x (fst (MultConnectInv N 2 m)) (snd (MultConnectInv N 2 m)).
 
 Definition CnRnConvertInv (N : nat) (x : Rn (N * 2)) : Cn N := fun (m : Count N) => Cmake (x (MultConnect N 2 (m, CRe))) (x (MultConnect N 2 (m, CIm))).
@@ -8358,6 +8363,28 @@ apply CmakeRe.
 move=> H1.
 rewrite H1.
 apply CmakeIm.
+Qed.
+
+Definition RCnRnConvert : forall (K : RC) (N : nat) (x : RCn K N), Rn (RCnNum K N) := fun (K : RC) (N : nat) => match K with
+  | RK => fun (x : Rn N) => x
+  | CK => CnRnConvert N
+end.
+
+Definition RCnRnConvertInv : forall (K : RC) (N : nat) (x : Rn (RCnNum K N)), RCn K N := fun (K : RC) (N : nat) => match K with
+  | RK => fun (x : Rn N) => x
+  | CK => CnRnConvertInv N
+end.
+
+Lemma RCnRnConvertInvRelation : forall (K : RC) (N : nat), (forall (x : RCn K N), RCnRnConvertInv K N (RCnRnConvert K N x) = x) /\ (forall (x : Rn (RCnNum K N)), RCnRnConvert K N (RCnRnConvertInv K N x) = x).
+Proof.
+elim.
+move=> N.
+apply conj.
+move=> x.
+reflexivity.
+move=> x.
+reflexivity.
+apply CnRnConvertInvRelation.
 Qed.
 
 Lemma CnRnInnerProductRelation : forall (N : nat) (x : Cn N), CnInnerProduct N x x CRe = RnInnerProduct (N * 2) (CnRnConvert N x) (CnRnConvert N x).
@@ -8469,6 +8496,14 @@ move=> u H1.
 apply (Full_intro (Count N) u).
 Qed.
 
+Lemma RCnRnInnerProductRelation : forall (K : RC) (N : nat) (x : RCn K N), RCRe K (RCnInnerProduct K N x x) = RnInnerProduct (RCnNum K N) (RCnRnConvert K N x) (RCnRnConvert K N x).
+Proof.
+elim.
+move=> N x.
+reflexivity.
+apply CnRnInnerProductRelation.
+Qed.
+
 Definition RnNorm (N : nat) := fun (x : Rn N) => (MySqrt (exist (fun (r : R) => r >= 0) (RnInnerProduct N x x) (Proposition_4_2_4_1_R N x))).
 
 Definition CnNorm (N : nat) := fun (x : Cn N) => (MySqrt (exist (fun (r : R) => r >= 0) (CnInnerProduct N x x CRe) (proj1 (Proposition_4_2_4_1_C N x)))).
@@ -8516,6 +8551,27 @@ Definition RCnNormNature2 : forall (K : RC) (N : nat) (x : RCn K N) (y : R), y >
   | RK => RnNormNature2
   | CK => CnNormNature2
 end.
+
+Lemma CnRnNormRelation : forall (N : nat) (x : Cn N), CnNorm N x = RnNorm (N * 2) (CnRnConvert N x).
+Proof.
+move=> N x.
+unfold CnNorm.
+unfold RnNorm.
+suff: ((exist (fun (r : R) => r >= 0) (CnInnerProduct N x x CRe) (proj1 (Proposition_4_2_4_1_C N x))) = (exist (fun (r : R) => r >= 0) (RnInnerProduct (N * 2) (CnRnConvert N x) (CnRnConvert N x)) (Proposition_4_2_4_1_R (N * 2) (CnRnConvert N x)))).
+move=> H1.
+rewrite H1.
+reflexivity.
+apply sig_map.
+apply (CnRnInnerProductRelation N x).
+Qed.
+
+Lemma RCnRnNormRelation : forall (K : RC) (N : nat) (x : RCn K N), RCnNorm K N x = RnNorm (RCnNum K N) (RCnRnConvert K N x).
+Proof.
+elim.
+move=> N x.
+reflexivity.
+apply CnRnNormRelation.
+Qed.
 
 Lemma Proposition_4_4_3_1 : forall (K : RC) (N : nat) (x : RCn K N), (RCnNorm K N x) >= 0.
 Proof.
@@ -10580,7 +10636,13 @@ Definition Proposition_4_4_2_3_R : forall (N : nat) (x y : Rn N), ((exists (k : 
 
 Definition Proposition_4_4_2_3_C : forall (N : nat) (x y : Cn N), ((exists (k : C), x = (Cnmult N k y) \/ y = (Cnmult N k x)) /\ (Csemipos (CnInnerProduct N x y))) -> (CnNorm N (Cnplus N x y)) = CnNorm N x + CnNorm N y := Proposition_4_4_2_3 CK.
 
+Definition RC_dist (K : RC) := fun (x y : RCT K) => RCabs K (RCminus K x y).
+
+Definition C_dist := fun (x y : C) => RnNorm 2 (Cminus x y).
+
 Definition RCn_dist (K : RC) (N : nat) := fun (x y : RCn K N) => RCnNorm K N (RCnminus K N x y).
+
+Definition RRn_dist (K : RRn) := fun (x y : RRnT K) => RRnNorm K (RRnminus K x y).
 
 Definition Rn_dist (N : nat) := fun (x y : Rn N) => RnNorm N (Rnminus N x y).
 
@@ -10593,6 +10655,18 @@ apply (Proposition_4_4_3_1 K N (RCnminus K N x y)).
 Qed.
 
 Definition Rn_dist_pos : forall (N : nat) (x y : Rn N), Rn_dist N x y >= 0 := RCn_dist_pos RK.
+
+Definition RRn_dist_pos : forall (K : RRn) (x y : RRnT K), RRn_dist K x y >= 0 := fun (K : RRn) => match K with
+  | R1K => R_dist_pos
+  | RnK N => Rn_dist_pos N
+end.
+
+Definition RC_dist_pos : forall (K : RC) (x y : RCT K), RC_dist K x y >= 0 := fun (K : RC) => match K with
+  | RK => R_dist_pos
+  | CK => Rn_dist_pos 2
+end.
+
+Definition C_dist_pos : forall (x y : C), C_dist x y >= 0 := Rn_dist_pos 2.
 
 Definition Cn_dist_pos : forall (N : nat) (x y : Cn N), Cn_dist N x y >= 0 := RCn_dist_pos CK.
 
@@ -10617,6 +10691,18 @@ Qed.
 
 Definition Rn_dist_sym : forall (N : nat) (x y : Rn N), Rn_dist N x y = Rn_dist N y x := RCn_dist_sym RK.
 
+Definition RRn_dist_sym : forall (K : RRn) (x y : RRnT K), RRn_dist K x y = RRn_dist K y x := fun (K : RRn) => match K with
+  | R1K => R_dist_sym
+  | RnK N => Rn_dist_sym N
+end.
+
+Definition RC_dist_sym : forall (K : RC) (x y : RCT K), RC_dist K x y = RC_dist K y x := fun (K : RC) => match K with
+  | RK => R_dist_sym
+  | CK => Rn_dist_sym 2
+end.
+
+Definition C_dist_sym : forall (x y : C), C_dist x y = C_dist y x := Rn_dist_sym 2.
+
 Definition Cn_dist_sym : forall (N : nat) (x y : Cn N), Cn_dist N x y = Cn_dist N y x := RCn_dist_sym CK.
 
 Lemma RCn_dist_refl : forall (K : RC) (N : nat) (x y : RCn K N), RCn_dist K N x y = 0 <-> x = y.
@@ -10639,6 +10725,18 @@ Qed.
 
 Definition Rn_dist_refl : forall (N : nat) (x y : Rn N), Rn_dist N x y = 0 <-> x = y := RCn_dist_refl RK.
 
+Definition RRn_dist_refl : forall (K : RRn) (x y : RRnT K), RRn_dist K x y = 0 <-> x = y := fun (K : RRn) => match K with
+  | R1K => R_dist_refl
+  | RnK N => Rn_dist_refl N
+end.
+
+Definition RC_dist_refl : forall (K : RC) (x y : RCT K), RC_dist K x y = 0 <-> x = y := fun (K : RC) => match K with
+  | RK => R_dist_refl
+  | CK => Rn_dist_refl 2
+end.
+
+Definition C_dist_refl : forall (x y : C), C_dist x y = 0 <-> x = y := Rn_dist_refl 2.
+
 Definition Cn_dist_refl : forall (N : nat) (x y : Cn N), Cn_dist N x y = 0 <-> x = y := RCn_dist_refl CK.
 
 Lemma RCn_dist_eq : forall (K : RC) (N : nat) (x : RCn K N), RCn_dist K N x x = 0.
@@ -10653,6 +10751,18 @@ reflexivity.
 Qed.
 
 Definition Rn_dist_eq : forall (N : nat) (x : Rn N), Rn_dist N x x = 0 := RCn_dist_eq RK.
+
+Definition RRn_dist_eq : forall (K : RRn) (x : RRnT K), RRn_dist K x x = 0 := fun (K : RRn) => match K with
+  | R1K => R_dist_eq
+  | RnK N => Rn_dist_eq N
+end.
+
+Definition RC_dist_eq : forall (K : RC) (x : RCT K), RC_dist K x x = 0 := fun (K : RC) => match K with
+  | RK => R_dist_eq
+  | CK => Rn_dist_eq 2
+end.
+
+Definition C_dist_eq : forall (x : C), C_dist x x = 0 := Rn_dist_eq 2.
 
 Definition Cn_dist_eq : forall (N : nat) (x : Cn N), Cn_dist N x x = 0 := RCn_dist_eq CK.
 
@@ -10682,13 +10792,45 @@ Qed.
 
 Definition Rn_dist_tri : forall (N : nat) (x y z : Rn N), Rn_dist N x y <= Rn_dist N x z + Rn_dist N z y := RCn_dist_tri RK.
 
+Definition RRn_dist_tri : forall (K : RRn) (x y z : RRnT K), RRn_dist K x y <= RRn_dist K x z + RRn_dist K z y := fun (K : RRn) => match K with
+  | R1K => R_dist_tri
+  | RnK N => Rn_dist_tri N
+end.
+
+Definition RC_dist_tri : forall (K : RC) (x y z : RCT K), RC_dist K x y <= RC_dist K x z + RC_dist K z y := fun (K : RC) => match K with
+  | RK => R_dist_tri
+  | CK => Rn_dist_tri 2
+end.
+
+Definition C_dist_tri : forall (x y z : C), C_dist x y <= C_dist x z + C_dist z y := Rn_dist_tri 2.
+
 Definition Cn_dist_tri : forall (N : nat) (x y z : Cn N), Cn_dist N x y <= Cn_dist N x z + Cn_dist N z y := RCn_dist_tri CK.
 
 Definition RCn_met (K : RC) (N : nat) : Metric_Space := Build_Metric_Space (RCn K N) (RCn_dist K N) (RCn_dist_pos K N) (RCn_dist_sym K N) (RCn_dist_refl K N) (RCn_dist_tri K N).
 
+Definition RRn_met (K : RRn) : Metric_Space := Build_Metric_Space (RRnT K) (RRn_dist K) (RRn_dist_pos K) (RRn_dist_sym K) (RRn_dist_refl K) (RRn_dist_tri K).
+
+Definition RC_met (K : RC) : Metric_Space := Build_Metric_Space (RCT K) (RC_dist K) (RC_dist_pos K) (RC_dist_sym K) (RC_dist_refl K) (RC_dist_tri K).
+
+Definition C_met : Metric_Space := Build_Metric_Space C C_dist C_dist_pos C_dist_sym C_dist_refl C_dist_tri.
+
 Definition Rn_met (N : nat) : Metric_Space := Build_Metric_Space (Rn N) (Rn_dist N) (Rn_dist_pos N) (Rn_dist_sym N) (Rn_dist_refl N) (Rn_dist_tri N).
 
 Definition Cn_met (N : nat) : Metric_Space := Build_Metric_Space (Cn N) (Cn_dist N) (Cn_dist_pos N) (Cn_dist_sym N) (Cn_dist_refl N) (Cn_dist_tri N).
+
+Lemma CnRnDistRelation : forall (N : nat) (x y : Cn N), Cn_dist N x y = Rn_dist (N * 2) (CnRnConvert N x) (CnRnConvert N y).
+Proof.
+move=> N x y.
+apply (CnRnNormRelation N (Cnminus N x y)).
+Qed.
+
+Lemma RCnRnDistRelation : forall (K : RC) (N : nat) (x y : RCn K N), RCn_dist K N x y = Rn_dist (RCnNum K N) (RCnRnConvert K N x) (RCnRnConvert K N y).
+Proof.
+elim.
+move=> N x y.
+reflexivity.
+apply CnRnDistRelation.
+Qed.
 
 Definition Un_cv_met (met : Metric_Space) (Un : nat -> (Base met)) (m : (Base met)) := forall (eps : R), eps > 0 -> exists (N : nat), forall (n : nat), (n >= N)%nat -> (dist met) (Un n) m < eps.
 
@@ -16925,6 +17067,11 @@ apply (proj1 (Theorem_6_2 M1 R_met g B x gx) H2).
 apply H4.
 Qed.
 
+Definition Theorem_6_6_1_1 : forall (M1 : Metric_Space) (K : RRn) (f g : Base M1 -> RRnT K) (B : Ensemble (Base M1)) (x : Base M1) (fx gx : RRnT K), (limit_in M1 (RRn_met K) f B x fx) -> (limit_in M1 (RRn_met K) g B x gx) -> (limit_in M1 (RRn_met K) (fun (r : Base M1) => RRnplus K (f r) (g r)) B x (RRnplus K fx gx)) := fun (M1 : Metric_Space) (K : RRn) => match K with
+  | R1K => Theorem_6_6_1_1_R M1
+  | RnK N => Theorem_6_6_1_1_Rn M1 N
+end.
+
 Lemma Theorem_6_6_1_2_Rn : forall (M1 : Metric_Space) (N : nat) (f g : Base M1 -> Rn N) (B : Ensemble (Base M1)) (x : Base M1) (fx gx : Rn N), (limit_in M1 (Rn_met N) f B x fx) -> (limit_in M1 (Rn_met N) g B x gx) -> (limit_in M1 (Rn_met N) (fun (r : Base M1) => Rnminus N (f r) (g r)) B x (Rnminus N fx gx)).
 Proof.
 move=> M1 N f g B x fx gx H2 H3.
@@ -16948,6 +17095,11 @@ apply H4.
 apply (proj1 (Theorem_6_2 M1 R_met g B x gx) H3).
 apply H4.
 Qed.
+
+Definition Theorem_6_6_1_2 : forall (M1 : Metric_Space) (K : RRn) (f g : Base M1 -> RRnT K) (B : Ensemble (Base M1)) (x : Base M1) (fx gx : RRnT K), (limit_in M1 (RRn_met K) f B x fx) -> (limit_in M1 (RRn_met K) g B x gx) -> (limit_in M1 (RRn_met K) (fun (r : Base M1) => RRnminus K (f r) (g r)) B x (RRnminus K fx gx)) := fun (M1 : Metric_Space) (K : RRn) => match K with
+  | R1K => Theorem_6_6_1_2_R M1
+  | RnK N => Theorem_6_6_1_2_Rn M1 N
+end.
 
 Lemma Theorem_6_6_1_3_Rn : forall (M1 : Metric_Space) (N : nat) (f : Base M1 -> Rn N) (c : R) (B : Ensemble (Base M1)) (x : Base M1) (fx : Rn N), (limit_in M1 (Rn_met N) f B x fx) -> (limit_in M1 (Rn_met N) (fun (r : Base M1) => Rnmult N c (f r)) B x (Rnmult N c fx)).
 Proof.
@@ -16975,6 +17127,11 @@ apply (proj1 (Theorem_6_2 M1 R_met f B x fx) H2).
 apply H3.
 Qed.
 
+Definition Theorem_6_6_1_3 : forall (M1 : Metric_Space) (K : RRn) (f : Base M1 -> RRnT K) (c : R) (B : Ensemble (Base M1)) (x : Base M1) (fx : RRnT K), (limit_in M1 (RRn_met K) f B x fx) -> (limit_in M1 (RRn_met K) (fun (r : Base M1) => RRnmult K c (f r)) B x (RRnmult K c fx)) := fun (M1 : Metric_Space) (K : RRn) => match K with
+  | R1K => Theorem_6_6_1_3_R M1
+  | RnK N => Theorem_6_6_1_3_Rn M1 N
+end.
+
 Lemma Theorem_6_6_1_4_Rn : forall (M1 : Metric_Space) (N : nat) (f : Base M1 -> Rn N) (B : Ensemble (Base M1)) (x : Base M1) (fx : Rn N), (limit_in M1 (Rn_met N) f B x fx) -> (limit_in M1 (Rn_met N) (fun (r : Base M1) => Rnopp N (f r)) B x (Rnopp N fx)).
 Proof.
 move=> M1 N f B x fx H2.
@@ -16995,7 +17152,12 @@ apply (proj1 (Theorem_6_2 M1 R_met f B x fx) H2).
 apply H3.
 Qed.
 
-Lemma Theorem_6_6_2_1_C : forall (M1 : Metric_Space) (f g : Base M1 -> C) (B : Ensemble (Base M1)) (x : Base M1) (fx gx : C), (limit_in M1 (Rn_met 2) f B x fx) -> (limit_in M1 (Rn_met 2) g B x gx) -> (limit_in M1 (Rn_met 2) (fun (r : Base M1) => Cmult (f r) (g r)) B x (Cmult fx gx)).
+Definition Theorem_6_6_1_4 : forall (M1 : Metric_Space) (K : RRn) (f : Base M1 -> RRnT K) (B : Ensemble (Base M1)) (x : Base M1) (fx : RRnT K), (limit_in M1 (RRn_met K) f B x fx) -> (limit_in M1 (RRn_met K) (fun (r : Base M1) => RRnopp K (f r)) B x (RRnopp K fx)) := fun (M1 : Metric_Space) (K : RRn) => match K with
+  | R1K => Theorem_6_6_1_4_R M1
+  | RnK N => Theorem_6_6_1_4_Rn M1 N
+end.
+
+Lemma Theorem_6_6_2_1_C : forall (M1 : Metric_Space) (f g : Base M1 -> C) (B : Ensemble (Base M1)) (x : Base M1) (fx gx : C), (limit_in M1 C_met f B x fx) -> (limit_in M1 C_met g B x gx) -> (limit_in M1 C_met (fun (r : Base M1) => Cmult (f r) (g r)) B x (Cmult fx gx)).
 Proof.
 move=> M1 f g B x fx gx H2 H3.
 apply (proj2 (Theorem_6_2 M1 (Rn_met 2) (fun r : Base M1 => Cmult (f r) (g r)) B x (Cmult fx gx))).
@@ -17018,6 +17180,11 @@ apply H4.
 apply (proj1 (Theorem_6_2 M1 R_met g B x gx) H3).
 apply H4.
 Qed.
+
+Definition Theorem_6_6_2_1 : forall (M1 : Metric_Space) (K : RC) (f g : Base M1 -> RCT K) (B : Ensemble (Base M1)) (x : Base M1) (fx gx : RCT K), (limit_in M1 (RC_met K) f B x fx) -> (limit_in M1 (RC_met K) g B x gx) -> (limit_in M1 (RC_met K) (fun (r : Base M1) => RCmult K (f r) (g r)) B x (RCmult K fx gx)) := fun (M1 : Metric_Space) (K : RC) => match K with
+  | RK => Theorem_6_6_2_1_R M1
+  | CK => Theorem_6_6_2_1_C M1
+end.
 
 Lemma Theorem_6_6_2_2_C : forall (M1 : Metric_Space) (f g : Base M1 -> C) (B : Ensemble (Base M1)) (x : Base M1) (fx gx : C), (gx <> CO) -> (limit_in M1 (Rn_met 2) f B x fx) -> (limit_in M1 (Rn_met 2) g B x gx) -> (limit_in M1 (Rn_met 2) (fun (r : Base M1) => Cmult (f r) (Cinv (g r))) B x (Cmult fx (Cinv gx))).
 Proof.
@@ -17044,6 +17211,11 @@ apply (proj1 (Theorem_6_2 M1 R_met g B x gx) H4).
 apply H5.
 apply H2.
 Qed.
+
+Definition Theorem_6_6_2_2 : forall (M1 : Metric_Space) (K : RC) (f g : Base M1 -> RCT K) (B : Ensemble (Base M1)) (x : Base M1) (fx gx : RCT K), (gx <> RCO K) -> (limit_in M1 (RC_met K) f B x fx) -> (limit_in M1 (RC_met K) g B x gx) -> (limit_in M1 (RC_met K) (fun (r : Base M1) => RCmult K (f r) (RCinv K (g r))) B x (RCmult K fx (RCinv K gx))) := fun (M1 : Metric_Space) (K : RC) => match K with
+  | RK => Theorem_6_6_2_2_R M1
+  | CK => Theorem_6_6_2_2_C M1
+end.
 
 Lemma Theorem_6_6_2_3_C : forall (M1 : Metric_Space) (f : Base M1 -> C) (B : Ensemble (Base M1)) (x : Base M1) (fx : C), (fx <> CO) -> (limit_in M1 (Rn_met 2) f B x fx) -> (limit_in M1 (Rn_met 2) (fun (r : Base M1) => Cinv (f r)) B x (Cinv fx)).
 Proof.
@@ -17086,6 +17258,11 @@ rewrite (Rmult_1_l (/ f r)).
 reflexivity.
 Qed.
 
+Definition Theorem_6_6_2_3 : forall (M1 : Metric_Space) (K : RC) (f : Base M1 -> RCT K) (B : Ensemble (Base M1)) (x : Base M1) (fx : RCT K), (fx <> RCO K) -> (limit_in M1 (RC_met K) f B x fx) -> (limit_in M1 (RC_met K) (fun (r : Base M1) => RCinv K (f r)) B x (RCinv K fx)) := fun (M1 : Metric_Space) (K : RC) => match K with
+  | RK => Theorem_6_6_2_3_R M1
+  | CK => Theorem_6_6_2_3_C M1
+end.
+
 Lemma Theorem_6_6_3_1_Rn : forall (M1 : Metric_Space) (N : nat) (f g : Base M1 -> Rn N) (B : Ensemble (Base M1)) (x : Base M1), (ContinuousMet M1 (Rn_met N) f B x) -> (ContinuousMet M1 (Rn_met N) g B x) -> (ContinuousMet M1 (Rn_met N) (fun (r : Base M1) => Rnplus N (f r) (g r)) B x).
 Proof.
 move=> M1 N f g B x H1 H2.
@@ -17101,6 +17278,11 @@ apply Theorem_6_6_1_1_R.
 apply H1.
 apply H2.
 Qed.
+
+Definition Theorem_6_6_3_1_RRn : forall (M1 : Metric_Space) (K : RRn) (f g : Base M1 -> RRnT K) (B : Ensemble (Base M1)) (x : Base M1), (ContinuousMet M1 (RRn_met K) f B x) -> (ContinuousMet M1 (RRn_met K) g B x) -> (ContinuousMet M1 (RRn_met K) (fun (r : Base M1) => RRnplus K (f r) (g r)) B x) := fun (M1 : Metric_Space) (K : RRn) => match K with
+  | R1K => Theorem_6_6_3_1_R M1
+  | RnK N => Theorem_6_6_3_1_Rn M1 N
+end.
 
 Lemma Theorem_6_6_3_2_Rn : forall (M1 : Metric_Space) (N : nat) (f g : Base M1 -> Rn N) (B : Ensemble (Base M1)) (x : Base M1), (ContinuousMet M1 (Rn_met N) f B x) -> (ContinuousMet M1 (Rn_met N) g B x) -> (ContinuousMet M1 (Rn_met N) (fun (r : Base M1) => Rnminus N (f r) (g r)) B x).
 Proof.
@@ -17118,6 +17300,11 @@ apply H1.
 apply H2.
 Qed.
 
+Definition Theorem_6_6_3_2_RRn : forall (M1 : Metric_Space) (K : RRn) (f g : Base M1 -> RRnT K) (B : Ensemble (Base M1)) (x : Base M1), (ContinuousMet M1 (RRn_met K) f B x) -> (ContinuousMet M1 (RRn_met K) g B x) -> (ContinuousMet M1 (RRn_met K) (fun (r : Base M1) => RRnminus K (f r) (g r)) B x) := fun (M1 : Metric_Space) (K : RRn) => match K with
+  | R1K => Theorem_6_6_3_2_R M1
+  | RnK N => Theorem_6_6_3_2_Rn M1 N
+end.
+
 Lemma Theorem_6_6_3_3_Rn : forall (M1 : Metric_Space) (N : nat) (f : Base M1 -> Rn N) (c : R) (B : Ensemble (Base M1)) (x : Base M1), (ContinuousMet M1 (Rn_met N) f B x) -> (ContinuousMet M1 (Rn_met N) (fun (r : Base M1) => Rnmult N c (f r)) B x).
 Proof.
 move=> M1 N f c B x H1.
@@ -17132,6 +17319,11 @@ apply Theorem_6_6_1_3_R.
 apply H1.
 Qed.
 
+Definition Theorem_6_6_3_3_RRn : forall (M1 : Metric_Space) (K : RRn) (f : Base M1 -> RRnT K) (c : R) (B : Ensemble (Base M1)) (x : Base M1), (ContinuousMet M1 (RRn_met K) f B x) -> (ContinuousMet M1 (RRn_met K) (fun (r : Base M1) => RRnmult K c (f r)) B x) := fun (M1 : Metric_Space) (K : RRn) => match K with
+  | R1K => Theorem_6_6_3_3_R M1
+  | RnK N => Theorem_6_6_3_3_Rn M1 N
+end.
+
 Lemma Theorem_6_6_3_4_Rn : forall (M1 : Metric_Space) (N : nat) (f : Base M1 -> Rn N) (B : Ensemble (Base M1)) (x : Base M1), (ContinuousMet M1 (Rn_met N) f B x) -> (ContinuousMet M1 (Rn_met N) (fun (r : Base M1) => Rnopp N (f r)) B x).
 Proof.
 move=> M1 N f B x H1.
@@ -17145,6 +17337,11 @@ move=> M1 f B x H1.
 apply Theorem_6_6_1_4_R.
 apply H1.
 Qed.
+
+Definition Theorem_6_6_3_4_RRn : forall (M1 : Metric_Space) (K : RRn) (f : Base M1 -> RRnT K) (B : Ensemble (Base M1)) (x : Base M1), (ContinuousMet M1 (RRn_met K) f B x) -> (ContinuousMet M1 (RRn_met K) (fun (r : Base M1) => RRnopp K (f r)) B x) := fun (M1 : Metric_Space) (K : RRn) => match K with
+  | R1K => Theorem_6_6_3_4_R M1
+  | RnK N => Theorem_6_6_3_4_Rn M1 N
+end.
 
 Lemma Theorem_6_6_3_5_C : forall (M1 : Metric_Space) (f g : Base M1 -> C) (B : Ensemble (Base M1)) (x : Base M1), (ContinuousMet M1 (Rn_met 2) f B x) -> (ContinuousMet M1 (Rn_met 2) g B x) -> (ContinuousMet M1 (Rn_met 2) (fun (r : Base M1) => Cmult (f r) (g r)) B x).
 Proof.
@@ -17161,6 +17358,11 @@ apply Theorem_6_6_2_1_R.
 apply H1.
 apply H2.
 Qed.
+
+Definition Theorem_6_6_3_5_RC : forall (M1 : Metric_Space) (K : RC) (f g : Base M1 -> RCT K) (B : Ensemble (Base M1)) (x : Base M1), (ContinuousMet M1 (RC_met K) f B x) -> (ContinuousMet M1 (RC_met K) g B x) -> (ContinuousMet M1 (RC_met K) (fun (r : Base M1) => RCmult K (f r) (g r)) B x) := fun (M1 : Metric_Space) (K : RC) => match K with
+  | RK => Theorem_6_6_3_5_R M1
+  | CK => Theorem_6_6_3_5_C M1
+end.
 
 Lemma Theorem_6_6_3_6_C : forall (M1 : Metric_Space) (f g : Base M1 -> C) (B : Ensemble (Base M1)) (x : Base M1), (g x <> CO) -> (ContinuousMet M1 (Rn_met 2) f B x) -> (ContinuousMet M1 (Rn_met 2) g B x) -> (ContinuousMet M1 (Rn_met 2) (fun (r : Base M1) => Cmult (f r) (Cinv (g r))) B x).
 Proof.
@@ -17180,6 +17382,11 @@ apply H2.
 apply H3.
 Qed.
 
+Definition Theorem_6_6_3_6_RC : forall (M1 : Metric_Space) (K : RC) (f g : Base M1 -> RCT K) (B : Ensemble (Base M1)) (x : Base M1), (g x <> RCO K) -> (ContinuousMet M1 (RC_met K) f B x) -> (ContinuousMet M1 (RC_met K) g B x) -> (ContinuousMet M1 (RC_met K) (fun (r : Base M1) => RCmult K (f r) (RCinv K (g r))) B x) := fun (M1 : Metric_Space) (K : RC) => match K with
+  | RK => Theorem_6_6_3_6_R M1
+  | CK => Theorem_6_6_3_6_C M1
+end.
+
 Lemma Theorem_6_6_3_7_C : forall (M1 : Metric_Space) (f : Base M1 -> C) (B : Ensemble (Base M1)) (x : Base M1), (f x <> CO) -> (ContinuousMet M1 (Rn_met 2) f B x) -> (ContinuousMet M1 (Rn_met 2) (fun (r : Base M1) => Cinv (f r)) B x).
 Proof.
 move=> M1 f B x H1 H2.
@@ -17195,6 +17402,11 @@ apply Theorem_6_6_2_3_R.
 apply H1.
 apply H2.
 Qed.
+
+Definition Theorem_6_6_3_7_RC : forall (M1 : Metric_Space) (K : RC) (f : Base M1 -> RCT K) (B : Ensemble (Base M1)) (x : Base M1), (f x <> RCO K) -> (ContinuousMet M1 (RC_met K) f B x) -> (ContinuousMet M1 (RC_met K) (fun (r : Base M1) => RCinv K (f r)) B x) := fun (M1 : Metric_Space) (K : RC) => match K with
+  | RK => Theorem_6_6_3_7_R M1
+  | CK => Theorem_6_6_3_7_C M1
+end.
 
 Lemma Theorem_6_6_4 : forall (M1 : Metric_Space) (f g : Base M1 -> R) (B : Ensemble (Base M1)) (x : Base M1) (fx gx : R), (ClosureMet M1 B x) -> (limit_in M1 R_met f B x fx) -> (limit_in M1 R_met g B x gx) -> (exists (eps : R), eps > 0 /\ forall (a : Base M1), In (Base M1) (Intersection (Base M1) (NeighborhoodMet M1 x eps) B) a -> f a <= g a) -> fx <= gx.
 Proof.
