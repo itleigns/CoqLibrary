@@ -11038,6 +11038,30 @@ rewrite (Mmult_opp_opp f N N N A (InvMatrix f N A)).
 apply (InvMatrixMultR f N A H1).
 Qed.
 
+Lemma Mmult_eq_reg_l : forall (f : Field) (M N : nat) (A : Matrix f M M) (B C : Matrix f M N), Mmult f M M N A B = Mmult f M M N A C -> RegularMatrix f M A -> B = C.
+Proof.
+move=> f M N A B C H1 H2.
+rewrite - (Mmult_I_l f M N B).
+rewrite - (Mmult_I_l f M N C).
+rewrite - (InvMatrixMultL f M A H2).
+rewrite (Mmult_assoc f M M M N (InvMatrix f M A) A B).
+rewrite (Mmult_assoc f M M M N (InvMatrix f M A) A C).
+rewrite H1.
+reflexivity.
+Qed.
+
+Lemma Mmult_eq_reg_r : forall (f : Field) (M N : nat) (A : Matrix f N N) (B C : Matrix f M N), Mmult f M N N B A = Mmult f M N N C A -> RegularMatrix f N A -> B = C.
+Proof.
+move=> f M N A B C H1 H2.
+rewrite - (Mmult_I_r f M N B).
+rewrite - (Mmult_I_r f M N C).
+rewrite - (InvMatrixMultR f N A H2).
+rewrite - (Mmult_assoc f M N N N B A (InvMatrix f N A)).
+rewrite - (Mmult_assoc f M N N N C A (InvMatrix f N A)).
+rewrite H1.
+reflexivity.
+Qed.
+
 Lemma MDiagReverseRelation : forall (f : Field) (N : nat) (d : Count N -> FT f), Mmult f N N N (Mmult f N N N (ReverseMatrix f N) (MDiag f N d)) (ReverseMatrix f N) = MDiag f N (fun (m : Count N) => d (CountReverse N m)).
 Proof.
 move=> f N d.
@@ -15016,6 +15040,153 @@ move=> f M N A.
 exists (RankKerSubspaceVS f M N A).
 exists (Proposition_5_9_1_1 f (FnVS f N) (FnVSFiniteDimension f N) (fun (x : Count N -> FT f) => MVmult f M N A x = FnO f M) (RankKerSubspaceVS f M N A)).
 apply (RankKerRelationVS f M N A).
+Qed.
+
+Lemma RankI : forall (f : Field) (N : nat), Rank f N N (MI f N) = N.
+Proof.
+move=> f N.
+suff: (MI f N = RankNormalForm f N N N).
+move=> H1.
+rewrite H1.
+apply (RankNormalFormRank f N N N (le_n N) (le_n N)).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MI.
+unfold RankNormalForm.
+elim (excluded_middle_informative (proj1_sig x < N)).
+move=> H1.
+reflexivity.
+move=> H1.
+elim (H1 (proj2_sig x)).
+Qed.
+
+Lemma RankInvRExistRelation : forall (f : Field) (M N : nat) (A : Matrix f M N), Rank f M N A = M <-> exists (B : Matrix f N M), Mmult f M N M A B = MI f M.
+Proof.
+suff: (forall (f : Field) (M N : nat), M <= N -> forall (A : Matrix f M N), Rank f M N A = M -> exists (B : Matrix f N M), Mmult f M N M A B = MI f M).
+move=> H1 f M N A.
+apply conj.
+move=> H2.
+suff: (M <= N).
+move=> H3.
+apply (H1 f M N H3 A H2).
+rewrite - H2.
+apply (RankLeW f M N A).
+elim.
+move=> B H2.
+apply (le_antisym (Rank f M N A) M).
+apply (RankLeH f M N A).
+rewrite - {1} (RankI f M).
+rewrite - H2.
+apply (RankMultLeR f M N M A B).
+move=> f M N H1.
+suff: (N = M + (N - M)).
+move=> H2.
+rewrite H2.
+move=> A H3.
+elim (proj1 (RankNormalFormNature f M (M + (N - M)) A M (le_n M) (le_plus_l M (N - M))) H3).
+move=> B.
+elim.
+move=> C H4.
+exists (Mmult f (M + (N - M)) (M + (N - M)) M C (MBlockH f M (N - M) M B (MO f (N - M) M))).
+apply (Mmult_eq_reg_l f M M B).
+rewrite (Mmult_I_r f M M B).
+rewrite - (Mmult_assoc f M (M + (N - M)) (M + (N - M)) M A C).
+rewrite - (Mmult_assoc f M M (M + (N - M)) M B).
+rewrite (proj2 (proj2 H4)).
+suff: (RankNormalForm f M (M + (N - M)) M = MBlockW f M M (N - M) (MI f M) (MO f M (N - M))).
+move=> H5.
+rewrite H5.
+rewrite (MBlockHWMult f M M (N - M) M).
+rewrite (Mmult_I_l f M M B).
+rewrite (Mmult_O_r f M (N - M) M (MO f M (N - M))).
+apply (Mplus_O_r f M M B).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold RankNormalForm.
+unfold MBlockW.
+simpl.
+suff: (proj1_sig (AddConnect M (N - M) (AddConnectInv M (N - M) y)) = proj1_sig y).
+move=> H5.
+rewrite - H5.
+elim (AddConnectInv M (N - M) y).
+move=> y0.
+rewrite - (proj1 (AddConnectNature M (N - M)) y0).
+elim (excluded_middle_informative (proj1_sig x < M)).
+move=> H6.
+reflexivity.
+move=> H6.
+elim (H6 (proj2_sig x)).
+move=> y0.
+rewrite - (proj2 (AddConnectNature M (N - M)) y0).
+elim (Nat.eq_dec (proj1_sig x) (M + proj1_sig y0)).
+move=> H6.
+elim (lt_irrefl (proj1_sig x)).
+apply (le_trans (S (proj1_sig x)) M (proj1_sig x)).
+apply (proj2_sig x).
+rewrite H6.
+apply (le_plus_l M (proj1_sig y0)).
+move=> H6.
+reflexivity.
+rewrite (proj2 (AddConnectInvRelation M (N - M)) y).
+reflexivity.
+apply (proj1 (ElementaryTransformableRegular f M B) (proj1 H4)).
+apply (le_plus_minus M N H1).
+Qed.
+
+Lemma RankInvLExistRelation : forall (f : Field) (M N : nat) (A : Matrix f M N), Rank f M N A = N <-> exists (B : Matrix f N M), Mmult f N M N B A = MI f N.
+Proof.
+move=> f M N A.
+apply conj.
+move=> H1.
+elim (proj1 (RankInvRExistRelation f N M (MTranspose f M N A))).
+move=> B H2.
+exists (MTranspose f M N B).
+rewrite - (MTransI f N).
+rewrite - H2.
+rewrite (MTransMult f N M N (MTranspose f M N A) B).
+rewrite (MTransTrans f M N A).
+reflexivity.
+rewrite (RankTrans f M N A).
+apply H1.
+elim.
+move=> B H1.
+apply (le_antisym (Rank f M N A) N).
+apply (RankLeW f M N A).
+rewrite - {1} (RankI f N).
+rewrite - H1.
+apply (RankMultLeL f N M N A B).
+Qed.
+
+Lemma Mmult_eq_reg_l_rank : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B C : Matrix f N K), Mmult f M N K A B = Mmult f M N K A C -> Rank f M N A = N -> B = C.
+Proof.
+move=> f M N K A B C H1 H2.
+rewrite - (Mmult_I_l f N K B).
+rewrite - (Mmult_I_l f N K C).
+elim (proj1 (RankInvLExistRelation f M N A) H2).
+move=> D H3.
+rewrite - H3.
+rewrite (Mmult_assoc f N M N K D A B).
+rewrite (Mmult_assoc f N M N K D A C).
+rewrite H1.
+reflexivity.
+Qed.
+
+Lemma Mmult_eq_reg_r_rank : forall (f : Field) (M N K : nat) (A : Matrix f N K) (B C : Matrix f M N), Mmult f M N K B A = Mmult f M N K C A -> Rank f N K A = N -> B = C.
+Proof.
+move=> f M N K A B C H1 H2.
+rewrite - (Mmult_I_r f M N B).
+rewrite - (Mmult_I_r f M N C).
+elim (proj1 (RankInvRExistRelation f N K A) H2).
+move=> D H3.
+rewrite - H3.
+rewrite - (Mmult_assoc f M N K N B A D).
+rewrite - (Mmult_assoc f M N K N C A D).
+rewrite H1.
+reflexivity.
 Qed.
 
 End Matrix.
