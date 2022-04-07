@@ -86,7 +86,7 @@ exists (Basics.compose g f).
 apply (BijChain A B C f g H3 H4).
 Qed.
 
-Lemma Example_1_1_1 : forall (A : Type) (n : nat), cardinal A (Full_set A) n -> forall (B : Type), SameCard A B <-> cardinal B (Full_set B) n.
+Lemma Example_1_1 : forall (A : Type) (n : nat), cardinal A (Full_set A) n -> forall (B : Type), SameCard A B <-> cardinal B (Full_set B) n.
 Proof.
 move=> A n H1 B.
 apply conj.
@@ -114,7 +114,7 @@ apply (proj1 H5).
 apply H4.
 Qed.
 
-Lemma Example_1_1_2_set : forall (T : Type) (A : Ensemble T) (n : nat), cardinal T A n -> forall (B : Ensemble T), Strict_Included T B A -> ~ SameCard {t : T | In T A t} {t : T | In T B t}.
+Lemma Example_1_2_set : forall (T : Type) (A : Ensemble T) (n : nat), cardinal T A n -> forall (B : Ensemble T), Strict_Included T B A -> ~ SameCard {t : T | In T A t} {t : T | In T B t}.
 Proof.
 move=> T A n H1 B H2 H3.
 apply (lt_irrefl n).
@@ -124,7 +124,7 @@ move=> t H4.
 apply (incl_card_le T (Add T B t) A (S n) n).
 apply (card_add T B n).
 apply (proj2 (CardinalSigSame T B n)).
-apply (proj1 (Example_1_1_1 {t : T | In T A t} n (proj1 (CardinalSigSame T A n) H1) {t : T | In T B t}) H3).
+apply (proj1 (Example_1_1 {t : T | In T A t} n (proj1 (CardinalSigSame T A n) H1) {t : T | In T B t}) H3).
 apply (proj1 H4).
 apply H1.
 move=> t0.
@@ -149,14 +149,14 @@ apply H6.
 apply H5.
 Qed.
 
-Lemma Example_1_1_2 : forall (T : Type) (n : nat), cardinal T (Full_set T) n -> forall (A : Ensemble T), Strict_Included T A (Full_set T) -> ~ SameCard T {t : T | In T A t}.
+Lemma Example_1_2 : forall (T : Type) (n : nat), cardinal T (Full_set T) n -> forall (A : Ensemble T), Strict_Included T A (Full_set T) -> ~ SameCard T {t : T | In T A t}.
 Proof.
 move=> T n H1 A H2 H3.
-apply (Example_1_1_2_set T (Full_set T) n H1 A H2).
+apply (Example_1_2_set T (Full_set T) n H1 A H2).
 apply (Formula_1_3 {t : T | In T (Full_set T) t} T {t : T | In T A t} (Formula_1_2 T {t : T | In T (Full_set T) t} (SameCardSig T)) H3).
 Qed.
 
-Lemma Example_1_2 : SameCard nat {n : nat | In nat even n}.
+Lemma Example_2 : SameCard nat {n : nat | In nat even n}.
 Proof.
 suff: (forall (n : nat), even (n + n)).
 move=> H1.
@@ -268,7 +268,7 @@ rewrite (plus_comm n (S n)).
 apply (even_S (S n + n) (odd_S (n + n) H1)).
 Qed.
 
-Lemma Example_1_3 : SameCard nat (nat * nat).
+Lemma Example_3 : SameCard nat (nat * nat).
 Proof.
 apply (Formula_1_2 (nat * nat) nat).
 exists (fun (m : nat * nat) => pred (2 ^ (fst m) * (2 * (snd m) + 1))).
@@ -574,7 +574,7 @@ rewrite (plus_comm n 0).
 reflexivity.
 Qed.
 
-Lemma Example_1_4_1 : forall (a b c d : R), (a < b)%R -> (c < d)%R -> SameCard {x : R | (a <= x <= b)%R} {x : R | (c <= x <= d)%R}.
+Lemma Example_4_1 : forall (a b c d : R), (a < b)%R -> (c < d)%R -> SameCard {x : R | (a <= x <= b)%R} {x : R | (c <= x <= d)%R}.
 Proof.
 move=> a b c d H1 H2.
 suff: (d - c > 0)%R.
@@ -692,7 +692,7 @@ apply (Rgt_minus b a H1).
 apply (Rgt_minus d c H2).
 Qed.
 
-Lemma Example_1_4_2 : forall (a b c d : R), (a < b)%R -> (c < d)%R -> SameCard {x : R | (a < x < b)%R} {x : R | (c < x < d)%R}.
+Lemma Example_4_2 : forall (a b c d : R), (a < b)%R -> (c < d)%R -> SameCard {x : R | (a < x < b)%R} {x : R | (c < x < d)%R}.
 Proof.
 move=> a b c d H1 H2.
 suff: (d - c > 0)%R.
@@ -794,12 +794,12 @@ apply (Rgt_minus b a H1).
 apply (Rgt_minus d c H2).
 Qed.
 
-Lemma Example_1_5 : forall (a b : R), (a < b)%R -> SameCard {x : R | (a < x < b)%R} R.
+Lemma Example_5 : forall (a b : R), (a < b)%R -> SameCard {x : R | (a < x < b)%R} R.
 Proof.
 suff: (SameCard R {x : R | (-1 < x < 1)%R}).
 move=> H1 a b H2.
 apply (Formula_1_3 {x : R | (a < x < b)%R} {x : R | (- 1 < x < 1)%R} R).
-apply (Example_1_4_2 a b (- 1) 1 H2).
+apply (Example_4_2 a b (- 1) 1 H2).
 apply (Rplus_lt_reg_l 1 (- 1) 1).
 rewrite (Rplus_opp_r 1).
 apply (Rlt_trans 0 1 (1 + 1) Rlt_0_1 (Rlt_plus_1 1)).
@@ -1058,7 +1058,7 @@ rewrite - (Rplus_opp_l 1).
 apply (Rplus_lt_compat_r 1 (- (1)) x (proj1 H1)).
 Qed.
 
-Lemma Theorem_1_2 : forall (A B : Type), (exists (f : A -> B), Injective f) -> (exists (g : B -> A), Injective g) -> SameCard A B.
+Lemma Theorem_2 : forall (A B : Type), (exists (f : A -> B), Injective f) -> (exists (g : B -> A), Injective g) -> SameCard A B.
 Proof.
 move=> A B.
 elim.
@@ -1304,21 +1304,21 @@ Require Import Coq.Logic.IndefiniteDescription.
 Require Import Topology.ShuugouIsouNyuumonn.ShuugouIsouNyuumonn1AC.
 Require Import Coq.Logic.PropExtensionality.
 
-Lemma Theorem_1_2_dash : forall (A B : Type), (exists (f : A -> B), Injective f) ->
+Lemma Theorem_2_dash : forall (A B : Type), (exists (f : A -> B), Injective f) ->
        (exists (g : A -> B), Surjective g) -> SameCard A B.
 Proof.
 move=> A B H1 H2.
-apply (Theorem_1_2 A B H1 (Theorem_7_corollary_2 A B H2)).
+apply (Theorem_2 A B H1 (Theorem_7_corollary_2 A B H2)).
 Qed.
 
-Lemma Theorem_1_2_dash_dash : forall (A B : Type), (exists (f : A -> B), Surjective f) ->
+Lemma Theorem_2_dash_dash : forall (A B : Type), (exists (f : A -> B), Surjective f) ->
        (exists (g : B -> A), Surjective g) -> SameCard A B.
 Proof.
 move=> A B H1 H2.
-apply (Theorem_1_2 A B (Theorem_7_corollary_2 B A H2) (Theorem_7_corollary_2 A B H1)).
+apply (Theorem_2 A B (Theorem_7_corollary_2 B A H2) (Theorem_7_corollary_2 A B H1)).
 Qed.
 
-Lemma Theorem_1_2_dash_dash_dash : forall (A B : Type), (exists (B1 : Ensemble B) (f : A -> {b : B | In B B1 b}), Bijective f) ->
+Lemma Theorem_2_dash_dash_dash : forall (A B : Type), (exists (B1 : Ensemble B) (f : A -> {b : B | In B B1 b}), Bijective f) ->
        (exists (A1 : Ensemble A) (g : B -> {a : A | In A A1 a}), Bijective g) -> SameCard A B.
 Proof.
 move=> A B.
@@ -1330,7 +1330,7 @@ elim.
 move=> A1.
 elim.
 move=> g H2.
-apply (Theorem_1_2 A B).
+apply (Theorem_2 A B).
 exists (fun (a : A) => proj1_sig (f a)).
 move=> a1 a2 H3.
 apply (BijInj A {b : B | In B B1 b} f H1 a1 a2).
@@ -1346,7 +1346,7 @@ Qed.
 Lemma Formula_65 : forall (a b : R), (a < b)%R -> SameCard {x : R | (a <= x <= b)%R} R.
 Proof.
 move=> a b H1.
-apply (Theorem_1_2_dash_dash_dash {x : R | (a <= x <= b)%R} R).
+apply (Theorem_2_dash_dash_dash {x : R | (a <= x <= b)%R} R).
 exists (fun (r : R) => a <= r <= b)%R.
 exists (fun (r : {x : R | (a <= x <= b)%R}) => r).
 exists (fun (r : {x : R | (a <= x <= b)%R}) => r).
@@ -1356,7 +1356,7 @@ reflexivity.
 move=> y.
 reflexivity.
 exists (fun (r : {x : R | (a <= x <= b)%R}) => (a < proj1_sig r < b)%R).
-elim (Example_1_5 a b H1).
+elim (Example_5 a b H1).
 move=> f.
 elim.
 move=> g H2.
@@ -1564,7 +1564,7 @@ move=> H3 H4.
 rewrite (proj2 H1).
 rewrite (proj2 H2).
 apply (proj1 (Formula_66 t1 t2)).
-apply (Theorem_1_2 t1 t2 H3 H4).
+apply (Theorem_2 t1 t2 H3 H4).
 elim (proj2_sig C2).
 move=> x H2.
 exists x.
@@ -1814,7 +1814,7 @@ elim.
 move=> f1 H1.
 elim.
 move=> f2 H2.
-elim (Formula_1_2 nat (nat * nat) Example_1_3).
+elim (Formula_1_2 nat (nat * nat) Example_3).
 move=> g H3.
 exists (fun (x : A * B) => g (f1 (fst x), f2 (snd x))).
 move=> x1 x2 H4.
@@ -1838,7 +1838,7 @@ Qed.
 Lemma Theorem_5_1_2 : forall (A B : Type), cardLe A nat -> cardLe B nat -> Full_set A <> Empty_set A -> Full_set B <> Empty_set B -> (SameCard A nat \/ SameCard B nat) -> SameCard (A * B) nat.
 Proof.
 move=> A B H1 H2 H3 H4 H5.
-apply (Theorem_1_2 (A * B) nat).
+apply (Theorem_2 (A * B) nat).
 apply (Theorem_5_1_1 A B H1 H2).
 elim H5.
 move=> H6.
@@ -1902,7 +1902,7 @@ elim.
 move=> f H1 H2.
 suff: (forall (t : T), {fi : Ti t -> nat | Injective fi}).
 move=> H3.
-elim (Formula_1_2 nat (nat * nat) Example_1_3).
+elim (Formula_1_2 nat (nat * nat) Example_3).
 move=> g H4.
 exists (fun (x : sumT T Ti) => match x with
   | inT t tf => g (f t, proj1_sig (H3 t) tf)
@@ -1940,7 +1940,7 @@ Qed.
 Lemma Theorem_5_2_2 : forall (T : Type) (Ti : T -> Type), cardLe T nat -> (forall (t : T), cardLe (Ti t) nat) -> (exists (t : T), SameCard (Ti t) nat) -> SameCard (sumT T Ti) nat.
 Proof.
 move=> T Ti H1 H2 H3.
-apply (Theorem_1_2 (sumT T Ti) nat).
+apply (Theorem_2 (sumT T Ti) nat).
 apply (Theorem_5_2_1 T Ti H1 H2).
 elim H3.
 move=> t H4.
@@ -1975,8 +1975,8 @@ Qed.
 
 Lemma Theorem_5_corollary_1 : SameCard Z nat.
 Proof.
-apply (Theorem_1_2 Z nat).
-elim (Formula_1_2 nat (nat * nat) Example_1_3).
+apply (Theorem_2 Z nat).
+elim (Formula_1_2 nat (nat * nat) Example_3).
 move=> f H1.
 exists (fun (m : Z) => f (match m with
   | Z0 => (O, O)
@@ -2070,8 +2070,8 @@ Qed.
 
 Lemma Theorem_5_corollary_2_sub : SameCard QArith_base.Q nat.
 Proof.
-apply (Theorem_1_2 QArith_base.Q nat).
-elim (Formula_1_2 nat (nat * nat) Example_1_3).
+apply (Theorem_2 QArith_base.Q nat).
+elim (Formula_1_2 nat (nat * nat) Example_3).
 move=> f H1.
 elim Theorem_5_corollary_1.
 move=> g H2.
@@ -2150,7 +2150,7 @@ Definition MyQ := EquivalenceRelationQuotient QArith_base.Q QEquivalence.
 
 Lemma Theorem_5_corollary_2 : SameCard MyQ nat.
 Proof.
-apply (Theorem_1_2 MyQ nat).
+apply (Theorem_2 MyQ nat).
 elim Theorem_5_corollary_2_sub.
 move=> f H1.
 suff: (forall (q : MyQ), {q0 : QArith_base.Q | In QArith_base.Q (proj1_sig q) q0 /\ forall (q1 : QArith_base.Q), (In QArith_base.Q (proj1_sig q) q1 -> (QArith_base.Qden q0 <= QArith_base.Qden q1)%positive)}).
@@ -2428,8 +2428,8 @@ apply H5.
 left.
 apply H6.
 apply (Formula_1_3 {t : T | In T A t \/ In T B t} nat {t : T | ~ In T A t /\ In T B t}).
-apply (Theorem_1_2 {t : T | In T A t \/ In T B t} nat).
-elim (Formula_1_2 nat (nat * nat) Example_1_3).
+apply (Theorem_2 {t : T | In T A t \/ In T B t} nat).
+elim (Formula_1_2 nat (nat * nat) Example_3).
 move=> f H4.
 elim H2.
 move=> g H5.
@@ -4430,11 +4430,11 @@ rewrite - Rmult_assoc.
 rewrite (Rinv_r 2 Two_Neq_Zero).
 rewrite (Rmult_1_l (/ 2 ^ S n)).
 reflexivity.
-apply (Theorem_1_2 {r : R | (0 <= r < 1)%R} R).
+apply (Theorem_2 {r : R | (0 <= r < 1)%R} R).
 exists (fun (x : {r : R | (0 <= r < 1)%R}) => proj1_sig x).
 move=> r1 r2.
 apply sig_map.
-elim (Formula_1_2 {r : R | (0 < r < 1)%R} R (Example_1_5 0 1 Rlt_0_1)).
+elim (Formula_1_2 {r : R | (0 < r < 1)%R} R (Example_5 0 1 Rlt_0_1)).
 move=> f H1.
 suff: (forall (r : R), 0 <= proj1_sig (f r) < 1)%R.
 move=> H2.
@@ -5792,8 +5792,8 @@ move=> H2.
 reflexivity.
 move=> H2.
 reflexivity.
-apply Example_1_2.
-apply (Formula_1_3 nat {n : nat | In nat even n} {n : nat | In nat odd n} Example_1_2 H1).
+apply Example_2.
+apply (Formula_1_3 nat {n : nat | In nat even n} {n : nat | In nat odd n} Example_2 H1).
 exists (fun (m : {n : nat | In nat even n}) => exist odd (S (proj1_sig m)) (odd_S (proj1_sig m) (proj2_sig m))).
 apply InjSurjBij.
 move=> m1 m2 H1.
@@ -5898,11 +5898,11 @@ apply (H1 0 2 (Rlt_trans 0 1 2 Rlt_0_1 (Rlt_plus_1 1)))%R.
 apply (Formula_1_2 {r : R | (0 <= r < 1)%R} R (H1 0 1 Rlt_0_1))%R.
 apply (Formula_1_2 {r : R | (1 <= r < 2)%R} R (H1 1 2 (Rlt_plus_1 1)))%R.
 move=> r1 r2 H1.
-apply (Theorem_1_2 {r : R | (r1 <= r < r2)%R} R).
+apply (Theorem_2 {r : R | (r1 <= r < r2)%R} R).
 exists (fun (x : {r : R | (r1 <= r < r2)%R}) => proj1_sig x).
 move=> x1 x2.
 apply sig_map.
-elim (Example_1_5 r1 r2 H1).
+elim (Example_5 r1 r2 H1).
 move=> f.
 elim.
 move=> g H2.
@@ -5956,7 +5956,7 @@ Qed.
 Lemma Formula_3_18_2 : CardMult (Card nat) (Card nat) = Card nat.
 Proof.
 rewrite - (CardMultNature nat nat (Card nat) (Card nat)).
-apply (proj1 (Formula_66 (nat * nat) nat) (Formula_1_2 nat (nat * nat) Example_1_3)).
+apply (proj1 (Formula_66 (nat * nat) nat) (Formula_1_2 nat (nat * nat) Example_3)).
 apply (Formula_1_1 nat).
 apply (Formula_1_1 nat).
 Qed.
