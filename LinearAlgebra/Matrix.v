@@ -2130,12 +2130,7 @@ rewrite MySumF2O.
 rewrite CM_O_r.
 unfold ReverseMatrix.
 unfold MI.
-<<<<<<< HEAD
-elim (Nat.eq_dec (proj1_sig (CountReverse N y))
-      (proj1_sig (CountReverse N y))).
-=======
 elim (Nat.eq_dec (proj1_sig (CountReverse N y)) (proj1_sig (CountReverse N y))).
->>>>>>> b1ab5917a7c9a8d2f3e26c99a1e2c161bf9900d8
 move=> H1.
 apply (Fmul_I_r f).
 elim.
@@ -10588,12 +10583,7 @@ rewrite H2.
 unfold MI.
 elim (Nat.eq_dec (proj1_sig y) (proj1_sig y)).
 move=> H3.
-<<<<<<< HEAD
-elim (Nat.eq_dec (proj1_sig (CountReverse N y))
-         (proj1_sig (CountReverse N y))).
-=======
 elim (Nat.eq_dec (proj1_sig (CountReverse N y)) (proj1_sig (CountReverse N y))).
->>>>>>> b1ab5917a7c9a8d2f3e26c99a1e2c161bf9900d8
 move=> H4.
 rewrite (Fmul_I_l f (FI f)).
 apply (CM_O_r (FPCM f) (FI f)).
@@ -10668,12 +10658,7 @@ move=> x.
 apply functional_extensionality.
 move=> y.
 unfold MDiag.
-<<<<<<< HEAD
-elim (Nat.eq_dec (proj1_sig (CountReverse N x))
-    (proj1_sig (CountReverse N y))).
-=======
 elim (Nat.eq_dec (proj1_sig (CountReverse N x)) (proj1_sig (CountReverse N y))).
->>>>>>> b1ab5917a7c9a8d2f3e26c99a1e2c161bf9900d8
 move=> H1.
 elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
 move=> H2.
