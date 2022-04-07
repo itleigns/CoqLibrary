@@ -6,6 +6,7 @@ From mathcomp Require Import ssreflect.
 Require Import Coq.Logic.Classical_Prop.
 Require Import Coq.Logic.ClassicalDescription.
 Require Import Coq.Logic.FunctionalExtensionality.
+Require Import Coq.Logic.PropExtensionality.
 Require Import Coq.Logic.ProofIrrelevance.
 Require Import Coq.Sets.Ensembles.
 Require Import Coq.Sets.Finite_sets.
@@ -1787,7 +1788,7 @@ exists f.
 apply H2.
 Qed.
 
-Record EquivalenceRelation (T : Type) : Type := mkEquivalenceRelation
+Polymorphic Record EquivalenceRelation (T : Type) : Type := mkEquivalenceRelation
 {
 ER : T -> T -> Prop;
 ERref : forall (t : T), ER t t;
@@ -1795,15 +1796,15 @@ ERsym : forall (t1 t2 : T), ER t1 t2 -> ER t2 t1;
 ERtrans : forall (t1 t2 t3 : T), ER t1 t2 -> ER t2 t3 -> ER t1 t3
 }.
 
-Definition FunctionER (A B : Type) (f : A -> B) (a1 a2 : A) := f a1 = f a2.
+Polymorphic Definition FunctionER (A B : Type) (f : A -> B) (a1 a2 : A) := f a1 = f a2.
 
-Lemma FunctionERref : forall (A B : Type) (f : A -> B) (a : A), FunctionER A B f a a.
+Polymorphic Lemma FunctionERref : forall (A B : Type) (f : A -> B) (a : A), FunctionER A B f a a.
 Proof.
 move=> A B f a.
 reflexivity.
 Qed.
 
-Lemma FunctionERsym : forall (A B : Type) (f : A -> B) (a1 a2 : A), FunctionER A B f a1 a2 -> FunctionER A B f a2 a1.
+Polymorphic Lemma FunctionERsym : forall (A B : Type) (f : A -> B) (a1 a2 : A), FunctionER A B f a1 a2 -> FunctionER A B f a2 a1.
 Proof.
 move=> A B f a1 a2 H1.
 unfold FunctionER.
@@ -1811,7 +1812,7 @@ rewrite H1.
 reflexivity.
 Qed.
 
-Lemma FunctionERtrans : forall (A B : Type) (f : A -> B) (a1 a2 a3 : A), FunctionER A B f a1 a2 -> FunctionER A B f a2 a3 -> FunctionER A B f a1 a3.
+Polymorphic Lemma FunctionERtrans : forall (A B : Type) (f : A -> B) (a1 a2 a3 : A), FunctionER A B f a1 a2 -> FunctionER A B f a2 a3 -> FunctionER A B f a1 a3.
 Proof.
 move=> A B f a1 a2 a3 H1 H2.
 unfold FunctionER.
@@ -1820,29 +1821,29 @@ rewrite H2.
 reflexivity.
 Qed.
 
-Definition FunctionEquivalenceRelation (A B : Type) (f : A -> B) := mkEquivalenceRelation A (FunctionER A B f) (FunctionERref A B f) (FunctionERsym A B f) (FunctionERtrans A B f).
+Polymorphic Definition FunctionEquivalenceRelation (A B : Type) (f : A -> B) := mkEquivalenceRelation A (FunctionER A B f) (FunctionERref A B f) (FunctionERsym A B f) (FunctionERtrans A B f).
 
-Definition DirectSumDivision (T : Type) (X : Ensemble (Ensemble T)) := (forall (t : T), exists (x : Ensemble T), (In (Ensemble T) X x) /\ (In T x t)) /\ forall (x1 x2 : Ensemble T), In (Ensemble T) X x1 -> In (Ensemble T) X x2 -> x1 <> x2 -> Intersection T x1 x2 = Empty_set T.
+Polymorphic Definition DirectSumDivision (T : Type) (X : (T -> Prop) -> Prop) := (forall (t : T), exists (x : T -> Prop), (X x) /\ (x t)) /\ forall (x1 x2 : T -> Prop), X x1 -> X x2 -> x1 <> x2 -> forall (t : T), ~ (x1 t /\ x2 t).
 
-Lemma DirectSumDivisionGet : forall (T : Type) (X : Ensemble (Ensemble T)), DirectSumDivision T X -> forall (t : T), {x : Ensemble T | (In (Ensemble T) X x) /\ (In T x t)}.
+Polymorphic Lemma DirectSumDivisionGet : forall (T : Type) (X : (T -> Prop) -> Prop), DirectSumDivision T X -> forall (t : T), {x : T -> Prop | (X x) /\ (x t)}.
 Proof.
 move=> T X H1 t.
 apply constructive_definite_description.
-apply (unique_existence (fun (x : Ensemble T) => In (Ensemble T) X x /\ In T x t)).
+apply (unique_existence (fun (x : T -> Prop) => X x /\ x t)).
 apply conj.
 apply (proj1 H1 t).
 move=> x1 x2 H2 H3.
 apply NNPP.
 move=> H4.
-suff: (In T (Intersection T x1 x2) t).
-rewrite (proj2 H1 x1 x2 (proj1 H2) (proj1 H3) H4).
-elim.
-apply (Intersection_intro T x1 x2 t (proj2 H2) (proj2 H3)).
+apply (proj2 H1 x1 x2 (proj1 H2) (proj1 H3) H4 t).
+apply conj.
+apply (proj2  H2).
+apply (proj2  H3).
 Qed.
 
-Definition DirectSumDivisionER (T : Type) (X : Ensemble (Ensemble T)) (t1 t2 : T) := exists (x : Ensemble T), In (Ensemble T) X x /\ In T x t1 /\ In T x t2.
+Polymorphic Definition DirectSumDivisionER (T : Type) (X : (T -> Prop) -> Prop) (t1 t2 : T) := exists (x : T -> Prop), X x /\ x t1 /\ x t2.
 
-Lemma DirectSumDivisionERref : forall (T : Type) (X : Ensemble (Ensemble T)), DirectSumDivision T X -> forall (t : T), DirectSumDivisionER T X t t.
+Polymorphic Lemma DirectSumDivisionERref : forall (T : Type) (X : (T -> Prop) -> Prop), DirectSumDivision T X -> forall (t : T), DirectSumDivisionER T X t t.
 Proof.
 move=> T X H1 t.
 elim (proj1 H1 t).
@@ -1855,7 +1856,7 @@ apply (proj2 H2).
 apply (proj2 H2).
 Qed.
 
-Lemma DirectSumDivisionERsym : forall (T : Type) (X : Ensemble (Ensemble T)), DirectSumDivision T X -> forall (t1 t2 : T), DirectSumDivisionER T X t1 t2 -> DirectSumDivisionER T X t2 t1.
+Polymorphic Lemma DirectSumDivisionERsym : forall (T : Type) (X : (T -> Prop) -> Prop), DirectSumDivision T X -> forall (t1 t2 : T), DirectSumDivisionER T X t1 t2 -> DirectSumDivisionER T X t2 t1.
 Proof.
 move=> T X H1 t1 t2 H2.
 elim H2.
@@ -1868,7 +1869,7 @@ apply (proj2 (proj2 H3)).
 apply (proj1 (proj2 H3)).
 Qed.
 
-Lemma DirectSumDivisionERtrans : forall (T : Type) (X : Ensemble (Ensemble T)), DirectSumDivision T X -> forall (t1 t2 t3 : T), DirectSumDivisionER T X t1 t2 -> DirectSumDivisionER T X t2 t3 -> DirectSumDivisionER T X t1 t3.
+Polymorphic Lemma DirectSumDivisionERtrans : forall (T : Type) (X : (T -> Prop) -> Prop), DirectSumDivision T X -> forall (t1 t2 t3 : T), DirectSumDivisionER T X t1 t2 -> DirectSumDivisionER T X t2 t3 -> DirectSumDivisionER T X t1 t3.
 Proof.
 move=> T X H1 t1 t2 t3 H2 H3.
 elim H2.
@@ -1886,88 +1887,81 @@ rewrite H6.
 apply (proj2 (proj2 H5)).
 apply NNPP.
 move=> H6.
-suff: (In T (Intersection T x y) t2).
-rewrite (proj2 H1 x y (proj1 H4) (proj1 H5) H6).
-elim.
-apply (Intersection_intro T x y t2 (proj2 (proj2 H4)) (proj1 (proj2 H5))).
+apply (proj2 H1 x y (proj1 H4) (proj1 H5) H6 t2).
+apply conj.
+apply (proj2 (proj2 H4)).
+apply (proj1 (proj2 H5)).
 Qed.
 
-Definition DirectSumDivisionEquivalenceRelation (T : Type) (X : Ensemble (Ensemble T)) (H : DirectSumDivision T X) := mkEquivalenceRelation T (DirectSumDivisionER T X) (DirectSumDivisionERref T X H) (DirectSumDivisionERsym T X H) (DirectSumDivisionERtrans T X H).
+Polymorphic Definition DirectSumDivisionEquivalenceRelation (T : Type) (X : (T -> Prop) -> Prop) (H : DirectSumDivision T X) := mkEquivalenceRelation T (DirectSumDivisionER T X) (DirectSumDivisionERref T X H) (DirectSumDivisionERsym T X H) (DirectSumDivisionERtrans T X H).
 
-Definition EquivalenceRelationClass (T : Type) (R : EquivalenceRelation T) (t : T) := fun (t0 : T) => ER T R t t0.
+Polymorphic Definition EquivalenceRelationClass (T : Type) (R : EquivalenceRelation T) (t : T) := fun (t0 : T) => ER T R t t0.
 
-Definition EquivalenceRelationQuotient (T : Type) (R : EquivalenceRelation T) := {X : Ensemble T | Im T (Ensemble T) (Full_set T) (EquivalenceRelationClass T R) X}.
+Polymorphic Definition EquivalenceRelationQuotient (T : Type) (R : EquivalenceRelation T) := {X : T -> Prop | exists (t : T), X = EquivalenceRelationClass T R t}.
 
-Lemma EquivalenceRelationQuotientSub : forall (T : Type) (R : EquivalenceRelation T) (t : T), In (Ensemble T) (Im T (Ensemble T) (Full_set T) (EquivalenceRelationClass T R)) (EquivalenceRelationClass T R t).
-Proof.
-move=> T R t.
-apply (Im_intro T (Ensemble T) (Full_set T) (EquivalenceRelationClass T R) t (Full_intro T t)).
-reflexivity.
-Qed.
+Polymorphic Definition EquivalenceRelationQuotientFunction (T : Type) (R : EquivalenceRelation T) (t : T) : EquivalenceRelationQuotient T R := exist (fun (X : T -> Prop) => exists (t : T), X = EquivalenceRelationClass T R t) (EquivalenceRelationClass T R t) (ex_intro (fun (t0 : T) => EquivalenceRelationClass T R t = EquivalenceRelationClass T R t0) t eq_refl).
 
-Definition EquivalenceRelationQuotientFunction (T : Type) (R : EquivalenceRelation T) (t : T) := exist (Im T (Ensemble T) (Full_set T) (EquivalenceRelationClass T R)) (EquivalenceRelationClass T R t) (EquivalenceRelationQuotientSub T R t).
-
-Lemma Formula_6_1 : forall (T : Type) (R : EquivalenceRelation T) (t : T), In T (EquivalenceRelationClass T R t) t.
+Polymorphic Lemma Formula_6_1 : forall (T : Type) (R : EquivalenceRelation T) (t : T), EquivalenceRelationClass T R t t.
 Proof.
 move=> T R t.
 apply (ERref T R t).
 Qed.
 
-Lemma Formula_6_2 : forall (T : Type) (R : EquivalenceRelation T) (t1 t2 : T), ER T R t1 t2 <-> EquivalenceRelationClass T R t1 = EquivalenceRelationClass T R t2.
+Polymorphic Lemma Formula_6_2 : forall (T : Type) (R : EquivalenceRelation T) (t1 t2 : T), ER T R t1 t2 <-> EquivalenceRelationClass T R t1 = EquivalenceRelationClass T R t2.
 Proof.
 move=> T R t1 t2.
 apply conj.
 move=> H1.
-apply Extensionality_Ensembles.
+apply functional_extensionality.
+move=> t.
+apply propositional_extensionality.
 apply conj.
-move=> t H2.
+move=> H2.
 apply (ERtrans T R t2 t1 t (ERsym T R t1 t2 H1) H2).
-move=> t H2.
+move=> H2.
 apply (ERtrans T R t1 t2 t H1 H2).
 move=> H1.
-suff: (In T (EquivalenceRelationClass T R t1) t2).
+suff: (EquivalenceRelationClass T R t1 t2).
 apply.
 rewrite H1.
 apply (ERref T R t2).
 Qed.
 
-Lemma Formula_6_3 : forall (T : Type) (R : EquivalenceRelation T) (t1 t2 : T), EquivalenceRelationClass T R t1 <> EquivalenceRelationClass T R t2 -> Intersection T (EquivalenceRelationClass T R t1) (EquivalenceRelationClass T R t2) = Empty_set T.
+Polymorphic Lemma Formula_6_3 : forall (T : Type) (R : EquivalenceRelation T) (t1 t2 : T), EquivalenceRelationClass T R t1 <> EquivalenceRelationClass T R t2 -> forall (t : T), ~ (EquivalenceRelationClass T R t1 t /\ EquivalenceRelationClass T R t2 t).
 Proof.
-move=> T R t1 t2 H1.
-apply Extensionality_Ensembles.
-apply conj.
-move=> t.
-elim.
-move=> t0 H2 H3.
-apply False_ind.
+move=> T R t1 t2 H1 t H2.
 apply H1.
-apply (Formula_6_2 T R t1 t2).
-apply (ERtrans T R t1 t0 t2 H2 (ERsym T R t2 t0 H3)).
-move=> t.
-elim.
+apply functional_extensionality.
+move=> x.
+apply propositional_extensionality.
+apply conj.
+move=> H3.
+apply (ERtrans T R t2 t1 x (ERtrans T R t2 t t1 (proj2 H2) (ERsym T R t1 t (proj1 H2))) H3).
+move=> H3.
+apply (ERtrans T R t1 t2 x (ERtrans T R t1 t t2 (proj1 H2) (ERsym T R t2 t (proj2 H2))) H3).
 Qed.
 
-Lemma EquivalenceRelationClassDirectSumDivision : forall (T : Type) (R : EquivalenceRelation T), DirectSumDivision T (Im T (Ensemble T) (Full_set T) (EquivalenceRelationClass T R)).
+Polymorphic Lemma EquivalenceRelationClassDirectSumDivision : forall (T : Type) (R : EquivalenceRelation T), DirectSumDivision T (fun (X : T -> Prop) => exists (t : T), X = EquivalenceRelationClass T R t).
 Proof.
 move=> T R.
 apply conj.
 move=> t.
 exists (EquivalenceRelationClass T R t).
 apply conj.
-apply (Im_intro T (Ensemble T) (Full_set T) (EquivalenceRelationClass T R) t (Full_intro T t)).
+exists t.
 reflexivity.
 apply (Formula_6_1 T R t).
 move=> x1 x2.
 elim.
-move=> t1 H1 y1 H2.
+move=> t1 H1.
 elim.
-move=> t2 H3 y2 H4.
+move=> t2 H2.
+rewrite H1.
 rewrite H2.
-rewrite H4.
 apply (Formula_6_3 T R t1 t2).
 Qed.
 
-Lemma Theorem_8 : forall (T : Type) (R : EquivalenceRelation T), DirectSumDivisionEquivalenceRelation T (Im T (Ensemble T) (Full_set T) (EquivalenceRelationClass T R)) (EquivalenceRelationClassDirectSumDivision T R) = R.
+Polymorphic Lemma Theorem_8 : forall (T : Type) (R : EquivalenceRelation T), DirectSumDivisionEquivalenceRelation T (fun (X : T -> Prop) => exists (t : T), X = EquivalenceRelationClass T R t) (EquivalenceRelationClassDirectSumDivision T R) = R.
 Proof.
 move=> T R.
 suff: (forall (R1 R2 : EquivalenceRelation T), ER T R1 = ER T R2 -> R1 = R2).
@@ -1975,22 +1969,27 @@ move=> H1.
 apply H1.
 apply functional_extensionality.
 move=> t1.
-apply Extensionality_Ensembles.
-apply conj.
+apply functional_extensionality.
 move=> t2.
+apply propositional_extensionality.
+apply conj.
 elim.
 move=> X H2.
-suff: (In T X t1 /\ In T X t2).
 elim (proj1 H2).
-move=> t H3 y H4.
-rewrite H4.
+move=> t H3.
+suff: (X t1).
+rewrite H3.
+move=> H4.
+suff: (X t2).
+rewrite H3.
 move=> H5.
-apply (ERtrans T R t1 t t2 (ERsym T R t t1 (proj1 H5)) (proj2 H5)).
-apply (proj2 H2).
-move=> t H2.
+apply (ERtrans T R t1 t t2 (ERsym T R t t1 H4) H5).
+apply (proj2 (proj2 H2)).
+apply (proj1 (proj2 H2)).
+move=> H2.
 exists (EquivalenceRelationClass T R t1).
 apply conj.
-apply (Im_intro T (Ensemble T) (Full_set T) (EquivalenceRelationClass T R) t1 (Full_intro T t1)).
+exists t1.
 reflexivity.
 apply conj.
 apply (Formula_6_1 T R t1).
@@ -2020,60 +2019,60 @@ apply proof_irrelevance.
 apply proof_irrelevance.
 Qed.
 
-Lemma Theorem_8_inv : forall (T : Type) (A : Ensemble (Ensemble T)) (H : DirectSumDivision T A), (forall (X : Ensemble T), In (Ensemble T) A X -> Inhabited T X) -> (Im T (Ensemble T) (Full_set T) (EquivalenceRelationClass T (DirectSumDivisionEquivalenceRelation T A H))) = A.
+Polymorphic Lemma Theorem_8_inv : forall (T : Type) (A : (T -> Prop) -> Prop) (H : DirectSumDivision T A), (forall (X : T -> Prop), A X -> exists (t : T), X t) -> (fun (X : T -> Prop) => exists (t : T), X = EquivalenceRelationClass T (DirectSumDivisionEquivalenceRelation T A H) t) = A.
 Proof.
 move=> T A H1 H2.
-apply Extensionality_Ensembles.
+apply functional_extensionality.
+move=> X.
+apply propositional_extensionality.
 apply conj.
-move=> X H3.
-elim H3.
-move=> t H4 Y H5.
-rewrite H5.
+elim.
+move=> t H3.
+rewrite H3.
 elim (proj1 H1 t).
-move=> Y2 H6.
-suff: (EquivalenceRelationClass T (DirectSumDivisionEquivalenceRelation T A H1) t = Y2).
-move=> H7.
-rewrite H7.
-apply (proj1 H6).
-apply Extensionality_Ensembles.
+move=> Y H4.
+suff: (EquivalenceRelationClass T (DirectSumDivisionEquivalenceRelation T A H1) t = Y).
+move=> H5.
+rewrite H5.
+apply (proj1 H4).
+apply functional_extensionality.
+move=> t1.
+apply propositional_extensionality.
 apply conj.
-move=> x.
 elim.
-move=> Y3 H7.
-suff: (Y2 = Y3).
-move=> H8.
-rewrite H8.
-apply (proj2 (proj2 H7)).
+move=> Z H5.
+suff: (Y = Z).
+move=> H6.
+rewrite H6.
+apply (proj2 (proj2 H5)).
 apply NNPP.
-move=> H8.
-suff: (Intersection T Y2 Y3 = Empty_set T).
-move=> H9.
-suff: (In T (Intersection T Y2 Y3) t).
-rewrite H9.
-elim.
-apply (Intersection_intro T Y2 Y3 t (proj2 H6) (proj1 (proj2 H7))).
-apply (proj2 H1 Y2 Y3 (proj1 H6) (proj1 H7) H8).
-move=> x H7.
-exists Y2.
+move=> H6.
+apply (proj2 H1 Y Z (proj1 H4) (proj1 H5) H6 t).
 apply conj.
-apply (proj1 H6).
+apply (proj2 H4).
+apply (proj1 (proj2 H5)).
+move=> H5.
+exists Y.
 apply conj.
-apply (proj2 H6).
-apply H7.
-move=> X H3.
+apply (proj1 H4).
+apply conj.
+apply (proj2 H4).
+apply H5.
+move=> H3.
 elim (H2 X H3).
-move=> x H4.
-apply (Im_intro T (Ensemble T) (Full_set T) (EquivalenceRelationClass T (DirectSumDivisionEquivalenceRelation T A H1)) x (Full_intro T x)).
-apply Extensionality_Ensembles.
+move=> t H4.
+exists t.
+apply functional_extensionality.
+move=> t0.
+apply propositional_extensionality.
 apply conj.
-move=> y H5.
+move=> H5.
 exists X.
 apply conj.
 apply H3.
 apply conj.
 apply H4.
 apply H5.
-move=> t.
 elim.
 move=> Y H5.
 suff: (X = Y).
@@ -2082,21 +2081,18 @@ rewrite H6.
 apply (proj2 (proj2 H5)).
 apply NNPP.
 move=> H6.
-suff: (Intersection T X Y = Empty_set T).
-move=> H7.
-suff: (In T (Intersection T X Y) x).
-rewrite H7.
-elim.
-apply (Intersection_intro T X Y x H4 (proj1 (proj2 H5))).
-apply (proj2 H1 X Y H3 (proj1 H5) H6).
+apply (proj2 H1 X Y H3 (proj1 H5) H6 t).
+apply conj.
+apply H4.
+apply (proj1 (proj2 H5)).
 Qed.
 
-Lemma Formula_59_1_1 : forall (A B : Type) (f : A -> B) (a1 a2 : A), EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f) a1 = EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f) a2 <-> ER A (FunctionEquivalenceRelation A B f) a1 a2.
+Polymorphic Lemma Formula_59_1_1 : forall (A B : Type) (f : A -> B) (a1 a2 : A), EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f) a1 = EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f) a2 <-> ER A (FunctionEquivalenceRelation A B f) a1 a2.
 Proof.
 move=> A B f a1 a2.
 apply conj.
 move=> H1.
-suff: (In A (proj1_sig (EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f) a1)) a2).
+suff: (proj1_sig (EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f) a1) a2).
 apply.
 rewrite H1.
 apply (Formula_6_1 A (FunctionEquivalenceRelation A B f) a2).
@@ -2105,7 +2101,7 @@ apply sig_map.
 apply (proj1 (Formula_6_2 A (FunctionEquivalenceRelation A B f) a1 a2) H1).
 Qed.
 
-Lemma Formula_59_1_2 : forall (A B : Type) (f : A -> B) (a1 a2 : A), ER A (FunctionEquivalenceRelation A B f) a1 a2 <-> f a1 = f a2.
+Polymorphic Lemma Formula_59_1_2 : forall (A B : Type) (f : A -> B) (a1 a2 : A), ER A (FunctionEquivalenceRelation A B f) a1 a2 <-> f a1 = f a2.
 Proof.
 move=> A B f a1 a2.
 apply conj.
@@ -2113,38 +2109,38 @@ apply.
 apply.
 Qed.
 
-Lemma Formula_59_2 : forall (A B : Type) (f : A -> B), {g : EquivalenceRelationQuotient A (FunctionEquivalenceRelation A B f) -> {b : B | Im A B (Full_set A) f b} | Bijective g /\ compose (compose (fun (x : {b : B | Im A B (Full_set A) f b}) => proj1_sig x) g) (EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f)) = f}.
+Polymorphic Lemma Formula_59_2 : forall (A B : Type) (f : A -> B), {g : EquivalenceRelationQuotient A (FunctionEquivalenceRelation A B f) -> {b : B | exists (a : A), b = f a} | Bijective g /\ compose (compose (fun (x : {b : B | exists (a : A), b = f a}) => proj1_sig x) g) (EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f)) = f}.
 Proof.
 move=> A B f.
-suff: (forall (X : EquivalenceRelationQuotient A (FunctionEquivalenceRelation A B f)), {b : B | forall (a : A), In A (proj1_sig X) a -> f a = b}).
+suff: (forall (X : EquivalenceRelationQuotient A (FunctionEquivalenceRelation A B f)), {b : B | forall (a : A), proj1_sig X a -> b = f a}).
 move=> H1.
-suff: (forall (X : EquivalenceRelationQuotient A (FunctionEquivalenceRelation A B f)), In B (Im A B (Full_set A) f) (proj1_sig (H1 X))).
+suff: (forall (X : EquivalenceRelationQuotient A (FunctionEquivalenceRelation A B f)), exists (a : A), proj1_sig (H1 X) = f a).
 move=> H2.
-exists (fun (X : EquivalenceRelationQuotient A (FunctionEquivalenceRelation A B f)) => exist (Im A B (Full_set A) f) (proj1_sig (H1 X)) (H2 X)).
+exists (fun (X : EquivalenceRelationQuotient A (FunctionEquivalenceRelation A B f)) => exist (fun (b : B) => exists (a : A), b = f a) (proj1_sig (H1 X)) (H2 X)).
 apply conj.
 apply InjSurjBij.
 move=> X1 X2 H3.
 apply sig_map.
-suff: (forall (a1 a2 : A), In A (proj1_sig X1) a1 -> In A (proj1_sig X2) a2 -> f a1 = f a2).
+suff: (forall (a1 a2 : A), proj1_sig X1 a1 -> proj1_sig X2 a2 -> f a1 = f a2).
 elim (proj2_sig X1).
-move=> a1 H4 Y1 H5.
+move=> a1 H4.
 elim (proj2_sig X2).
-move=> a2 H6 Y2 H7 H8.
+move=> a2 H5 H6.
+rewrite H4.
 rewrite H5.
-rewrite H7.
 apply (proj1 (Formula_6_2 A (FunctionEquivalenceRelation A B f) a1 a2)).
-apply (H8 a1 a2).
-rewrite H5.
+apply (H6 a1 a2).
+rewrite H4.
 apply (Formula_6_1 A (FunctionEquivalenceRelation A B f) a1).
-rewrite H7.
+rewrite H5.
 apply (Formula_6_1 A (FunctionEquivalenceRelation A B f) a2).
 move=> a1 a2 H4 H5.
-rewrite (proj2_sig (H1 X1) a1 H4).
-suff: (proj1_sig (H1 X1) = proj1_sig (exist (Im A B (Full_set A) f) (proj1_sig (H1 X1)) (H2 X1))).
+rewrite - (proj2_sig (H1 X1) a1 H4).
+suff: (proj1_sig (H1 X1) = proj1_sig (exist (fun (b : B) => exists (a : A), b = f a) (proj1_sig (H1 X1)) (H2 X1))).
 move=> H6.
 rewrite H6.
 rewrite H3.
-rewrite (proj2_sig (H1 X2) a2 H5).
+rewrite - (proj2_sig (H1 X2) a2 H5).
 reflexivity.
 reflexivity.
 move=> b.
@@ -2155,55 +2151,188 @@ exists x.
 apply sig_map.
 apply H3.
 elim (proj2_sig b).
-move=> x H3 y H4.
+move=> x H3.
 exists (EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f) x).
-rewrite - (proj2_sig (H1 (EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f) x)) x).
-rewrite H4.
+rewrite (proj2_sig (H1 (EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f) x)) x).
+rewrite H3.
 reflexivity.
 apply (Formula_6_1 A (FunctionEquivalenceRelation A B f) x).
 apply functional_extensionality.
 move=> a.
-rewrite (proj2_sig (H1 (EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f) a)) a).
+rewrite - (proj2_sig (H1 (EquivalenceRelationQuotientFunction A (FunctionEquivalenceRelation A B f) a)) a).
 reflexivity.
 apply (Formula_6_1 A (FunctionEquivalenceRelation A B f) a).
 move=> X.
-suff: (exists (a : A), In A (proj1_sig X) a).
-elim.
-move=> a H2.
-rewrite - (proj2_sig (H1 X) a H2).
-apply (Im_intro A B (Full_set A) f a (Full_intro A a)).
-reflexivity.
 elim (proj2_sig X).
-move=> x H2 y H3.
-rewrite H3.
-exists x.
-apply (Formula_6_1 A (FunctionEquivalenceRelation A B f) x).
-move=> x.
-apply constructive_definite_description.
-suff: (exists (a : A), In A (proj1_sig x) a).
-move=> H1.
-apply (unique_existence (fun (b : B) => forall (a : A), In A (proj1_sig x) a -> f a = b)).
-apply conj.
-elim H1.
 move=> a H2.
-exists (f a).
-move=> a0.
-suff: (In A (proj1_sig x) a).
-elim (proj2_sig x).
-move=> a1 H3 y H4.
-rewrite H4.
-move=> H5 H6.
-rewrite - H6.
-apply H5.
-apply H2.
-move=> b1 b2 H2 H3.
-elim H1.
-move=> a H4.
-rewrite - (H2 a H4).
-apply (H3 a H4).
-elim (proj2_sig x).
-move=> a H1 Y H2.
-rewrite H2.
 exists a.
+apply (proj2_sig (H1 X) a).
+rewrite H2.
 apply (Formula_6_1 A (FunctionEquivalenceRelation A B f) a).
+move=> X.
+apply constructive_definite_description.
+apply (unique_existence (fun (b : B) => forall (a : A), proj1_sig X a -> b = f a)).
+apply conj.
+elim (proj2_sig X).
+move=> a H1.
+rewrite H1.
+exists (f a).
+move=> a0 H2.
+rewrite - H2.
+reflexivity.
+move=> b1 b2 H1 H2.
+elim (proj2_sig X).
+move=> a H3.
+suff: (proj1_sig X a).
+move=> H4.
+rewrite (H2 a H4).
+apply (H1 a H4).
+rewrite H3.
+apply (Formula_6_1 A (FunctionEquivalenceRelation A B f) a).
+Qed.
+
+Polymorphic Lemma EquivalenceRelationPairRef : forall (T1 T2 : Type) (R1 : EquivalenceRelation T1) (R2 : EquivalenceRelation T2) (x : T1 * T2), ER T1 R1 (fst x) (fst x) /\ ER T2 R2 (snd x) (snd x).
+Proof.
+move=> T1 T2 R1 R2 x.
+apply conj.
+apply (ERref T1 R1 (fst x)).
+apply (ERref T2 R2 (snd x)).
+Qed.
+
+Polymorphic Lemma EquivalenceRelationPairSym : forall (T1 T2 : Type) (R1 : EquivalenceRelation T1) (R2 : EquivalenceRelation T2) (x y : T1 * T2), (ER T1 R1 (fst x) (fst y) /\ ER T2 R2 (snd x) (snd y)) -> (ER T1 R1 (fst y) (fst x) /\ ER T2 R2 (snd y) (snd x)).
+Proof.
+move=> T1 T2 R1 R2 x y H1.
+apply conj.
+apply (ERsym T1 R1 (fst x) (fst y) (proj1 H1)).
+apply (ERsym T2 R2 (snd x) (snd y) (proj2 H1)).
+Qed.
+
+Polymorphic Lemma EquivalenceRelationPairTrans : forall (T1 T2 : Type) (R1 : EquivalenceRelation T1) (R2 : EquivalenceRelation T2) (x y z : T1 * T2), (ER T1 R1 (fst x) (fst y) /\ ER T2 R2 (snd x) (snd y)) -> (ER T1 R1 (fst y) (fst z) /\ ER T2 R2 (snd y) (snd z)) -> (ER T1 R1 (fst x) (fst z) /\ ER T2 R2 (snd x) (snd z)).
+Proof.
+move=> T1 T2 R1 R2 x y z H1 H2.
+apply conj.
+apply (ERtrans T1 R1 (fst x) (fst y) (fst z) (proj1 H1) (proj1 H2)).
+apply (ERtrans T2 R2 (snd x) (snd y) (snd z) (proj2 H1) (proj2 H2)).
+Qed.
+
+Polymorphic Definition EquivalenceRelationPair (T1 T2 : Type) (R1 : EquivalenceRelation T1) (R2 : EquivalenceRelation T2) := mkEquivalenceRelation (T1 * T2) (fun (x y : T1 * T2) => ER T1 R1 (fst x) (fst y) /\ ER T2 R2 (snd x) (snd y)) (EquivalenceRelationPairRef T1 T2 R1 R2) (EquivalenceRelationPairSym T1 T2 R1 R2) (EquivalenceRelationPairTrans T1 T2 R1 R2).
+
+Polymorphic Lemma EquivalenceRelationForallRef : forall (T : Type) (Ti : T -> Type) (Ri : forall (t : T), EquivalenceRelation (Ti t)) (x : forall (t : T), Ti t) (t : T), ER (Ti t) (Ri t) (x t) (x t).
+Proof.
+move=> T Ti Ri x t.
+apply (ERref (Ti t) (Ri t) (x t)).
+Qed.
+
+Polymorphic Lemma EquivalenceRelationForallSym : forall (T : Type) (Ti : T -> Type) (Ri : forall (t : T), EquivalenceRelation (Ti t)) (x y : forall (t : T), Ti t), (forall (t : T), ER (Ti t) (Ri t) (x t) (y t)) -> (forall (t : T), ER (Ti t) (Ri t) (y t) (x t)).
+Proof.
+move=> T Ti Ri x y H1 t.
+apply (ERsym (Ti t) (Ri t) (x t) (y t) (H1 t)).
+Qed.
+
+Polymorphic Lemma EquivalenceRelationForallTrans : forall (T : Type) (Ti : T -> Type) (Ri : forall (t : T), EquivalenceRelation (Ti t)) (x y z : forall (t : T), Ti t), (forall (t : T), ER (Ti t) (Ri t) (x t) (y t)) -> (forall (t : T), ER (Ti t) (Ri t) (y t) (z t)) -> (forall (t : T), ER (Ti t) (Ri t) (x t) (z t)).
+Proof.
+move=> T Ti Ri x y z H1 H2 t.
+apply (ERtrans (Ti t) (Ri t) (x t) (y t) (z t) (H1 t) (H2 t)).
+Qed.
+
+Polymorphic Definition EquivalenceRelationForall (T : Type) (Ti : T -> Type) (Ri : forall (t : T), EquivalenceRelation (Ti t)) := mkEquivalenceRelation (forall (t : T), Ti t) (fun (x y : (forall (t : T), Ti t)) => forall (t : T), ER (Ti t) (Ri t) (x t) (y t)) (EquivalenceRelationForallRef T Ti Ri) (EquivalenceRelationForallSym T Ti Ri) (EquivalenceRelationForallTrans T Ti Ri).
+
+Polymorphic Lemma EquivalenceRelationFunctionSig : forall (T1 T2 : Type) (R : EquivalenceRelation T1) (f : T1 -> T2), (forall (t1 t2 : T1), ER T1 R t1 t2 -> f t1 = f t2) -> {F : EquivalenceRelationQuotient T1 R -> T2 | forall (t : T1) (tq : EquivalenceRelationQuotient T1 R), proj1_sig tq t -> f t = F tq}.
+Proof.
+move=> T1 T2 R f H1.
+suff: (forall (tq : EquivalenceRelationQuotient T1 R), {t2 : T2 | forall (t : T1), proj1_sig tq t -> f t = t2}).
+move=> H2.
+exists (fun (tq : EquivalenceRelationQuotient T1 R) => proj1_sig (H2 tq)).
+move=> t tq.
+apply (proj2_sig (H2 tq) t).
+move=> tq.
+apply constructive_definite_description.
+elim (proj2_sig tq).
+move=> t H2.
+rewrite H2.
+exists (f t).
+apply conj.
+move=> t0 H3.
+apply (H1 t0 t).
+apply (ERsym T1 R t t0 H3).
+move=> t1 H3.
+apply (H3 t (ERref T1 R t)).
+Qed.
+
+Polymorphic Definition EquivalenceRelationFunction (T1 T2 : Type) (R : EquivalenceRelation T1) (f : T1 -> T2) (H : forall (t1 t2 : T1), ER T1 R t1 t2 -> f t1 = f t2) := proj1_sig (EquivalenceRelationFunctionSig T1 T2 R f H).
+
+Polymorphic Lemma EquivalenceRelationFunctionNature : forall (T1 T2 : Type) (R : EquivalenceRelation T1) (f : T1 -> T2) (H : forall (t1 t2 : T1), ER T1 R t1 t2 -> f t1 = f t2) (t : T1) (tq : EquivalenceRelationQuotient T1 R), proj1_sig tq t -> f t = EquivalenceRelationFunction T1 T2 R f H tq.
+Proof.
+move=> T1 T2 R f H1 t tq H2.
+apply (proj2_sig (EquivalenceRelationFunctionSig T1 T2 R f H1) t tq H2).
+Qed.
+
+Polymorphic Lemma EquivalenceRelationFunctionTwoSig : forall (T1 T2 T3 : Type) (R1 : EquivalenceRelation T1) (R2 : EquivalenceRelation T2) (f : T1 -> T2 -> T3), (forall (t11 t12 : T1) (t21 t22 : T2), ER T1 R1 t11 t12 -> ER T2 R2 t21 t22 -> f t11 t21 = f t12 t22) -> {F : EquivalenceRelationQuotient T1 R1 -> EquivalenceRelationQuotient T2 R2 -> T3 | forall (t1 : T1) (t2 : T2) (tq1 : EquivalenceRelationQuotient T1 R1) (tq2 : EquivalenceRelationQuotient T2 R2), proj1_sig tq1 t1 -> proj1_sig tq2 t2 -> f t1 t2 = F tq1 tq2}.
+Proof.
+move=> T1 T2 T3 R1 R2 f H1.
+suff: (forall (t1 : T1) (t21 t22 : T2), ER T2 R2 t21 t22 -> f t1 t21 = f t1 t22).
+move=> H2.
+suff: (forall (t11 t12 : T1), ER T1 R1 t11 t12 -> EquivalenceRelationFunction T2 T3 R2 (fun (t2 : T2) => f t11 t2) (H2 t11) = EquivalenceRelationFunction T2 T3 R2 (fun (t2 : T2) => f t12 t2) (H2 t12)).
+move=> H3.
+exists (EquivalenceRelationFunction T1 (EquivalenceRelationQuotient T2 R2 -> T3) R1 (fun (t1 : T1) => EquivalenceRelationFunction T2 T3 R2 (fun (t2 : T2) => f t1 t2) (H2 t1)) H3).
+move=> t1 t2 tq1 tq2 H4 H5.
+rewrite - (EquivalenceRelationFunctionNature T1 (EquivalenceRelationQuotient T2 R2 -> T3) R1 (fun (t1 : T1) => EquivalenceRelationFunction T2 T3 R2 (fun (t2 : T2) => f t1 t2) (H2 t1)) H3 t1 tq1 H4).
+apply (EquivalenceRelationFunctionNature T2 T3 R2 (fun (t2 : T2) => f t1 t2) (H2 t1) t2 tq2 H5).
+move=> t11 t12 H3.
+apply functional_extensionality.
+move=> tq2.
+elim (proj2_sig tq2).
+move=> t H4.
+rewrite - (EquivalenceRelationFunctionNature T2 T3 R2 (fun (t2 : T2) => f t11 t2) (H2 t11) t tq2).
+rewrite - (EquivalenceRelationFunctionNature T2 T3 R2 (fun (t2 : T2) => f t12 t2) (H2 t12) t tq2).
+apply (H1 t11 t12 t t H3 (ERref T2 R2 t)).
+rewrite H4.
+apply (ERref T2 R2 t).
+rewrite H4.
+apply (ERref T2 R2 t).
+move=> t1 t21 t22 H2.
+apply (H1 t1 t1 t21 t22 (ERref T1 R1 t1) H2).
+Qed.
+
+Polymorphic Definition EquivalenceRelationFunctionTwo (T1 T2 T3 : Type) (R1 : EquivalenceRelation T1) (R2 : EquivalenceRelation T2) (f : T1 -> T2 -> T3) (H : forall (t11 t12 : T1) (t21 t22 : T2), ER T1 R1 t11 t12 -> ER T2 R2 t21 t22 -> f t11 t21 = f t12 t22) := proj1_sig (EquivalenceRelationFunctionTwoSig T1 T2 T3 R1 R2 f H).
+
+Polymorphic Lemma EquivalenceRelationFunctionTwoNature : forall (T1 T2 T3 : Type) (R1 : EquivalenceRelation T1) (R2 : EquivalenceRelation T2) (f : T1 -> T2 -> T3) (H : forall (t11 t12 : T1) (t21 t22 : T2), ER T1 R1 t11 t12 -> ER T2 R2 t21 t22 -> f t11 t21 = f t12 t22) (t1 : T1) (t2 : T2) (tq1 : EquivalenceRelationQuotient T1 R1) (tq2 : EquivalenceRelationQuotient T2 R2), proj1_sig tq1 t1 -> proj1_sig tq2 t2 -> f t1 t2 = EquivalenceRelationFunctionTwo T1 T2 T3 R1 R2 f H tq1 tq2.
+Proof.
+move=> T1 T2 T3 R1 R2 f H1 t1 t2 tq1 tq2.
+apply (proj2_sig (EquivalenceRelationFunctionTwoSig T1 T2 T3 R1 R2 f H1) t1 t2 tq1 tq2).
+Qed.
+
+Polymorphic Lemma EquivalenceRelationQuotientSame : forall (T : Type) (R : EquivalenceRelation T) (q1 q2 : EquivalenceRelationQuotient T R) (t : T), proj1_sig q1 t -> proj1_sig q2 t -> q1 = q2.
+Proof.
+move=> T R q1 q2 t.
+elim (proj2_sig q1).
+move=> t1 H1.
+elim (proj2_sig q2).
+move=> t2 H2.
+rewrite H1.
+rewrite H2.
+move=> H3 H4.
+apply sig_map.
+rewrite H1.
+rewrite H2.
+apply functional_extensionality.
+move=> t3.
+apply propositional_extensionality.
+apply conj.
+move=> H5.
+apply (ERtrans T R t2 t t3 H4 (ERtrans T R t t1 t3 (ERsym T R t1 t H3) H5)).
+move=> H5.
+apply (ERtrans T R t1 t t3 H3 (ERtrans T R t t2 t3 (ERsym T R t2 t H4) H5)).
+Qed.
+
+Polymorphic Lemma EquivalenceRelationQuotientInhabited : forall (T : Type) (R : EquivalenceRelation T) (q : EquivalenceRelationQuotient T R), exists (t : T), q = EquivalenceRelationQuotientFunction T R t.
+Proof.
+move=> T R.
+elim.
+move=> q H1.
+elim H1.
+move=> t H2.
+exists t.
+apply sig_map.
+apply H2.
 Qed.
