@@ -86,6 +86,28 @@ exists (Basics.compose g f).
 apply (BijChain A B C f g H3 H4).
 Qed.
 
+Lemma Formula_61 : forall (T1 : Type), ~ Inhabited T1 (Full_set T1) -> forall (T2 : Type), (~ Inhabited T2 (Full_set T2) <-> SameCard T1 T2).
+Proof.
+move=> T1 H1 T2.
+apply conj.
+move=> H2.
+exists (fun (t : T1) => match H1 (Inhabited_intro T1 (Full_set T1) t (Full_intro T1 t)) with end).
+exists (fun (t : T2) => match H2 (Inhabited_intro T2 (Full_set T2) t (Full_intro T2 t)) with end).
+apply conj.
+move=> t.
+elim (H1 (Inhabited_intro T1 (Full_set T1) t (Full_intro T1 t))).
+move=> t.
+elim (H2 (Inhabited_intro T2 (Full_set T2) t (Full_intro T2 t))).
+elim.
+move=> f.
+elim.
+move=> g H2 H3.
+apply H1.
+elim H3.
+move=> t H4.
+apply (Inhabited_intro T1 (Full_set T1) (g t) (Full_intro T1 (g t))).
+Qed.
+
 Lemma Example_1_1 : forall (A : Type) (n : nat), cardinal A (Full_set A) n -> forall (B : Type), SameCard A B <-> cardinal B (Full_set B) n.
 Proof.
 move=> A n H1 B.
@@ -1393,7 +1415,7 @@ Definition CardT := EquivalenceRelationQuotient Type CardEquivalence.
 
 Definition Card : Type -> CardT := EquivalenceRelationQuotientFunction Type CardEquivalence.
 
-Lemma Formula_66 : forall (A B : Type), SameCard A B <-> Card A = Card B.
+Lemma Formula_66_1 : forall (A B : Type), SameCard A B <-> Card A = Card B.
 Proof.
 move=> A B.
 apply conj.
@@ -1411,6 +1433,29 @@ reflexivity.
 Qed.
 
 Definition CardN : nat -> CardT := fun (n : nat) => Card (Count n).
+
+Definition Formula_66_2 : forall (T : Type) (n : nat), proj1_sig (CardN n) T <-> cardinal T (Full_set T) n := CountCardinalBijective.
+
+Lemma Formula_66_3 : forall (T : Type), proj1_sig (CardN O) T <-> ~ Inhabited T (Full_set T).
+Proof.
+move=> T.
+apply conj.
+elim.
+move=> f.
+elim.
+move=> g H1.
+elim.
+move=> t H2.
+elim (le_not_lt O (proj1_sig (g t)) (le_0_n (proj1_sig (g t))) (proj2_sig (g t))).
+move=> H1.
+exists (fun (m : Count O) => match (le_not_lt O (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)) with end).
+exists (fun (t : T) => match H1 (Inhabited_intro T (Full_set T) t (Full_intro T t)) with end).
+apply conj.
+move=> m.
+elim (le_not_lt O (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)).
+move=> t.
+elim (H1 (Inhabited_intro T (Full_set T) t (Full_intro T t))).
+Qed.
 
 Definition InfiniteCard : CardT -> Prop := fun (c : CardT) => ~ exists (n : nat), c = CardN n.
 
@@ -1563,7 +1608,7 @@ rewrite - (CardLeNature t2 t1 C2 C1 (proj1 H2) (proj1 H1)).
 move=> H3 H4.
 rewrite (proj2 H1).
 rewrite (proj2 H2).
-apply (proj1 (Formula_66 t1 t2)).
+apply (proj1 (Formula_66_1 t1 t2)).
 apply (Theorem_2 t1 t2 H3 H4).
 elim (proj2_sig C2).
 move=> x H2.
@@ -1799,7 +1844,7 @@ exists n.
 suff: (C = EquivalenceRelationQuotientFunction Type CardEquivalence T).
 move=> H5.
 rewrite H5.
-apply (Formula_66 T (Count n)).
+apply (Formula_66_1 T (Count n)).
 apply (Formula_1_2 (Count n) T (proj2 (CountCardinalBijective T n) H4)).
 apply sig_map.
 apply H2.
@@ -4501,7 +4546,7 @@ move=> H4.
 apply (proj2 H3).
 rewrite H1.
 rewrite H2.
-apply (proj1 (Formula_66 a b) H4).
+apply (proj1 (Formula_66_1 a b) H4).
 move=> H3.
 apply conj.
 apply (proj1 H3).
@@ -4509,7 +4554,7 @@ rewrite H1.
 rewrite H2.
 move=> H4.
 apply (proj2 H3).
-apply (proj2 (Formula_66 a b) H4).
+apply (proj2 (Formula_66_1 a b) H4).
 rewrite H1.
 apply (ERref Type CardEquivalence a).
 rewrite H2.
@@ -4524,6 +4569,151 @@ Lemma CardLtNature : forall (T1 T2 : Type) (C1 C2 : CardT), proj1_sig C1 T1 -> p
 Proof.
 rewrite CardLtDef2.
 apply (EquivalenceRelationFunctionTwoNature Type Type Prop CardEquivalence CardEquivalence cardLt CardLtWellDefined).
+Qed.
+
+Lemma Formula_69_1 : forall (C1 C2 : CardT), (exists (n : nat), C1 = CardN n) -> InfiniteCard C2 -> CardLt C1 C2.
+Proof.
+suff: (forall (n : nat) (C1 C2 : CardT), C1 = CardN n -> InfiniteCard C2 -> CardLe C1 C2).
+move=> H1 C1 C2.
+elim.
+move=> n H2 H3.
+apply conj.
+apply (H1 n C1 C2 H2 H3).
+move=> H4.
+apply H3.
+exists n.
+rewrite - H4.
+apply H2.
+elim.
+move=> C1 C2 H1 H2.
+elim (proj2_sig C2).
+move=> T2 H3.
+suff: (proj1_sig C2 T2).
+move=> H4.
+rewrite - (CardLeNature (Count O) T2 C1 C2).
+exists (fun (m : Count O) => match (le_not_lt O (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)) with end).
+move=> m1.
+elim (le_not_lt O (proj1_sig m1) (le_0_n (proj1_sig m1)) (proj2_sig m1)).
+rewrite H1.
+apply (Formula_1_1 (Count O)).
+apply H4.
+rewrite H3.
+apply (Formula_1_1 T2).
+move=> n H1 C1 C2 H2 H3.
+elim (EquivalenceRelationQuotientInhabited Type CardEquivalence C2).
+move=> T2 H4.
+suff: (proj1_sig C2 T2).
+move=> H5.
+suff: (cardLe (Count n) T2).
+elim.
+move=> f H6.
+suff: (exists (t : T2), forall (m : Count n), f m <> t).
+elim.
+move=> t H7.
+rewrite - (CardLeNature (Count (S n)) T2 C1 C2).
+exists (fun (m : Count (S n)) => match excluded_middle_informative (proj1_sig m < n) with
+  | left H => f (exist (fun (k : nat) => k < n) (proj1_sig m) H)
+  | right _ => t
+end).
+move=> m1 m2.
+elim (excluded_middle_informative (proj1_sig m1 < n)).
+move=> H8.
+elim (excluded_middle_informative (proj1_sig m2 < n)).
+move=> H9 H10.
+apply sig_map.
+suff: (proj1_sig m1 = proj1_sig (exist (fun (k : nat) => k < n) (proj1_sig m1) H8)).
+move=> H11.
+rewrite H11.
+rewrite (H6 (exist (fun (k : nat) => k < n) (proj1_sig m1) H8) (exist (fun (k : nat) => k < n) (proj1_sig m2) H9) H10).
+reflexivity.
+reflexivity.
+move=> H9 H10.
+elim (H7 (exist (fun (k : nat) => k < n) (proj1_sig m1) H8) H10).
+move=> H8.
+elim (excluded_middle_informative (proj1_sig m2 < n)).
+move=> H9 H10.
+elim (H7 (exist (fun (k : nat) => k < n) (proj1_sig m2) H9)).
+rewrite H10.
+reflexivity.
+move=> H9 H10.
+apply sig_map.
+elim (le_or_lt (proj1_sig m1) n).
+move=> H11.
+elim (le_lt_or_eq (proj1_sig m1) n H11).
+move=> H12.
+elim (H8 H12).
+move=> H12.
+elim (le_or_lt (proj1_sig m2) n).
+move=> H13.
+elim (le_lt_or_eq (proj1_sig m2) n H13).
+move=> H14.
+elim (H9 H14).
+move=> H14.
+rewrite H14.
+apply H12.
+move=> H13.
+elim (le_not_lt (S n) (proj1_sig m2) H13 (proj2_sig m2)).
+move=> H11.
+elim (le_not_lt (S n) (proj1_sig m1) H11 (proj2_sig m1)).
+rewrite H2.
+apply (Formula_1_1 (Count (S n))).
+rewrite H4.
+apply (Formula_1_1 T2).
+apply NNPP.
+move=> H7.
+apply H3.
+exists n.
+rewrite H4.
+apply (proj1 (Formula_66_1 T2 (Count n))).
+apply (Formula_1_2 (Count n) T2).
+exists f.
+apply InjSurjBij.
+apply H6.
+move=> t.
+apply NNPP.
+move=> H8.
+apply H7.
+exists t.
+move=> m H9.
+apply H8.
+exists m.
+apply H9.
+rewrite (CardLeNature (Count n) T2 (CardN n) C2 (Formula_1_1 (Count n)) H5).
+apply (H1 (CardN n) C2).
+reflexivity.
+apply H3.
+rewrite H4.
+apply (Formula_1_1 T2).
+Qed.
+
+Lemma Formula_69_2_set : forall (T : Type) (A : Ensemble T) (n : nat), cardinal T A n -> forall (B : Ensemble T), Strict_Included T B A -> cardLt {t : T | In T B t} {t : T | In T A t}.
+Proof.
+move=> T A n H1 B H2.
+apply conj.
+exists (fun (m : {t : T | In T B t}) => exist A (proj1_sig m) (proj1 H2 (proj1_sig m) (proj2_sig m))).
+move=> m1 m2 H3.
+apply sig_map.
+suff: (proj1_sig m1 = proj1_sig (exist A (proj1_sig m1) (proj1 H2 (proj1_sig m1) (proj2_sig m1)))).
+move=> H4.
+rewrite H4.
+rewrite H3.
+reflexivity.
+reflexivity.
+move=> H3.
+apply (Example_1_2_set T A n H1 B H2).
+apply (Formula_1_2 {t : T | In T B t} {t : T | In T A t} H3).
+Qed.
+
+Lemma Formula_69_2 : forall (T : Type) (n : nat), cardinal T (Full_set T) n -> forall (A : Ensemble T), Strict_Included T A (Full_set T) -> cardLt {t : T | In T A t} T.
+Proof.
+move=> T n H1 A H2.
+apply conj.
+exists (fun (m : {t : T | In T A t}) => proj1_sig m).
+move=> m1 m2.
+apply sig_map.
+move=> H3.
+apply (Example_1_2 T n H1 A H2).
+apply (Formula_1_2 {t : T | In T A t} T H3).
 Qed.
 
 Lemma Count2PropSameCard : SameCard (Count 2) Prop.
@@ -4688,7 +4878,7 @@ elim.
 move=> g.
 elim.
 move=> ginv H2.
-apply (proj1 (Formula_66 (A1 + B1) (A2 + B2))).
+apply (proj1 (Formula_66_1 (A1 + B1) (A2 + B2))).
 exists (fun (x : A1 + B1) => match x with
   | inl x0 => inl (f x0)
   | inr x0 => inr (g x0)
@@ -4722,7 +4912,7 @@ Lemma CardPlusCount : forall (n m : nat), CardPlus (CardN n) (CardN m) = CardN (
 Proof.
 move=> n m.
 rewrite - (CardPlusNature (Count n) (Count m) (CardN n) (CardN m) (Formula_1_1 (Count n)) (Formula_1_1 (Count m))).
-apply (proj1 (Formula_66 (Count n + Count m) (Count (n + m)))).
+apply (proj1 (Formula_66_1 (Count n + Count m) (Count (n + m)))).
 elim (CountAdd n m).
 move=> f H1.
 exists f.
@@ -4742,7 +4932,7 @@ suff: (proj1_sig C2 T2).
 move=> H4.
 rewrite - (CardPlusNature T1 T2 C1 C2 H2 H4).
 rewrite - (CardPlusNature T2 T1 C2 C1 H4 H2).
-apply (proj1 (Formula_66 (T1 + T2) (T2 + T1))).
+apply (proj1 (Formula_66_1 (T1 + T2) (T2 + T1))).
 exists (fun (x : T1 + T2) => match x with
   | inl x0 => inr x0
   | inr x0 => inl x0
@@ -4785,7 +4975,7 @@ suff: (proj1_sig C3 T3).
 move=> H6.
 rewrite - (CardPlusNature (T1 + T2) T3 (CardPlus C1 C2) C3).
 rewrite - (CardPlusNature T1 (T2 + T3) C1 (CardPlus C2 C3)).
-apply (proj1 (Formula_66 (T1 + T2 + T3) (T1 + (T2 + T3)))).
+apply (proj1 (Formula_66_1 (T1 + T2 + T3) (T1 + (T2 + T3)))).
 exists (fun (x : T1 + T2 + T3) => match x with
   | inl x0 => match x0 with
     | inl x1 => inl x1
@@ -4840,7 +5030,7 @@ suff: (proj1_sig C T).
 move=> H2.
 rewrite - (CardPlusNature T (Count O) C (CardN O) H2 (Formula_1_1 (Count O))).
 rewrite H1.
-apply (proj1 (Formula_66 (T + Count O) T)).
+apply (proj1 (Formula_66_1 (T + Count O) T)).
 exists (fun (x : T + Count O) => match x with
   | inl x => x
   | inr x => match (le_not_lt O (proj1_sig x) (le_0_n (proj1_sig x)) (proj2_sig x)) with
@@ -4955,7 +5145,7 @@ elim.
 move=> g.
 elim.
 move=> ginv H2.
-apply (proj1 (Formula_66 (A1 * B1) (A2 * B2))).
+apply (proj1 (Formula_66_1 (A1 * B1) (A2 * B2))).
 exists (fun (x : A1 * B1) => (f (fst x), g (snd x))).
 exists (fun (x : A2 * B2) => (finv (fst x), ginv (snd x))).
 apply conj.
@@ -4983,7 +5173,7 @@ Lemma CardMultCount : forall (n m : nat), CardMult (CardN n) (CardN m) = CardN (
 Proof.
 move=> n m.
 rewrite - (CardMultNature (Count n) (Count m) (CardN n) (CardN m) (Formula_1_1 (Count n)) (Formula_1_1 (Count m))).
-apply (proj1 (Formula_66 (Count n * Count m) (Count (n * m)))).
+apply (proj1 (Formula_66_1 (Count n * Count m) (Count (n * m)))).
 elim (CountMult n m).
 move=> f H1.
 exists f.
@@ -5003,7 +5193,7 @@ suff: (proj1_sig C2 T2).
 move=> H4.
 rewrite - (CardMultNature T1 T2 C1 C2 H2 H4).
 rewrite - (CardMultNature T2 T1 C2 C1 H4 H2).
-apply (proj1 (Formula_66 (T1 * T2) (T2 * T1))).
+apply (proj1 (Formula_66_1 (T1 * T2) (T2 * T1))).
 exists (fun (x : T1 * T2) => (snd x, fst x)).
 exists (fun (x : T2 * T1) => (snd x, fst x)).
 apply conj.
@@ -5036,7 +5226,7 @@ suff: (proj1_sig C3 T3).
 move=> H6.
 rewrite - (CardMultNature (T1 * T2) T3 (CardMult C1 C2) C3).
 rewrite - (CardMultNature T1 (T2 * T3) C1 (CardMult C2 C3)).
-apply (proj1 (Formula_66 (T1 * T2 * T3) (T1 * (T2 * T3)))).
+apply (proj1 (Formula_66_1 (T1 * T2 * T3) (T1 * (T2 * T3)))).
 exists (fun (x : T1 * T2 * T3) => (fst (fst x), (snd (fst x), snd x))).
 exists (fun (x : T1 * (T2 * T3)) => ((fst x, fst (snd x)), snd (snd x))).
 apply conj.
@@ -5071,7 +5261,7 @@ move=> T H1.
 suff: (proj1_sig C T).
 move=> H2.
 rewrite - (CardMultNature T (Count O) C (CardN O) H2 (Formula_1_1 (Count O))).
-apply (proj1 (Formula_66 (T * Count O) (Count O))).
+apply (proj1 (Formula_66_1 (T * Count O) (Count O))).
 exists (fun (x : T * Count O) => match (le_not_lt O (proj1_sig (snd x)) (le_0_n (proj1_sig (snd x))) (proj2_sig (snd x))) with
 end).
 exists (fun (x : Count O) => match (le_not_lt O (proj1_sig x) (le_0_n (proj1_sig x)) (proj2_sig x)) with
@@ -5096,7 +5286,7 @@ suff: (proj1_sig C T).
 move=> H2.
 rewrite - (CardMultNature T (Count 1) C (CardN 1) H2 (Formula_1_1 (Count 1))).
 rewrite H1.
-apply (proj1 (Formula_66 (T * Count 1) T)).
+apply (proj1 (Formula_66_1 (T * Count 1) T)).
 exists (fun (x : T * Count 1) => fst x).
 exists (fun (x : T) => (x, exist (fun (n : nat) => n < 1) O (le_n 1))).
 apply conj.
@@ -5193,7 +5383,7 @@ suff: (proj1_sig C3 T3).
 move=> H6.
 rewrite - (CardMultNature (T1 + T2) T3 (CardPlus C1 C2) C3).
 rewrite - (CardPlusNature (T1 * T3) (T2 * T3) (CardMult C1 C3) (CardMult C2 C3)).
-apply (proj1 (Formula_66 ((T1 + T2) * T3) (T1 * T3 + T2 * T3))).
+apply (proj1 (Formula_66_1 ((T1 + T2) * T3) (T1 * T3 + T2 * T3))).
 exists (fun (x : (T1 + T2) * T3) => match fst x with
   | inl x0 => inl (x0, snd x)
   | inr x0 => inr (x0, snd x)
@@ -5243,7 +5433,7 @@ move=> H4.
 suff: (forall (t : T1), {gt : T2 -> tf t | (forall (x : tf t), gt (proj1_sig (H4 t) x) = x) /\ (forall (y : T2), proj1_sig (H4 t) (gt y) = y)}).
 move=> H5.
 rewrite - (CardMultNature T2 T1 C (Card T1)).
-apply (proj1 (Formula_66 (sumT T1 tf) (T2 * T1))).
+apply (proj1 (Formula_66_1 (sumT T1 tf) (T2 * T1))).
 exists (fun (x : sumT T1 tf) => match x with
   | inT t x0 => (proj1_sig (H4 t) x0, t)
 end).
@@ -5264,7 +5454,7 @@ apply constructive_indefinite_description.
 apply (proj2_sig (H4 t)).
 move=> t.
 apply constructive_indefinite_description.
-apply (proj2 (Formula_66 (tf t) T2)).
+apply (proj2 (Formula_66_1 (tf t) T2)).
 rewrite (H1 t).
 apply H2.
 rewrite H2.
@@ -5282,7 +5472,7 @@ elim.
 move=> g.
 elim.
 move=> ginv H2.
-apply (proj1 (Formula_66 (B1 -> A1) (B2 -> A2))).
+apply (proj1 (Formula_66_1 (B1 -> A1) (B2 -> A2))).
 exists (fun (h : B1 -> A1) (a : B2) => f (h (ginv a))).
 exists (fun (h : B2 -> A2) (a : B1) => finv (h (g a))).
 apply conj.
@@ -5308,7 +5498,7 @@ Lemma CardPowCount : forall (n m : nat), CardPow (CardN n) (CardN m) = CardN (n 
 Proof.
 move=> n m.
 rewrite - (CardPowNature (Count n) (Count m) (CardN n) (CardN m) (Formula_1_1 (Count n)) (Formula_1_1 (Count m))).
-apply (proj1 (Formula_66 (Count m -> Count n) (Count (n ^ m)))).
+apply (proj1 (Formula_66_1 (Count m -> Count n) (Count (n ^ m)))).
 elim (CountPow m n).
 move=> f H1.
 exists f.
@@ -5322,7 +5512,7 @@ elim.
 move=> f.
 elim.
 move=> finv H1.
-apply (proj1 (Formula_66 (Ensemble A1) (Ensemble A2))).
+apply (proj1 (Formula_66_1 (Ensemble A1) (Ensemble A2))).
 exists (fun (X : Ensemble A1) (a : A2) => In A1 X (finv a)).
 exists (fun (X : Ensemble A2) (a : A1) => In A2 X (f a)).
 apply conj.
@@ -5348,7 +5538,7 @@ Lemma CardEnsembleCount : forall (n : nat), CardEnsemble (CardN n) = CardN (2 ^ 
 Proof.
 move=> n.
 rewrite - (CardEnsembleNature (Count n) (CardN n) (Formula_1_1 (Count n))).
-apply (proj1 (Formula_66 (Ensemble (Count n)) (Count (2 ^ n)))).
+apply (proj1 (Formula_66_1 (Ensemble (Count n)) (Count (2 ^ n)))).
 elim (Formula_P18_2_sub n).
 move=> f H1.
 exists f.
@@ -5365,7 +5555,7 @@ suff: (proj1_sig C T).
 move=> H2.
 rewrite - (CardPowNature (Count 2) T (CardN 2) C (Formula_1_1 (Count 2)) H2).
 rewrite - (CardEnsembleNature T C H2).
-apply (proj1 (Formula_66 (T -> Count 2) (Ensemble T))).
+apply (proj1 (Formula_66_1 (T -> Count 2) (Ensemble T))).
 apply (Pow2EnsembleSameCard T).
 rewrite H1.
 apply (Formula_1_1 T).
@@ -5380,7 +5570,7 @@ suff: (proj1_sig C T).
 move=> H2.
 rewrite - (CardPowNature T (Count 1) C (CardN 1) H2 (Formula_1_1 (Count 1))).
 rewrite H1.
-apply (proj1 (Formula_66 (Count 1 -> T) T)).
+apply (proj1 (Formula_66_1 (Count 1 -> T) T)).
 exists (fun (f : Count 1 -> T) => f (exist (fun (n : nat) => n < 1) O (le_n 1))).
 exists (fun (t : T) (n : Count 1) => t).
 apply conj.
@@ -5408,7 +5598,7 @@ move=> T H1.
 suff: (proj1_sig C T).
 move=> H2.
 rewrite - (CardPowNature (Count 1) T (CardN 1) C (Formula_1_1 (Count 1)) H2).
-apply (proj1 (Formula_66 (T -> Count 1) (Count 1))).
+apply (proj1 (Formula_66_1 (T -> Count 1) (Count 1))).
 exists (fun (f : T -> Count 1) => (exist (fun (n : nat) => n < 1) O (le_n 1))).
 exists (fun (n : Count 1) (t : T) => (exist (fun (n : nat) => n < 1) O (le_n 1))).
 apply conj.
@@ -5501,7 +5691,7 @@ apply NNPP.
 move=> H9.
 apply H7.
 rewrite H1.
-apply (proj1 (Formula_66 T1 (Count O))).
+apply (proj1 (Formula_66_1 T1 (Count O))).
 exists (fun (t1 : T1) => match H9 (Inhabited_intro T1 (Full_set T1) t1 (Full_intro T1 t1)) with end).
 exists (fun (n : Count O) => match le_not_lt O (proj1_sig n) (le_0_n (proj1_sig n)) (proj2_sig n) with end).
 apply conj.
@@ -5578,7 +5768,7 @@ suff: (proj1_sig C3 T3).
 move=> H6.
 rewrite - (CardMultNature (T2 -> T1) (T3 -> T1) (CardPow C1 C2) (CardPow C1 C3)).
 rewrite - (CardPowNature T1 (T2 + T3) C1 (CardPlus C2 C3)).
-apply (proj1 (Formula_66 ((T2 -> T1) * (T3 -> T1)) (T2 + T3 -> T1))).
+apply (proj1 (Formula_66_1 ((T2 -> T1) * (T3 -> T1)) (T2 + T3 -> T1))).
 exists (fun (h : (T2 -> T1) * (T3 -> T1)) (t : T2 + T3) => match t with
   | inl t0 => fst h t0
   | inr t0 => snd h t0
@@ -5629,7 +5819,7 @@ suff: (proj1_sig C3 T3).
 move=> H6.
 rewrite - (CardPowNature (T1 * T2) T3 (CardMult C1 C2) C3).
 rewrite - (CardMultNature (T3 -> T1) (T3 -> T2) (CardPow C1 C3) (CardPow C2 C3)).
-apply (proj1 (Formula_66 (T3 -> T1 * T2) ((T3 -> T1) * (T3 -> T2)))).
+apply (proj1 (Formula_66_1 (T3 -> T1 * T2) ((T3 -> T1) * (T3 -> T2)))).
 exists (fun (h : T3 -> T1 * T2) => (fun (t : T3) => fst (h t), fun (t : T3) => snd (h t))).
 exists (fun (h : (T3 -> T1) * (T3 -> T2)) (t : T3) => (fst h t, snd h t)).
 apply conj.
@@ -5675,7 +5865,7 @@ suff: (proj1_sig C3 T3).
 move=> H6.
 rewrite - (CardPowNature (T2 -> T1) T3 (CardPow C1 C2) C3).
 rewrite - (CardPowNature T1 (T2 * T3) C1 (CardMult C2 C3)).
-apply (proj1 (Formula_66 (T3 -> T2 -> T1) (T2 * T3 -> T1))).
+apply (proj1 (Formula_66_1 (T3 -> T2 -> T1) (T2 * T3 -> T1))).
 exists (fun (h : T3 -> T2 -> T1) (t : T2 * T3) => h (snd t) (fst t)).
 exists (fun (h : T2 * T3 -> T1) (t3 : T3) (t2 : T2) => h (t2, t3)).
 apply conj.
@@ -5712,7 +5902,7 @@ move=> H4.
 suff: (forall (t : T1), {gt : T2 -> tf t | (forall (x : tf t), gt (proj1_sig (H4 t) x) = x) /\ (forall (y : T2), proj1_sig (H4 t) (gt y) = y)}).
 move=> H5.
 rewrite - (CardPowNature T2 T1 C (Card T1)).
-apply (proj1 (Formula_66 (forall (t : T1), tf t) (T1 -> T2))).
+apply (proj1 (Formula_66_1 (forall (t : T1), tf t) (T1 -> T2))).
 exists (fun (x : forall (t : T1), tf t) (t : T1) => proj1_sig (H4 t) (x t)).
 exists (fun (x : T1 -> T2) (t : T1) => proj1_sig (H5 t) (x t)).
 apply conj.
@@ -5731,7 +5921,7 @@ apply constructive_indefinite_description.
 apply (proj2_sig (H4 t)).
 move=> t.
 apply constructive_indefinite_description.
-apply (proj2 (Formula_66 (tf t) T2)).
+apply (proj2 (Formula_66_1 (tf t) T2)).
 rewrite (H1 t).
 apply H2.
 rewrite H2.
@@ -5759,7 +5949,7 @@ Proof.
 suff: (SameCard {n : nat | In nat even n} {n : nat | In nat odd n}).
 move=> H1.
 rewrite - (CardPlusNature {n : nat | In nat even n} {n : nat | In nat odd n} (Card nat) (Card nat)).
-apply (proj1 (Formula_66 ({n : nat | In nat even n} + {n : nat | In nat odd n}) nat)).
+apply (proj1 (Formula_66_1 ({n : nat | In nat even n} + {n : nat | In nat odd n}) nat)).
 exists (fun (m : {n : nat | In nat even n} + {n : nat | In nat odd n}) => match m with
   | inl m0 => proj1_sig m0
   | inr m0 => proj1_sig m0
@@ -5849,7 +6039,7 @@ Proof.
 suff: (forall (r1 r2 : R), (r1 < r2)%R -> SameCard {r : R | (r1 <= r < r2)%R} R).
 move=> H1.
 rewrite - (CardPlusNature {r : R | (0 <= r < 1)%R} {r : R | (1 <= r < 2)%R} (Card R) (Card R)).
-apply (proj1 (Formula_66 ({r : R | (0 <= r < 1)%R} + {r : R | (1 <= r < 2)%R}) R)).
+apply (proj1 (Formula_66_1 ({r : R | (0 <= r < 1)%R} + {r : R | (1 <= r < 2)%R}) R)).
 apply (Formula_1_3 ({r : R | (0 <= r < 1)%R} + {r : R | (1 <= r < 2)%R}) {r : R | (0 <= r < 2)%R} R).
 suff: (0 <= 1)%R.
 move=> H2.
@@ -5956,7 +6146,7 @@ Qed.
 Lemma Formula_3_18_2 : CardMult (Card nat) (Card nat) = Card nat.
 Proof.
 rewrite - (CardMultNature nat nat (Card nat) (Card nat)).
-apply (proj1 (Formula_66 (nat * nat) nat) (Formula_1_2 nat (nat * nat) Example_3)).
+apply (proj1 (Formula_66_1 (nat * nat) nat) (Formula_1_2 nat (nat * nat) Example_3)).
 apply (Formula_1_1 nat).
 apply (Formula_1_1 nat).
 Qed.
@@ -5995,7 +6185,7 @@ Qed.
 Lemma Formula_3_19_2 : CardPow (CardN 2) (Card nat) = Card R.
 Proof.
 rewrite - (CardPowNature (Count 2) nat (CardN 2) (Card nat) (Formula_1_1 (Count 2)) (Formula_1_1 nat)).
-apply (proj1 (Formula_66 (nat -> Count 2) R)).
+apply (proj1 (Formula_66_1 (nat -> Count 2) R)).
 apply Formula_85_3.
 Qed.
 
@@ -6107,21 +6297,21 @@ Qed.
 
 Lemma Formula_85_1 : SameCard (nat * R) R.
 Proof.
-apply (proj2 (Formula_66 (nat * R) R)).
+apply (proj2 (Formula_66_1 (nat * R) R)).
 rewrite (CardMultNature nat R (Card nat) (Card R) (Formula_1_1 nat) (Formula_1_1 R)).
 apply Formula_3_20_2.
 Qed.
 
 Lemma Formula_85_2 : SameCard (R * R) R.
 Proof.
-apply (proj2 (Formula_66 (R * R) R)).
+apply (proj2 (Formula_66_1 (R * R) R)).
 rewrite (CardMultNature R R (Card R) (Card R) (Formula_1_1 R) (Formula_1_1 R)).
 apply Formula_3_20_3.
 Qed.
 
 Lemma Formula_85_4 : SameCard (nat -> nat) R.
 Proof.
-apply (proj2 (Formula_66 (nat -> nat) R)).
+apply (proj2 (Formula_66_1 (nat -> nat) R)).
 rewrite (CardPowNature nat nat (Card nat) (Card nat) (Formula_1_1 nat) (Formula_1_1 nat)).
 apply Formula_3_19_3.
 Qed.
