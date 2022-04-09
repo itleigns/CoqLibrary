@@ -20,7 +20,8 @@ Require Import Coq.Sets.Finite_sets_facts.
 Require Import Coq.Sets.Image.
 Require Import MyAlgebraicStructure.MyVectorSpace.
 Require Import MyAlgebraicStructure.MyField.
-Require Import Analysis.KaisekiNyuumonn.KaisekiNyuumonn1.
+Require Import Analysis.KaisekiNyuumonn.KaisekiNyuumonn1_1.
+Require Import Analysis.KaisekiNyuumonn.KaisekiNyuumonn1_2.
 Require Import LinearAlgebra.Matrix.
 Require Import LinearAlgebra.SenkeiDaisuunoSekai.SenkeiDaisuunoSekai1.
 Require Import Tools.MySum.
