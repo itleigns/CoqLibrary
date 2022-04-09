@@ -1,4 +1,4 @@
-all:  BasicTools.vo NatProperty.vo MappingProperty.vo MySum.vo MyProd.vo Parity.vo Permutation.vo DatatypesExtension.vo EnsemblesExtension.vo MyField.vo MyVectorSpace.vo SenkeiDaisuunoSekai1.vo Matrix.vo ShuugouIsouNyuumonn1.vo ShuugouIsouNyuumonn1AC.vo KaisekiNyuumonn1-1.vo KaisekiNyuumonn1-2.vo
+all:  BasicTools.vo NatProperty.vo MappingProperty.vo MySum.vo MyProd.vo Parity.vo Permutation.vo DatatypesExtension.vo EnsemblesExtension.vo MyField.vo MyVectorSpace.vo SenkeiDaisuunoSekai1.vo Matrix.vo ShuugouIsouNyuumonn1.vo ShuugouIsouNyuumonn1AC.vo KaisekiNyuumonn1_1.vo KaisekiNyuumonn1_2.vo
 
 BasicTools.vo: Tools/BasicTools.v
 	coqc -Q Tools Tools Tools/BasicTools.v
