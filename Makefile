@@ -1,4 +1,4 @@
-all:  BasicTools.vo NatProperty.vo MappingProperty.vo MySum.vo MyProd.vo Parity.vo Permutation.vo DatatypesExtension.vo EnsemblesExtension.vo MyField.vo MyVectorSpace.vo SenkeiDaisuunoSekai1.vo Matrix.vo ShuugouIsouNyuumonn1.vo ShuugouIsouNyuumonn1AC.vo KaisekiNyuumonn1.vo
+all:  BasicTools.vo NatProperty.vo MappingProperty.vo MySum.vo MyProd.vo Parity.vo Permutation.vo DatatypesExtension.vo EnsemblesExtension.vo MyField.vo MyVectorSpace.vo SenkeiDaisuunoSekai1.vo Matrix.vo ShuugouIsouNyuumonn1.vo ShuugouIsouNyuumonn1AC.vo KaisekiNyuumonn1.vo ShuugouIsouNyuumonn2.vo ShuugouIsouNyuumonn2AC.vo
 
 BasicTools.vo: Tools/BasicTools.v
 	coqc -Q Tools Tools Tools/BasicTools.v
@@ -47,6 +47,12 @@ ShuugouIsouNyuumonn1AC.vo: Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1AC.v
 
 KaisekiNyuumonn1.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn1.v MyField.vo MyVectorSpace.vo MySum.vo
 	coqc -Q Analysis/KaisekiNyuumonn Analysis.KaisekiNyuumonn Analysis/KaisekiNyuumonn/KaisekiNyuumonn1.v
+
+ShuugouIsouNyuumonn2.vo: Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2.v MappingProperty.vo EnsemblesExtension.vo ShuugouIsouNyuumonn1.vo DatatypesExtension.vo KaisekiNyuumonn1.vo NatProperty.vo
+	coqc -Q Topology/ShuugouIsouNyuumonn Topology.ShuugouIsouNyuumonn Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2.v
+
+ShuugouIsouNyuumonn2AC.vo: Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2AC.v BasicTools.vo MappingProperty.vo DatatypesExtension.vo ShuugouIsouNyuumonn1.vo ShuugouIsouNyuumonn1AC.vo ShuugouIsouNyuumonn2.vo 
+	coqc -Q Topology/ShuugouIsouNyuumonn Topology.ShuugouIsouNyuumonn Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2AC.v
 
 clean:
 	find . -type f | grep -E "(.*\.vo)|(.*\.glob)|(.*\.aux)" - | xargs rm
