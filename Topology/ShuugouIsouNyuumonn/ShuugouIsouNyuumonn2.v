@@ -31,7 +31,7 @@ Require Import BasicProperty.MappingProperty.
 Require Import LibraryExtension.EnsemblesExtension.
 Require Import Topology.ShuugouIsouNyuumonn.ShuugouIsouNyuumonn1.
 Require Import LibraryExtension.DatatypesExtension.
-Require Import Analysis.KaisekiNyuumonn.KaisekiNyuumonn1.
+Require Import Analysis.KaisekiNyuumonn.KaisekiNyuumonn1_1.
 Require Import BasicProperty.NatProperty.
 Local Open Scope nat_scope.
 
@@ -92,8 +92,10 @@ Proof.
 move=> T1 H1 T2.
 apply conj.
 move=> H2.
-exists (fun (t : T1) => match H1 (Inhabited_intro T1 (Full_set T1) t (Full_intro T1 t)) with end).
-exists (fun (t : T2) => match H2 (Inhabited_intro T2 (Full_set T2) t (Full_intro T2 t)) with end).
+exists (fun (t : T1) => match H1 (Inhabited_intro T1 (Full_set T1) t (Full_intro T1 t)) with
+end).
+exists (fun (t : T2) => match H2 (Inhabited_intro T2 (Full_set T2) t (Full_intro T2 t)) with
+end).
 apply conj.
 move=> t.
 elim (H1 (Inhabited_intro T1 (Full_set T1) t (Full_intro T1 t))).
@@ -243,7 +245,7 @@ elim.
 move=> l H3 H4.
 suff: (let t := S (S l) in match t with
   | O => True
-  | S p => match p with 
+  | S p => match p with
     | O => False
     | S _ => True
   end
@@ -1191,8 +1193,7 @@ apply InjSurjBij.
 move=> a1 a2 H5.
 apply sig_map.
 apply (H2 (proj1_sig a1) (proj1_sig a2)).
-suff: (g (proj1_sig a1) = proj1_sig (exist (fun (a : A) => exists (n : nat), In A (Dn n) a) 
-       (g (proj1_sig a1)) (H4 (proj1_sig a1) (proj2_sig a1)))).
+suff: (g (proj1_sig a1) = proj1_sig (exist (fun (a : A) => exists (n : nat), In A (Dn n) a) (g (proj1_sig a1)) (H4 (proj1_sig a1) (proj2_sig a1)))).
 move=> H6.
 rewrite H6.
 rewrite H5.
@@ -1323,8 +1324,7 @@ apply (proj2 (H3 x) H4).
 reflexivity.
 Qed.
 
-Lemma Theorem_2_dash_dash_dash : forall (A B : Type), (exists (B1 : Ensemble B) (f : A -> {b : B | In B B1 b}), Bijective f) ->
-       (exists (A1 : Ensemble A) (g : B -> {a : A | In A A1 a}), Bijective g) -> SameCard A B.
+Lemma Theorem_2_dash_dash_dash : forall (A B : Type), (exists (B1 : Ensemble B) (f : A -> {b : B | In B B1 b}), Bijective f) -> (exists (A1 : Ensemble A) (g : B -> {a : A | In A A1 a}), Bijective g) -> SameCard A B.
 Proof.
 move=> A B.
 elim.
@@ -1368,9 +1368,7 @@ move=> g H2.
 suff: (forall (r : R), (a < r < b)%R -> (a <= r <= b)%R).
 move=> H3.
 exists (fun (r : R) => exist (fun (y : {x : R | (a <= x <= b)%R}) => (a < proj1_sig y < b)%R) (exist (fun (x : R) => (a <= x <= b)%R) (proj1_sig (g r)) (H3 (proj1_sig (g r)) (proj2_sig (g r)))) (proj2_sig (g r))).
-exists (fun (r : {y : {x : R | (a <= x <= b)%R}
-       | In {x : R | (a <= x <= b)%R}
-           (fun (r : {x : R | (a <= x <= b)%R}) => (a < proj1_sig r < b)%R) y}) => f (exist (fun (x : R) => (a < x < b)%R) (proj1_sig (proj1_sig r)) (proj2_sig r))).
+exists (fun (r : {y : {x : R | (a <= x <= b)%R} | In {x : R | (a <= x <= b)%R} (fun (r : {x : R | (a <= x <= b)%R}) => (a < proj1_sig r < b)%R) y}) => f (exist (fun (x : R) => (a < x < b)%R) (proj1_sig (proj1_sig r)) (proj2_sig r))).
 apply conj.
 move=> x.
 simpl.
@@ -1431,8 +1429,10 @@ elim.
 move=> t H2.
 elim (le_not_lt O (proj1_sig (g t)) (le_0_n (proj1_sig (g t))) (proj2_sig (g t))).
 move=> H1.
-exists (fun (m : Count O) => match (le_not_lt O (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)) with end).
-exists (fun (t : T) => match H1 (Inhabited_intro T (Full_set T) t (Full_intro T t)) with end).
+exists (fun (m : Count O) => match (le_not_lt O (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)) with
+end).
+exists (fun (t : T) => match H1 (Inhabited_intro T (Full_set T) t (Full_intro T t)) with
+end).
 apply conj.
 move=> m.
 elim (le_not_lt O (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)).
@@ -1446,8 +1446,7 @@ Definition cardLe (A B : Type) := exists (f : A -> B), Injective f.
 
 Lemma CardLeWellDefined : forall (A1 A2 B1 B2 : Type), SameCard A1 A2 -> SameCard B1 B2 -> cardLe A1 B1 = cardLe A2 B2.
 Proof.
-suff: (forall (A1 A2 B1 B2 : Type),
-SameCard A1 A2 -> SameCard B1 B2 -> cardLe A1 B1 -> cardLe A2 B2).
+suff: (forall (A1 A2 B1 B2 : Type), SameCard A1 A2 -> SameCard B1 B2 -> cardLe A1 B1 -> cardLe A2 B2).
 move=> H1 A1 A2 B1 B2 H2 H3.
 apply propositional_extensionality.
 apply conj.
@@ -1484,7 +1483,7 @@ Definition CardLeNature : forall (T1 T2 : Type) (C1 C2 : CardT), proj1_sig C1 T1
 
 Lemma cardLeDef2 : forall (A B: Type), cardLe A B <-> exists (B1 : Ensemble B), SameCard A {b : B | In B B1 b}.
 Proof.
-move=> A B. 
+move=> A B.
 apply conj.
 elim.
 move=> f H1.
@@ -1493,8 +1492,7 @@ exists (fun (a : A) => exist (Im A B (Full_set A) f) (f a) (Im_intro A B (Full_s
 apply InjSurjBij.
 move=> a1 a2 H2.
 apply H1.
-suff: (f a1 = proj1_sig (exist (Im A B (Full_set A) f) (f a1)
-       (Im_intro A B (Full_set A) f a1 (Full_intro A a1) (f a1) eq_refl))).
+suff: (f a1 = proj1_sig (exist (Im A B (Full_set A) f) (f a1) (Im_intro A B (Full_set A) f a1 (Full_intro A a1) (f a1) eq_refl))).
 move=> H3.
 rewrite H3.
 rewrite H2.
@@ -1623,7 +1621,7 @@ move=> f H4.
 elim.
 move=> g H5.
 exists (Basics.compose g f).
-apply (InjChain t1 t2 t3 f g H4 H5).  
+apply (InjChain t1 t2 t3 f g H4 H5).
 elim (proj2_sig C3).
 move=> x H3.
 exists x.
@@ -1931,13 +1929,9 @@ rewrite (BijInj QArith_base.Q nat f H1 (proj1_sig (H2 q1)) (proj1_sig (H2 q2)) H
 apply (proj1 (proj2_sig (H2 q2))).
 move=> q.
 apply constructive_definite_description.
-apply (unique_existence (fun (x : QArith_base.Q) => In QArith_base.Q (proj1_sig q) x /\
-  (forall (q1 : QArith_base.Q),
-   In QArith_base.Q (proj1_sig q) q1 ->
-   (QArith_base.Qden x <= QArith_base.Qden q1)%positive))).
+apply (unique_existence (fun (x : QArith_base.Q) => In QArith_base.Q (proj1_sig q) x /\ (forall (q1 : QArith_base.Q), In QArith_base.Q (proj1_sig q) q1 -> (QArith_base.Qden x <= QArith_base.Qden q1)%positive))).
 apply conj.
-suff: (exists (n : nat), is_min_nat (fun (k : nat) => exists (x : QArith_base.Q),
-  In QArith_base.Q (proj1_sig q) x /\ QArith_base.Qden x = Pos.of_nat (S k)) n).
+suff: (exists (n : nat), is_min_nat (fun (k : nat) => exists (x : QArith_base.Q), In QArith_base.Q (proj1_sig q) x /\ QArith_base.Qden x = Pos.of_nat (S k)) n).
 elim.
 move=> n H2.
 elim (proj1 H2).
@@ -1982,16 +1976,10 @@ apply.
 rewrite H6.
 apply I.
 apply H5.
-apply (min_nat_exist (fun (k : nat) =>
-     exists (x : QArith_base.Q),
-       In QArith_base.Q (proj1_sig q) x /\
-       QArith_base.Qden x = Pos.of_nat (S k))).
+apply (min_nat_exist (fun (k : nat) => exists (x : QArith_base.Q), In QArith_base.Q (proj1_sig q) x /\ QArith_base.Qden x = Pos.of_nat (S k))).
 elim (proj2_sig q).
 move=> x H2.
-apply (Inhabited_intro nat (fun (k : nat) =>
-     exists (x : QArith_base.Q),
-       In QArith_base.Q (proj1_sig q) x /\
-       QArith_base.Qden x = Pos.of_nat (S k)) (pred (Pos.to_nat (QArith_base.Qden x)))).
+apply (Inhabited_intro nat (fun (k : nat) => exists (x : QArith_base.Q), In QArith_base.Q (proj1_sig q) x /\ QArith_base.Qden x = Pos.of_nat (S k)) (pred (Pos.to_nat (QArith_base.Qden x)))).
 exists x.
 apply conj.
 rewrite H2.
@@ -2010,8 +1998,7 @@ move=> q1 q2.
 elim q1.
 elim q2.
 move=> Qnum1 Qden1 Qnum2 Qden2 H2 H3.
-suff: (QArith_base.Qeq {| QArith_base.Qnum := Qnum2; QArith_base.Qden := Qden2 |}
-{| QArith_base.Qnum := Qnum1; QArith_base.Qden := Qden1 |}).
+suff: (QArith_base.Qeq {| QArith_base.Qnum := Qnum2; QArith_base.Qden := Qden2 |} {| QArith_base.Qnum := Qnum1; QArith_base.Qden := Qden1 |}).
 unfold QArith_base.Qeq.
 simpl.
 suff: (Qden2 = Qden1).
@@ -2084,9 +2071,7 @@ rewrite H2.
 reflexivity.
 reflexivity.
 apply (proj2 (Formula_6_2 QArith_base.Q QEquivalence (QArith_base.inject_Z (Z.pos (Pos.of_nat (S n1)))) (QArith_base.inject_Z (Z.pos (Pos.of_nat (S n2)))))).
-suff: (EquivalenceRelationClass QArith_base.Q QEquivalence
-  (QArith_base.inject_Z (Z.pos (Pos.of_nat (S n1)))) = proj1_sig (EquivalenceRelationQuotientFunction QArith_base.Q QEquivalence
-       (QArith_base.inject_Z (Z.pos (Pos.of_nat (S n1)))))).
+suff: (EquivalenceRelationClass QArith_base.Q QEquivalence (QArith_base.inject_Z (Z.pos (Pos.of_nat (S n1)))) = proj1_sig (EquivalenceRelationQuotientFunction QArith_base.Q QEquivalence (QArith_base.inject_Z (Z.pos (Pos.of_nat (S n1)))))).
 move=> H2.
 rewrite H2.
 rewrite H1.
@@ -2096,21 +2081,16 @@ Qed.
 
 Lemma Formula_85_3 : SameCard (nat -> Count 2) R.
 Proof.
+suff: (forall (an : nat -> R) (s : R) (k : nat), (Un_cv (sum_f_R0 an) s) <-> (Un_cv (sum_f_R0 (fun (n : nat) => an (n + (S k)))) (s - (sum_f_R0 an k))%R)).
+move=> H0.
 apply (Formula_1_3 (nat -> Count 2) {f : nat -> Count 2 | forall (n : nat), exists (m : nat), m >= n /\ f m = (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))} R).
 suff: (let sw := fun (m : Count 2) => match excluded_middle_informative (m = (exist (fun (k : nat) => k < 2) 1 (le_n 2))) with
   | left _ => (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))
   | right _ => (exist (fun (k : nat) => k < 2) 1 (le_n 2))
-end in SameCard (nat -> Count 2)
-  {f : (nat -> Count 2)
-  | forall (n : nat),
-    exists (m : nat),
-      m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))}).
+end in SameCard (nat -> Count 2) {f : (nat -> Count 2) | forall (n : nat), exists (m : nat), m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))}).
 apply.
 move=> sw.
-suff: (forall (f : nat -> Count 2), In (nat -> Count 2) (fun (g : nat -> Count 2) => forall (n : nat),
-    exists (m : nat),
-      m >= n /\ g m = (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) 
-(match excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> f m = (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) with
+suff: (forall (f : nat -> Count 2), In (nat -> Count 2) (fun (g : nat -> Count 2) => forall (n : nat), exists (m : nat), m >= n /\ g m = (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) (match excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> f m = (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) with
   | left _ => (fun (k : nat) => match k with
     | O => (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))
     | S k0 => f k0
@@ -2124,10 +2104,7 @@ suff: (forall (f : nat -> Count 2), In (nat -> Count 2) (fun (g : nat -> Count 2
   end
 end)).
 move=> H1.
-exists (fun (f : nat -> Count 2) => exist (fun (g : nat -> Count 2) => forall (n : nat),
-    exists (m : nat),
-      m >= n /\ g m = (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))))
-(match excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> f m = (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) with
+exists (fun (f : nat -> Count 2) => exist (fun (g : nat -> Count 2) => forall (n : nat), exists (m : nat), m >= n /\ g m = (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) (match excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> f m = (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) with
   | left _ => (fun (k : nat) => match k with
     | O => (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))
     | S k0 => f k0
@@ -2140,11 +2117,7 @@ exists (fun (f : nat -> Count 2) => exist (fun (g : nat -> Count 2) => forall (n
     | right _ => f
   end
 end) (H1 f)).
-exists (fun (f : {g : nat -> Count 2 |
-        forall (n : nat),
-        exists (m : nat),
-          m >= n /\ g m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))}) => 
-match excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> proj1_sig f m = (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) with
+exists (fun (f : {g : nat -> Count 2 | forall (n : nat), exists (m : nat), m >= n /\ g m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))}) => match excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> proj1_sig f m = (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) with
   | left _ => match excluded_middle_informative (proj1_sig f O = (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) with
     | left _ => (fun (k : nat) => proj1_sig f (S k))
     | right _ => (fun (k : nat) => sw (proj1_sig f (S k)))
@@ -2154,32 +2127,14 @@ end).
 simpl.
 apply conj.
 move=> x.
-elim (excluded_middle_informative
-           (exists (n : nat),
-              forall (m : nat),
-              m >= n ->
-              x m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
+elim (excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> x m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
 move=> H2.
-elim (excluded_middle_informative
-      (@ex nat
-         (fun n : nat =>
-          forall (m : nat) (_ : ge m n),
-          @eq (Count (S (S O)))
-            match m return (Count (S (S O))) with
-            | O =>
-                @exist nat (fun k : nat => lt k (S (S O))) O
-                  (le_S (S O) (S O) (le_n (S O)))
-            | S k0 => x k0
-            end
-            (@exist nat (fun k : nat => lt k (S (S O))) O
-               (le_S (S O) (S O) (le_n (S O))))))).
+elim (excluded_middle_informative (@ex nat (fun n : nat => forall (m : nat) (_ : ge m n), @eq (Count (S (S O))) match m return (Count (S (S O))) with
+  | O => @exist nat (fun k : nat => lt k (S (S O))) O (le_S (S O) (S O) (le_n (S O)))
+  | S k0 => x k0
+end (@exist nat (fun k : nat => lt k (S (S O))) O (le_S (S O) (S O) (le_n (S O))))))).
 move=> H3.
-elim (excluded_middle_informative
-      (@eq (Count (S (S O)))
-         (@exist nat (fun k : nat => lt k (S (S O))) O
-            (le_S (S O) (S O) (le_n (S O))))
-         (@exist nat (fun k : nat => lt k (S (S O))) O
-            (le_S (S O) (S O) (le_n (S O)))))).
+elim (excluded_middle_informative (@eq (Count (S (S O))) (@exist nat (fun k : nat => lt k (S (S O))) O (le_S (S O) (S O) (le_n (S O)))) (@exist nat (fun k : nat => lt k (S (S O))) O (le_S (S O) (S O) (le_n (S O)))))).
 move=> H4.
 reflexivity.
 elim.
@@ -2206,30 +2161,14 @@ exists k.
 reflexivity.
 apply H4.
 move=> H2.
-elim (excluded_middle_informative
-           (exists (n : nat),
-              forall (m : nat),
-              m >= n -> x m = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
+elim (excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> x m = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
 move=> H3.
-elim (excluded_middle_informative
-    (@ex nat
-         (fun (n : nat) =>
-          forall (m : nat) (_ : ge m n),
-          @eq (Count (S (S O)))
-            match m return (Count (S (S O))) with
-            | O =>
-                @exist nat (fun (k : nat) => lt k (S (S O))) 
-                  (S O) (le_n (S (S O)))
-            | S k0 => sw (x k0)
-            end
-            (@exist nat (fun (k : nat) => lt k (S (S O))) O
-               (le_S (S O) (S O) (le_n (S O))))))).
+elim (excluded_middle_informative (@ex nat (fun (n : nat) => forall (m : nat) (_ : ge m n), @eq (Count (S (S O))) match m return (Count (S (S O))) with
+  | O => @exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O)))
+  | S k0 => sw (x k0)
+end (@exist nat (fun (k : nat) => lt k (S (S O))) O (le_S (S O) (S O) (le_n (S O))))))).
 move=> H4.
-elim (excluded_middle_informative
-      (@eq (Count (S (S O)))
-         (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O))))
-         (@exist nat (fun (k : nat) => lt k (S (S O))) O
-            (le_S (S O) (S O) (le_n (S O)))))).
+elim (excluded_middle_informative (@eq (Count (S (S O))) (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O)))) (@exist nat (fun (k : nat) => lt k (S (S O))) O (le_S (S O) (S O) (le_n (S O)))))).
 move=> H5.
 elim (lt_irrefl (proj1_sig (exist (fun (k : nat) => k < 2) 1 (le_n 2)))).
 rewrite {1} H5.
@@ -2238,14 +2177,9 @@ move=> H5.
 apply functional_extensionality.
 move=> n.
 unfold sw.
-elim (excluded_middle_informative
-         (x n = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
+elim (excluded_middle_informative (x n = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
 move=> H6.
-elim (excluded_middle_informative
-      (@eq (Count (S (S O)))
-         (@exist nat (fun (k : nat) => lt k (S (S O))) O
-            (le_S (S O) (S O) (le_n (S O))))
-         (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O)))))).
+elim (excluded_middle_informative (@eq (Count (S (S O))) (@exist nat (fun (k : nat) => lt k (S (S O))) O (le_S (S O) (S O) (le_n (S O)))) (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O)))))).
 move=> H7.
 elim (lt_irrefl (proj1_sig (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))))).
 rewrite {2} H7.
@@ -2254,10 +2188,7 @@ move=> H7.
 rewrite H6.
 reflexivity.
 move=> H6.
-elim (excluded_middle_informative
-      (@eq (Count (S (S O)))
-         (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O))))
-         (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O)))))).
+elim (excluded_middle_informative (@eq (Count (S (S O))) (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O)))) (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O)))))).
 move=> H7.
 elim (le_lt_or_eq (proj1_sig (x n)) 1 (le_S_n (proj1_sig (x n)) 1 (proj2_sig (x n)))).
 move=> H8.
@@ -2285,10 +2216,7 @@ move=> k H6.
 rewrite H6.
 rewrite (H4 k).
 unfold sw.
-elim (excluded_middle_informative
-      (@eq (Count (S (S O)))
-         (@exist nat (fun (l : nat) => lt l (S (S O))) (S O) (le_n (S (S O))))
-         (@exist nat (fun (l : nat) => lt l (S (S O))) (S O) (le_n (S (S O)))))).
+elim (excluded_middle_informative (@eq (Count (S (S O))) (@exist nat (fun (l : nat) => lt l (S (S O))) (S O) (le_n (S (S O)))) (@exist nat (fun (l : nat) => lt l (S (S O))) (S O) (le_n (S (S O)))))).
 move=> H7.
 reflexivity.
 elim.
@@ -2305,10 +2233,7 @@ exists k.
 reflexivity.
 apply H5.
 move=> H3.
-elim (excluded_middle_informative
-    (exists n : nat,
-       forall m : nat,
-       m >= n -> x m = exist (fun k : nat => k < 2) 0 (le_S 1 1 (le_n 1)))).
+elim (excluded_middle_informative (exists n : nat, forall m : nat, m >= n -> x m = exist (fun k : nat => k < 2) 0 (le_S 1 1 (le_n 1)))).
 move=> H4.
 elim (H2 H4).
 move=> H4.
@@ -2316,21 +2241,11 @@ reflexivity.
 move=> y.
 apply sig_map.
 simpl.
-elim (excluded_middle_informative
-           (exists (n : nat),
-              forall (m : nat),
-              m >= n ->
-              proj1_sig y m =
-              exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
+elim (excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> proj1_sig y m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
 move=> H2.
-elim (excluded_middle_informative
-           (proj1_sig y 0 = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
+elim (excluded_middle_informative (proj1_sig y 0 = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
 move=> H3.
-elim (excluded_middle_informative
-    (exists (n : nat),
-       forall (m : nat),
-       m >= n ->
-       proj1_sig y (S m) = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
+elim (excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> proj1_sig y (S m) = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
 move=> H4.
 apply functional_extensionality.
 elim.
@@ -2345,23 +2260,15 @@ exists n.
 move=> m H5.
 apply (H4 (S m) (le_S n m H5)).
 move=> H3.
-elim (excluded_middle_informative
-    (exists (n : nat),
-       forall (m : nat),
-       m >= n ->
-       sw (proj1_sig y (S m)) =
-       exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
+elim (excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> sw (proj1_sig y (S m)) = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
 elim.
 move=> n1 H4.
 elim H2.
 move=> n2 H5.
 elim (lt_irrefl (proj1_sig (proj1_sig y (S (max n1 n2))))).
-suff: (sw (proj1_sig y (S (max n1 n2))) =
-     exist (fun k : nat => k < 2) 0 (le_S 1 1 (le_n 1))).
+suff: (sw (proj1_sig y (S (max n1 n2))) = exist (fun k : nat => k < 2) 0 (le_S 1 1 (le_n 1))).
 unfold sw.
-elim (excluded_middle_informative
-    (proj1_sig y (S (max n1 n2)) =
-     exist (fun (k : nat) => k < 2) 1 (le_n 2))).
+elim (excluded_middle_informative (proj1_sig y (S (max n1 n2)) = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
 move=> H6 H7.
 rewrite {1} (H5 (S (max n1 n2))).
 rewrite H6.
@@ -2373,44 +2280,11 @@ rewrite {1} H7.
 apply (le_n 1).
 apply (H4 (max n1 n2) (Nat.le_max_l n1 n2)).
 move=> H4.
-elim (excluded_middle_informative
-    (@ex nat
-         (fun (n : nat) =>
-          forall (m : nat) (_ : ge m n),
-          @eq (Count (S (S O)))
-            (sw
-               (@proj1_sig (forall _ : nat, Count (S (S O)))
-                  (fun g : forall _ : nat, Count (S (S O)) =>
-                   forall n0 : nat,
-                   @ex nat
-                     (fun m0 : nat =>
-                      and (ge m0 n0)
-                        (@eq (Count (S (S O))) (g m0)
-                           (@exist nat (fun k : nat => lt k (S (S O))) O
-                              (le_S (S O) (S O) (le_n (S O))))))) y 
-                  (S m)))
-            (@exist nat (fun k : nat => lt k (S (S O))) O
-               (le_S (S O) (S O) (le_n (S O))))))).
+elim (excluded_middle_informative (@ex nat (fun (n : nat) => forall (m : nat) (_ : ge m n), @eq (Count (S (S O))) (sw (@proj1_sig (forall _ : nat, Count (S (S O))) (fun g : forall _ : nat, Count (S (S O)) => forall n0 : nat, @ex nat (fun m0 : nat => and (ge m0 n0) (@eq (Count (S (S O))) (g m0) (@exist nat (fun k : nat => lt k (S (S O))) O (le_S (S O) (S O) (le_n (S O))))))) y (S m))) (@exist nat (fun k : nat => lt k (S (S O))) O (le_S (S O) (S O) (le_n (S O))))))).
 move=> H5.
 elim (H4 H5).
 move=> H5.
-elim (excluded_middle_informative
-    (@ex nat
-         (fun (n : nat) =>
-          forall (m : nat) (_ : ge m n),
-          @eq (Count (S (S O)))
-            (sw
-               (@proj1_sig (forall _ : nat, Count (S (S O)))
-                  (fun (g : forall _ : nat, Count (S (S O))) =>
-                   forall n0 : nat,
-                   @ex nat
-                     (fun (m0 : nat) =>
-                      and (ge m0 n0)
-                        (@eq (Count (S (S O))) (g m0)
-                           (@exist nat (fun (k : nat) => lt k (S (S O))) O
-                              (le_S (S O) (S O) (le_n (S O))))))) y 
-                  (S m)))
-            (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O))))))).
+elim (excluded_middle_informative (@ex nat (fun (n : nat) => forall (m : nat) (_ : ge m n), @eq (Count (S (S O))) (sw (@proj1_sig (forall _ : nat, Count (S (S O))) (fun (g : forall _ : nat, Count (S (S O))) => forall n0 : nat, @ex nat (fun (m0 : nat) => and (ge m0 n0) (@eq (Count (S (S O))) (g m0) (@exist nat (fun (k : nat) => lt k (S (S O))) O (le_S (S O) (S O) (le_n (S O))))))) y (S m))) (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O))))))).
 move=> H6.
 apply functional_extensionality.
 elim.
@@ -2430,14 +2304,9 @@ rewrite H7.
 reflexivity.
 move=> n H7.
 unfold sw.
-elim (excluded_middle_informative
-         (proj1_sig y (S n) = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
+elim (excluded_middle_informative (proj1_sig y (S n) = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
 move=> H8.
-elim (excluded_middle_informative
-      (@eq (Count (S (S O)))
-         (@exist nat (fun (k : nat) => lt k (S (S O))) O
-            (le_S (S O) (S O) (le_n (S O))))
-         (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O)))))).
+elim (excluded_middle_informative (@eq (Count (S (S O))) (@exist nat (fun (k : nat) => lt k (S (S O))) O (le_S (S O) (S O) (le_n (S O)))) (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O)))))).
 move=> H9.
 elim (lt_irrefl (proj1_sig (exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))))).
 rewrite {2} H9.
@@ -2446,10 +2315,7 @@ move=> H9.
 rewrite H8.
 reflexivity.
 move=> H8.
-elim (excluded_middle_informative
-    (@eq (Count (S (S O)))
-         (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O))))
-         (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O)))))).
+elim (excluded_middle_informative (@eq (Count (S (S O))) (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O)))) (@exist nat (fun (k : nat) => lt k (S (S O))) (S O) (le_n (S (S O)))))).
 move=> H9.
 elim (le_lt_or_eq (proj1_sig (proj1_sig y (S n))) 1 (le_S_n (proj1_sig (proj1_sig y (S n))) 1 (proj2_sig (proj1_sig y (S n))))).
 move=> H10.
@@ -2472,24 +2338,16 @@ move=> n H6.
 exists n.
 move=> m H7.
 unfold sw.
-elim (excluded_middle_informative
-    (proj1_sig y (S m) = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
+elim (excluded_middle_informative (proj1_sig y (S m) = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
 rewrite (H6 (S m) (le_S n m H7)).
 apply.
 move=> H8.
 reflexivity.
-elim (excluded_middle_informative
-    (exists (n : nat),
-       forall (m : nat),
-       m >= n ->
-       proj1_sig y m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
+elim (excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> proj1_sig y m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
 move=> H2 H3.
 elim (H3 H2).
 move=> H2 H3.
-elim (excluded_middle_informative
-    (exists (n : nat),
-       forall (m : nat),
-       m >= n -> proj1_sig y m = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
+elim (excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> proj1_sig y m = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
 elim.
 move=> n H4.
 elim (proj2_sig y n).
@@ -2502,10 +2360,7 @@ move=> H4.
 reflexivity.
 move=> f.
 unfold In.
-elim (excluded_middle_informative
-      (exists (n : nat),
-         forall (m : nat),
-         m >= n -> f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
+elim (excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
 elim.
 move=> n H1 m.
 exists (S (max n m)).
@@ -2513,10 +2368,7 @@ apply conj.
 apply (le_S m (max n m) (Nat.le_max_r n m)).
 apply (H1 (max n m) (Nat.le_max_l n m)).
 move=> H1.
-elim (excluded_middle_informative
-      (exists (n : nat),
-         forall (m : nat),
-         m >= n -> f m = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
+elim (excluded_middle_informative (exists (n : nat), forall (m : nat), m >= n -> f m = exist (fun (k : nat) => k < 2) 1 (le_n 2))).
 elim.
 move=> n H2 m.
 exists (S (max n m)).
@@ -2524,10 +2376,7 @@ apply conj.
 apply (le_S m (max n m) (Nat.le_max_r n m)).
 rewrite (H2 (max n m) (Nat.le_max_l n m)).
 unfold sw.
-elim (excluded_middle_informative
-    (@eq (Count (S (S O)))
-         (@exist nat (fun k : nat => lt k (S (S O))) (S O) (le_n (S (S O))))
-         (@exist nat (fun k : nat => lt k (S (S O))) (S O) (le_n (S (S O)))))).
+elim (excluded_middle_informative (@eq (Count (S (S O))) (@exist nat (fun k : nat => lt k (S (S O))) (S O) (le_n (S (S O)))) (@exist nat (fun k : nat => lt k (S (S O))) (S O) (le_n (S (S O)))))).
 move=> H3.
 reflexivity.
 elim.
@@ -2553,33 +2402,16 @@ apply H6.
 move=> H5.
 apply sig_map.
 apply H5.
-apply (Formula_1_3 {f : nat -> Count 2
-  | forall (n : nat),
-    exists (m : nat),
-      m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))} {r : R | (0 <= r < 1)%R} R).
-suff: (forall (f : nat -> Count 2), (forall (n : nat),
-    exists (m : nat),
-      (m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) -> exists (x : {r : R | (0 <= r < 1)%R}), Un_cv (sum_f_R0 (fun (n : nat) => INR (proj1_sig (f n)) / pow 2 (S n))%R) (proj1_sig x)).
+apply (Formula_1_3 {f : nat -> Count 2 | forall (n : nat), exists (m : nat), m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))} {r : R | (0 <= r < 1)%R} R).
+suff: (forall (f : nat -> Count 2), (forall (n : nat), exists (m : nat), (m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) -> exists (x : {r : R | (0 <= r < 1)%R}), Un_cv (sum_f_R0 (fun (n : nat) => INR (proj1_sig (f n)) / pow 2 (S n))%R) (proj1_sig x)).
 move=> H1.
-suff: (forall (f1 f2 : nat -> Count 2) (x : {r : R | (0 <= r < 1)%R}), (forall (n : nat),
-    exists (m : nat),
-      (m >= n /\ f1 m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) -> (forall (n : nat),
-    exists (m : nat),
-      (m >= n /\ f2 m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) -> Un_cv (sum_f_R0 (fun (n : nat) => INR (proj1_sig (f1 n)) / pow 2 (S n))%R) (proj1_sig x) -> Un_cv (sum_f_R0 (fun (n : nat) => INR (proj1_sig (f2 n)) / pow 2 (S n))%R) (proj1_sig x) -> f1 = f2).
+suff: (forall (f1 f2 : nat -> Count 2) (x : {r : R | (0 <= r < 1)%R}), (forall (n : nat), exists (m : nat), (m >= n /\ f1 m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) -> (forall (n : nat), exists (m : nat), (m >= n /\ f2 m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) -> Un_cv (sum_f_R0 (fun (n : nat) => INR (proj1_sig (f1 n)) / pow 2 (S n))%R) (proj1_sig x) -> Un_cv (sum_f_R0 (fun (n : nat) => INR (proj1_sig (f2 n)) / pow 2 (S n))%R) (proj1_sig x) -> f1 = f2).
 move=> H2.
-suff: (forall (f : nat -> Count 2), (forall (n : nat),
-    exists (m : nat),
-      (m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) -> {x : {r : R | (0 <= r < 1)%R} | Un_cv (sum_f_R0 (fun (n : nat) => INR (proj1_sig (f n)) / pow 2 (S n))%R) (proj1_sig x)}).
+suff: (forall (f : nat -> Count 2), (forall (n : nat), exists (m : nat), (m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))) -> {x : {r : R | (0 <= r < 1)%R} | Un_cv (sum_f_R0 (fun (n : nat) => INR (proj1_sig (f n)) / pow 2 (S n))%R) (proj1_sig x)}).
 move=> H3.
-suff: (forall (x : {r : R | (0 <= r < 1)%R}), {g : {f : nat -> Count 2
-  | forall (n : nat),
-    exists (m : nat),
-      m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))} | Un_cv (sum_f_R0 (fun (n : nat) => INR (proj1_sig (proj1_sig g n)) / pow 2 (S n))%R) (proj1_sig x)}).
+suff: (forall (x : {r : R | (0 <= r < 1)%R}), {g : {f : nat -> Count 2 | forall (n : nat), exists (m : nat), m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))} | Un_cv (sum_f_R0 (fun (n : nat) => INR (proj1_sig (proj1_sig g n)) / pow 2 (S n))%R) (proj1_sig x)}).
 move=> H4.
-exists (fun (g : {f : nat -> Count 2
-  | forall (n : nat),
-    exists (m : nat),
-      m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))}) => proj1_sig (H3 (proj1_sig g) (proj2_sig g))).
+exists (fun (g : {f : nat -> Count 2 | forall (n : nat), exists (m : nat), m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))}) => proj1_sig (H3 (proj1_sig g) (proj2_sig g))).
 exists (fun (x : {r : R | (0 <= r < 1)%R}) => proj1_sig (H4 x)).
 apply conj.
 move=> x.
@@ -2587,57 +2419,31 @@ apply sig_map.
 apply (H2 (proj1_sig (proj1_sig (H4 (proj1_sig (H3 (proj1_sig x) (proj2_sig x)))))) (proj1_sig x) (proj1_sig (H3 (proj1_sig x) (proj2_sig x))) (proj2_sig (proj1_sig (H4 (proj1_sig (H3 (proj1_sig x) (proj2_sig x)))))) (proj2_sig x) (proj2_sig (H4 (proj1_sig (H3 (proj1_sig x) (proj2_sig x))))) (proj2_sig (H3 (proj1_sig x) (proj2_sig x)))).
 move=> y.
 apply sig_map.
-apply (Proposition_2_3 (sum_f_R0
-            (fun (n : nat) =>
-             (INR (proj1_sig (proj1_sig (proj1_sig (H4 y)) n)) / 2 ^ (S n))%R)) (proj1_sig
-            (proj1_sig
-               (H3 (proj1_sig (proj1_sig (H4 y)))
-                  (proj2_sig (proj1_sig (H4 y)))))) (proj1_sig y) (proj2_sig (H3 (proj1_sig (proj1_sig (H4 y))) (proj2_sig (proj1_sig (H4 y))))) (proj2_sig (H4 y))).
+apply (Proposition_2_3 (sum_f_R0 (fun (n : nat) => (INR (proj1_sig (proj1_sig (proj1_sig (H4 y)) n)) / 2 ^ (S n))%R)) (proj1_sig (proj1_sig (H3 (proj1_sig (proj1_sig (H4 y))) (proj2_sig (proj1_sig (H4 y)))))) (proj1_sig y) (proj2_sig (H3 (proj1_sig (proj1_sig (H4 y))) (proj2_sig (proj1_sig (H4 y))))) (proj2_sig (H4 y))).
 move=> x.
-apply (constructive_definite_description (fun (g
-: {f : nat -> Count 2
-  | forall (n : nat),
-    exists (m : nat),
-      m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))}) =>
-Un_cv (sum_f_R0 (fun (n : nat) => (INR (proj1_sig (proj1_sig g n)) / 2 ^ (S n))%R))
-    (proj1_sig x))).
-apply (proj1 (unique_existence (fun (g
-: {f : nat -> Count 2
-  | forall (n : nat),
-    exists (m : nat),
-      m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))}) =>
-Un_cv (sum_f_R0 (fun (n : nat) => (INR (proj1_sig (proj1_sig g n)) / 2 ^ (S n))%R))
-    (proj1_sig x)))).
+apply (constructive_definite_description (fun (g : {f : nat -> Count 2 | forall (n : nat), exists (m : nat), m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))}) => Un_cv (sum_f_R0 (fun (n : nat) => (INR (proj1_sig (proj1_sig g n)) / 2 ^ (S n))%R)) (proj1_sig x))).
+apply (proj1 (unique_existence (fun (g : {f : nat -> Count 2 | forall (n : nat), exists (m : nat), m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))}) => Un_cv (sum_f_R0 (fun (n : nat) => (INR (proj1_sig (proj1_sig g n)) / 2 ^ (S n))%R)) (proj1_sig x)))).
 apply conj.
 elim (Theorem_3_9_sub 2 (le_n 2) (proj1_sig x)).
 simpl.
 move=> an H4.
-elim (classic (forall (n : nat),
-         exists (m : nat),
-           m >= n /\ an m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
+elim (classic (forall (n : nat), exists (m : nat), m >= n /\ an m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
 move=> H5.
-exists (exist (fun (f : nat -> Count 2) => forall (n : nat),
-         exists (m : nat),
-           m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))) an H5).
+exists (exist (fun (f : nat -> Count 2) => forall (n : nat), exists (m : nat), m >= n /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))) an H5).
 simpl.
-suff: (let An :=
-       fun (n : nat) =>
-       match n with
-       | 0 => IZR (Floor (proj1_sig x))
-       | S n1 => (INR (proj1_sig (an n1)) / INR 2 ^ S n1)%R
-       end in Un_cv (sum_f_R0 (fun n : nat => (INR (proj1_sig (an n)) / (2 * 2 ^ n))%R))
-  (proj1_sig x)).
+suff: (let An := fun (n : nat) => match n with
+  | 0 => IZR (Floor (proj1_sig x))
+  | S n1 => (INR (proj1_sig (an n1)) / INR 2 ^ S n1)%R
+end in Un_cv (sum_f_R0 (fun n : nat => (INR (proj1_sig (an n)) / (2 * 2 ^ n))%R)) (proj1_sig x)).
 apply.
 move=> An.
-suff: ((fun (n : nat) => (INR (proj1_sig (an n)) / (2 * 2 ^ n))%R)
-= 
-(fun (n : nat) => An (n + S O))).
+suff: ((fun (n : nat) => (INR (proj1_sig (an n)) / (2 * 2 ^ n))%R) = (fun (n : nat) => An (n + S O))).
 move=> H6.
 rewrite H6.
 suff: (proj1_sig x = proj1_sig x - (sum_f_R0 An O))%R.
 move=> H7.
 rewrite H7.
-apply (proj1 (SumShiftUnR An (proj1_sig x) O) H4).
+apply (proj1 (H0 An (proj1_sig x) O) H4).
 simpl.
 rewrite - (Floor_unique (proj1_sig x) 0).
 rewrite (Rminus_0_r (proj1_sig x)).
@@ -2652,10 +2458,7 @@ move=> H5.
 suff: (exists (n : nat), an n = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)) /\ (forall (m : nat), m > n -> proj1_sig (an m) = 1)).
 elim.
 move=> n H6.
-suff: (In (nat -> Count 2) (fun (f : nat -> Count 2) => forall (n0 : nat),
-         exists (m : nat),
-           m >= n0 /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))
-(fun (k : nat) => match excluded_middle_informative (k < n) with
+suff: (In (nat -> Count 2) (fun (f : nat -> Count 2) => forall (n0 : nat), exists (m : nat), m >= n0 /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))) (fun (k : nat) => match excluded_middle_informative (k < n) with
   | left _ => an k
   | right _ => match excluded_middle_informative (k = n) with
     | left _ => exist (fun (k : nat) => k < 2) 1 (le_n 2)
@@ -2663,10 +2466,7 @@ suff: (In (nat -> Count 2) (fun (f : nat -> Count 2) => forall (n0 : nat),
   end
 end)).
 move=> H7.
-exists (exist (fun (f : nat -> Count 2) => forall (n0 : nat),
-         exists (m : nat),
-           m >= n0 /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))
-(fun (k : nat) => match excluded_middle_informative (k < n) with
+exists (exist (fun (f : nat -> Count 2) => forall (n0 : nat), exists (m : nat), m >= n0 /\ f m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))) (fun (k : nat) => match excluded_middle_informative (k < n) with
   | left _ => an k
   | right _ => match excluded_middle_informative (k = n) with
     | left _ => exist (fun (k : nat) => k < 2) 1 (le_n 2)
@@ -2674,21 +2474,15 @@ exists (exist (fun (f : nat -> Count 2) => forall (n0 : nat),
   end
 end) H7).
 simpl.
-suff: (Un_cv (sum_f_R0 (fun n : nat => (INR (proj1_sig (an n)) / (2 * 2 ^ n))%R))
-  (proj1_sig x)).
+suff: (Un_cv (sum_f_R0 (fun n : nat => (INR (proj1_sig (an n)) / (2 * 2 ^ n))%R)) (proj1_sig x)).
 move=> H8.
-suff: (forall (m : nat), (m >= n)%nat -> sum_f_R0
-     (fun (k : nat) =>
-      (INR
-         (proj1_sig
-            (match excluded_middle_informative (k < n) with
+suff: (forall (m : nat), (m >= n)%nat -> sum_f_R0 (fun (k : nat) => (INR (proj1_sig (match excluded_middle_informative (k < n) with
   | left _ => an k
   | right _ => match excluded_middle_informative (k = n) with
     | left _ => exist (fun (k : nat) => k < 2) 1 (le_n 2)
     | right _ => exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))
   end
-end)%nat) /
-       (2 * 2 ^ k))%R) m = sum_f_R0 (fun (n : nat) => (INR (proj1_sig (an n)) / (2 * 2 ^ n))) m + / (2 ^ (S m)))%R.
+end)%nat) / (2 * 2 ^ k))%R) m = sum_f_R0 (fun (n : nat) => (INR (proj1_sig (an n)) / (2 * 2 ^ n))) m + / (2 ^ (S m)))%R.
 move=> H9 eps H10.
 elim (H8 (eps * / 2)%R (eps2_Rgt_R0 eps H10)).
 move=> N1 H11.
@@ -2704,31 +2498,19 @@ rewrite (Rplus_comm (/ 2 ^ S k) (- proj1_sig x)).
 rewrite - Rplus_assoc.
 rewrite - (Rminus_0_r (/ 2 ^ S k)).
 rewrite - (Rmult_1_l (/ 2 ^ S k)).
-apply (Rle_lt_trans (Rabs
-   (sum_f_R0 (fun (n0 : nat) => INR (proj1_sig (an n0)) / (2 * 2 ^ n0)) k +
-    - proj1_sig x + (1 / 2 ^ S k - 0)))%R (R_dist
-         (sum_f_R0 (fun (n0 : nat) => INR (proj1_sig (an n0)) / (2 * 2 ^ n0)) k)
-         (proj1_sig x) + R_dist (1 / 2 ^ S k) 0)%R eps).
+apply (Rle_lt_trans (Rabs (sum_f_R0 (fun (n0 : nat) => INR (proj1_sig (an n0)) / (2 * 2 ^ n0)) k + - proj1_sig x + (1 / 2 ^ S k - 0)))%R (R_dist (sum_f_R0 (fun (n0 : nat) => INR (proj1_sig (an n0)) / (2 * 2 ^ n0)) k) (proj1_sig x) + R_dist (1 / 2 ^ S k) 0)%R eps).
 apply Rabs_triang.
 rewrite - (eps2 eps).
 apply Rplus_lt_compat.
 apply (H11 k (le_trans N1 (max n (max N1 N2)) k (le_trans N1 (max N1 N2) (max n (max N1 N2)) (Nat.le_max_l N1 N2) (Nat.le_max_r n (max N1 N2))) H13)).
 apply (H12 (S k) (le_S N2 k (le_trans N2 (max n (max N1 N2)) k (le_trans N2 (max N1 N2) (max n (max N1 N2)) (Nat.le_max_r N1 N2) (Nat.le_max_r n (max N1 N2))) H13))).
-suff: (forall (m : nat),
-(m < n)%nat ->
-sum_f_R0
-  (fun (k : nat) =>
-   (INR
-      (proj1_sig
-         (match excluded_middle_informative (k < n) with
+suff: (forall (m : nat), (m < n)%nat -> sum_f_R0 (fun (k : nat) => (INR (proj1_sig (match excluded_middle_informative (k < n) with
   | left _ => an k
   | right _ => match excluded_middle_informative (k = n) with
     | left _ => exist (fun (k : nat) => k < 2) 1 (le_n 2)
     | right _ => exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))
   end
-end))%nat /
-    (2 * 2 ^ k))) m =
-sum_f_R0 (fun (n0 : nat) => INR (proj1_sig (an n0)) / (2 * 2 ^ n0)) m)%R.
+end))%nat / (2 * 2 ^ k))) m = sum_f_R0 (fun (n0 : nat) => INR (proj1_sig (an n0)) / (2 * 2 ^ n0)) m)%R.
 move=> H9.
 elim.
 move=> H10.
@@ -2826,24 +2608,19 @@ reflexivity.
 move=> H11.
 elim (H11 H10).
 apply (le_trans (S k) (S (S k)) n (le_S (S k) (S k) (le_n (S k))) H10).
-suff: (let An :=
-       fun (n : nat) =>
-       match n with
-       | 0 => IZR (Floor (proj1_sig x))
-       | S n1 => (INR (proj1_sig (an n1)) / INR 2 ^ S n1)%R
-       end in Un_cv (sum_f_R0 (fun n : nat => (INR (proj1_sig (an n)) / (2 * 2 ^ n))%R))
-  (proj1_sig x)).
+suff: (let An := fun (n : nat) => match n with
+  | 0 => IZR (Floor (proj1_sig x))
+  | S n1 => (INR (proj1_sig (an n1)) / INR 2 ^ S n1)%R
+end in Un_cv (sum_f_R0 (fun n : nat => (INR (proj1_sig (an n)) / (2 * 2 ^ n))%R)) (proj1_sig x)).
 apply.
 move=> An.
-suff: ((fun (n : nat) => (INR (proj1_sig (an n)) / (2 * 2 ^ n))%R)
-= 
-(fun (n : nat) => An (n + S O))).
+suff: ((fun (n : nat) => (INR (proj1_sig (an n)) / (2 * 2 ^ n))%R) = (fun (n : nat) => An (n + S O))).
 move=> H8.
 rewrite H8.
 suff: (proj1_sig x = proj1_sig x - (sum_f_R0 An O))%R.
 move=> H9.
 rewrite H9.
-apply (proj1 (SumShiftUnR An (proj1_sig x) O) H4).
+apply (proj1 (H0 An (proj1_sig x) O) H4).
 simpl.
 rewrite - (Floor_unique (proj1_sig x) 0).
 rewrite (Rminus_0_r (proj1_sig x)).
@@ -2869,8 +2646,7 @@ rewrite - {2} H8.
 apply (Nat.le_max_l (S n) k).
 move=> H8.
 reflexivity.
-suff: (exists (n : nat),
-  an n = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))).
+suff: (exists (n : nat), an n = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))).
 move=> H6.
 apply NNPP.
 move=> H7.
@@ -2957,27 +2733,22 @@ apply H11.
 apply NNPP.
 move=> H6.
 apply (Rlt_irrefl (proj1_sig x)).
-rewrite {2} (Proposition_2_3 (sum_f_R0
-          (fun (n : nat) =>
-           match n with
-           | 0 => IZR (Floor (proj1_sig x))
-           | S n1 => (INR (proj1_sig (an n1)) / ((1 + 1) * (1 + 1) ^ n1))%R
-           end)) (proj1_sig x) 1 H4).
+rewrite {2} (Proposition_2_3 (sum_f_R0 (fun (n : nat) => match n with
+  | 0 => IZR (Floor (proj1_sig x))
+  | S n1 => (INR (proj1_sig (an n1)) / ((1 + 1) * (1 + 1) ^ n1))%R
+end)) (proj1_sig x) 1 H4).
 apply (proj2 (proj2_sig x)).
-apply (proj2 (SumShiftUnR (fun (n : nat) =>
-      match n with
-      | 0 => IZR (Floor (proj1_sig x))
-      | S n1 => (INR (proj1_sig (an n1)) / ((1 + 1) * (1 + 1) ^ n1))%R
-      end) 1 O)).
+apply (proj2 (H0 (fun (n : nat) => match n with
+  | 0 => IZR (Floor (proj1_sig x))
+  | S n1 => (INR (proj1_sig (an n1)) / ((1 + 1) * (1 + 1) ^ n1))%R
+end) 1%R O)).
 simpl.
 rewrite - (Floor_unique (proj1_sig x) 0).
 rewrite (Rminus_0_r 1).
-suff: (sum_f_R0
-     (fun (n : nat) =>
-      match n + 1 with
-      | 0 => 0%R
-      | S n1 => (INR (proj1_sig (an n1)) / ((1 + 1) * (1 + 1) ^ n1))%R
-      end) = (fun (n : nat) => 1 - / (pow 2 (S n)))%R).
+suff: (sum_f_R0 (fun (n : nat) => match n + 1 with
+  | 0 => 0%R
+  | S n1 => (INR (proj1_sig (an n1)) / ((1 + 1) * (1 + 1) ^ n1))%R
+end) = (fun (n : nat) => 1 - / (pow 2 (S n)))%R).
 move=> H7.
 rewrite H7.
 rewrite - {2} (Rminus_0_r 1).
@@ -3066,27 +2837,13 @@ apply sig_map.
 apply (H2 (proj1_sig g1) (proj1_sig g2) x (proj2_sig g1) (proj2_sig g2) H4 H5).
 move=> f H3.
 apply constructive_definite_description.
-apply (proj1 (unique_existence (fun (x : {r : R | (0 <= r < 1)%R}) => Un_cv (sum_f_R0 (fun n : nat => (INR (proj1_sig (f n)) / 2 ^ S n)%R))
-    (proj1_sig x)))).
+apply (proj1 (unique_existence (fun (x : {r : R | (0 <= r < 1)%R}) => Un_cv (sum_f_R0 (fun n : nat => (INR (proj1_sig (f n)) / 2 ^ S n)%R)) (proj1_sig x)))).
 apply conj.
 apply (H1 f H3).
 move=> r1 r2 H4 H5.
 apply sig_map.
 apply (Proposition_2_3 (sum_f_R0 (fun (n : nat) => (INR (proj1_sig (f n)) / 2 ^ S n)%R)) (proj1_sig r1) (proj1_sig r2) H4 H5).
-suff: (forall
-  (g1 g2 : nat -> Count 2) (x : {r : R | (0 <= r < 1)%R}),
-       (forall (n : nat),
-         exists (m : nat),
-           m >= n /\ g1 m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))
--> (forall (n : nat),
-         exists (m : nat),
-           m >= n /\ g2 m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))
-->
-Un_cv
-  (sum_f_R0 (fun (n : nat) => (INR (proj1_sig (g1 n)) / 2 ^ S n)%R))
-  (proj1_sig x) ->
-Un_cv (sum_f_R0 (fun (n : nat) => (INR (proj1_sig (g2 n)) / 2 ^ S n)%R))
-  (proj1_sig x) -> (exists (k : nat), is_min_nat (fun (n : nat) => g1 n <> g2 n) k /\ proj1_sig (g1 k) < proj1_sig (g2 k)) -> False).
+suff: (forall (g1 g2 : nat -> Count 2) (x : {r : R | (0 <= r < 1)%R}), (forall (n : nat), exists (m : nat), m >= n /\ g1 m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))) -> (forall (n : nat), exists (m : nat), m >= n /\ g2 m = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1))) -> Un_cv (sum_f_R0 (fun (n : nat) => (INR (proj1_sig (g1 n)) / 2 ^ S n)%R)) (proj1_sig x) -> Un_cv (sum_f_R0 (fun (n : nat) => (INR (proj1_sig (g2 n)) / 2 ^ S n)%R)) (proj1_sig x) -> (exists (k : nat), is_min_nat (fun (n : nat) => g1 n <> g2 n) k /\ proj1_sig (g1 k) < proj1_sig (g2 k)) -> False).
 move=> H2 g1 g2 x H3 H4 H5 H6.
 apply functional_extensionality.
 apply NNPP.
@@ -3138,15 +2895,12 @@ elim.
 move=> N H6.
 elim (H2 (S N)).
 move=> M H7.
-suff: (forall (k : nat), (k >= M)%nat -> sum_f_R0
-          (fun (n : nat) => (INR (proj1_sig (g2 n)) / 2 ^ S n)%R) k - sum_f_R0
-          (fun (n : nat) => (INR (proj1_sig (g1 n)) / 2 ^ S n)%R) k >= / (2 ^ (S M)))%R.
+suff: (forall (k : nat), (k >= M)%nat -> sum_f_R0 (fun (n : nat) => (INR (proj1_sig (g2 n)) / 2 ^ S n)%R) k - sum_f_R0 (fun (n : nat) => (INR (proj1_sig (g1 n)) / 2 ^ S n)%R) k >= / (2 ^ (S M)))%R.
 move=> H8.
 elim (Rlt_irrefl 0).
 apply (Rlt_le_trans 0 (/ 2 ^ S M) 0).
 apply (Rinv_0_lt_compat (2 ^ S M) (Two_Pow_Gt_Zero (S M))).
-apply (Theorem_2_6_2 (fun (k : nat) => / 2 ^ S M) (fun (k : nat) => (sum_f_R0 (fun (n : nat) => INR (proj1_sig (g2 n)) / 2 ^ S n) k -
-      sum_f_R0 (fun (n : nat) => INR (proj1_sig (g1 n)) / 2 ^ S n) k)) (/ 2 ^ S M) 0)%R.
+apply (Theorem_2_6_2 (fun (k : nat) => / 2 ^ S M) (fun (k : nat) => (sum_f_R0 (fun (n : nat) => INR (proj1_sig (g2 n)) / 2 ^ S n) k - sum_f_R0 (fun (n : nat) => INR (proj1_sig (g1 n)) / 2 ^ S n) k)) (/ 2 ^ S M) 0)%R.
 move=> eps H9.
 exists O.
 move=> n H10.
@@ -3169,15 +2923,12 @@ rewrite Rplus_opp_l.
 apply Rge_le.
 rewrite Rplus_0_r.
 rewrite (Rplus_comm (/ 2 ^ S M)).
-apply (Rge_trans (sum_f_R0 (fun (n : nat) => INR (proj1_sig (g2 n)) / 2 ^ S n) k) (sum_f_R0 (fun (n : nat) => INR (proj1_sig (g1 n)) / 2 ^ S n) k + / 2 ^ S M +
-      / 2 ^ S k) (sum_f_R0 (fun (n : nat) => INR (proj1_sig (g1 n)) / 2 ^ S n) k + / 2 ^ S M) (H8 k H9))%R.
+apply (Rge_trans (sum_f_R0 (fun (n : nat) => INR (proj1_sig (g2 n)) / 2 ^ S n) k) (sum_f_R0 (fun (n : nat) => INR (proj1_sig (g1 n)) / 2 ^ S n) k + / 2 ^ S M + / 2 ^ S k) (sum_f_R0 (fun (n : nat) => INR (proj1_sig (g1 n)) / 2 ^ S n) k + / 2 ^ S M) (H8 k H9))%R.
 rewrite - {2} (Rplus_0_r (sum_f_R0 (fun (n : nat) => INR (proj1_sig (g1 n)) / 2 ^ S n) k + / 2 ^ S M))%R.
 apply Rplus_ge_compat_l.
 left.
 apply (Rinv_0_lt_compat (2 ^ S k) (Two_Pow_Gt_Zero (S k))).
-suff: (forall (k : nat), k >= N -> (sum_f_R0 (fun n : nat => INR (proj1_sig (g2 n)) / 2 ^ S n) k >=
- sum_f_R0 (fun n : nat => INR (proj1_sig (g1 n)) / 2 ^ S n) k +
- / 2 ^ S k)%R).
+suff: (forall (k : nat), k >= N -> (sum_f_R0 (fun n : nat => INR (proj1_sig (g2 n)) / 2 ^ S n) k >= sum_f_R0 (fun n : nat => INR (proj1_sig (g1 n)) / 2 ^ S n) k + / 2 ^ S k)%R).
 move=> H8.
 elim.
 move=> H9.
@@ -3198,9 +2949,7 @@ apply Rle_ge.
 apply (pos_INR (proj1_sig (g2 (S n)))).
 left.
 apply (Rinv_0_lt_compat (2 ^ S (S n)) (Two_Pow_Gt_Zero (S (S n)))).
-apply (Rge_trans (sum_f_R0 (fun (k : nat) => INR (proj1_sig (g2 k)) / 2 ^ S k) n)
-((sum_f_R0 (fun (k : nat) => INR (proj1_sig (g1 k)) / 2 ^ S k) n + / 2 ^ S (S n)) +
- / 2 ^ S M + / 2 ^ S (S n)))%R.
+apply (Rge_trans (sum_f_R0 (fun (k : nat) => INR (proj1_sig (g2 k)) / 2 ^ S k) n) ((sum_f_R0 (fun (k : nat) => INR (proj1_sig (g1 k)) / 2 ^ S k) n + / 2 ^ S (S n)) + / 2 ^ S M + / 2 ^ S (S n)))%R.
 rewrite Rplus_assoc.
 rewrite Rplus_assoc.
 rewrite (Rplus_comm (/ 2 ^ S (S n)) (/ 2 ^ S M + / 2 ^ S (S n))).
@@ -3226,8 +2975,7 @@ apply (Rinv_0_lt_compat (2 ^ S (S n)) (Two_Pow_Gt_Zero (S (S n)))).
 apply Rle_ge.
 apply (le_INR (proj1_sig (g1 (S n))) 1 (le_S_n (proj1_sig (g1 (S n))) 1 (proj2_sig (g1 (S n))))).
 move=> H11.
-rewrite - (Rplus_0_r (sum_f_R0 (fun (k : nat) => INR (proj1_sig (g1 k)) / 2 ^ S k) (S n) +
- / 2 ^ S M + / 2 ^ S (S n))%R).
+rewrite - (Rplus_0_r (sum_f_R0 (fun (k : nat) => INR (proj1_sig (g1 k)) / 2 ^ S k) (S n) + / 2 ^ S M + / 2 ^ S (S n))%R).
 simpl.
 apply Rplus_ge_compat.
 suff: (INR (proj1_sig (g1 (S n))) = 0%R).
@@ -3442,11 +3190,9 @@ reflexivity.
 apply (pos_INR (proj1_sig (f (S n)))).
 left.
 apply (Rinv_0_lt_compat (2 ^ S (S n)) (Two_Pow_Gt_Zero (S (S n)))).
-suff: (forall (k : nat),
-((sum_f_R0 (fun (n : nat) => INR (proj1_sig (f n)) / 2 ^ S n) k <= 1 - / 2 ^ S k))%R).
+suff: (forall (k : nat), ((sum_f_R0 (fun (n : nat) => INR (proj1_sig (f n)) / 2 ^ S n) k <= 1 - / 2 ^ S k))%R).
 move=> H3.
-suff: (forall (k : nat), k >= N ->
-((sum_f_R0 (fun (n : nat) => INR (proj1_sig (f n)) / 2 ^ S n) k <= 1 - / 2 ^ S N - / 2 ^ S k))%R).
+suff: (forall (k : nat), k >= N -> ((sum_f_R0 (fun (n : nat) => INR (proj1_sig (f n)) / 2 ^ S n) k <= 1 - / 2 ^ S N - / 2 ^ S k))%R).
 move=> H4 k.
 elim (le_or_lt N k).
 move=> H5.
@@ -3626,6 +3372,85 @@ apply conj.
 left.
 apply (proj1 (proj2_sig (f r))).
 apply (proj2 (proj2_sig (f r))).
+move=> an s k.
+suff: (sum_f_R0 (fun (n : nat) => an (n + S k)) = (fun (n : nat) => sum_f_R0 an (n + S k) - sum_f_R0 an k)%R).
+move=> H1.
+rewrite H1.
+apply conj.
+move=> H2.
+apply (Theorem_2_5_1_minus (fun (n : nat) => sum_f_R0 an (n + S k)) (fun (n : nat) => sum_f_R0 an k) s (sum_f_R0 an k)).
+move=> eps H3.
+elim (H2 eps H3).
+move=> N H4.
+exists N.
+move=> n H5.
+apply (H4 (n + S k)).
+apply (le_trans N n (n + S k) H5 (le_plus_l n (S k))).
+move=> eps H3.
+exists O.
+move=> n H4.
+rewrite (proj2 (R_dist_refl (sum_f_R0 an k) (sum_f_R0 an k))).
+apply H3.
+reflexivity.
+move=> H2.
+suff: (sum_f_R0 an = (fun (n : nat) => (sum_f_R0 an n - sum_f_R0 an k + sum_f_R0 an k)%R)).
+move=> H3.
+rewrite H3.
+rewrite - (Rplus_0_r s).
+rewrite - (Rplus_opp_l (sum_f_R0 an k)).
+rewrite - (Rplus_assoc s (- sum_f_R0 an k) (sum_f_R0 an k)).
+apply (Theorem_2_5_1_plus (fun (n : nat) => sum_f_R0 an n - sum_f_R0 an k)%R (fun (n : nat) => sum_f_R0 an k) (s - sum_f_R0 an k) (sum_f_R0 an k)).
+move=> eps H4.
+elim (H2 eps H4).
+move=> N H5.
+exists (N + S k).
+suff: (forall (n : nat), n >= N + S k -> exists (m : nat), m >= N /\ n = m + S k).
+move=> H6 n H7.
+elim (H6 n H7).
+move=> m H8.
+rewrite (proj2 H8).
+apply (H5 m (proj1 H8)).
+move=> n H6.
+exists (n - S k).
+apply conj.
+apply (plus_le_reg_l N (n - S k) (S k)).
+rewrite (plus_comm (S k) N).
+rewrite (le_plus_minus_r (S k) n).
+apply H6.
+apply (le_trans (S k) (N + S k) n (le_plus_r N (S k)) H6).
+rewrite (plus_comm (n - S k) (S k)).
+apply (le_plus_minus (S k) n).
+apply (le_trans (S k) (N + S k) n (le_plus_r N (S k)) H6).
+move=> eps H4.
+exists O.
+move=> n H5.
+rewrite (proj2 (R_dist_refl (sum_f_R0 an k) (sum_f_R0 an k))).
+apply H4.
+reflexivity.
+apply functional_extensionality.
+move=> n.
+unfold Rminus.
+rewrite (Rplus_assoc (sum_f_R0 an n) (- sum_f_R0 an k) (sum_f_R0 an k)).
+rewrite (Rplus_opp_l (sum_f_R0 an k)).
+rewrite (Rplus_0_r (sum_f_R0 an n)).
+reflexivity.
+apply functional_extensionality.
+elim.
+simpl.
+unfold Rminus.
+rewrite (Rplus_comm (sum_f_R0 an k + an (S k)) (- sum_f_R0 an k)).
+rewrite - (Rplus_assoc (- sum_f_R0 an k) (sum_f_R0 an k) (an (S k))).
+rewrite (Rplus_opp_l (sum_f_R0 an k)).
+rewrite (Rplus_0_l (an (S k))).
+reflexivity.
+move=> n H1.
+simpl.
+rewrite H1.
+unfold Rminus.
+rewrite (Rplus_assoc (sum_f_R0 an (n + S k)) (- sum_f_R0 an k) (an (S (n + S k)))).
+rewrite (Rplus_assoc (sum_f_R0 an (n + S k)) (an (S (n + S k))) (- sum_f_R0 an k)).
+rewrite (Rplus_comm (an (S (n + S k))) (- sum_f_R0 an k)).
+reflexivity.
 Qed.
 
 Definition cardLt (A B : Type) := cardLe A B /\ ~ SameCard A B.
@@ -3719,7 +3544,8 @@ move=> T2 H3.
 suff: (proj1_sig C2 T2).
 move=> H4.
 rewrite - (CardLeNature (Count O) T2 C1 C2).
-exists (fun (m : Count O) => match (le_not_lt O (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)) with end).
+exists (fun (m : Count O) => match (le_not_lt O (proj1_sig m) (le_0_n (proj1_sig m)) (proj2_sig m)) with
+end).
 move=> m1.
 elim (le_not_lt O (proj1_sig m1) (le_0_n (proj1_sig m1)) (proj2_sig m1)).
 rewrite H1.
@@ -3853,8 +3679,7 @@ exists (fun (t : Prop) => match excluded_middle_informative t with
 end).
 apply conj.
 move=> x.
-elim (excluded_middle_informative
-    (x = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
+elim (excluded_middle_informative (x = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
 move=> H1.
 rewrite H1.
 reflexivity.
@@ -3958,8 +3783,7 @@ elim (lt_irrefl 2 (le_trans 3 (S (proj1_sig (f t t))) 2 (le_n_S 2 (proj1_sig (f 
 move=> H4.
 suff: (1 = proj1_sig (f t t)).
 rewrite H2.
-elim (excluded_middle_informative
-      (f t t = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
+elim (excluded_middle_informative (f t t = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
 move=> H5.
 elim (lt_irrefl (proj1_sig (f t t))).
 rewrite - {2} H4.
@@ -3973,8 +3797,7 @@ apply H4.
 move=> H3.
 suff: (0 = proj1_sig (f t t)).
 rewrite H2.
-elim (excluded_middle_informative
-      (f t t = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
+elim (excluded_middle_informative (f t t = exist (fun (k : nat) => k < 2) 0 (le_S 1 1 (le_n 1)))).
 move=> H4 H5.
 elim (lt_irrefl 0).
 rewrite {2} H5.
@@ -4396,11 +4219,9 @@ exists (fun (x : Count O) => match (le_not_lt O (proj1_sig x) (le_0_n (proj1_sig
 end).
 apply conj.
 move=> x.
-elim (le_not_lt 0 (proj1_sig (snd x)) (le_0_n (proj1_sig (snd x)))
-           (proj2_sig (snd x))).
+elim (le_not_lt 0 (proj1_sig (snd x)) (le_0_n (proj1_sig (snd x))) (proj2_sig (snd x))).
 move=> y.
-elim (le_not_lt 0 (proj1_sig y) (le_0_n (proj1_sig y))
-           (proj2_sig y)).
+elim (le_not_lt 0 (proj1_sig y) (le_0_n (proj1_sig y)) (proj2_sig y)).
 rewrite H1.
 apply (Formula_1_1 T).
 Qed.
@@ -4633,7 +4454,6 @@ exists f.
 apply H1.
 Qed.
 
-
 Lemma CardPowEnsembleRelation : forall (C : CardT), CardPow (CardN 2) C = CardEnsemble C.
 Proof.
 move=> C.
@@ -4741,11 +4561,10 @@ end).
 move=> h1 h2 H11.
 apply functional_extensionality.
 move=> t2.
-suff: (h1 t2 = let temp := (fun (t3 : T3) =>
-       match excluded_middle_informative (exists (t2 : T2), f t2 = t3) with
-       | left H => h1 (proj1_sig (H10 t3 H))
-       | right _ => t1
-       end) in temp (f t2)).
+suff: (h1 t2 = let temp := (fun (t3 : T3) => match excluded_middle_informative (exists (t2 : T2), f t2 = t3) with
+  | left H => h1 (proj1_sig (H10 t3 H))
+  | right _ => t1
+end) in temp (f t2)).
 rewrite H11.
 simpl.
 elim (excluded_middle_informative (exists (t : T2), f t = f t2)).
@@ -4780,8 +4599,10 @@ move=> H9.
 apply H7.
 rewrite H1.
 apply (proj1 (Formula_66_1 T1 (Count O))).
-exists (fun (t1 : T1) => match H9 (Inhabited_intro T1 (Full_set T1) t1 (Full_intro T1 t1)) with end).
-exists (fun (n : Count O) => match le_not_lt O (proj1_sig n) (le_0_n (proj1_sig n)) (proj2_sig n) with end).
+exists (fun (t1 : T1) => match H9 (Inhabited_intro T1 (Full_set T1) t1 (Full_intro T1 t1)) with
+end).
+exists (fun (n : Count O) => match le_not_lt O (proj1_sig n) (le_0_n (proj1_sig n)) (proj2_sig n) with
+end).
 apply conj.
 move=> t1.
 elim (H9 (Inhabited_intro T1 (Full_set T1) t1 (Full_intro T1 t1))).
@@ -5154,8 +4975,7 @@ apply conj.
 apply (proj2 H2).
 apply (proj1 H2).
 apply sig_map.
-suff: (proj1_sig (g r3) = proj1_sig (exist (fun (r : R) => (r1 <= r < r2)%R) (proj1_sig (g r3))
-       (conj (or_introl (proj1 (proj2_sig (g r3)))) (proj2 (proj2_sig (g r3)))))).
+suff: (proj1_sig (g r3) = proj1_sig (exist (fun (r : R) => (r1 <= r < r2)%R) (proj1_sig (g r3)) (conj (or_introl (proj1 (proj2_sig (g r3)))) (proj2 (proj2_sig (g r3)))))).
 move=> H4.
 rewrite H4.
 rewrite H3.

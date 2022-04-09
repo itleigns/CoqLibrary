@@ -1837,8 +1837,8 @@ apply NNPP.
 move=> H4.
 apply (proj2 H1 x1 x2 (proj1 H2) (proj1 H3) H4 t).
 apply conj.
-apply (proj2  H2).
-apply (proj2  H3).
+apply (proj2 H2).
+apply (proj2 H3).
 Qed.
 
 Polymorphic Definition DirectSumDivisionER (T : Type) (X : (T -> Prop) -> Prop) (t1 t2 : T) := exists (x : T -> Prop), X x /\ x t1 /\ x t2.

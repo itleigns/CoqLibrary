@@ -23,15 +23,13 @@ Require Import Topology.ShuugouIsouNyuumonn.ShuugouIsouNyuumonn1.
 Require Import Topology.ShuugouIsouNyuumonn.ShuugouIsouNyuumonn1AC.
 Require Import Topology.ShuugouIsouNyuumonn.ShuugouIsouNyuumonn2.
 
-Lemma Theorem_2_dash : forall (A B : Type), (exists (f : A -> B), Injective f) ->
-       (exists (g : A -> B), Surjective g) -> SameCard A B.
+Lemma Theorem_2_dash : forall (A B : Type), (exists (f : A -> B), Injective f) -> (exists (g : A -> B), Surjective g) -> SameCard A B.
 Proof.
 move=> A B H1 H2.
 apply (Theorem_2 A B H1 (Theorem_7_corollary_2 A B H2)).
 Qed.
 
-Lemma Theorem_2_dash_dash : forall (A B : Type), (exists (f : A -> B), Surjective f) ->
-       (exists (g : B -> A), Surjective g) -> SameCard A B.
+Lemma Theorem_2_dash_dash : forall (A B : Type), (exists (f : A -> B), Surjective f) -> (exists (g : B -> A), Surjective g) -> SameCard A B.
 Proof.
 move=> A B H1 H2.
 apply (Theorem_2 A B (Theorem_7_corollary_2 B A H2) (Theorem_7_corollary_2 A B H1)).
@@ -73,10 +71,7 @@ move=> H7.
 elim (le_lt_or_eq m1 m2 H7).
 move=> H8.
 elim (H5 m1 m2 H8).
-suff: (fst (F m1) = proj1_sig (exist (Im nat T (Full_set nat) (fun (n : nat) => fst (F n))) 
-       (fst (F m1))
-       (Im_intro nat T (Full_set nat) (fun (n : nat) => fst (F n)) m1
-          (Full_intro nat m1) (fst (F m1)) eq_refl))).
+suff: (fst (F m1) = proj1_sig (exist (Im nat T (Full_set nat) (fun (n : nat) => fst (F n))) (fst (F m1)) (Im_intro nat T (Full_set nat) (fun (n : nat) => fst (F n)) m1 (Full_intro nat m1) (fst (F m1)) eq_refl))).
 move=> H9.
 rewrite H9.
 rewrite H6.
@@ -85,10 +80,7 @@ reflexivity.
 apply.
 move=> H7.
 elim (H5 m2 m1 H7).
-suff: (fst (F m1) = proj1_sig (exist (Im nat T (Full_set nat) (fun (n : nat) => fst (F n))) 
-       (fst (F m1))
-       (Im_intro nat T (Full_set nat) (fun (n : nat) => fst (F n)) m1
-          (Full_intro nat m1) (fst (F m1)) eq_refl))).
+suff: (fst (F m1) = proj1_sig (exist (Im nat T (Full_set nat) (fun (n : nat) => fst (F n))) (fst (F m1)) (Im_intro nat T (Full_set nat) (fun (n : nat) => fst (F n)) m1 (Full_intro nat m1) (fst (F m1)) eq_refl))).
 move=> H8.
 rewrite H8.
 rewrite H6.
@@ -323,15 +315,9 @@ move=> x.
 elim (excluded_middle_informative (In T A x \/ In T B x)).
 move=> H6.
 simpl.
-elim (excluded_middle_informative
-    (In T B (proj1_sig (f (exist (fun (t : T) => In T A t \/ In T B t) x H6))))).
+elim (excluded_middle_informative (In T B (proj1_sig (f (exist (fun (t : T) => In T A t \/ In T B t) x H6))))).
 move=> H7.
-suff: ((exist (fun (t : T) => ~ In T A t /\ In T B t)
-        (proj1_sig (f (exist (fun (t : T) => In T A t \/ In T B t) x H6)))
-        (conj
-           (proj1
-              (proj2_sig (f (exist (fun (t : T) => In T A t \/ In T B t) x H6))))
-           H7)) = (f (exist (fun (t : T) => In T A t \/ In T B t) x H6))).
+suff: ((exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig (f (exist (fun (t : T) => In T A t \/ In T B t) x H6))) (conj (proj1 (proj2_sig (f (exist (fun (t : T) => In T A t \/ In T B t) x H6)))) H7)) = (f (exist (fun (t : T) => In T A t \/ In T B t) x H6))).
 move=> H8.
 rewrite H8.
 rewrite (proj1 H4).
@@ -341,8 +327,7 @@ reflexivity.
 elim.
 apply (proj2 (proj2_sig (f (exist (fun (t : T) => In T A t \/ In T B t) x H6)))).
 move=> H6.
-elim (excluded_middle_informative
-    (In T B (proj1_sig (exist (fun (t : T) => ~ In T A t) x (H5 x H6))))).
+elim (excluded_middle_informative (In T B (proj1_sig (exist (fun (t : T) => ~ In T A t) x (H5 x H6))))).
 move=> H7.
 elim H6.
 right.
@@ -352,25 +337,9 @@ reflexivity.
 move=> y.
 elim (excluded_middle_informative (In T B (proj1_sig y))).
 move=> H6.
-elim (excluded_middle_informative
-    (In T A
-       (proj1_sig
-          (g
-             (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-                (proj1_sig y) (conj (proj2_sig y) H6)))) \/
-     In T B
-       (proj1_sig
-          (g
-             (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-                (proj1_sig y) (conj (proj2_sig y) H6)))))).
+elim (excluded_middle_informative (In T A (proj1_sig (g (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig y) (conj (proj2_sig y) H6)))) \/ In T B (proj1_sig (g (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig y) (conj (proj2_sig y) H6)))))).
 move=> H7.
-suff: ((exist (fun (t : T) => In T A t \/ In T B t)
-           (proj1_sig
-              (g
-                 (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-                    (proj1_sig y) (conj (proj2_sig y) H6)))) H7) = (g
-                 (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-                    (proj1_sig y) (conj (proj2_sig y) H6)))).
+suff: ((exist (fun (t : T) => In T A t \/ In T B t) (proj1_sig (g (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig y) (conj (proj2_sig y) H6)))) H7) = (g (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig y) (conj (proj2_sig y) H6)))).
 move=> H8.
 rewrite H8.
 rewrite (proj2 H4).
@@ -379,10 +348,7 @@ reflexivity.
 apply sig_map.
 reflexivity.
 elim.
-apply (proj2_sig
-     (g
-        (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-           (proj1_sig y) (conj (proj2_sig y) H6)))).
+apply (proj2_sig (g (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig y) (conj (proj2_sig y) H6)))).
 move=> H6.
 elim (excluded_middle_informative (In T A (proj1_sig y) \/ In T B (proj1_sig y))).
 move=> H7.
@@ -432,40 +398,25 @@ reflexivity.
 reflexivity.
 move=> H9 H10.
 elim (lt_irrefl (snd (g (exist A (proj1_sig t1) H8), 0))).
-rewrite {2} (BijInj (nat * nat) nat f H4 (g (exist A (proj1_sig t1) H8), 0) (h
-           (exist (fun t : T => ~ In T A t /\ In T B t) 
-              (proj1_sig t2) (H7 t2 H9)), 1) H10).
+rewrite {2} (BijInj (nat * nat) nat f H4 (g (exist A (proj1_sig t1) H8), 0) (h (exist (fun t : T => ~ In T A t /\ In T B t) (proj1_sig t2) (H7 t2 H9)), 1) H10).
 apply (le_n 1).
 move=> H8.
 elim (excluded_middle_informative (In T A (proj1_sig t2))).
 move=> H9 H10.
-elim (lt_irrefl (snd (h
-           (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-              (proj1_sig t1) (H7 t1 H8)), 1))).
-rewrite {1} (BijInj (nat * nat) nat f H4 (h
-           (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-              (proj1_sig t1) (H7 t1 H8)), 1) (g (exist A (proj1_sig t2) H9), 0) H10).
+elim (lt_irrefl (snd (h (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig t1) (H7 t1 H8)), 1))).
+rewrite {1} (BijInj (nat * nat) nat f H4 (h (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig t1) (H7 t1 H8)), 1) (g (exist A (proj1_sig t2) H9), 0) H10).
 apply (le_n 1).
 move=> H9 H10.
 apply sig_map.
-suff: (proj1_sig t1 = proj1_sig (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-              (proj1_sig t1) (H7 t1 H8))).
+suff: (proj1_sig t1 = proj1_sig (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig t1) (H7 t1 H8))).
 move=> H11.
 rewrite H11.
-rewrite (BijInj {t : T | ~ In T A t /\ In T B t} nat h H6 (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-              (proj1_sig t1) (H7 t1 H8)) (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-              (proj1_sig t2) (H7 t2 H9))).
+rewrite (BijInj {t : T | ~ In T A t /\ In T B t} nat h H6 (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig t1) (H7 t1 H8)) (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig t2) (H7 t2 H9))).
 reflexivity.
-suff: (h (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig t1) (H7 t1 H8)) = fst (h
-           (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-              (proj1_sig t1) (H7 t1 H8)), 1)).
+suff: (h (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig t1) (H7 t1 H8)) = fst (h (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig t1) (H7 t1 H8)), 1)).
 move=> H12.
 rewrite H12.
-rewrite (BijInj (nat * nat) nat f H4 (h
-           (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-              (proj1_sig t1) (H7 t1 H8)), 1) (h
-           (exist (fun (t : T) => ~ In T A t /\ In T B t) 
-              (proj1_sig t2) (H7 t2 H9)), 1) H10).
+rewrite (BijInj (nat * nat) nat f H4 (h (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig t1) (H7 t1 H8)), 1) (h (exist (fun (t : T) => ~ In T A t /\ In T B t) (proj1_sig t2) (H7 t2 H9)), 1) H10).
 reflexivity.
 reflexivity.
 reflexivity.
@@ -502,63 +453,31 @@ exists (fun (t : T) => match excluded_middle_informative (In T A t) with
   | left _ => False
   | right H => In {t : T | In T (Complement T A) t} B (exist (Complement T A) t H)
 end).
-suff: (forall (t : {t : T
-  | ~ In T A t /\
-    In T
-      (fun (t0 : T) =>
-       match excluded_middle_informative (In T A t0) with
-       | left _ => False
-       | right H =>
-           In {t1 : T | In T (Complement T A) t1} B
-             (exist (Complement T A) t0 H)
-       end) t}), In T (Complement T A) (proj1_sig t)).
+suff: (forall (t : {t : T | ~ In T A t /\ In T (fun (t0 : T) => match excluded_middle_informative (In T A t0) with
+  | left _ => False
+  | right H => In {t1 : T | In T (Complement T A) t1} B (exist (Complement T A) t0 H)
+end) t}), In T (Complement T A) (proj1_sig t)).
 move=> H4.
-suff: (forall (t : {t : T
-  | ~ In T A t /\
-    In T
-      (fun (t0 : T) =>
-       match excluded_middle_informative (In T A t0) with
-       | left _ => False
-       | right H =>
-           In {t1 : T | In T (Complement T A) t1} B
-             (exist (Complement T A) t0 H)
-       end) t}), In {t0 : T | In T (Complement T A) t0} B (exist
-(Complement T A) (proj1_sig t)
-(H4 t))).
+suff: (forall (t : {t : T | ~ In T A t /\ In T (fun (t0 : T) => match excluded_middle_informative (In T A t0) with
+  | left _ => False
+  | right H => In {t1 : T | In T (Complement T A) t1} B (exist (Complement T A) t0 H)
+end) t}), In {t0 : T | In T (Complement T A) t0} B (exist (Complement T A) (proj1_sig t) (H4 t))).
 move=> H5.
-exists (fun (t : {t : T
-  | ~ In T A t /\
-    In T
-      (fun (t0 : T) =>
-       match excluded_middle_informative (In T A t0) with
-       | left _ => False
-       | right H =>
-           In {t1 : T | In T (Complement T A) t1} B
-             (exist (Complement T A) t0 H)
-       end) t}) => f (exist B (exist
-(Complement T A) (proj1_sig t)
-(H4 t)) (H5 t))).
+exists (fun (t : {t : T | ~ In T A t /\ In T (fun (t0 : T) => match excluded_middle_informative (In T A t0) with
+  | left _ => False
+  | right H => In {t1 : T | In T (Complement T A) t1} B (exist (Complement T A) t0 H)
+end) t}) => f (exist B (exist (Complement T A) (proj1_sig t) (H4 t)) (H5 t))).
 elim H3.
 move=> g H6.
-suff: (forall (n : nat), In T (fun (t : T) => ~ In T A t /\
-    In T
-      (fun (t0 : T) =>
-       match excluded_middle_informative (In T A t0) with
-       | left _ => False
-       | right H =>
-           In {t1 : T | In T (Complement T A) t1} B
-             (exist (Complement T A) t0 H)
-       end) t) (proj1_sig (proj1_sig (g n)))).
+suff: (forall (n : nat), In T (fun (t : T) => ~ In T A t /\ In T (fun (t0 : T) => match excluded_middle_informative (In T A t0) with
+  | left _ => False
+  | right H => In {t1 : T | In T (Complement T A) t1} B (exist (Complement T A) t0 H)
+end) t) (proj1_sig (proj1_sig (g n)))).
 move=> H7.
-exists (fun (n : nat) => exist (fun (t : T) => ~ In T A t /\
-    In T
-      (fun (t0 : T) =>
-       match excluded_middle_informative (In T A t0) with
-       | left _ => False
-       | right H =>
-           In {t1 : T | In T (Complement T A) t1} B
-             (exist (Complement T A) t0 H)
-       end) t) (proj1_sig (proj1_sig (g n))) (H7 n)).
+exists (fun (n : nat) => exist (fun (t : T) => ~ In T A t /\ In T (fun (t0 : T) => match excluded_middle_informative (In T A t0) with
+  | left _ => False
+  | right H => In {t1 : T | In T (Complement T A) t1} B (exist (Complement T A) t0 H)
+end) t) (proj1_sig (proj1_sig (g n))) (H7 n)).
 apply conj.
 move=> x.
 apply sig_map.
@@ -576,11 +495,7 @@ move=> n.
 unfold In.
 apply conj.
 apply (proj2_sig (proj1_sig (g n))).
-elim (excluded_middle_informative (A
-       (@proj1_sig T (fun (t : T) => Complement T A t)
-          (@proj1_sig (@sig T (fun (t : T) => Complement T A t))
-             (fun (t : @sig T (fun (t : T) => Complement T A t)) => B t) 
-             (g n))))).
+elim (excluded_middle_informative (A (@proj1_sig T (fun (t : T) => Complement T A t) (@proj1_sig (@sig T (fun (t : T) => Complement T A t)) (fun (t : @sig T (fun (t : T) => Complement T A t)) => B t) (g n))))).
 move=> H7.
 elim (proj2_sig (proj1_sig (g n)) H7).
 move=> H7.
@@ -591,22 +506,15 @@ apply (proj2_sig (g n)).
 apply sig_map.
 reflexivity.
 move=> t.
-suff: (In T (fun (t0 : T) =>
-         match excluded_middle_informative (In T A t0) with
-         | left _ => False
-         | right H =>
-             In {t1 : T | In T (Complement T A) t1} B
-               (exist (Complement T A) t0 H)
-         end) (proj1_sig t)).
+suff: (In T (fun (t0 : T) => match excluded_middle_informative (In T A t0) with
+  | left _ => False
+  | right H => In {t1 : T | In T (Complement T A) t1} B (exist (Complement T A) t0 H)
+end) (proj1_sig t)).
 unfold In.
-elim (excluded_middle_informative (A
-             (@proj1_sig T
-                (fun (t0 : T) =>
-                 and (not (A t0))
-                   match excluded_middle_informative (A t0) return Prop with
-                   | left _ => False
-                   | right H => B (@exist T (Complement T A) t0 H)
-                   end) t))).
+elim (excluded_middle_informative (A (@proj1_sig T (fun (t0 : T) => and (not (A t0)) match excluded_middle_informative (A t0) return Prop with
+  | left _ => False
+  | right H => B (@exist T (Complement T A) t0 H)
+end) t))).
 move=> H5.
 elim.
 move=> H5.
@@ -634,15 +542,13 @@ move=> f.
 elim.
 move=> g H3.
 exists (fun (t : T1) => g (exist (fun (t0 : T1 + T2) => ~ match t0 with
-                             | inl _ => False
-                             | inr _ => True
-                             end) (inl t) (fun (b : False) => b))).
-exists (let temp : forall (t : T1 + T2), ~
-      In (T1 + T2)
-        (fun (t0 : T1 + T2) => match t0 with
-                             | inl _ => False
-                             | inr _ => True
-                             end) t -> T1 := (fun (t : T1 + T2) => match t with
+  | inl _ => False
+  | inr _ => True
+end) (inl t) (fun (b : False) => b))).
+exists (let temp : forall (t : T1 + T2), ~ In (T1 + T2) (fun (t0 : T1 + T2) => match t0 with
+  | inl _ => False
+  | inr _ => True
+end) t -> T1 := (fun (t : T1 + T2) => match t with
   | inl t0 => fun (H : False -> False) => t0
   | inr t0 => fun (H : True -> False) => match H I with
   end
@@ -657,28 +563,17 @@ rewrite - {2} (proj1 H3 t).
 apply (f_equal g).
 apply sig_map.
 simpl.
-suff: (forall (t1 : T1 + T2) (H : ~
-        In (T1 + T2)
-          (fun (t1 : T1 + T2) =>
-           match t1 with
-           | inl _ => False
-           | inr _ => True
-           end) t1), inl
-  (match
-     t1 as t0
-     return
-       (~
-        In (T1 + T2)
-          (fun (t1 : T1 + T2) =>
-           match t1 with
-           | inl _ => False
-           | inr _ => True
-           end) t0 -> T1)
-   with
-   | inl t0 => fun (_ : False -> False) => t0
-   | inr _ => fun (H : True -> False) => match H I return T1 with
-                                       end
-   end H) = t1).
+suff: (forall (t1 : T1 + T2) (H : ~ In (T1 + T2) (fun (t1 : T1 + T2) => match t1 with
+  | inl _ => False
+  | inr _ => True
+end) t1), inl (match t1 as t0 return (~ In (T1 + T2) (fun (t1 : T1 + T2) => match t1 with
+    | inl _ => False
+    | inr _ => True
+  end) t0 -> T1) with
+  | inl t0 => fun (_ : False -> False) => t0
+  | inr _ => fun (H : True -> False) => match H I return T1 with
+  end
+end H) = t1).
 move=> H4.
 apply (H4 (proj1_sig (f t)) (proj2_sig (f t))).
 elim.
@@ -689,59 +584,45 @@ elim (H4 I).
 move=> H3.
 apply H1.
 apply (proj1 (CountFiniteBijective T1)).
-elim (proj2 (CountFiniteBijective {t : T1 + T2 | In (T1 + T2) (Complement (T1 + T2)
-          (fun (t : T1 + T2) => match t with
-                              | inl _ => False
-                              | inr _ => True
-                              end)) t})).
+elim (proj2 (CountFiniteBijective {t : T1 + T2 | In (T1 + T2) (Complement (T1 + T2) (fun (t : T1 + T2) => match t with
+  | inl _ => False
+  | inr _ => True
+end)) t})).
 move=> N.
 elim.
 move=> f.
 elim.
 move=> g H4.
 exists N.
-exists (let temp : forall (t : T1 + T2), ~
-      In (T1 + T2)
-        (fun (t0 : T1 + T2) => match t0 with
-                             | inl _ => False
-                             | inr _ => True
-                             end) t -> T1 := (fun (t : T1 + T2) => match t with
+exists (let temp : forall (t : T1 + T2), ~ In (T1 + T2) (fun (t0 : T1 + T2) => match t0 with
+  | inl _ => False
+  | inr _ => True
+end) t -> T1 := (fun (t : T1 + T2) => match t with
   | inl t0 => fun (H : False -> False) => t0
   | inr t0 => fun (H : True -> False) => match H I with
   end
 end) in fun (m : Count N) => temp (proj1_sig (f m)) (proj2_sig (f m))).
 exists (fun (t : T1) => g (exist (fun (t0 : T1 + T2) => ~ match t0 with
-                             | inl _ => False
-                             | inr _ => True
-                             end) (inl t) (fun (b : False) => b))).
+  | inl _ => False
+  | inr _ => True
+end) (inl t) (fun (b : False) => b))).
 apply conj.
 move=> x.
 rewrite - {2} (proj1 H4 x).
 apply (f_equal g).
 apply sig_map.
 simpl.
-suff: (forall (t1 : T1 + T2) (H : ~
-        In (T1 + T2)
-          (fun (t1 : T1 + T2) =>
-           match t1 with
-           | inl _ => False
-           | inr _ => True
-           end) t1), inl
-  (match
-     t1 as t0
-     return
-       (~
-        In (T1 + T2)
-          (fun (t1 : T1 + T2) =>
-           match t1 with
-           | inl _ => False
-           | inr _ => True
-           end) t0 -> T1)
-   with
-   | inl t0 => fun (_ : False -> False) => t0
-   | inr _ => fun (H : True -> False) => match H I return T1 with
-                                       end
-   end H) = t1).
+suff: (forall (t1 : T1 + T2) (H : ~ In (T1 + T2) (fun (t1 : T1 + T2) => match t1 with
+  | inl _ => False
+  | inr _ => True
+end) t1), inl (match t1 as t0 return (~ In (T1 + T2) (fun (t1 : T1 + T2) => match t1 with
+    | inl _ => False
+    | inr _ => True
+  end) t0 -> T1) with
+  | inl t0 => fun (_ : False -> False) => t0
+  | inr _ => fun (H : True -> False) => match H I return T1 with
+  end
+end H) = t1).
 move=> H5.
 apply (H5 (proj1_sig (f x)) (proj2_sig (f x))).
 elim.
@@ -753,61 +634,46 @@ move=> y.
 simpl.
 rewrite (proj2 H4).
 reflexivity.
-apply (proj1 (FiniteSigSame (T1 + T2)
-       (Complement (T1 + T2)
-          (fun (t : T1 + T2) => match t with
-                              | inl _ => False
-                              | inr _ => True
-                              end))) H3).
+apply (proj1 (FiniteSigSame (T1 + T2) (Complement (T1 + T2) (fun (t : T1 + T2) => match t with
+  | inl _ => False
+  | inr _ => True
+end))) H3).
 elim H2.
 move=> f H3.
-exists (let temp : forall (t : T1 + T2),
-      (match t with
-                             | inl _ => False
-                             | inr _ => True
-                             end) -> T2 := (fun (t : T1 + T2) => match t with
+exists (let temp : forall (t : T1 + T2), (match t with
+  | inl _ => False
+  | inr _ => True
+end) -> T2 := (fun (t : T1 + T2) => match t with
   | inl _ => fun (H : False) => match H with
   end
   | inr t0 => fun (H : True) => t0
-end) in fun (t : {t : T1 + T2
-  | In (T1 + T2)
-      (fun (t0 : T1 + T2) => match t0 with
-                           | inl _ => False
-                           | inr _ => True
-                           end) t}) => f (temp (proj1_sig t) (proj2_sig t))).
+end) in fun (t : {t : T1 + T2 | In (T1 + T2) (fun (t0 : T1 + T2) => match t0 with
+  | inl _ => False
+  | inr _ => True
+end) t}) => f (temp (proj1_sig t) (proj2_sig t))).
 move=> t1 t2.
 simpl.
-suff: (forall (t1 t2 : T1 + T2) (H1 : In (T1 + T2)
-         (fun (t0 : T1 + T2) =>
-          match t0 with
-          | inl _ => False
-          | inr _ => True
-          end) t1) (H2 : In (T1 + T2)
-         (fun (t0 : T1 + T2) =>
-          match t0 with
-          | inl _ => False
-          | inr _ => True
-          end) t2), match
-     t1 as t
-     return (match t with
-             | inl _ => False
-             | inr _ => True
-             end -> T2)
-   with
-   | inl _ => fun (H : False) => match H return T2 with
-                               end
-   | inr t0 => fun (_ : True) => t0
-   end H1 = match
-     t2 as t
-     return (match t with
-             | inl _ => False
-             | inr _ => True
-             end -> T2)
-   with
-   | inl _ => fun (H : False) => match H return T2 with
-                               end
-   | inr t0 => fun (_ : True) => t0
-   end H2 -> t1 = t2).
+suff: (forall (t1 t2 : T1 + T2) (H1 : In (T1 + T2) (fun (t0 : T1 + T2) => match t0 with
+  | inl _ => False
+  | inr _ => True
+end) t1) (H2 : In (T1 + T2) (fun (t0 : T1 + T2) => match t0 with
+  | inl _ => False
+  | inr _ => True
+end) t2), match t1 as t return (match t with
+    | inl _ => False
+    | inr _ => True
+  end -> T2) with
+  | inl _ => fun (H : False) => match H return T2 with
+  end
+  | inr t0 => fun (_ : True) => t0
+end H1 = match t2 as t return (match t with
+    | inl _ => False
+    | inr _ => True
+  end -> T2) with
+  | inl _ => fun (H : False) => match H return T2 with
+  end
+  | inr t0 => fun (_ : True) => t0
+end H2 -> t1 = t2).
 move=> H4 H5.
 apply sig_map.
 apply (H4 (proj1_sig t1) (proj1_sig t2) (proj2_sig t1) (proj2_sig t2)).
