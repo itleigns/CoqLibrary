@@ -31,8 +31,6 @@ Require Import BasicNotation.Permutation.
 Require Import LibraryExtension.DatatypesExtension.
 Require Import LinearAlgebra.SenkeiDaisuunoSekai.SenkeiDaisuunoSekai1.
 
-Section Matrix.
-
 Definition Matrix (f : Field) (M N : nat) := {n : nat| (n < M) } -> {n : nat| (n < N) } -> (FT f).
 
 Definition Mplus (f : Field) (M N : nat) := fun (A B : Matrix f M N) (x : {n : nat| (n < M) }) (y : {n : nat| (n < N) }) => (Fadd f (A x y) (B x y)).
@@ -40,6 +38,8 @@ Definition Mplus (f : Field) (M N : nat) := fun (A B : Matrix f M N) (x : {n : n
 Definition Mmult (f : Field) (M N K : nat) := fun (A : Matrix f M N) (B : Matrix f N K) (x : {n : nat| (n < M) }) (y : {n : nat| (n < K) }) => MySumF2 {n : nat | (n < N)} (exist (Finite (Count N)) (Full_set {n : nat| (n < N) }) (CountFinite N)) (FPCM f) (fun (n : Count N) => Fmul f (A x n) (B n y)).
 
 Definition Mopp (f : Field) (M N : nat) := fun (A : Matrix f M N) (x : {n : nat| (n < M) }) (y : {n : nat| (n < N) }) => (Fopp f (A x y)).
+
+Definition Mminus (f : Field) (M N : nat) (A B : Matrix f M N) := Mplus f M N A (Mopp f M N B).
 
 Definition MO (f : Field) (M N : nat) := fun (x : {n : nat| (n < M) }) (y : {n : nat| (n < N) }) => (FO f).
 
@@ -77,8 +77,25 @@ apply functional_extensionality.
 move=> x.
 apply functional_extensionality.
 move=> y.
-unfold Mplus.
 apply (Fadd_O_l f (A x y)).
+Qed.
+
+Lemma Mplus_O_r : forall (f : Field) (M N : nat) (A : Matrix f M N), (Mplus f M N A (MO f M N)) = A.
+Proof.
+move=> f M N A.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply (Fadd_O_r f (A x y)).
+Qed.
+
+Lemma Mplus_ne : forall (f : Field) (M N : nat) (A : Matrix f M N), (Mplus f M N A (MO f M N)) = A /\ (Mplus f M N (MO f M N) A) = A.
+Proof.
+move=> f M N A.
+apply conj.
+apply (Mplus_O_r f M N A).
+apply (Mplus_O_l f M N A).
 Qed.
 
 Lemma Mplus_opp_r : forall (f : Field) (M N : nat) (A : Matrix f M N), (Mplus f M N A (Mopp f M N A)) = MO f M N.
@@ -88,8 +105,17 @@ apply functional_extensionality.
 move=> x.
 apply functional_extensionality.
 move=> y.
-unfold Mplus.
 apply (Fadd_opp_r f (A x y)).
+Qed.
+
+Lemma Mplus_opp_l : forall (f : Field) (M N : nat) (A : Matrix f M N), (Mplus f M N (Mopp f M N A) A) = MO f M N.
+Proof.
+move=> f M N A.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply (Fadd_opp_l f (A x y)).
 Qed.
 
 Lemma Mmult_I_r : forall (f : Field) (M N : nat) (A : Matrix f M N), (Mmult f M N N A (MI f N)) = A.
@@ -218,30 +244,6 @@ reflexivity.
 apply Full_intro.
 Qed.
 
-Lemma Mmult_O_r : forall (f : Field) (M N K : nat) (A : Matrix f M N), (Mmult f M N K A (MO f N K)) = MO f M K.
-Proof.
-move=> f M N K A.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-apply MySumF2O.
-move=> u H1.
-apply (Fmul_O_r f (A x u)).
-Qed.
-
-Lemma Mmult_O_l : forall (f : Field) (M N K : nat) (A : Matrix f N K), (Mmult f M N K (MO f M N) A) = MO f M K.
-Proof.
-move=> f M N K A.
-apply functional_extensionality.
-move=> x.
-apply functional_extensionality.
-move=> y.
-apply MySumF2O.
-move=> u H1.
-apply (Fmul_O_l f (A u y)).
-Qed.
-
 Lemma Mmult_assoc : forall (f : Field) (M N K L : nat) (A : Matrix f M N) (B : Matrix f N K) (C : Matrix f K L), (Mmult f M K L (Mmult f M N K A B) C) = (Mmult f M N L A (Mmult f N K L B C)).
 Proof.
 move=> f M N K L A B C.
@@ -333,6 +335,13 @@ apply Full_intro.
 apply Full_intro.
 Qed.
 
+Lemma Mmult_assoc_reverse : forall (f : Field) (M N K L : nat) (A : Matrix f M N) (B : Matrix f N K) (C : Matrix f K L), Mmult f M N L A (Mmult f N K L B C) = Mmult f M K L (Mmult f M N K A B) C.
+Proof.
+move=> f M N K L A B C.
+rewrite (Mmult_assoc f M N K L A B C).
+reflexivity.
+Qed.
+
 Lemma Mmult_plus_distr_l : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B C : Matrix f N K), (Mmult f M N K A (Mplus f N K B C)) = (Mplus f M K (Mmult f M N K A B) (Mmult f M N K A C)).
 Proof.
 move=> f M N K A B C.
@@ -399,6 +408,338 @@ reflexivity.
 apply H3.
 apply H3.
 apply H3.
+Qed.
+
+Lemma Mplus_opp_r_uniq : forall (f : Field) (M N : nat) (A B : Matrix f M N), (Mplus f M N A B) = (MO f M N) -> B = (Mopp f M N A).
+Proof.
+move=> f M N A B H1.
+rewrite - (Mplus_O_l f M N B).
+rewrite - (Mplus_opp_l f M N A).
+rewrite (Mplus_assoc f M N (Mopp f M N A) A B).
+rewrite H1.
+apply (Mplus_O_r f M N (Mopp f M N A)).
+Qed.
+
+Lemma Mplus_eq_compat_l : forall (f : Field) (M N : nat) (A B C : Matrix f M N), B = C -> Mplus f M N A B = Mplus f M N A C.
+Proof.
+move=> f M N A B C H1.
+rewrite H1.
+reflexivity.
+Qed.
+
+Lemma Mplus_eq_compat_r : forall (f : Field) (M N : nat) (A B C : Matrix f M N), B = C -> Mplus f M N B A = Mplus f M N C A.
+Proof.
+move=> f M N A B C H1.
+rewrite H1.
+reflexivity.
+Qed.
+
+Lemma Mplus_eq_reg_l : forall (f : Field) (M N : nat) (A B C : Matrix f M N), Mplus f M N A B = Mplus f M N A C -> B = C.
+Proof.
+move=> f M N A B C H1.
+rewrite - (Mplus_O_l f M N B).
+rewrite - (Mplus_opp_l f M N A).
+rewrite (Mplus_assoc f M N (Mopp f M N A) A B).
+rewrite H1.
+rewrite - (Mplus_assoc f M N (Mopp f M N A) A C).
+rewrite (Mplus_opp_l f M N A).
+apply (Mplus_O_l f M N C).
+Qed.
+
+Lemma Mplus_eq_reg_r : forall (f : Field) (M N : nat) (A B C : Matrix f M N), Mplus f M N B A = Mplus f M N C A -> B = C.
+Proof.
+move=> f M N A B C H1.
+rewrite - (Mplus_O_r f M N B).
+rewrite - (Mplus_opp_r f M N A).
+rewrite - (Mplus_assoc f M N B A (Mopp f M N A)).
+rewrite H1.
+rewrite (Mplus_assoc f M N C A (Mopp f M N A)).
+rewrite (Mplus_opp_r f M N A).
+apply (Mplus_O_r f M N C).
+Qed.
+
+Lemma Mplus_O_r_uniq : forall (f : Field) (M N : nat) (A B : Matrix f M N), (Mplus f M N A B) = A -> B = MO f M N.
+Proof.
+move=> f M N A B H1.
+rewrite - (Mplus_O_l f M N B).
+rewrite - (Mplus_opp_l f M N A).
+rewrite (Mplus_assoc f M N (Mopp f M N A) A B).
+rewrite H1.
+reflexivity.
+Qed.
+
+Lemma Mmult_O_r : forall (f : Field) (M N K : nat) (A : Matrix f M N), (Mmult f M N K A (MO f N K)) = MO f M K.
+Proof.
+move=> f M N K A.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply MySumF2O.
+move=> u H1.
+apply (Fmul_O_r f (A x u)).
+Qed.
+
+Lemma Mmult_O_l : forall (f : Field) (M N K : nat) (A : Matrix f N K), (Mmult f M N K (MO f M N) A) = MO f M K.
+Proof.
+move=> f M N K A.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply MySumF2O.
+move=> u H1.
+apply (Fmul_O_l f (A u y)).
+Qed.
+
+Lemma Mmult_ne : forall (f : Field) (M N : nat) (A : Matrix f M N), Mmult f M N N A (MI f N) = A /\ Mmult f M M N (MI f M) A = A.
+Proof.
+move=> f M N A.
+apply conj.
+apply (Mmult_I_r f M N A).
+apply (Mmult_I_l f M N A).
+Qed.
+
+Lemma Mmult_eq_compat_l : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B C : Matrix f N K), B = C -> Mmult f M N K A B = Mmult f M N K A C.
+Proof.
+move=> f M N K A B C H1.
+rewrite H1.
+reflexivity.
+Qed.
+
+Lemma Mmult_eq_compat_r : forall (f : Field) (M N K : nat) (A : Matrix f N K) (B C : Matrix f M N), B = C -> Mmult f M N K B A = Mmult f M N K C A.
+Proof.
+move=> f M N K A B C H1.
+rewrite H1.
+reflexivity.
+Qed.
+
+Lemma Mmult_eq_O_compat : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B : Matrix f N K), (A = MO f M N \/ B = MO f N K) -> Mmult f M N K A B = MO f M K.
+Proof.
+move=> f M N K A B.
+elim.
+move=> H1.
+rewrite H1.
+apply (Mmult_O_l f M N K B).
+move=> H1.
+rewrite H1.
+apply (Mmult_O_r f M N K A).
+Qed.
+
+Lemma Mmult_eq_O_compat_r : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B : Matrix f N K), A = MO f M N -> Mmult f M N K A B = MO f M K.
+Proof.
+move=> f M N K A B H1.
+rewrite H1.
+apply (Mmult_O_l f M N K B).
+Qed.
+
+Lemma Mmult_eq_O_compat_l : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B : Matrix f N K), B = MO f N K -> Mmult f M N K A B = MO f M K.
+Proof.
+move=> f M N K A B H1.
+rewrite H1.
+apply (Mmult_O_r f M N K A).
+Qed.
+
+Lemma Mmult_neq_O_reg : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B : Matrix f N K), Mmult f M N K A B <> MO f M K -> A <> MO f M N /\ B <> MO f N K.
+Proof.
+move=> f M N K A B H1.
+apply conj.
+move=> H2.
+apply H1.
+apply (Mmult_eq_O_compat_r f M N K A B H2).
+move=> H2.
+apply H1.
+apply (Mmult_eq_O_compat_l f M N K A B H2).
+Qed.
+
+Lemma Mopp_eq_compat : forall (f : Field) (M N : nat) (A B : Matrix f M N), A = B -> Mopp f M N A = Mopp f M N B.
+Proof.
+move=> f M N A B H1.
+rewrite H1.
+reflexivity.
+Qed.
+
+Lemma Mopp_O : forall (f : Field) (M N : nat), Mopp f M N (MO f M N) = MO f M N.
+Proof.
+move=> f M N.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply (Fopp_O f).
+Qed.
+
+Lemma Mopp_eq_O_compat : forall (f : Field) (M N : nat) (A : Matrix f M N), A = MO f M N -> Mopp f M N A = MO f M N.
+Proof.
+move=> f M N A H1.
+rewrite H1.
+apply (Mopp_O f M N).
+Qed.
+
+Lemma Mopp_involutive : forall (f : Field) (M N : nat) (A : Matrix f M N), Mopp f M N (Mopp f M N A) = A.
+Proof.
+move=> f M N A.
+rewrite {2} (Mplus_opp_r_uniq f M N (Mopp f M N A) A).
+reflexivity.
+apply (Mplus_opp_l f M N A).
+Qed.
+
+Lemma Mopp_neq_O_compat : forall (f : Field) (M N : nat) (A : Matrix f M N), A <> MO f M N -> Mopp f M N A <> MO f M N.
+Proof.
+move=> f M N A H1 H2.
+apply H1.
+rewrite - (Mopp_involutive f M N A).
+apply (Mopp_eq_O_compat f M N (Mopp f M N A) H2).
+Qed.
+
+Lemma Mopp_plus_distr : forall (f : Field) (M N : nat) (A B : Matrix f M N), Mopp f M N (Mplus f M N A B) = Mplus f M N (Mopp f M N A) (Mopp f M N B).
+Proof.
+move=> f M N A B.
+rewrite (Mplus_opp_r_uniq f M N (Mplus f M N A B) (Mplus f M N (Mopp f M N A) (Mopp f M N B))).
+reflexivity.
+rewrite (Mplus_comm f M N A B).
+rewrite - (Mplus_assoc f M N (Mplus f M N B A) (Mopp f M N A) (Mopp f M N B)).
+rewrite (Mplus_assoc f M N B A (Mopp f M N A)).
+rewrite (Mplus_opp_r f M N A).
+rewrite (Mplus_O_r f M N B).
+apply (Mplus_opp_r f M N B).
+Qed.
+
+Lemma Mopp_mult_distr_l : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B : Matrix f N K), Mopp f M K (Mmult f M N K A B) = Mmult f M N K (Mopp f M N A) B.
+Proof.
+move=> f M N K A B.
+rewrite (Mplus_opp_r_uniq f M K (Mmult f M N K A B) (Mmult f M N K (Mopp f M N A) B)).
+reflexivity.
+rewrite - (Mmult_plus_distr_r f M N K A (Mopp f M N A) B).
+rewrite (Mplus_opp_r f M N A).
+apply (Mmult_O_l f M N K B).
+Qed.
+
+Lemma Mopp_mult_distr_l_reverse : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B : Matrix f N K), Mmult f M N K (Mopp f M N A) B = Mopp f M K (Mmult f M N K A B).
+Proof.
+move=> f M N K A B.
+rewrite (Mopp_mult_distr_l f M N K A B).
+reflexivity.
+Qed.
+
+Lemma Mopp_mult_distr_r : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B : Matrix f N K), Mopp f M K (Mmult f M N K A B) = Mmult f M N K A (Mopp f N K B).
+Proof.
+move=> f M N K A B.
+rewrite (Mplus_opp_r_uniq f M K (Mmult f M N K A B) (Mmult f M N K A (Mopp f N K B))).
+reflexivity.
+rewrite - (Mmult_plus_distr_l f M N K A B (Mopp f N K B)).
+rewrite (Mplus_opp_r f N K B).
+apply (Mmult_O_r f M N K A).
+Qed.
+
+Lemma Mopp_mult_distr_r_reverse : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B : Matrix f N K), Mmult f M N K A (Mopp f N K B) = Mopp f M K (Mmult f M N K A B).
+Proof.
+move=> f M N K A B.
+rewrite (Mopp_mult_distr_r f M N K A B).
+reflexivity.
+Qed.
+
+Lemma Mmult_opp_opp : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B : Matrix f N K), Mmult f M N K (Mopp f M N A) (Mopp f N K B) = Mmult f M N K A B.
+Proof.
+move=> f M N K A B.
+rewrite (Mopp_mult_distr_l_reverse f M N K A (Mopp f N K B)).
+rewrite (Mopp_mult_distr_r_reverse f M N K A B).
+apply (Mopp_involutive f M K (Mmult f M N K A B)).
+Qed.
+
+Lemma Mminus_O_r : forall (f : Field) (M N : nat) (A : Matrix f M N), Mminus f M N A (MO f M N) = A.
+Proof.
+move=> f M N A.
+unfold Mminus.
+rewrite (Mopp_O f M N).
+apply (Mplus_O_r f M N A).
+Qed.
+
+Lemma Mminus_O_l : forall (f : Field) (M N : nat) (A : Matrix f M N), Mminus f M N (MO f M N) A = Mopp f M N A.
+Proof.
+move=> f M N A.
+unfold Mminus.
+apply (Mplus_O_l f M N (Mopp f M N A)).
+Qed.
+
+Lemma Mopp_minus_distr : forall (f : Field) (M N : nat) (A B : Matrix f M N), Mopp f M N (Mplus f M N A (Mopp f M N B)) = Mplus f M N B (Mopp f M N A).
+Proof.
+move=> f M N A B.
+rewrite (Mopp_plus_distr f M N A (Mopp f M N B)).
+rewrite (Mopp_involutive f M N B).
+apply (Mplus_comm f M N (Mopp f M N A) B).
+Qed.
+
+Lemma Mopp_minus_distr' : forall (f : Field) (M N : nat) (A B : Matrix f M N), Mopp f M N (Mplus f M N B (Mopp f M N A)) = Mplus f M N A (Mopp f M N B).
+Proof.
+move=> f M N A B.
+apply (Mopp_minus_distr f M N B A).
+Qed.
+
+Lemma Mminus_diag_eq : forall (f : Field) (M N : nat) (A B : Matrix f M N), A = B -> Mplus f M N A (Mopp f M N B) = MO f M N.
+Proof.
+move=> f M N A B H1.
+rewrite H1.
+apply (Mplus_opp_r f M N B).
+Qed.
+
+Lemma Mminus_diag_uniq : forall (f : Field) (M N : nat) (A B : Matrix f M N), Mplus f M N A (Mopp f M N B) = MO f M N -> A = B.
+Proof.
+move=> f M N A B H1.
+rewrite - (Mplus_O_r f M N A).
+rewrite - (Mplus_opp_l f M N B).
+rewrite - {3} (Mplus_O_l f M N B).
+rewrite - (Mplus_assoc f M N A (Mopp f M N B) B).
+rewrite H1.
+reflexivity.
+Qed.
+
+Lemma Mminus_diag_uniq_sym : forall (f : Field) (M N : nat) (A B : Matrix f M N), Mplus f M N B (Mopp f M N A) = MO f M N -> A = B.
+Proof.
+move=> f M N A B H1.
+rewrite (Mminus_diag_uniq f M N B A H1).
+reflexivity.
+Qed.
+
+Lemma Mplus_minus : forall (f : Field) (M N : nat) (A B : Matrix f M N), Mplus f M N A (Mplus f M N B (Mopp f M N A)) = B.
+Proof.
+move=> f M N A B.
+rewrite (Mplus_comm f M N B (Mopp f M N A)).
+rewrite - (Mplus_assoc f M N A (Mopp f M N A) B).
+rewrite (Mplus_opp_r f M N A).
+apply (Mplus_O_l f M N B).
+Qed.
+
+Lemma Mminus_eq_contra : forall (f : Field) (M N : nat) (A B : Matrix f M N), A <> B -> Mplus f M N A (Mopp f M N B) <> MO f M N.
+Proof.
+move=> f M N A B H1 H2.
+apply H1.
+apply (Mminus_diag_uniq f M N A B H2).
+Qed.
+
+Lemma Mminus_not_eq : forall (f : Field) (M N : nat) (A B : Matrix f M N), Mplus f M N A (Mopp f M N B) <> MO f M N -> A <> B.
+Proof.
+move=> f M N A B H1 H2.
+apply H1.
+apply (Mminus_diag_eq f M N A B H2).
+Qed.
+
+Lemma Mminus_not_eq_right : forall (f : Field) (M N : nat) (A B : Matrix f M N), Mplus f M N B (Mopp f M N A) <> MO f M N -> A <> B.
+Proof.
+move=> f M N A B H1 H2.
+apply H1.
+apply (Mminus_diag_eq f M N B A).
+rewrite H2.
+reflexivity.
+Qed.
+
+Lemma Mmult_minus_distr_l : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B C : Matrix f N K), Mmult f M N K A (Mminus f N K B C) = Mminus f M K (Mmult f M N K A B) (Mmult f M N K A C).
+Proof.
+move=> f M N K A B C.
+unfold Mminus.
+rewrite (Mmult_plus_distr_l f M N K A B (Mopp f N K C)).
+rewrite (Mopp_mult_distr_r f M N K A C).
+reflexivity.
 Qed.
 
 Definition VMmult (f : Field) (M N : nat) := fun (c : FT f) (A : Matrix f M N) (x : {n : nat | (n < M)}) (y : {n : nat | (n < N)}) => (Fmul f c (A x y)).
@@ -10648,6 +10989,77 @@ reflexivity.
 apply (ReverseMatrixInvolutive f N).
 Qed.
 
+Lemma InvMatrixMultRSym : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A -> MI f N = Mmult f N N N A (InvMatrix f N A).
+Proof.
+move=> f N A H1.
+rewrite (InvMatrixMultR f N A H1).
+reflexivity.
+Qed.
+
+Lemma InvMatrixMultLSym : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A -> MI f N = Mmult f N N N (InvMatrix f N A) A.
+Proof.
+move=> f N A H1.
+rewrite (InvMatrixMultL f N A H1).
+reflexivity.
+Qed.
+
+Lemma InvMatrixMI : forall (f : Field) (N : nat), InvMatrix f N (MI f N) = MI f N.
+Proof.
+move=> f N.
+rewrite {2} (InvMatrixMultUniqueRStrong f N (MI f N) (MI f N)).
+reflexivity.
+apply (Mmult_I_l f N N (MI f N)).
+Qed.
+
+Lemma InvMatrixRegular : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A -> RegularMatrix f N (InvMatrix f N A).
+Proof.
+move=> f N A H1.
+apply (proj2 (RegularInvRExistRelation f N (InvMatrix f N A))).
+exists A.
+apply (InvMatrixMultL f N A H1).
+Qed.
+
+Lemma InvMatrixInvolutive : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A -> InvMatrix f N (InvMatrix f N A) = A.
+Proof.
+move=> f N A H1.
+rewrite {2} (InvMatrixMultUniqueRStrong f N (InvMatrix f N A) A).
+reflexivity.
+apply (InvMatrixMultL f N A H1).
+Qed.
+
+Lemma InvMatrixOpp : forall (f : Field) (N : nat) (A : Matrix f N N), RegularMatrix f N A -> InvMatrix f N (Mopp f N N A) = Mopp f N N (InvMatrix f N A).
+Proof.
+move=> f N A H1.
+rewrite (InvMatrixMultUniqueRStrong f N (Mopp f N N A) (Mopp f N N (InvMatrix f N A))).
+reflexivity.
+rewrite (Mmult_opp_opp f N N N A (InvMatrix f N A)).
+apply (InvMatrixMultR f N A H1).
+Qed.
+
+Lemma Mmult_eq_reg_l : forall (f : Field) (M N : nat) (A : Matrix f M M) (B C : Matrix f M N), Mmult f M M N A B = Mmult f M M N A C -> RegularMatrix f M A -> B = C.
+Proof.
+move=> f M N A B C H1 H2.
+rewrite - (Mmult_I_l f M N B).
+rewrite - (Mmult_I_l f M N C).
+rewrite - (InvMatrixMultL f M A H2).
+rewrite (Mmult_assoc f M M M N (InvMatrix f M A) A B).
+rewrite (Mmult_assoc f M M M N (InvMatrix f M A) A C).
+rewrite H1.
+reflexivity.
+Qed.
+
+Lemma Mmult_eq_reg_r : forall (f : Field) (M N : nat) (A : Matrix f N N) (B C : Matrix f M N), Mmult f M N N B A = Mmult f M N N C A -> RegularMatrix f N A -> B = C.
+Proof.
+move=> f M N A B C H1 H2.
+rewrite - (Mmult_I_r f M N B).
+rewrite - (Mmult_I_r f M N C).
+rewrite - (InvMatrixMultR f N A H2).
+rewrite - (Mmult_assoc f M N N N B A (InvMatrix f N A)).
+rewrite - (Mmult_assoc f M N N N C A (InvMatrix f N A)).
+rewrite H1.
+reflexivity.
+Qed.
+
 Lemma MDiagReverseRelation : forall (f : Field) (N : nat) (d : Count N -> FT f), Mmult f N N N (Mmult f N N N (ReverseMatrix f N) (MDiag f N d)) (ReverseMatrix f N) = MDiag f N (fun (m : Count N) => d (CountReverse N m)).
 Proof.
 move=> f N d.
@@ -14628,4 +15040,173 @@ exists (Proposition_5_9_1_1 f (FnVS f N) (FnVSFiniteDimension f N) (fun (x : Cou
 apply (RankKerRelationVS f M N A).
 Qed.
 
-End Matrix.
+Lemma RankO : forall (f : Field) (M N : nat), Rank f M N (MO f M N) = O.
+Proof.
+move=> f M N.
+suff: (MO f M N = RankNormalForm f M N O).
+move=> H1.
+rewrite H1.
+apply (RankNormalFormRank f M N O (le_0_n M) (le_0_n N)).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MO.
+unfold RankNormalForm.
+elim (excluded_middle_informative (proj1_sig x < O)).
+move=> H1.
+elim (le_not_lt O (proj1_sig x) (le_0_n (proj1_sig x)) H1).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H2.
+reflexivity.
+move=> H2.
+reflexivity.
+Qed.
+
+Lemma RankI : forall (f : Field) (N : nat), Rank f N N (MI f N) = N.
+Proof.
+move=> f N.
+suff: (MI f N = RankNormalForm f N N N).
+move=> H1.
+rewrite H1.
+apply (RankNormalFormRank f N N N (le_n N) (le_n N)).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MI.
+unfold RankNormalForm.
+elim (excluded_middle_informative (proj1_sig x < N)).
+move=> H1.
+reflexivity.
+move=> H1.
+elim (H1 (proj2_sig x)).
+Qed.
+
+Lemma RankInvRExistRelation : forall (f : Field) (M N : nat) (A : Matrix f M N), Rank f M N A = M <-> exists (B : Matrix f N M), Mmult f M N M A B = MI f M.
+Proof.
+suff: (forall (f : Field) (M N : nat), M <= N -> forall (A : Matrix f M N), Rank f M N A = M -> exists (B : Matrix f N M), Mmult f M N M A B = MI f M).
+move=> H1 f M N A.
+apply conj.
+move=> H2.
+suff: (M <= N).
+move=> H3.
+apply (H1 f M N H3 A H2).
+rewrite - H2.
+apply (RankLeW f M N A).
+elim.
+move=> B H2.
+apply (le_antisym (Rank f M N A) M).
+apply (RankLeH f M N A).
+rewrite - {1} (RankI f M).
+rewrite - H2.
+apply (RankMultLeR f M N M A B).
+move=> f M N H1.
+suff: (N = M + (N - M)).
+move=> H2.
+rewrite H2.
+move=> A H3.
+elim (proj1 (RankNormalFormNature f M (M + (N - M)) A M (le_n M) (le_plus_l M (N - M))) H3).
+move=> B.
+elim.
+move=> C H4.
+exists (Mmult f (M + (N - M)) (M + (N - M)) M C (MBlockH f M (N - M) M B (MO f (N - M) M))).
+apply (Mmult_eq_reg_l f M M B).
+rewrite (Mmult_I_r f M M B).
+rewrite - (Mmult_assoc f M (M + (N - M)) (M + (N - M)) M A C).
+rewrite - (Mmult_assoc f M M (M + (N - M)) M B).
+rewrite (proj2 (proj2 H4)).
+suff: (RankNormalForm f M (M + (N - M)) M = MBlockW f M M (N - M) (MI f M) (MO f M (N - M))).
+move=> H5.
+rewrite H5.
+rewrite (MBlockHWMult f M M (N - M) M).
+rewrite (Mmult_I_l f M M B).
+rewrite (Mmult_O_r f M (N - M) M (MO f M (N - M))).
+apply (Mplus_O_r f M M B).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold RankNormalForm.
+unfold MBlockW.
+simpl.
+suff: (proj1_sig (AddConnect M (N - M) (AddConnectInv M (N - M) y)) = proj1_sig y).
+move=> H5.
+rewrite - H5.
+elim (AddConnectInv M (N - M) y).
+move=> y0.
+rewrite - (proj1 (AddConnectNature M (N - M)) y0).
+elim (excluded_middle_informative (proj1_sig x < M)).
+move=> H6.
+reflexivity.
+move=> H6.
+elim (H6 (proj2_sig x)).
+move=> y0.
+rewrite - (proj2 (AddConnectNature M (N - M)) y0).
+elim (Nat.eq_dec (proj1_sig x) (M + proj1_sig y0)).
+move=> H6.
+elim (lt_irrefl (proj1_sig x)).
+apply (le_trans (S (proj1_sig x)) M (proj1_sig x)).
+apply (proj2_sig x).
+rewrite H6.
+apply (le_plus_l M (proj1_sig y0)).
+move=> H6.
+reflexivity.
+rewrite (proj2 (AddConnectInvRelation M (N - M)) y).
+reflexivity.
+apply (proj1 (ElementaryTransformableRegular f M B) (proj1 H4)).
+apply (le_plus_minus M N H1).
+Qed.
+
+Lemma RankInvLExistRelation : forall (f : Field) (M N : nat) (A : Matrix f M N), Rank f M N A = N <-> exists (B : Matrix f N M), Mmult f N M N B A = MI f N.
+Proof.
+move=> f M N A.
+apply conj.
+move=> H1.
+elim (proj1 (RankInvRExistRelation f N M (MTranspose f M N A))).
+move=> B H2.
+exists (MTranspose f M N B).
+rewrite - (MTransI f N).
+rewrite - H2.
+rewrite (MTransMult f N M N (MTranspose f M N A) B).
+rewrite (MTransTrans f M N A).
+reflexivity.
+rewrite (RankTrans f M N A).
+apply H1.
+elim.
+move=> B H1.
+apply (le_antisym (Rank f M N A) N).
+apply (RankLeW f M N A).
+rewrite - {1} (RankI f N).
+rewrite - H1.
+apply (RankMultLeL f N M N A B).
+Qed.
+
+Lemma Mmult_eq_reg_l_rank : forall (f : Field) (M N K : nat) (A : Matrix f M N) (B C : Matrix f N K), Mmult f M N K A B = Mmult f M N K A C -> Rank f M N A = N -> B = C.
+Proof.
+move=> f M N K A B C H1 H2.
+rewrite - (Mmult_I_l f N K B).
+rewrite - (Mmult_I_l f N K C).
+elim (proj1 (RankInvLExistRelation f M N A) H2).
+move=> D H3.
+rewrite - H3.
+rewrite (Mmult_assoc f N M N K D A B).
+rewrite (Mmult_assoc f N M N K D A C).
+rewrite H1.
+reflexivity.
+Qed.
+
+Lemma Mmult_eq_reg_r_rank : forall (f : Field) (M N K : nat) (A : Matrix f N K) (B C : Matrix f M N), Mmult f M N K B A = Mmult f M N K C A -> Rank f N K A = N -> B = C.
+Proof.
+move=> f M N K A B C H1 H2.
+rewrite - (Mmult_I_r f M N B).
+rewrite - (Mmult_I_r f M N C).
+elim (proj1 (RankInvRExistRelation f N K A) H2).
+move=> D H3.
+rewrite - H3.
+rewrite - (Mmult_assoc f M N K N B A D).
+rewrite - (Mmult_assoc f M N K N C A D).
+rewrite H1.
+reflexivity.
+Qed.
