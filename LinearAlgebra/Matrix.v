@@ -31,8 +31,6 @@ Require Import BasicNotation.Permutation.
 Require Import LibraryExtension.DatatypesExtension.
 Require Import LinearAlgebra.SenkeiDaisuunoSekai.SenkeiDaisuunoSekai1.
 
-Section Matrix.
-
 Definition Matrix (f : Field) (M N : nat) := {n : nat| (n < M) } -> {n : nat| (n < N) } -> (FT f).
 
 Definition Mplus (f : Field) (M N : nat) := fun (A B : Matrix f M N) (x : {n : nat| (n < M) }) (y : {n : nat| (n < N) }) => (Fadd f (A x y) (B x y)).
@@ -15042,6 +15040,30 @@ exists (Proposition_5_9_1_1 f (FnVS f N) (FnVSFiniteDimension f N) (fun (x : Cou
 apply (RankKerRelationVS f M N A).
 Qed.
 
+Lemma RankO : forall (f : Field) (M N : nat), Rank f M N (MO f M N) = O.
+Proof.
+move=> f M N.
+suff: (MO f M N = RankNormalForm f M N O).
+move=> H1.
+rewrite H1.
+apply (RankNormalFormRank f M N O (le_0_n M) (le_0_n N)).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold MO.
+unfold RankNormalForm.
+elim (excluded_middle_informative (proj1_sig x < O)).
+move=> H1.
+elim (le_not_lt O (proj1_sig x) (le_0_n (proj1_sig x)) H1).
+move=> H1.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H2.
+reflexivity.
+move=> H2.
+reflexivity.
+Qed.
+
 Lemma RankI : forall (f : Field) (N : nat), Rank f N N (MI f N) = N.
 Proof.
 move=> f N.
@@ -15188,5 +15210,3 @@ rewrite - (Mmult_assoc f M N K N C A D).
 rewrite H1.
 reflexivity.
 Qed.
-
-End Matrix.
