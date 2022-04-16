@@ -17980,3 +17980,899 @@ apply (proj1 (MmultILRSame (RCfield K) (k + (M + N - k)) (AdjointMatrixRC K (k +
 apply (le_plus_minus k (M + N)).
 apply (le_trans k M (M + N) H1 (le_plus_l M N)).
 Qed.
+
+Lemma Proposition_1_sub : forall (K : RC) (M N : nat) (A : Matrix (RCfield K) (M + N) M), exists ! (X : Matrix (RCfield K) M (M + N)), Mmult (RCfield K) (M + N) (M + N) M (Mmult (RCfield K) (M + N) M (M + N) A X) A = A /\ Mmult (RCfield K) M M (M + N) (Mmult (RCfield K) M (M + N) M X A) X = X /\ AdjointMatrixRC K (M + N) (M + N) (Mmult (RCfield K) (M + N) M (M + N) A X) = Mmult (RCfield K) (M + N) M (M + N) A X /\ AdjointMatrixRC K M M (Mmult (RCfield K) M (M + N) M X A) = Mmult (RCfield K) M (M + N) M X A.
+Proof.
+move=> K M N A.
+apply (unique_existence (fun (X : Matrix (RCfield K) M (M + N)) => Mmult (RCfield K) (M + N) (M + N) M (Mmult (RCfield K) (M + N) M (M + N) A X) A = A /\ Mmult (RCfield K) M M (M + N) (Mmult (RCfield K) M (M + N) M X A) X = X /\ AdjointMatrixRC K (M + N) (M + N) (Mmult (RCfield K) (M + N) M (M + N) A X) = Mmult (RCfield K) (M + N) M (M + N) A X /\ AdjointMatrixRC K M M (Mmult (RCfield K) M (M + N) M X A) = Mmult (RCfield K) M (M + N) M X A)).
+apply conj.
+elim (proj2 (proj2 (SingularValueRCHNature K M N A))).
+move=> U.
+elim.
+move=> V H1.
+rewrite (proj2 (proj2 H1)).
+exists (Mmult (RCfield K) M (M + N) (M + N) (Mmult (RCfield K) M M (M + N) V (MBlockW (RCfield K) M M N (MDiag (RCfield K) M
+                (fun (m : {n : nat | (n < M)%nat}) => match excluded_middle_informative (SingularValueRCH K M N A m = 0) with 
+  | left _ => RCO K
+  | right _ => IRRC K (/ SingularValueRCH K M N A m)
+end))
+             (MO (RCfield K) M N))) (AdjointMatrixRC K (M + N) (M + N) U)).
+apply conj.
+rewrite (Mmult_assoc (RCfield K) (M + N) (M + N) M (M + N)).
+rewrite (Mmult_assoc (RCfield K) (M + N) M M (M + N)).
+rewrite (Mmult_assoc (RCfield K) M M (M + N) (M + N)).
+rewrite - (Mmult_assoc (RCfield K) M M M (M + N)).
+rewrite (proj1 (proj2 H1)).
+rewrite (Mmult_I_l (RCfield K) M (M + N)).
+rewrite - (Mmult_assoc (RCfield K) (M + N) M (M + N) (M + N)).
+rewrite - (Mmult_assoc (RCfield K) (M + N) (M + N) (M + N) (M + N)).
+rewrite (Mmult_assoc (RCfield K) (M + N) (M + N) (M + N) M).
+rewrite - (Mmult_assoc (RCfield K) (M + N) (M + N) (M + N) M (AdjointMatrixRC K (M + N) (M + N) U)).
+rewrite (proj1 H1).
+rewrite (Mmult_I_l (RCfield K) (M + N) M).
+rewrite (MBlockHMult (RCfield K) M N M (M + N)).
+rewrite (MBlockWMult (RCfield K) M M M N).
+rewrite (MBlockWMult (RCfield K) N M M N).
+rewrite (Mmult_O_r (RCfield K) M M N).
+rewrite (Mmult_O_l (RCfield K) N M M).
+rewrite (Mmult_O_l (RCfield K) N M N).
+rewrite (MDiagMult (RCfield K) M).
+rewrite (Mmult_assoc (RCfield K) (M + N) (M + N) (M + N) M).
+rewrite - (Mmult_assoc (RCfield K) (M + N) (M + N) M M).
+rewrite (MBlockHWWHSame (RCfield K) M N M N).
+rewrite (MBlockHWMult (RCfield K) (M + N) M N M).
+rewrite (Mmult_O_r (RCfield K) (M + N) N M).
+rewrite (Mplus_comm (RCfield K) (M + N) M).
+rewrite (Mplus_O_l (RCfield K) (M + N) M).
+rewrite (MBlockHMult (RCfield K) M N M M).
+rewrite (Mmult_O_l (RCfield K) N M M).
+rewrite (MDiagMult (RCfield K) M).
+suff: ((fun (m : {n : nat | (n < M)%nat}) =>
+            Fmul (RCfield K)
+              (Fmul (RCfield K)
+                 (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))
+                 (match
+                   excluded_middle_informative (SingularValueRCH K M N A m = 0)
+                  with | left _=>  RCO K
+                  | right _ => IRRC K (/ SingularValueRCH K M N A m)
+end))
+              (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m)))
+
+= (fun (m : {n : nat | (n < M)%nat}) =>
+                  IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))).
+move=> H2.
+rewrite H2.
+reflexivity.
+apply functional_extensionality.
+move=> m.
+elim (excluded_middle_informative (SingularValueRCH K M N A m = 0)).
+unfold SingularValueRCH.
+move=> H2.
+rewrite H2.
+suff: (IRRC K 0 = RCO K).
+move=> H3.
+rewrite H3.
+apply (Fmul_O_r (RCfield K)).
+elim K.
+reflexivity.
+apply functional_extensionality.
+move=> z.
+elim (CReorCIm z).
+move=> H3.
+rewrite H3.
+apply (CmakeRe 0 0).
+move=> H3.
+rewrite H3.
+apply (CmakeIm 0 0).
+move=> H2.
+simpl.
+rewrite - (IRRCmult K).
+rewrite - (IRRCmult K).
+rewrite (Rinv_r (proj1_sig (SingularValueRCHSig K M N A) m) H2).
+rewrite Rmult_1_l.
+reflexivity.
+apply conj.
+rewrite (Mmult_assoc (RCfield K) M (M + N) (M + N) M).
+rewrite - (Mmult_assoc (RCfield K) (M + N) (M + N) (M + N) M).
+rewrite (proj1 H1).
+rewrite (Mmult_I_l (RCfield K) (M + N) M).
+rewrite - (Mmult_assoc (RCfield K) M (M + N) M M).
+rewrite (Mmult_assoc (RCfield K) M M M (M + N)).
+rewrite - (Mmult_assoc (RCfield K) M M (M + N) (M + N)).
+rewrite - (Mmult_assoc (RCfield K) M M M (M + N)).
+rewrite (proj1 (proj2 H1)).
+rewrite (Mmult_I_l (RCfield K) M (M + N)).
+rewrite (Mmult_assoc (RCfield K) M M (M + N) M).
+rewrite (MBlockHWMult (RCfield K) M M N M).
+rewrite (Mmult_O_l (RCfield K) M N M).
+rewrite (MDiagMult (RCfield K) M).
+rewrite (Mplus_comm (RCfield K) M M).
+rewrite (Mplus_O_l (RCfield K) M M).
+rewrite (Mmult_assoc (RCfield K) M M M (M + N)).
+rewrite - (Mmult_assoc (RCfield K) M M (M + N) (M + N)).
+rewrite (MBlockWMult (RCfield K) M M M N).
+rewrite (Mmult_O_r (RCfield K) M M N).
+rewrite (MDiagMult (RCfield K) M).
+rewrite (Mmult_assoc (RCfield K) M M (M + N) (M + N)).
+suff: ((fun (m : {n : nat | (n < M)%nat}) =>
+            Fmul (RCfield K)
+              (Fmul (RCfield K)
+                 match excluded_middle_informative (SingularValueRCH K M N A m = 0)
+               with | left _ => RCO K
+               | right _ => IRRC K (/ SingularValueRCH K M N A m) end
+                 (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m)))
+              match excluded_middle_informative (SingularValueRCH K M N A m = 0)
+               with | left _ => RCO K
+               | right _ => IRRC K (/ SingularValueRCH K M N A m) end)
+
+= (fun (m : {n : nat | (n < M)%nat}) => 
+              match excluded_middle_informative (SingularValueRCH K M N A m = 0)
+               with | left _ => RCO K
+               | right _ => IRRC K (/ SingularValueRCH K M N A m) end)).
+move=> H2.
+rewrite H2.
+reflexivity.
+apply functional_extensionality.
+move=> m.
+elim (excluded_middle_informative (SingularValueRCH K M N A m = 0)).
+unfold SingularValueRCH.
+move=> H2.
+rewrite H2.
+apply (Fmul_O_r (RCfield K)).
+move=> H2.
+simpl.
+rewrite - (IRRCmult K).
+rewrite - (IRRCmult K).
+rewrite (Rinv_l (proj1_sig (SingularValueRCHSig K M N A) m) H2).
+rewrite Rmult_1_l.
+reflexivity.
+apply conj.
+rewrite - (Mmult_assoc (RCfield K) (M + N) (M + N) M M).
+rewrite (Mmult_assoc (RCfield K) (M + N) M M (M + N)).
+rewrite (Mmult_assoc (RCfield K) M M (M + N) (M + N)).
+rewrite - (Mmult_assoc (RCfield K) M M M (M + N)).
+rewrite (proj1 (proj2 H1)).
+rewrite (Mmult_I_l (RCfield K) M (M + N)).
+rewrite (Mmult_assoc (RCfield K) (M + N) (M + N) M (M + N)).
+rewrite - (Mmult_assoc (RCfield K) (M + N) M (M + N) (M + N)).
+rewrite (MBlockHMult (RCfield K) M N M (M + N)).
+rewrite (MBlockWMult (RCfield K) M M M N).
+rewrite (MBlockWMult (RCfield K) N M M N).
+rewrite (Mmult_O_l (RCfield K) N M N).
+rewrite (Mmult_O_l (RCfield K) N M M).
+rewrite (Mmult_O_r (RCfield K) M M N).
+rewrite (MDiagMult (RCfield K) M).
+rewrite (AdjointMatrixRCMult K (M + N) (M + N) (M + N)).
+rewrite (AdjointMatrixRCMult K (M + N) (M + N) (M + N)).
+rewrite (BlockHAdjointMatrixRC K M N (M + N)).
+rewrite (BlockWAdjointMatrixRC K M M N).
+rewrite (BlockWAdjointMatrixRC K N M N).
+rewrite (MBlockHWWHSame (RCfield K) M N M N).
+rewrite (AdjointMatrixRCO K M N).
+rewrite (AdjointMatrixRCO K N M).
+rewrite (AdjointMatrixRCO K N N).
+rewrite (AdjointMatrixRCInvolutive K (M + N) (M + N)).
+suff: (AdjointMatrixRC K M M
+              (MDiag (RCfield K) M
+                 (fun m : {n : nat | (n < M)%nat} =>
+                  Fmul (RCfield K)
+                    (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))
+                    (match
+                      excluded_middle_informative
+                        (SingularValueRCH K M N A m = 0)
+                     with | left _ => RCO K
+                     | right _ => IRRC K (/ SingularValueRCH K M N A m) end)))
+= MDiag (RCfield K) M
+              (fun m : {n : nat | (n < M)%nat} =>
+               Fmul (RCfield K)
+                 (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))
+                 (match
+                   excluded_middle_informative (SingularValueRCH K M N A m = 0)
+                  with | left _ => RCO K
+                  | right _ => IRRC K (/ SingularValueRCH K M N A m) end))).
+move=> H2.
+rewrite H2.
+rewrite (Mmult_assoc (RCfield K) (M + N) (M + N) (M + N) (M + N)).
+reflexivity.
+unfold AdjointMatrixRC.
+unfold MDiag.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H2.
+suff: (y = x).
+move=> H3.
+rewrite H3.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig x)).
+move=> H4.
+elim (excluded_middle_informative (SingularValueRCH K M N A x = 0)).
+move=> H5.
+rewrite (Fmul_O_r (RCfield K)).
+apply (ConjugateRCO K).
+move=> H5.
+simpl.
+rewrite - (IRRCmult K).
+rewrite (Rinv_r (proj1_sig (SingularValueRCHSig K M N A) x) H5).
+suff: (IRRC K 1 = RCI K).
+move=> H6.
+rewrite H6.
+apply (ConjugateRCI K).
+elim K.
+reflexivity.
+reflexivity.
+elim.
+reflexivity.
+apply sig_map.
+apply H2.
+move=> H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H3.
+elim H2.
+rewrite H3.
+reflexivity.
+move=> H3.
+apply (ConjugateRCO K).
+rewrite (Mmult_assoc (RCfield K) M (M + N) (M + N) M).
+rewrite - (Mmult_assoc (RCfield K) (M + N) (M + N) (M + N) M).
+rewrite (proj1 H1).
+rewrite (Mmult_I_l (RCfield K) (M + N) M).
+rewrite (Mmult_assoc (RCfield K) M M (M + N) M).
+rewrite - (Mmult_assoc (RCfield K) M (M + N) M M).
+rewrite (MBlockHWMult (RCfield K) M M N M).
+rewrite (MDiagMult (RCfield K) M).
+rewrite (Mmult_O_l (RCfield K) M N M).
+rewrite (Mplus_comm (RCfield K) M M).
+rewrite (Mplus_O_l (RCfield K) M M).
+rewrite (AdjointMatrixRCMult K M M M).
+rewrite (AdjointMatrixRCMult K M M M).
+rewrite (AdjointMatrixRCInvolutive K M M).
+suff: (AdjointMatrixRC K M M
+              (MDiag (RCfield K) M
+                 (fun m : {n : nat | (n < M)%nat} =>
+                  Fmul (RCfield K)
+                    (match
+                      excluded_middle_informative
+                        (SingularValueRCH K M N A m = 0)
+                     with | left _ => RCO K
+                     | right _ => IRRC K (/ SingularValueRCH K M N A m) end) (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))))
+= MDiag (RCfield K) M
+              (fun m : {n : nat | (n < M)%nat} =>
+               Fmul (RCfield K)
+                 (match
+                   excluded_middle_informative (SingularValueRCH K M N A m = 0)
+                  with | left _ => RCO K
+                  | right _ => IRRC K (/ SingularValueRCH K M N A m) end) 
+                 (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m)))).
+move=> H2.
+rewrite H2.
+rewrite (Mmult_assoc (RCfield K) M M M M).
+reflexivity.
+unfold AdjointMatrixRC.
+unfold MDiag.
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+elim (Nat.eq_dec (proj1_sig y) (proj1_sig x)).
+move=> H2.
+suff: (y = x).
+move=> H3.
+rewrite H3.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig x)).
+move=> H4.
+elim (excluded_middle_informative (SingularValueRCH K M N A x = 0)).
+move=> H5.
+rewrite (Fmul_O_l (RCfield K)).
+apply (ConjugateRCO K).
+move=> H5.
+simpl.
+rewrite - (IRRCmult K).
+rewrite (Rinv_l (proj1_sig (SingularValueRCHSig K M N A) x) H5).
+suff: (IRRC K 1 = RCI K).
+move=> H6.
+rewrite H6.
+apply (ConjugateRCI K).
+elim K.
+reflexivity.
+reflexivity.
+elim.
+reflexivity.
+apply sig_map.
+apply H2.
+move=> H2.
+elim (Nat.eq_dec (proj1_sig x) (proj1_sig y)).
+move=> H3.
+elim H2.
+rewrite H3.
+reflexivity.
+move=> H3.
+apply (ConjugateRCO K).
+move=> X Y H1 H2.
+rewrite - (proj1 (proj2 H1)).
+rewrite - (proj2 (proj2 (proj2 H1))).
+rewrite (AdjointMatrixRCMult K M (M + N) M X A).
+rewrite - (proj1 H2).
+rewrite (Mmult_assoc (RCfield K) (M + N) M (M + N) M A Y A).
+rewrite (AdjointMatrixRCMult K (M + N) M M A (Mmult (RCfield K) M (M + N) M Y A)).
+rewrite (Mmult_assoc (RCfield K) M M (M + N) M).
+rewrite - (AdjointMatrixRCMult K M (M + N) M X A).
+rewrite (proj2 (proj2 (proj2 H1))).
+rewrite (proj2 (proj2 (proj2 H2))).
+rewrite (Mmult_assoc (RCfield K) M M M (M + N)).
+rewrite (Mmult_assoc (RCfield K) M (M + N) M (M + N) X A X).
+rewrite - (proj1 (proj2 (proj2 H1))).
+rewrite (AdjointMatrixRCMult K (M + N) M (M + N) A X).
+rewrite - {2} (proj1 H2).
+rewrite (AdjointMatrixRCMult K (M + N) (M + N) M).
+rewrite (proj1 (proj2 (proj2 H2))).
+rewrite - (Mmult_assoc (RCfield K) (M + N) M (M + N) (M + N)).
+rewrite - (AdjointMatrixRCMult K (M + N) M (M + N) A X).
+rewrite (proj1 (proj2 (proj2 H1))).
+rewrite - (Mmult_assoc (RCfield K) M (M + N) (M + N) (M + N)).
+rewrite - (Mmult_assoc (RCfield K) M (M + N) M (M + N) X A X).
+rewrite (proj1 (proj2 H1)).
+rewrite (Mmult_assoc (RCfield K) M (M + N) M (M + N)).
+rewrite - (Mmult_assoc (RCfield K) (M + N) M (M + N) (M + N)).
+rewrite - (Mmult_assoc (RCfield K) (M + N) (M + N) M (M + N)).
+rewrite (proj1 H1).
+rewrite - (Mmult_assoc (RCfield K) M (M + N) M (M + N) Y A Y).
+apply (proj1 (proj2 H2)).
+Qed.
+
+Lemma Proposition_1 : forall (K : RC) (M N : nat) (A : Matrix (RCfield K) M N), exists ! (X : Matrix (RCfield K) N M), Mmult (RCfield K) M M N (Mmult (RCfield K) M N M A X) A = A /\ Mmult (RCfield K) N N M (Mmult (RCfield K) N M N X A) X = X /\ AdjointMatrixRC K M M (Mmult (RCfield K) M N M A X) = Mmult (RCfield K) M N M A X /\ AdjointMatrixRC K N N (Mmult (RCfield K) N M N X A) = Mmult (RCfield K) N M N X A.
+Proof.
+move=> K M N.
+elim (le_or_lt M N).
+move=> H1.
+suff: (N = M + (N - M))%nat.
+move=> H2.
+rewrite H2.
+move=> A.
+elim (Proposition_1_sub K M (N - M) (AdjointMatrixRC K M (M + (N - M)) A)).
+move=> X H3.
+exists (AdjointMatrixRC K M (M + (N - M)) X).
+apply conj.
+apply conj.
+rewrite - {3} (AdjointMatrixRCInvolutive K M (M + (N - M)) A).
+rewrite - (proj1 (proj1 H3)).
+rewrite (AdjointMatrixRCMult K (M + (N - M)) (M + (N - M)) M).
+rewrite (AdjointMatrixRCMult K (M + (N - M)) M (M + (N - M))).
+rewrite (AdjointMatrixRCInvolutive K M (M + (N - M)) A).
+rewrite (Mmult_assoc (RCfield K) M (M + (N - M)) M (M + (N - M))).
+reflexivity.
+apply conj.
+rewrite - {3} (proj1 (proj2 (proj1 H3))).
+rewrite (AdjointMatrixRCMult K M M (M + (N - M))).
+rewrite (AdjointMatrixRCMult K M (M + (N - M)) M).
+rewrite (AdjointMatrixRCInvolutive K M (M + (N - M)) A).
+apply (Mmult_assoc (RCfield K) (M + (N - M)) M (M + (N - M)) M).
+apply conj.
+rewrite (AdjointMatrixRCMult K M (M + (N - M)) M).
+rewrite (AdjointMatrixRCInvolutive K M (M + (N - M)) X).
+rewrite - (proj2 (proj2 (proj2 (proj1 H3)))).
+rewrite (AdjointMatrixRCMult K M (M + (N - M)) M X).
+rewrite (AdjointMatrixRCInvolutive K M (M + (N - M)) A).
+reflexivity.
+rewrite (AdjointMatrixRCMult K (M + (N - M)) M (M + (N - M))).
+rewrite (AdjointMatrixRCInvolutive K M (M + (N - M)) X).
+rewrite - (proj1 (proj2 (proj2 (proj1 H3)))).
+rewrite (AdjointMatrixRCMult K (M + (N - M)) M (M + (N - M))).
+rewrite (AdjointMatrixRCInvolutive K M (M + (N - M)) A).
+reflexivity.
+move=> Y H4.
+rewrite (proj2 H3 (AdjointMatrixRC K (M + (N - M)) M Y)).
+apply (AdjointMatrixRCInvolutive K (M + (N - M)) M Y).
+apply conj.
+rewrite - {3} (proj1 H4).
+rewrite (AdjointMatrixRCMult K M M (M + (N - M))).
+rewrite (AdjointMatrixRCMult K M (M + (N - M)) M A Y).
+apply (Mmult_assoc (RCfield K) (M + (N - M)) M (M + (N - M)) M).
+apply conj.
+rewrite - {3} (proj1 (proj2 H4)).
+rewrite (AdjointMatrixRCMult K (M + (N - M)) (M + (N - M)) M).
+rewrite (AdjointMatrixRCMult K (M + (N - M)) M (M + (N - M)) Y A).
+apply (Mmult_assoc (RCfield K) M (M + (N - M)) M (M + (N - M))).
+apply conj.
+rewrite (AdjointMatrixRCMult K (M + (N - M)) M (M + (N - M))).
+rewrite (AdjointMatrixRCInvolutive K (M + (N - M)) M Y).
+rewrite (AdjointMatrixRCInvolutive K M (M + (N - M)) A).
+rewrite - (proj2 (proj2 (proj2 H4))).
+apply (AdjointMatrixRCMult K (M + (N - M)) M (M + (N - M)) Y A).
+rewrite (AdjointMatrixRCMult K M (M + (N - M)) M).
+rewrite (AdjointMatrixRCInvolutive K M (M + (N - M)) A).
+rewrite (AdjointMatrixRCInvolutive K (M + (N - M)) M Y).
+rewrite - (proj1 (proj2 (proj2 H4))).
+apply (AdjointMatrixRCMult K M (M + (N - M)) M A Y).
+apply (le_plus_minus M N H1).
+move=> H1.
+suff: (M = N + (M - N))%nat.
+move=> H2.
+rewrite H2.
+apply (Proposition_1_sub K N (M - N)).
+apply (le_plus_minus N M (lt_le_weak N M H1)).
+Qed.
+
+Lemma GeneralizedInverseMatrixRCSig : forall (K : RC) (M N : nat) (A : Matrix (RCfield K) M N), {X : Matrix (RCfield K) N M | Mmult (RCfield K) M M N (Mmult (RCfield K) M N M A X) A = A /\ Mmult (RCfield K) N N M (Mmult (RCfield K) N M N X A) X = X /\ AdjointMatrixRC K M M (Mmult (RCfield K) M N M A X) = Mmult (RCfield K) M N M A X /\ AdjointMatrixRC K N N (Mmult (RCfield K) N M N X A) = Mmult (RCfield K) N M N X A}.
+Proof.
+move=> K M N A.
+apply constructive_definite_description.
+apply (Proposition_1 K M N A).
+Qed.
+
+Definition GeneralizedInverseMatrixRC (K : RC) (M N : nat) (A : Matrix (RCfield K) M N) := proj1_sig (GeneralizedInverseMatrixRCSig K M N A).
+
+Definition GeneralizedInverseMatrixRCNature (K : RC) (M N : nat) (A : Matrix (RCfield K) M N) : Mmult (RCfield K) M M N (Mmult (RCfield K) M N M A (GeneralizedInverseMatrixRC K M N A)) A = A /\ Mmult (RCfield K) N N M (Mmult (RCfield K) N M N (GeneralizedInverseMatrixRC K M N A) A) (GeneralizedInverseMatrixRC K M N A) = GeneralizedInverseMatrixRC K M N A /\ AdjointMatrixRC K M M (Mmult (RCfield K) M N M A (GeneralizedInverseMatrixRC K M N A)) = Mmult (RCfield K) M N M A (GeneralizedInverseMatrixRC K M N A) /\ AdjointMatrixRC K N N (Mmult (RCfield K) N M N (GeneralizedInverseMatrixRC K M N A) A) = Mmult (RCfield K) N M N (GeneralizedInverseMatrixRC K M N A) A := proj2_sig (GeneralizedInverseMatrixRCSig K M N A).
+
+Lemma GeneralizedInverseMatrixRCNature2 : forall (K : RC) (M N : nat) (A : Matrix (RCfield K) M N) (X : Matrix (RCfield K) N M), (Mmult (RCfield K) M M N (Mmult (RCfield K) M N M A X) A = A /\ Mmult (RCfield K) N N M (Mmult (RCfield K) N M N X A) X = X /\ AdjointMatrixRC K M M (Mmult (RCfield K) M N M A X) = Mmult (RCfield K) M N M A X /\ AdjointMatrixRC K N N (Mmult (RCfield K) N M N X A) = Mmult (RCfield K) N M N X A) -> GeneralizedInverseMatrixRC K M N A = X.
+Proof.
+move=> K M N A X.
+apply (proj2 (proj2 (unique_existence (fun (X : Matrix (RCfield K) N M) => Mmult (RCfield K) M M N (Mmult (RCfield K) M N M A X) A = A /\
+Mmult (RCfield K) N N M (Mmult (RCfield K) N M N X A) X = X /\
+AdjointMatrixRC K M M (Mmult (RCfield K) M N M A X) =
+Mmult (RCfield K) M N M A X /\
+AdjointMatrixRC K N N (Mmult (RCfield K) N M N X A) =
+Mmult (RCfield K) N M N X A)) (Proposition_1 K M N A)) (GeneralizedInverseMatrixRC K M N A) X (GeneralizedInverseMatrixRCNature K M N A)).
+Qed.
+
+Definition ResiRC (K : RC) (M N L : nat) (A : Matrix (RCfield K) M N) (B : Matrix (RCfield K) M L) := Mplus (RCfield K) M L B (Mopp (RCfield K) M L (Mmult (RCfield K) M M L (Mmult (RCfield K) M N M A (GeneralizedInverseMatrixRC K M N A)) B)).
+
+Lemma Lemma1 : forall (K : RC) (M N L : nat) (A : Matrix (RCfield K) M N) (B : Matrix (RCfield K) M L) (X : Matrix (RCfield K) N L), Mplus (RCfield K) N L (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) (Mmult (RCfield K) M N L A X)) (Mopp (RCfield K) N L (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) B)) = MO (RCfield K) N L <-> ResiRC K M N L A B = Mplus (RCfield K) M L B (Mopp (RCfield K) M L (Mmult (RCfield K) M N L A X)).
+Proof.
+move=> K M N L A B X.
+apply conj.
+move=> H1.
+apply (f_equal (fun (Y : Matrix (RCfield K) M L) => Mplus (RCfield K) M L B
+  (Mopp (RCfield K) M L
+     Y))).
+rewrite - (Mplus_O_l (RCfield K) M L B).
+rewrite - (Mplus_opp_r (RCfield K) M L (Mmult (RCfield K) M N L A X)).
+rewrite (Mplus_assoc (RCfield K) M L).
+rewrite (Mmult_plus_distr_l (RCfield K) M M L).
+rewrite - (Mmult_assoc (RCfield K) M M N L).
+rewrite (proj1 (GeneralizedInverseMatrixRCNature K M N A)).
+rewrite - (proj1 (proj2 (proj2 (GeneralizedInverseMatrixRCNature K M N A)))).
+rewrite (AdjointMatrixRCMult K M N M A (GeneralizedInverseMatrixRC K M N A)).
+rewrite (Mmult_assoc (RCfield K) M N M L).
+rewrite (Mmult_plus_distr_l (RCfield K) N M L).
+suff: (Mplus (RCfield K) N L
+        (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A)
+           (Mopp (RCfield K) M L (Mmult (RCfield K) M N L A X)))
+        (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) B)
+= Mopp (RCfield K) N L (Mplus (RCfield K) N L
+       (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A)
+          (Mmult (RCfield K) M N L A X))
+       (Mopp (RCfield K) N L
+          (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) B)))).
+move=> H2.
+rewrite H2.
+rewrite H1.
+suff: (Mopp (RCfield K) N L (MO (RCfield K) N L) = MO (RCfield K) N L).
+move=> H3.
+rewrite H3.
+rewrite (Mmult_O_r (RCfield K) M N L).
+rewrite (Mplus_comm (RCfield K) M L (Mmult (RCfield K) M N L A X) (MO (RCfield K) M L)).
+apply (Mplus_O_l (RCfield K) M L (Mmult (RCfield K) M N L A X)).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply (Fopp_O (RCfield K)).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mopp.
+rewrite (Fopp_add_distr (RCfield K)).
+unfold Mplus.
+rewrite (Fopp_involutive (RCfield K)).
+apply (f_equal (fun (r : RCT K) => Fadd (RCfield K) r (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) B x y))).
+unfold Mmult at 3.
+unfold Mmult at 1.
+apply (FiniteSetInduction {n : nat | (n < M)%nat}
+  (exist (Finite (Count M)) (Full_set {n : nat | (n < M)%nat}) (CountFinite M))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+rewrite (Fopp_O (RCfield K)).
+reflexivity.
+move=> C c H2 H3 H4 H5.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite (Fopp_add_distr (RCfield K)).
+rewrite (Fopp_mul_distr_r (RCfield K)).
+rewrite H5.
+reflexivity.
+apply H4.
+apply H4.
+move=> H1.
+suff: (Mplus (RCfield K) N L
+  (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A)
+     (Mmult (RCfield K) M N L A X))
+  (Mopp (RCfield K) N L (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) B))
+= Mopp (RCfield K) N L (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) (ResiRC K M N L A B))).
+move=> H2.
+rewrite H2.
+unfold ResiRC.
+rewrite (Mmult_plus_distr_l (RCfield K) N M L).
+suff: (Mopp (RCfield K) M L
+           (Mmult (RCfield K) M M L
+              (Mmult (RCfield K) M N M A (GeneralizedInverseMatrixRC K M N A)) B)
+= Mmult (RCfield K) M M L
+              (Mmult (RCfield K) M N M A (GeneralizedInverseMatrixRC K M N A)) (Mopp (RCfield K) M L B)).
+move=> H3.
+rewrite H3.
+rewrite - (proj1 (proj2 (proj2 (GeneralizedInverseMatrixRCNature K M N A)))).
+rewrite - (Mmult_assoc (RCfield K) N M M L).
+rewrite - (AdjointMatrixRCMult K M M N).
+rewrite (proj1 (GeneralizedInverseMatrixRCNature K M N A)).
+rewrite - (Mmult_plus_distr_l (RCfield K) N M L).
+rewrite (Mplus_opp_r (RCfield K) M L B).
+rewrite (Mmult_O_r (RCfield K) N M L).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+apply (Fopp_O (RCfield K)).
+apply functional_extensionality.
+move=> x.
+apply functional_extensionality.
+move=> y.
+unfold Mmult at 3.
+unfold Mmult at 1.
+unfold Mopp.
+apply (FiniteSetInduction {n : nat | (n < M)%nat}
+  (exist (Finite (Count M)) (Full_set {n : nat | (n < M)%nat}) (CountFinite M))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+apply (Fopp_O (RCfield K)).
+move=> C c H3 H4 H5 H6.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite (Fopp_add_distr (RCfield K)).
+rewrite (Fopp_mul_distr_r (RCfield K)).
+rewrite H6.
+reflexivity.
+apply H5.
+apply H5.
+rewrite H1.
+rewrite (Mmult_plus_distr_l (RCfield K) N M L (AdjointMatrixRC K M N A) B).
+rewrite (Mopp_plus_distr (RCfield K) N L).
+rewrite - (Mopp_mult_distr_r (RCfield K) N M L (AdjointMatrixRC K M N A) (Mmult (RCfield K) M N L A X)).
+rewrite (Mopp_involutive (RCfield K) N L).
+apply (Mplus_comm (RCfield K) N L).
+Qed.
+
+Lemma Lemma2 : forall (K : RC) (M N : nat) (A : Matrix (RCfield K) M N) (b : RCn K M) (x : RCn K N), (forall (y : RCn K N), RCnNorm K M (RCnminus K M b (MVmult (RCfield K) M N A x)) <= RCnNorm K M (RCnminus K M b (MVmult (RCfield K) M N A y))) <-> MVmult (RCfield K) N M (AdjointMatrixRC K M N A) (RCnminus K M b (MVmult (RCfield K) M N A x)) = RCnO K N.
+Proof.
+suff: (forall (K : RC) (M N : nat) (A : Matrix (RCfield K) M N) (b : RCn K M), (forall (y : RCn K N), RCnNorm K M b <= RCnNorm K M (RCnminus K M b (MVmult (RCfield K) M N A y))) <-> MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b = RCnO K N).
+move=> H1 K M N A b x.
+suff: (forall (y : RCn K N), RCnminus K M b (MVmult (RCfield K) M N A y) = RCnminus K M (RCnminus K M b (MVmult (RCfield K) M N A x)) (MVmult (RCfield K) M N A (RCnminus K N y x))).
+move=> H2.
+apply conj.
+move=> H3.
+apply (proj1 (H1 K M N A (RCnminus K M b (MVmult (RCfield K) M N A x)))).
+move=> y.
+suff: (y = RCnminus K N (RCnplus K N y x) x).
+move=> H4.
+rewrite H4.
+rewrite - (H2 (RCnplus K N y x)).
+apply (H3 (RCnplus K N y x)).
+unfold RCnminus.
+unfold Fnminus.
+unfold RCnplus.
+rewrite (Fnadd_assoc (RCfield K) N y x (Fnopp (RCfield K) N x)).
+rewrite (Fnadd_opp_r (RCfield K) N x).
+rewrite (Fnadd_comm (RCfield K) N y (FnO (RCfield K) N)).
+rewrite (Fnadd_O_l (RCfield K) N y).
+reflexivity.
+move=> H3 y.
+rewrite (H2 y).
+apply (proj2 (H1 K M N A (RCnminus K M b (MVmult (RCfield K) M N A x))) H3 (RCnminus K N y x)).
+move=> y.
+suff: (MVmult (RCfield K) M N A (RCnminus K N y x) = RCnminus K M (MVmult (RCfield K) M N A y) (MVmult (RCfield K) M N A x)).
+move=> H2.
+rewrite H2.
+apply functional_extensionality.
+move=> m.
+unfold RCnminus.
+unfold Fnminus.
+unfold RCnplus.
+unfold Fnadd.
+unfold Fnopp.
+rewrite (Fopp_minus_distr (RCfield K) (MVmult (RCfield K) M N A y m) (MVmult (RCfield K) M N A x m)).
+rewrite (Fadd_assoc (RCfield K) (b m) (Fopp (RCfield K) (MVmult (RCfield K) M N A x m))).
+rewrite - (Fadd_assoc (RCfield K) (Fopp (RCfield K) (MVmult (RCfield K) M N A x m)) (MVmult (RCfield K) M N A x m)).
+rewrite (Fadd_opp_l (RCfield K) (MVmult (RCfield K) M N A x m)).
+rewrite (Fadd_O_l (RCfield K) (Fopp (RCfield K) (MVmult (RCfield K) M N A y m))).
+reflexivity.
+unfold MVmult.
+suff: (MVectorToMatrix (RCfield K) N (RCnminus K N y x) = Mminus (RCfield K) N 1 (MVectorToMatrix (RCfield K) N y) (MVectorToMatrix (RCfield K) N x)).
+move=> H2.
+rewrite H2.
+rewrite (Mmult_minus_distr_l (RCfield K) M N 1 A).
+reflexivity.
+apply functional_extensionality.
+move=> m.
+apply functional_extensionality.
+move=> n.
+reflexivity.
+suff: (forall (K : RC) (M : nat) (x y : RCn K M), RCnNorm K M x <= RCnNorm K M y <-> RCnNorm K M x * RCnNorm K M x <= RCnNorm K M y * RCnNorm K M y).
+move=> H1.
+suff: (forall (K : RC) (M : nat) (x y : RCn K M), RCnNorm K M x < RCnNorm K M y <-> RCnNorm K M x * RCnNorm K M x < RCnNorm K M y * RCnNorm K M y).
+move=> H2 K M N A b.
+apply conj.
+move=> H3.
+elim (proj1 (RCnNormNature K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))).
+move=> H4.
+suff: (forall (c : R), c >= 0 -> RCRe K (RCnInnerProduct K M b (MVmult (RCfield K) M N A (RCnmult K N (IRRC K c) (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))) = c * (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) * RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))).
+move=> H5.
+suff: (forall (c : R), c >= 0 -> RCnNorm K M (MVmult (RCfield K) M N A
+             (RCnmult K N (IRRC K c)
+                (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))) * RCnNorm K M (MVmult (RCfield K) M N A
+             (RCnmult K N (IRRC K c)
+                (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))
+= c * c * (RCnNorm K M (MVmult (RCfield K) M N A
+             (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) * RCnNorm K M (MVmult (RCfield K) M N A
+             (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+move=> H6.
+suff: (exists (c : R), c >= 0 /\ 2 * c * (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) *
+      RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) > c * c *
+     (RCnNorm K M
+        (MVmult (RCfield K) M N A
+           (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) *
+      RCnNorm K M
+        (MVmult (RCfield K) M N A
+           (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+elim.
+move=> c H7.
+elim (Rle_not_lt (RCnNorm K M (RCnminus K M b (MVmult (RCfield K) M N A (RCnmult K N (IRRC K c) (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))))) (RCnNorm K M b) (H3 (RCnmult K N (IRRC K c) (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+apply (proj2 (H2 K M (RCnminus K M b
+     (MVmult (RCfield K) M N A
+        (RCnmult K N (IRRC K c)
+           (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))) b)).
+rewrite - (Rplus_0_r (RCnNorm K M b * RCnNorm K M b)).
+rewrite (Formula_4_15_2 K M b (MVmult (RCfield K) M N A
+        (RCnmult K N (IRRC K c)
+           (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+unfold Rminus.
+rewrite (Rplus_assoc (RCnNorm K M b * RCnNorm K M b)).
+apply (Rplus_lt_compat_l (RCnNorm K M b * RCnNorm K M b)).
+rewrite (H5 c (proj1 H7)).
+rewrite (H6 c (proj1 H7)).
+rewrite Rplus_comm.
+apply Rlt_minus.
+rewrite - (Rmult_assoc 2 c).
+apply (proj2 H7).
+elim (Formula_1_3 (RCnNorm K M
+     (MVmult (RCfield K) M N A
+        (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+move=> H7.
+elim (Proposition_1_1 0 (2 * (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) *
+   RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) / (RCnNorm K M
+     (MVmult (RCfield K) M N A
+        (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) *
+   RCnNorm K M
+     (MVmult (RCfield K) M N A
+        (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))))
+).
+move=> c H8.
+exists c.
+apply conj.
+left.
+apply (proj1 H8).
+rewrite (Rmult_comm 2 c).
+rewrite (Rmult_assoc c 2).
+rewrite (Rmult_assoc c c).
+apply (Rmult_gt_compat_l c).
+apply (proj1 H8).
+rewrite - (Rmult_1_r (2 *
+(RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) *
+ RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+rewrite - (Rinv_l (RCnNorm K M
+        (MVmult (RCfield K) M N A
+           (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) *
+      RCnNorm K M
+        (MVmult (RCfield K) M N A
+           (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+rewrite - (Rmult_assoc (2 *
+(RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) *
+ RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+apply Rmult_lt_compat_r.
+apply H7.
+apply (proj2 H8).
+apply (Rgt_not_eq (RCnNorm K M
+       (MVmult (RCfield K) M N A
+          (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) *
+     RCnNorm K M
+       (MVmult (RCfield K) M N A
+          (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))) 0 H7).
+apply Rmult_gt_0_compat.
+apply Rmult_gt_0_compat.
+apply Two_Gt_Zero.
+apply (Rmult_gt_0_compat (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) H4 H4).
+apply Rinv_0_lt_compat.
+apply H7.
+move=> H7.
+rewrite H7.
+exists 1.
+apply conj.
+left.
+apply Rlt_0_1.
+rewrite (Rmult_1_r 2).
+rewrite (Rmult_0_r (1 * 1)).
+apply Rmult_gt_0_compat.
+apply Two_Gt_Zero.
+apply (Rmult_gt_0_compat (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) H4 H4).
+move=> c H6.
+suff: (MVmult (RCfield K) M N A
+     (RCnmult K N (IRRC K c)
+        (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))
+= RCnmult K M (IRRC K c) (MVmult (RCfield K) M N A
+      (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))).
+move=> H7.
+rewrite H7.
+rewrite (Proposition_4_4_1 K M (IRRC K c) (MVmult (RCfield K) M N A
+        (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))).
+rewrite (Rmult_assoc c c).
+rewrite (Rmult_comm c).
+rewrite - (Rmult_assoc c).
+rewrite (Rmult_assoc (c *
+RCnNorm K M
+  (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+rewrite (Rmult_comm (RCnNorm K M
+   (MVmult (RCfield K) M N A
+      (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+suff: (RCabs K (IRRC K c) = c).
+move=> H8.
+rewrite H8.
+reflexivity.
+unfold RCabs.
+unfold IRRC.
+elim K.
+apply (Rabs_pos_eq c (Rge_le c 0 H6)).
+rewrite (CnormDefinition (IRC c)).
+apply MySqrtNature2.
+apply conj.
+apply H6.
+simpl.
+unfold IRC.
+rewrite (CmakeRe c 0).
+rewrite (CmakeIm c 0).
+rewrite (Rmult_0_l 0).
+apply (Rplus_0_r (c * c)).
+apply functional_extensionality.
+move=> m.
+unfold MVmult.
+unfold RCnmult.
+unfold Fnmul.
+unfold MMatrixToVector.
+unfold MVectorToMatrix.
+unfold Mmult at 3.
+unfold Mmult at 1.
+apply (FiniteSetInduction {n : nat | (n < N)%nat} (exist (Finite (Count N)) (Full_set {n : nat | (n < N)%nat}) (CountFinite N))).
+apply conj.
+rewrite MySumF2Empty.
+rewrite MySumF2Empty.
+rewrite (Fmul_O_r (RCfield K) (IRRC K c)).
+reflexivity.
+move=> D d H7 H8 H9 H10.
+rewrite MySumF2Add.
+rewrite MySumF2Add.
+rewrite H10.
+rewrite (Fmul_add_distr_l (RCfield K)).
+rewrite - (Fmul_assoc (RCfield K) (A m d)).
+rewrite - (Fmul_assoc (RCfield K) (IRRC K c)).
+rewrite (Fmul_comm (RCfield K) (A m d)).
+reflexivity.
+apply H9.
+apply H9.
+move=> c H5.
+rewrite (RCnInnerProductMatrix K M b).
+unfold MVmult.
+rewrite (proj2 (MVectorMatrixRelation (RCfield K) M)).
+rewrite - (Mmult_assoc (RCfield K) 1 M N 1 (AdjointMatrixRC K M 1 (MVectorToMatrix (RCfield K) M b)) A).
+rewrite - (proj2 (RCnNormNature K N
+   (MMatrixToVector (RCfield K) N
+      (Mmult (RCfield K) N M 1 (AdjointMatrixRC K M N A)
+         (MVectorToMatrix (RCfield K) M b))))).
+suff: (forall (x : RCT K), c * RCRe K x = RCRe K (RCmult K (ConjugateRC K (IRRC K c)) x)).
+move=> H6.
+rewrite H6.
+rewrite - (Proposition_4_2_2_2 K N (IRRC K c)).
+rewrite (RCnInnerProductMatrix K N).
+rewrite (proj2 (MVectorMatrixRelation (RCfield K) N)).
+rewrite (AdjointMatrixRCMult K N M 1 (AdjointMatrixRC K M N A)
+              (MVectorToMatrix (RCfield K) M b)).
+rewrite (AdjointMatrixRCInvolutive K M N A).
+reflexivity.
+elim K.
+move=> x.
+reflexivity.
+move=> x.
+simpl.
+unfold Conjugate.
+unfold IRC.
+unfold Cmult.
+rewrite CmakeRe.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite CmakeRe.
+rewrite CmakeIm.
+rewrite Ropp_0.
+rewrite (Rmult_0_l (x CIm)).
+rewrite (Rminus_0_r (c * x CRe)).
+reflexivity.
+apply (Proposition_4_4_3_2 K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)).
+move=> H3 y.
+apply (proj2 (H1 K M b (RCnminus K M b (MVmult (RCfield K) M N A y)))).
+rewrite - (Rplus_0_r (RCnNorm K M b * RCnNorm K M b)).
+rewrite (Formula_4_15_2 K M b (MVmult (RCfield K) M N A y)).
+suff: (RCnInnerProduct K M b (MVmult (RCfield K) M N A y) = RCnInnerProduct K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) y).
+move=> H4.
+rewrite H4.
+rewrite H3.
+suff: (RCnInnerProduct K N (RCnO K N) y = RCO K).
+move=> H5.
+rewrite H5.
+suff: (2 * RCRe K (RCO K) = 0).
+move=> H6.
+rewrite H6.
+rewrite (Rminus_0_r (RCnNorm K M b * RCnNorm K M b)).
+apply (Rplus_le_compat_l (RCnNorm K M b * RCnNorm K M b) 0).
+apply Rge_le.
+apply Formula_1_3.
+elim K.
+apply (Rmult_0_r 2).
+apply (Rmult_0_r 2).
+apply (RCip_mult_0_l K (FnVS (RCfield K) N) (RCnInner_Product_Space K N) y).
+rewrite (RCnInnerProductMatrix K M).
+rewrite (RCnInnerProductMatrix K N).
+rewrite (AdjointMatrixRCMult K N M 1 (AdjointMatrixRC K M N A)
+              (MVectorToMatrix (RCfield K) M b)).
+rewrite (AdjointMatrixRCInvolutive K M N A).
+unfold MVmult.
+rewrite (proj2 (MVectorMatrixRelation (RCfield K) M)).
+rewrite (Mmult_assoc (RCfield K) 1 M N 1 (AdjointMatrixRC K M 1 (MVectorToMatrix (RCfield K) M b)) A (MVectorToMatrix (RCfield K) N y)).
+reflexivity.
+move=> K M x y.
+apply conj.
+move=> H2.
+elim (Rle_or_lt (RCnNorm K M y * RCnNorm K M y) (RCnNorm K M x * RCnNorm K M x)).
+move=> H3.
+elim (Rle_not_lt (RCnNorm K M x) (RCnNorm K M y) (proj2 (H1 K M y x) H3) H2).
+apply.
+move=> H2.
+elim (Rle_or_lt (RCnNorm K M y) (RCnNorm K M x)).
+move=> H3.
+elim (Rle_not_lt (RCnNorm K M x * RCnNorm K M x) (RCnNorm K M y * RCnNorm K M y) (proj1 (H1 K M y x) H3) H2).
+apply.
+move=> K M x y.
+apply conj.
+move=> H1.
+apply (Rmult_le_compat (RCnNorm K M x) (RCnNorm K M y) (RCnNorm K M x) (RCnNorm K M y)).
+apply Rge_le.
+apply (proj1 (RCnNormNature K M x)).
+apply Rge_le.
+apply (proj1 (RCnNormNature K M x)).
+apply H1.
+apply H1.
+move=> H1.
+elim (Rle_or_lt (RCnNorm K M x) (RCnNorm K M y)).
+apply.
+move=> H2.
+elim (Rle_not_lt (RCnNorm K M y * RCnNorm K M y) (RCnNorm K M x * RCnNorm K M x) H1).
+apply (Rmult_le_0_lt_compat (RCnNorm K M y) (RCnNorm K M x) (RCnNorm K M y) (RCnNorm K M x)).
+apply Rge_le.
+apply (proj1 (RCnNormNature K M y)).
+apply Rge_le.
+apply (proj1 (RCnNormNature K M y)).
+apply H2.
+apply H2.
+Qed.
+
+Check Lemma2.
+
+
