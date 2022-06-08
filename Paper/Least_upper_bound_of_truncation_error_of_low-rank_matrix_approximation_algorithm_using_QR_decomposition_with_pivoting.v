@@ -26,7 +26,6 @@ Require Import Analysis.KaisekiNyuumonn.KaisekiNyuumonn1_2.
 Require Import LinearAlgebra.Matrix.
 Require Import LinearAlgebra.SenkeiDaisuunoSekai.SenkeiDaisuunoSekai1.
 Require Import Tools.MySum.
-Require Import Tools.BasicTools.
 Require Import BasicProperty.MappingProperty.
 Local Open Scope R_scope.
 
