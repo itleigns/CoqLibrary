@@ -18010,12 +18010,10 @@ move=> U.
 elim.
 move=> V H1.
 rewrite (proj2 (proj2 H1)).
-exists (Mmult (RCfield K) M (M + N) (M + N) (Mmult (RCfield K) M M (M + N) V (MBlockW (RCfield K) M M N (MDiag (RCfield K) M
-                (fun (m : {n : nat | (n < M)%nat}) => match excluded_middle_informative (SingularValueRCH K M N A m = 0) with 
+exists (Mmult (RCfield K) M (M + N) (M + N) (Mmult (RCfield K) M M (M + N) V (MBlockW (RCfield K) M M N (MDiag (RCfield K) M (fun (m : {n : nat | (n < M)%nat}) => match excluded_middle_informative (SingularValueRCH K M N A m = 0) with
   | left _ => RCO K
   | right _ => IRRC K (/ SingularValueRCH K M N A m)
-end))
-             (MO (RCfield K) M N))) (AdjointMatrixRC K (M + N) (M + N) U)).
+end)) (MO (RCfield K) M N))) (AdjointMatrixRC K (M + N) (M + N) U)).
 apply conj.
 rewrite (Mmult_assoc (RCfield K) (M + N) (M + N) M (M + N)).
 rewrite (Mmult_assoc (RCfield K) (M + N) M M (M + N)).
@@ -18046,19 +18044,10 @@ rewrite (Mplus_O_l (RCfield K) (M + N) M).
 rewrite (MBlockHMult (RCfield K) M N M M).
 rewrite (Mmult_O_l (RCfield K) N M M).
 rewrite (MDiagMult (RCfield K) M).
-suff: ((fun (m : {n : nat | (n < M)%nat}) =>
-            Fmul (RCfield K)
-              (Fmul (RCfield K)
-                 (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))
-                 (match
-                   excluded_middle_informative (SingularValueRCH K M N A m = 0)
-                  with | left _=>  RCO K
-                  | right _ => IRRC K (/ SingularValueRCH K M N A m)
-end))
-              (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m)))
-
-= (fun (m : {n : nat | (n < M)%nat}) =>
-                  IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))).
+suff: ((fun (m : {n : nat | (n < M)%nat}) => Fmul (RCfield K) (Fmul (RCfield K) (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m)) (match excluded_middle_informative (SingularValueRCH K M N A m = 0) with
+  | left _=> RCO K
+  | right _ => IRRC K (/ SingularValueRCH K M N A m)
+end)) (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))) = (fun (m : {n : nat | (n < M)%nat}) => IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))).
 move=> H2.
 rewrite H2.
 reflexivity.
@@ -18113,21 +18102,16 @@ rewrite (MBlockWMult (RCfield K) M M M N).
 rewrite (Mmult_O_r (RCfield K) M M N).
 rewrite (MDiagMult (RCfield K) M).
 rewrite (Mmult_assoc (RCfield K) M M (M + N) (M + N)).
-suff: ((fun (m : {n : nat | (n < M)%nat}) =>
-            Fmul (RCfield K)
-              (Fmul (RCfield K)
-                 match excluded_middle_informative (SingularValueRCH K M N A m = 0)
-               with | left _ => RCO K
-               | right _ => IRRC K (/ SingularValueRCH K M N A m) end
-                 (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m)))
-              match excluded_middle_informative (SingularValueRCH K M N A m = 0)
-               with | left _ => RCO K
-               | right _ => IRRC K (/ SingularValueRCH K M N A m) end)
-
-= (fun (m : {n : nat | (n < M)%nat}) => 
-              match excluded_middle_informative (SingularValueRCH K M N A m = 0)
-               with | left _ => RCO K
-               | right _ => IRRC K (/ SingularValueRCH K M N A m) end)).
+suff: ((fun (m : {n : nat | (n < M)%nat}) => Fmul (RCfield K) (Fmul (RCfield K) match excluded_middle_informative (SingularValueRCH K M N A m = 0) with
+  | left _ => RCO K
+  | right _ => IRRC K (/ SingularValueRCH K M N A m)
+end (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))) match excluded_middle_informative (SingularValueRCH K M N A m = 0) with
+  | left _ => RCO K
+  | right _ => IRRC K (/ SingularValueRCH K M N A m)
+end) = (fun (m : {n : nat | (n < M)%nat}) => match excluded_middle_informative (SingularValueRCH K M N A m = 0) with
+  | left _ => RCO K
+  | right _ => IRRC K (/ SingularValueRCH K M N A m)
+end)).
 move=> H2.
 rewrite H2.
 reflexivity.
@@ -18171,24 +18155,13 @@ rewrite (AdjointMatrixRCO K M N).
 rewrite (AdjointMatrixRCO K N M).
 rewrite (AdjointMatrixRCO K N N).
 rewrite (AdjointMatrixRCInvolutive K (M + N) (M + N)).
-suff: (AdjointMatrixRC K M M
-              (MDiag (RCfield K) M
-                 (fun m : {n : nat | (n < M)%nat} =>
-                  Fmul (RCfield K)
-                    (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))
-                    (match
-                      excluded_middle_informative
-                        (SingularValueRCH K M N A m = 0)
-                     with | left _ => RCO K
-                     | right _ => IRRC K (/ SingularValueRCH K M N A m) end)))
-= MDiag (RCfield K) M
-              (fun m : {n : nat | (n < M)%nat} =>
-               Fmul (RCfield K)
-                 (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))
-                 (match
-                   excluded_middle_informative (SingularValueRCH K M N A m = 0)
-                  with | left _ => RCO K
-                  | right _ => IRRC K (/ SingularValueRCH K M N A m) end))).
+suff: (AdjointMatrixRC K M M (MDiag (RCfield K) M (fun m : {n : nat | (n < M)%nat} => Fmul (RCfield K) (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m)) (match excluded_middle_informative (SingularValueRCH K M N A m = 0) with
+  | left _ => RCO K
+  | right _ => IRRC K (/ SingularValueRCH K M N A m)
+end))) = MDiag (RCfield K) M (fun m : {n : nat | (n < M)%nat} => Fmul (RCfield K) (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m)) (match excluded_middle_informative (SingularValueRCH K M N A m = 0) with
+  | left _ => RCO K
+  | right _ => IRRC K (/ SingularValueRCH K M N A m)
+end))).
 move=> H2.
 rewrite H2.
 rewrite (Mmult_assoc (RCfield K) (M + N) (M + N) (M + N) (M + N)).
@@ -18247,23 +18220,13 @@ rewrite (Mplus_O_l (RCfield K) M M).
 rewrite (AdjointMatrixRCMult K M M M).
 rewrite (AdjointMatrixRCMult K M M M).
 rewrite (AdjointMatrixRCInvolutive K M M).
-suff: (AdjointMatrixRC K M M
-              (MDiag (RCfield K) M
-                 (fun m : {n : nat | (n < M)%nat} =>
-                  Fmul (RCfield K)
-                    (match
-                      excluded_middle_informative
-                        (SingularValueRCH K M N A m = 0)
-                     with | left _ => RCO K
-                     | right _ => IRRC K (/ SingularValueRCH K M N A m) end) (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m))))
-= MDiag (RCfield K) M
-              (fun m : {n : nat | (n < M)%nat} =>
-               Fmul (RCfield K)
-                 (match
-                   excluded_middle_informative (SingularValueRCH K M N A m = 0)
-                  with | left _ => RCO K
-                  | right _ => IRRC K (/ SingularValueRCH K M N A m) end) 
-                 (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m)))).
+suff: (AdjointMatrixRC K M M (MDiag (RCfield K) M (fun m : {n : nat | (n < M)%nat} => Fmul (RCfield K) (match excluded_middle_informative (SingularValueRCH K M N A m = 0) with
+  | left _ => RCO K
+  | right _ => IRRC K (/ SingularValueRCH K M N A m)
+end) (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m)))) = MDiag (RCfield K) M (fun m : {n : nat | (n < M)%nat} => Fmul (RCfield K) (match excluded_middle_informative (SingularValueRCH K M N A m = 0) with
+  | left _ => RCO K
+  | right _ => IRRC K (/ SingularValueRCH K M N A m)
+end) (IRRC K (proj1_sig (SingularValueRCHSig K M N A) m)))).
 move=> H2.
 rewrite H2.
 rewrite (Mmult_assoc (RCfield K) M M M M).
@@ -18427,12 +18390,7 @@ Definition GeneralizedInverseMatrixRCNature (K : RC) (M N : nat) (A : Matrix (RC
 Lemma GeneralizedInverseMatrixRCNature2 : forall (K : RC) (M N : nat) (A : Matrix (RCfield K) M N) (X : Matrix (RCfield K) N M), (Mmult (RCfield K) M M N (Mmult (RCfield K) M N M A X) A = A /\ Mmult (RCfield K) N N M (Mmult (RCfield K) N M N X A) X = X /\ AdjointMatrixRC K M M (Mmult (RCfield K) M N M A X) = Mmult (RCfield K) M N M A X /\ AdjointMatrixRC K N N (Mmult (RCfield K) N M N X A) = Mmult (RCfield K) N M N X A) -> GeneralizedInverseMatrixRC K M N A = X.
 Proof.
 move=> K M N A X.
-apply (proj2 (proj2 (unique_existence (fun (X : Matrix (RCfield K) N M) => Mmult (RCfield K) M M N (Mmult (RCfield K) M N M A X) A = A /\
-Mmult (RCfield K) N N M (Mmult (RCfield K) N M N X A) X = X /\
-AdjointMatrixRC K M M (Mmult (RCfield K) M N M A X) =
-Mmult (RCfield K) M N M A X /\
-AdjointMatrixRC K N N (Mmult (RCfield K) N M N X A) =
-Mmult (RCfield K) N M N X A)) (Proposition_1 K M N A)) (GeneralizedInverseMatrixRC K M N A) X (GeneralizedInverseMatrixRCNature K M N A)).
+apply (proj2 (proj2 (unique_existence (fun (X : Matrix (RCfield K) N M) => Mmult (RCfield K) M M N (Mmult (RCfield K) M N M A X) A = A /\ Mmult (RCfield K) N N M (Mmult (RCfield K) N M N X A) X = X /\ AdjointMatrixRC K M M (Mmult (RCfield K) M N M A X) = Mmult (RCfield K) M N M A X /\ AdjointMatrixRC K N N (Mmult (RCfield K) N M N X A) = Mmult (RCfield K) N M N X A)) (Proposition_1 K M N A)) (GeneralizedInverseMatrixRC K M N A) X (GeneralizedInverseMatrixRCNature K M N A)).
 Qed.
 
 Definition ResiRC (K : RC) (M N L : nat) (A : Matrix (RCfield K) M N) (B : Matrix (RCfield K) M L) := Mplus (RCfield K) M L B (Mopp (RCfield K) M L (Mmult (RCfield K) M M L (Mmult (RCfield K) M N M A (GeneralizedInverseMatrixRC K M N A)) B)).
@@ -18444,9 +18402,7 @@ rewrite (Mmult_plus_distr_l (RCfield K) N M L (AdjointMatrixRC K M N A)).
 rewrite (Mopp_mult_distr_r_reverse (RCfield K) N M L (AdjointMatrixRC K M N A) (Mmult (RCfield K) M N L A X)).
 apply conj.
 move=> H1.
-apply (f_equal (fun (Y : Matrix (RCfield K) M L) => Mplus (RCfield K) M L B
-  (Mopp (RCfield K) M L
-     Y))).
+apply (f_equal (fun (Y : Matrix (RCfield K) M L) => Mplus (RCfield K) M L B (Mopp (RCfield K) M L Y))).
 rewrite - (Mplus_O_l (RCfield K) M L B).
 rewrite - (Mplus_opp_r (RCfield K) M L (Mmult (RCfield K) M N L A X)).
 rewrite (Mplus_assoc (RCfield K) M L).
@@ -18457,14 +18413,7 @@ rewrite - (proj1 (proj2 (proj2 (GeneralizedInverseMatrixRCNature K M N A)))).
 rewrite (AdjointMatrixRCMult K M N M A (GeneralizedInverseMatrixRC K M N A)).
 rewrite (Mmult_assoc (RCfield K) M N M L).
 rewrite (Mmult_plus_distr_l (RCfield K) N M L).
-suff: (Mplus (RCfield K) N L
-        (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A)
-           (Mopp (RCfield K) M L (Mmult (RCfield K) M N L A X)))
-        (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) B)
-= Mplus (RCfield K) N L (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) B)
-       (Mopp (RCfield K) N L
-          (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A)
-          (Mmult (RCfield K) M N L A X)))).
+suff: (Mplus (RCfield K) N L (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) (Mopp (RCfield K) M L (Mmult (RCfield K) M N L A X))) (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) B) = Mplus (RCfield K) N L (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) B) (Mopp (RCfield K) N L (Mmult (RCfield K) N M L (AdjointMatrixRC K M N A) (Mmult (RCfield K) M N L A X)))).
 move=> H2.
 rewrite H2.
 rewrite H1.
@@ -18474,10 +18423,8 @@ rewrite (Mplus_comm (RCfield K) N L).
 rewrite (Mopp_mult_distr_r (RCfield K) N M L).
 reflexivity.
 move=> H1.
-rewrite (Mopp_mult_distr_r (RCfield K) N M L (AdjointMatrixRC K M N A)
-        (Mmult (RCfield K) M N L A X)).
-rewrite - (Mmult_plus_distr_l (RCfield K) N M L (AdjointMatrixRC K M N A) B
-        (Mopp (RCfield K) M L (Mmult (RCfield K) M N L A X))).
+rewrite (Mopp_mult_distr_r (RCfield K) N M L (AdjointMatrixRC K M N A) (Mmult (RCfield K) M N L A X)).
+rewrite - (Mmult_plus_distr_l (RCfield K) N M L (AdjointMatrixRC K M N A) B (Mopp (RCfield K) M L (Mmult (RCfield K) M N L A X))).
 rewrite - H1.
 rewrite (Mmult_plus_distr_l (RCfield K) N M L).
 rewrite - (Mopp_mult_distr_r (RCfield K) N M L (AdjointMatrixRC K M N A)).
@@ -18493,26 +18440,16 @@ Definition ResiVRC (K : RC) (M N : nat) (A : Matrix (RCfield K) M N) (b : RCn K 
 Lemma Lemma1V : forall (K : RC) (M N : nat) (A : Matrix (RCfield K) M N) (b : RCn K M) (x : RCn K N), MVmult (RCfield K) N M (AdjointMatrixRC K M N A) (RCnminus K M b (MVmult (RCfield K) M N A x)) = RCnO K N <-> ResiVRC K M N A b = RCnplus K M b (RCnopp K M (MVmult (RCfield K) M N A x)).
 Proof.
 move=> K M N A b x.
-suff: (RCnplus K M b (RCnopp K M (MVmult (RCfield K) M N A x)) = MMatrixToVector (RCfield K) M (Mplus (RCfield K) M 1 (MVectorToMatrix (RCfield K) M b)
-         (Mopp (RCfield K) M 1
-            (Mmult (RCfield K) M N 1 A (MVectorToMatrix (RCfield K) N x))))).
+suff: (RCnplus K M b (RCnopp K M (MVmult (RCfield K) M N A x)) = MMatrixToVector (RCfield K) M (Mplus (RCfield K) M 1 (MVectorToMatrix (RCfield K) M b) (Mopp (RCfield K) M 1 (Mmult (RCfield K) M N 1 A (MVectorToMatrix (RCfield K) N x))))).
 move=> H1.
-suff: (MVmult (RCfield K) N M (AdjointMatrixRC K M N A)
-  (RCnminus K M b (MVmult (RCfield K) M N A x))
-= MMatrixToVector (RCfield K) N (Mmult (RCfield K) N M 1 (AdjointMatrixRC K M N A)
-        (Mminus (RCfield K) M 1 (MVectorToMatrix (RCfield K) M b)
-           (Mmult (RCfield K) M N 1 A (MVectorToMatrix (RCfield K) N x))
-           ))).
+suff: (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) (RCnminus K M b (MVmult (RCfield K) M N A x)) = MMatrixToVector (RCfield K) N (Mmult (RCfield K) N M 1 (AdjointMatrixRC K M N A) (Mminus (RCfield K) M 1 (MVectorToMatrix (RCfield K) M b) (Mmult (RCfield K) M N 1 A (MVectorToMatrix (RCfield K) N x)) ))).
 move=> H2.
 apply conj.
 move=> H3.
 rewrite H1.
 apply (f_equal (MMatrixToVector (RCfield K) M)).
 apply (proj1 (Lemma1 K M N 1 A (MVectorToMatrix (RCfield K) M b) (MVectorToMatrix (RCfield K) N x))).
-rewrite - (proj2 (MVectorMatrixRelation (RCfield K) N) (Mmult (RCfield K) N M 1 (AdjointMatrixRC K M N A)
-  (Mminus (RCfield K) M 1 (MVectorToMatrix (RCfield K) M b)
-     (Mmult (RCfield K) M N 1 A (MVectorToMatrix (RCfield K) N x))
-     ))).
+rewrite - (proj2 (MVectorMatrixRelation (RCfield K) N) (Mmult (RCfield K) N M 1 (AdjointMatrixRC K M N A) (Mminus (RCfield K) M 1 (MVectorToMatrix (RCfield K) M b) (Mmult (RCfield K) M N 1 A (MVectorToMatrix (RCfield K) N x)) ))).
 rewrite - H2.
 rewrite H3.
 reflexivity.
@@ -18524,9 +18461,7 @@ reflexivity.
 rewrite - (proj2 (MVectorMatrixRelation (RCfield K) M) (ResiRC K M N 1 A (MVectorToMatrix (RCfield K) M b))).
 rewrite H3.
 rewrite H1.
-apply (proj2 (MVectorMatrixRelation (RCfield K) M) (Mplus (RCfield K) M 1 (MVectorToMatrix (RCfield K) M b)
-        (Mopp (RCfield K) M 1
-           (Mmult (RCfield K) M N 1 A (MVectorToMatrix (RCfield K) N x))))).
+apply (proj2 (MVectorMatrixRelation (RCfield K) M) (Mplus (RCfield K) M 1 (MVectorToMatrix (RCfield K) M b) (Mopp (RCfield K) M 1 (Mmult (RCfield K) M N 1 A (MVectorToMatrix (RCfield K) N x))))).
 reflexivity.
 reflexivity.
 Qed.
@@ -18595,34 +18530,15 @@ elim (proj1 (RCnNormNature K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A)
 move=> H4.
 suff: (forall (c : R), c >= 0 -> RCRe K (RCnInnerProduct K M b (MVmult (RCfield K) M N A (RCnmult K N (IRRC K c) (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))) = c * (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) * RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))).
 move=> H5.
-suff: (forall (c : R), c >= 0 -> RCnNorm K M (MVmult (RCfield K) M N A
-             (RCnmult K N (IRRC K c)
-                (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))) * RCnNorm K M (MVmult (RCfield K) M N A
-             (RCnmult K N (IRRC K c)
-                (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))
-= c * c * (RCnNorm K M (MVmult (RCfield K) M N A
-             (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) * RCnNorm K M (MVmult (RCfield K) M N A
-             (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+suff: (forall (c : R), c >= 0 -> RCnNorm K M (MVmult (RCfield K) M N A (RCnmult K N (IRRC K c) (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))) * RCnNorm K M (MVmult (RCfield K) M N A (RCnmult K N (IRRC K c) (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))) = c * c * (RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) * RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
 move=> H6.
-suff: (exists (c : R), c >= 0 /\ 2 * c * (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) *
-      RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) > c * c *
-     (RCnNorm K M
-        (MVmult (RCfield K) M N A
-           (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) *
-      RCnNorm K M
-        (MVmult (RCfield K) M N A
-           (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+suff: (exists (c : R), c >= 0 /\ 2 * c * (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) * RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) > c * c * (RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) * RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
 elim.
 move=> c H7.
 elim (Rle_not_lt (RCnNorm K M (RCnminus K M b (MVmult (RCfield K) M N A (RCnmult K N (IRRC K c) (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))))) (RCnNorm K M b) (H3 (RCnmult K N (IRRC K c) (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
-apply (proj2 (H2 K M (RCnminus K M b
-     (MVmult (RCfield K) M N A
-        (RCnmult K N (IRRC K c)
-           (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))) b)).
+apply (proj2 (H2 K M (RCnminus K M b (MVmult (RCfield K) M N A (RCnmult K N (IRRC K c) (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))) b)).
 rewrite - (Rplus_0_r (RCnNorm K M b * RCnNorm K M b)).
-rewrite (Formula_4_15_2 K M b (MVmult (RCfield K) M N A
-        (RCnmult K N (IRRC K c)
-           (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+rewrite (Formula_4_15_2 K M b (MVmult (RCfield K) M N A (RCnmult K N (IRRC K c) (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
 unfold Rminus.
 rewrite (Rplus_assoc (RCnNorm K M b * RCnNorm K M b)).
 apply (Rplus_lt_compat_l (RCnNorm K M b * RCnNorm K M b)).
@@ -18632,18 +18548,9 @@ rewrite Rplus_comm.
 apply Rlt_minus.
 rewrite - (Rmult_assoc 2 c).
 apply (proj2 H7).
-elim (Formula_1_3 (RCnNorm K M
-     (MVmult (RCfield K) M N A
-        (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+elim (Formula_1_3 (RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
 move=> H7.
-elim (Proposition_1_1 0 (2 * (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) *
-   RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) / (RCnNorm K M
-     (MVmult (RCfield K) M N A
-        (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) *
-   RCnNorm K M
-     (MVmult (RCfield K) M N A
-        (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))))
-).
+elim (Proposition_1_1 0 (2 * (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) * RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) / (RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) * RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))) ).
 move=> c H8.
 exists c.
 apply conj.
@@ -18654,27 +18561,13 @@ rewrite (Rmult_assoc c 2).
 rewrite (Rmult_assoc c c).
 apply (Rmult_gt_compat_l c).
 apply (proj1 H8).
-rewrite - (Rmult_1_r (2 *
-(RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) *
- RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
-rewrite - (Rinv_l (RCnNorm K M
-        (MVmult (RCfield K) M N A
-           (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) *
-      RCnNorm K M
-        (MVmult (RCfield K) M N A
-           (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
-rewrite - (Rmult_assoc (2 *
-(RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) *
- RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+rewrite - (Rmult_1_r (2 * (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) * RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+rewrite - (Rinv_l (RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) * RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+rewrite - (Rmult_assoc (2 * (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b) * RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
 apply Rmult_lt_compat_r.
 apply H7.
 apply (proj2 H8).
-apply (Rgt_not_eq (RCnNorm K M
-       (MVmult (RCfield K) M N A
-          (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) *
-     RCnNorm K M
-       (MVmult (RCfield K) M N A
-          (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))) 0 H7).
+apply (Rgt_not_eq (RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) * RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))) 0 H7).
 apply Rmult_gt_0_compat.
 apply Rmult_gt_0_compat.
 apply Two_Gt_Zero.
@@ -18693,24 +18586,15 @@ apply Rmult_gt_0_compat.
 apply Two_Gt_Zero.
 apply (Rmult_gt_0_compat (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) (RCnNorm K N (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) H4 H4).
 move=> c H6.
-suff: (MVmult (RCfield K) M N A
-     (RCnmult K N (IRRC K c)
-        (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))
-= RCnmult K M (IRRC K c) (MVmult (RCfield K) M N A
-      (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))).
+suff: (MVmult (RCfield K) M N A (RCnmult K N (IRRC K c) (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)) = RCnmult K M (IRRC K c) (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))).
 move=> H7.
 rewrite H7.
-rewrite (Proposition_4_4_1 K M (IRRC K c) (MVmult (RCfield K) M N A
-        (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))).
+rewrite (Proposition_4_4_1 K M (IRRC K c) (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b))).
 rewrite (Rmult_assoc c c).
 rewrite (Rmult_comm c).
 rewrite - (Rmult_assoc c).
-rewrite (Rmult_assoc (c *
-RCnNorm K M
-  (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
-rewrite (Rmult_comm (RCnNorm K M
-   (MVmult (RCfield K) M N A
-      (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+rewrite (Rmult_assoc (c * RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
+rewrite (Rmult_comm (RCnNorm K M (MVmult (RCfield K) M N A (MVmult (RCfield K) N M (AdjointMatrixRC K M N A) b)))).
 suff: (RCabs K (IRRC K c) = c).
 move=> H8.
 rewrite H8.
@@ -18760,18 +18644,14 @@ rewrite (RCnInnerProductMatrix K M b).
 unfold MVmult.
 rewrite (proj2 (MVectorMatrixRelation (RCfield K) M)).
 rewrite - (Mmult_assoc (RCfield K) 1 M N 1 (AdjointMatrixRC K M 1 (MVectorToMatrix (RCfield K) M b)) A).
-rewrite - (proj2 (RCnNormNature K N
-   (MMatrixToVector (RCfield K) N
-      (Mmult (RCfield K) N M 1 (AdjointMatrixRC K M N A)
-         (MVectorToMatrix (RCfield K) M b))))).
+rewrite - (proj2 (RCnNormNature K N (MMatrixToVector (RCfield K) N (Mmult (RCfield K) N M 1 (AdjointMatrixRC K M N A) (MVectorToMatrix (RCfield K) M b))))).
 suff: (forall (x : RCT K), c * RCRe K x = RCRe K (RCmult K (ConjugateRC K (IRRC K c)) x)).
 move=> H6.
 rewrite H6.
 rewrite - (Proposition_4_2_2_2 K N (IRRC K c)).
 rewrite (RCnInnerProductMatrix K N).
 rewrite (proj2 (MVectorMatrixRelation (RCfield K) N)).
-rewrite (AdjointMatrixRCMult K N M 1 (AdjointMatrixRC K M N A)
-              (MVectorToMatrix (RCfield K) M b)).
+rewrite (AdjointMatrixRCMult K N M 1 (AdjointMatrixRC K M N A) (MVectorToMatrix (RCfield K) M b)).
 rewrite (AdjointMatrixRCInvolutive K M N A).
 reflexivity.
 elim K.
@@ -18816,8 +18696,7 @@ apply (Rmult_0_r 2).
 apply (RCip_mult_0_l K (FnVS (RCfield K) N) (RCnInner_Product_Space K N) y).
 rewrite (RCnInnerProductMatrix K M).
 rewrite (RCnInnerProductMatrix K N).
-rewrite (AdjointMatrixRCMult K N M 1 (AdjointMatrixRC K M N A)
-              (MVectorToMatrix (RCfield K) M b)).
+rewrite (AdjointMatrixRCMult K N M 1 (AdjointMatrixRC K M N A) (MVectorToMatrix (RCfield K) M b)).
 rewrite (AdjointMatrixRCInvolutive K M N A).
 unfold MVmult.
 rewrite (proj2 (MVectorMatrixRelation (RCfield K) M)).
@@ -18859,11 +18738,7 @@ apply H2.
 apply H2.
 Qed.
 
-Lemma Lemma3 : forall (K : RC) (M N : nat) (A : Matrix (RCfield K) M N) (b : RCn K M) (x : RCn K N),
-       (forall (y : RCn K N),
-        RCnNorm K M (RCnminus K M b (MVmult (RCfield K) M N A x)) <=
-        RCnNorm K M (RCnminus K M b (MVmult (RCfield K) M N A y))) <->
-       RCnminus K M b (MVmult (RCfield K) M N A x) = ResiVRC K M N A b.
+Lemma Lemma3 : forall (K : RC) (M N : nat) (A : Matrix (RCfield K) M N) (b : RCn K M) (x : RCn K N), (forall (y : RCn K N), RCnNorm K M (RCnminus K M b (MVmult (RCfield K) M N A x)) <= RCnNorm K M (RCnminus K M b (MVmult (RCfield K) M N A y))) <-> RCnminus K M b (MVmult (RCfield K) M N A x) = ResiVRC K M N A b.
 Proof.
 move=> K M N A b x.
 apply conj.
@@ -18878,46 +18753,28 @@ rewrite - H1.
 reflexivity.
 Qed.
 
-Lemma Lemma4 : forall (K : RC) (M N P Q : nat) (A1 : Matrix (RCfield K) M P) (A2 : Matrix (RCfield K) M Q) (B : Matrix (RCfield K) M N),
-       ResiRC K M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) B = ResiRC K M Q N (ResiRC K M P Q A1 A2) (ResiRC K M P N A1 B).
+Lemma Lemma4 : forall (K : RC) (M N P Q : nat) (A1 : Matrix (RCfield K) M P) (A2 : Matrix (RCfield K) M Q) (B : Matrix (RCfield K) M N), ResiRC K M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) B = ResiRC K M Q N (ResiRC K M P Q A1 A2) (ResiRC K M P N A1 B).
 Proof.
 move=> K M N P Q A1 A2 B.
-suff: (let X := Mmult (RCfield K) P M Q (GeneralizedInverseMatrixRC K M P A1) A2 in ResiRC K M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) B =
-ResiRC K M Q N (ResiRC K M P Q A1 A2) (ResiRC K M P N A1 B)).
+suff: (let X := Mmult (RCfield K) P M Q (GeneralizedInverseMatrixRC K M P A1) A2 in ResiRC K M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) B = ResiRC K M Q N (ResiRC K M P Q A1 A2) (ResiRC K M P N A1 B)).
 apply.
 move=> X.
-suff: (let Y := Mmult (RCfield K) P M N (GeneralizedInverseMatrixRC K M P A1) B in ResiRC K M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) B =
-ResiRC K M Q N (ResiRC K M P Q A1 A2) (ResiRC K M P N A1 B)).
+suff: (let Y := Mmult (RCfield K) P M N (GeneralizedInverseMatrixRC K M P A1) B in ResiRC K M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) B = ResiRC K M Q N (ResiRC K M P Q A1 A2) (ResiRC K M P N A1 B)).
 apply.
 move=> Y.
-suff: (let Z := Mmult (RCfield K) Q M N (GeneralizedInverseMatrixRC K M Q (ResiRC K M P Q A1 A2)) (ResiRC K M P N A1 B) in ResiRC K M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) B =
-ResiRC K M Q N (ResiRC K M P Q A1 A2) (ResiRC K M P N A1 B)).
+suff: (let Z := Mmult (RCfield K) Q M N (GeneralizedInverseMatrixRC K M Q (ResiRC K M P Q A1 A2)) (ResiRC K M P N A1 B) in ResiRC K M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) B = ResiRC K M Q N (ResiRC K M P Q A1 A2) (ResiRC K M P N A1 B)).
 apply.
 move=> Z.
 suff: (ResiRC K M Q N (ResiRC K M P Q A1 A2) (ResiRC K M P N A1 B) = Mminus (RCfield K) M N B (Mmult (RCfield K) M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) (MBlockH (RCfield K) P Q N (Mminus (RCfield K) P N Y (Mmult (RCfield K) P Q N X Z)) Z))).
 move=> H1.
 rewrite H1.
-apply (proj1 (Lemma1 K M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) B (MBlockH (RCfield K) P Q N
-        (Mminus (RCfield K) P N Y (Mmult (RCfield K) P Q N X Z)) Z))).
-suff: (Mmult (RCfield K) P M N
-  (AdjointMatrixRC K M P A1)
-  (Mminus (RCfield K) M N B
-     (Mmult (RCfield K) M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2)
-        (MBlockH (RCfield K) P Q N
-           (Mminus (RCfield K) P N Y (Mmult (RCfield K) P Q N X Z)) Z))) =
-MO (RCfield K) P N).
+apply (proj1 (Lemma1 K M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) B (MBlockH (RCfield K) P Q N (Mminus (RCfield K) P N Y (Mmult (RCfield K) P Q N X Z)) Z))).
+suff: (Mmult (RCfield K) P M N (AdjointMatrixRC K M P A1) (Mminus (RCfield K) M N B (Mmult (RCfield K) M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) (MBlockH (RCfield K) P Q N (Mminus (RCfield K) P N Y (Mmult (RCfield K) P Q N X Z)) Z))) = MO (RCfield K) P N).
 move=> H2.
-suff: (Mmult (RCfield K) Q M N
-  (AdjointMatrixRC K M Q A2)
-  (Mminus (RCfield K) M N B
-     (Mmult (RCfield K) M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2)
-        (MBlockH (RCfield K) P Q N
-           (Mminus (RCfield K) P N Y (Mmult (RCfield K) P Q N X Z)) Z))) =
-MO (RCfield K) Q N).
+suff: (Mmult (RCfield K) Q M N (AdjointMatrixRC K M Q A2) (Mminus (RCfield K) M N B (Mmult (RCfield K) M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) (MBlockH (RCfield K) P Q N (Mminus (RCfield K) P N Y (Mmult (RCfield K) P Q N X Z)) Z))) = MO (RCfield K) Q N).
 move=> H3.
 rewrite (BlockWAdjointMatrixRC K M P Q A1 A2).
-rewrite (MBlockHMult (RCfield K) P Q M N (AdjointMatrixRC K M P A1)
-     (AdjointMatrixRC K M Q A2)).
+rewrite (MBlockHMult (RCfield K) P Q M N (AdjointMatrixRC K M P A1) (AdjointMatrixRC K M Q A2)).
 rewrite H2.
 rewrite H3.
 apply functional_extensionality.
@@ -18928,11 +18785,7 @@ move=> H4.
 reflexivity.
 move=> H4.
 reflexivity.
-rewrite - (Mminus_O_r (RCfield K) Q N (Mmult (RCfield K) Q M N (AdjointMatrixRC K M Q A2)
-  (Mminus (RCfield K) M N B
-     (Mmult (RCfield K) M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2)
-        (MBlockH (RCfield K) P Q N
-           (Mminus (RCfield K) P N Y (Mmult (RCfield K) P Q N X Z)) Z))))).
+rewrite - (Mminus_O_r (RCfield K) Q N (Mmult (RCfield K) Q M N (AdjointMatrixRC K M Q A2) (Mminus (RCfield K) M N B (Mmult (RCfield K) M (P + Q) N (MBlockW (RCfield K) M P Q A1 A2) (MBlockH (RCfield K) P Q N (Mminus (RCfield K) P N Y (Mmult (RCfield K) P Q N X Z)) Z))))).
 rewrite - {1} (Mmult_O_r (RCfield K) Q P N (AdjointMatrixRC K P Q X)).
 rewrite - H2.
 rewrite - (Mmult_assoc (RCfield K) Q P M N (AdjointMatrixRC K P Q X) (AdjointMatrixRC K M P A1)).
@@ -18941,16 +18794,12 @@ unfold Mminus at 1.
 rewrite (Mopp_mult_distr_l (RCfield K) Q M N).
 rewrite - (Mmult_plus_distr_r (RCfield K) Q M N).
 rewrite - H1.
-suff: (Mplus (RCfield K) Q M (AdjointMatrixRC K M Q A2)
-     (Mopp (RCfield K) Q M
-        (AdjointMatrixRC K M Q (Mmult (RCfield K) M P Q A1 X)))
-= AdjointMatrixRC K M Q (ResiRC K M P Q A1 A2)).
+suff: (Mplus (RCfield K) Q M (AdjointMatrixRC K M Q A2) (Mopp (RCfield K) Q M (AdjointMatrixRC K M Q (Mmult (RCfield K) M P Q A1 X))) = AdjointMatrixRC K M Q (ResiRC K M P Q A1 A2)).
 move=> H3.
 rewrite H3.
 rewrite - (proj2 (Lemma1 K M Q N (ResiRC K M P Q A1 A2) (ResiRC K M P N A1 B) Z)).
 unfold ResiRC at 2.
-rewrite (Mmult_assoc (RCfield K) M Q M N (ResiRC K M P Q A1 A2)
-              (GeneralizedInverseMatrixRC K M Q (ResiRC K M P Q A1 A2)) (ResiRC K M P N A1 B)).
+rewrite (Mmult_assoc (RCfield K) M Q M N (ResiRC K M P Q A1 A2) (GeneralizedInverseMatrixRC K M Q (ResiRC K M P Q A1 A2)) (ResiRC K M P N A1 B)).
 reflexivity.
 unfold ResiRC at 1.
 rewrite (Mmult_assoc (RCfield K) M Q M N (ResiRC K M P Q A1 A2) (GeneralizedInverseMatrixRC K M Q (ResiRC K M P Q A1 A2)) (ResiRC K M P N A1 B)).
@@ -19010,10 +18859,7 @@ unfold ResiRC.
 rewrite (Mmult_assoc (RCfield K) M Q M N).
 rewrite (Mmult_assoc (RCfield K) M P M N A1).
 rewrite (Mmult_assoc (RCfield K) M P M Q A1).
-rewrite (Mplus_comm (RCfield K) M Q (Mopp (RCfield K) M Q
-              (Mmult (RCfield K) M P Q A1
-                 (Mmult (RCfield K) P M Q (GeneralizedInverseMatrixRC K M P A1)
-                    A2))) A2).
+rewrite (Mplus_comm (RCfield K) M Q (Mopp (RCfield K) M Q (Mmult (RCfield K) M P Q A1 (Mmult (RCfield K) P M Q (GeneralizedInverseMatrixRC K M P A1) A2))) A2).
 reflexivity.
 Qed.
 
@@ -19040,11 +18886,7 @@ move=> H8.
 rewrite H8.
 rewrite (Mmult_O_l (RCfield K) N1 N2 N2 R3).
 apply (Mmult_O_r (RCfield K) N1 N1 N2 (AdjointMatrixRC K N1 N1 R1)).
-suff: (Mmult (RCfield K) N1 M N2 (AdjointMatrixRC K M N1 Q1) Q2
-=
-(fun (m : Count N1) (n : Count N2) => Mmult (RCfield K) (N1 + N2) M (N1 + N2)
-       (AdjointMatrixRC K M (N1 + N2) (MBlockW (RCfield K) M N1 N2 Q1 Q2))
-       (MBlockW (RCfield K) M N1 N2 Q1 Q2) (AddConnect N1 N2 (inl m)) (AddConnect N1 N2 (inr n)))).
+suff: (Mmult (RCfield K) N1 M N2 (AdjointMatrixRC K M N1 Q1) Q2 = (fun (m : Count N1) (n : Count N2) => Mmult (RCfield K) (N1 + N2) M (N1 + N2) (AdjointMatrixRC K M (N1 + N2) (MBlockW (RCfield K) M N1 N2 Q1 Q2)) (MBlockW (RCfield K) M N1 N2 Q1 Q2) (AddConnect N1 N2 (inl m)) (AddConnect N1 N2 (inr n)))).
 move=> H8.
 rewrite H8.
 rewrite H1.
@@ -19159,49 +19001,17 @@ Qed.
 Lemma Formula_P763_1 : forall (K : RC) (M N L : nat), (M >= N)%nat -> forall (H : (N >= L)%nat) (A Q : Matrix (RCfield K) M N) (R : Matrix (RCfield K) N N), Rank (RCfield K) M L (fun (m : Count M) (n : Count L) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) L N (proj2_sig n) H))) = L -> Mmult (RCfield K) N M N (AdjointMatrixRC K M N Q) Q = MI (RCfield K) N -> UpperTriangularMatrix (RCfield K) N N R -> A = Mmult (RCfield K) M N N Q R -> forall (p q : Count N), (proj1_sig p < L)%nat -> (proj1_sig q >= proj1_sig p)%nat -> MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (k : Count N) => (proj1_sig p <= proj1_sig k <= proj1_sig q)%nat)) RPCM ((fun (n : Count N) => RCabs K (R n q) * RCabs K (R n q))) <= RCabs K (R p p) * RCabs K (R p p) <-> RCnNorm K M (ResiVRC K M (proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) => A m q)) <= RCnNorm K M (ResiVRC K M (proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) => A m p)).
 Proof.
 move=> K M N L H1 H2 A Q R H3 H4 H5 H6 p q H7 H8.
-suff: (forall (r : Count N), (proj1_sig r >= proj1_sig p)%nat -> MySumF2 (Count N)
-  (FiniteIntersection (Count N)
-     (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))
-     (fun (k : Count N) => (proj1_sig p <= proj1_sig k <= proj1_sig r)%nat)) RPCM
-  (fun (n : Count N) => RCabs K (R n r) * RCabs K (R n r)) = RCRe K (RCnInnerProduct K M (ResiVRC K M (proj1_sig p)
-     (fun (m : Count M) (n : Count (proj1_sig p)) =>
-      A m
-        (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-           (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-              (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p)))))
-     (fun (m : Count M) => A m r)) (ResiVRC K M (proj1_sig p)
-     (fun (m : Count M) (n : Count (proj1_sig p)) =>
-      A m
-        (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-           (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-              (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p)))))
-     (fun (m : Count M) => A m r)))).
+suff: (forall (r : Count N), (proj1_sig r >= proj1_sig p)%nat -> MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (k : Count N) => (proj1_sig p <= proj1_sig k <= proj1_sig r)%nat)) RPCM (fun (n : Count N) => RCabs K (R n r) * RCabs K (R n r)) = RCRe K (RCnInnerProduct K M (ResiVRC K M (proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) => A m r)) (ResiVRC K M (proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) => A m r)))).
 move=> H9.
-suff: (RCabs K (R p p) * RCabs K (R p p) = MySumF2 (Count N)
-       (FiniteIntersection (Count N)
-          (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))
-          (fun (k : Count N) => (proj1_sig p <= proj1_sig k <= proj1_sig p)%nat))
-       RPCM (fun (n : Count N) => RCabs K (R n p) * RCabs K (R n p))).
+suff: (RCabs K (R p p) * RCabs K (R p p) = MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (k : Count N) => (proj1_sig p <= proj1_sig k <= proj1_sig p)%nat)) RPCM (fun (n : Count N) => RCabs K (R n p) * RCabs K (R n p))).
 move=> H10.
 rewrite (H9 q H8).
 rewrite H10.
 rewrite (H9 p (le_n (proj1_sig p))).
 suff: (forall (x y : RbaseSymbolsImpl.R), x >= 0 -> y >= 0 -> x * x <= y * y <-> x <= y).
 move=> H11.
-rewrite (proj2 (RCnNormNature K M (ResiVRC K M (proj1_sig p)
-        (fun (m : Count M) (n : Count (proj1_sig p)) =>
-         A m
-           (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-              (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-                 (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p)))))
-        (fun (m : Count M) => A m q)))).
-rewrite (proj2 (RCnNormNature K M (ResiVRC K M (proj1_sig p)
-        (fun (m : Count M) (n : Count (proj1_sig p)) =>
-         A m
-           (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-              (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-                 (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p)))))
-        (fun (m : Count M) => A m p)))).
+rewrite (proj2 (RCnNormNature K M (ResiVRC K M (proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) => A m q)))).
+rewrite (proj2 (RCnNormNature K M (ResiVRC K M (proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) => A m p)))).
 apply H11.
 apply (RCnNormNature K M).
 apply (RCnNormNature K M).
@@ -19247,125 +19057,40 @@ apply (Full_intro (Count N) p).
 move=> r H9.
 suff: (forall (m : Count (N - proj1_sig p)%nat), (proj1_sig m + proj1_sig p < N)%nat).
 move=> H10.
-suff: (ResiRC K M (proj1_sig p) (N - proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) =>
-      A m
-        (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-           (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-              (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) (n : Count (N - proj1_sig p)%nat) =>
-      A m
-        (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat
-           (H10 n))) = Mmult (RCfield K) M (N - proj1_sig p) (N - proj1_sig p) (fun (m : Count M) (n : Count (N - proj1_sig p)%nat) => Q m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat
-           (H10 n))) (fun (m : Count (N - proj1_sig p)%nat) (n : Count (N - proj1_sig p)%nat) => R (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m + proj1_sig p)%nat
-           (H10 m)) (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat
-           (H10 n)))).
+suff: (ResiRC K M (proj1_sig p) (N - proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) (n : Count (N - proj1_sig p)%nat) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) = Mmult (RCfield K) M (N - proj1_sig p) (N - proj1_sig p) (fun (m : Count M) (n : Count (N - proj1_sig p)%nat) => Q m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) (fun (m : Count (N - proj1_sig p)%nat) (n : Count (N - proj1_sig p)%nat) => R (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m + proj1_sig p)%nat (H10 m)) (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n)))).
 move=> H11.
 suff: (proj1_sig r - proj1_sig p < N - proj1_sig p)%nat.
 move=> H12.
-suff: (ResiVRC K M (proj1_sig p)
-     (fun (m : Count M) (n : Count (proj1_sig p)) =>
-      A m
-        (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-           (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-              (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p)))))
-     (fun (m : Count M) => A m r) = (fun (l : Count M) => ResiRC K M (proj1_sig p) (N - proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) =>
-      A m
-        (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-           (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-              (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) (n : Count (N - proj1_sig p)%nat) =>
-      A m
-        (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat
-           (H10 n))) l (exist (fun (s : nat) => (s < N - proj1_sig p)%nat) (proj1_sig r - proj1_sig p)%nat H12))).
+suff: (ResiVRC K M (proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) => A m r) = (fun (l : Count M) => ResiRC K M (proj1_sig p) (N - proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) (n : Count (N - proj1_sig p)%nat) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) l (exist (fun (s : nat) => (s < N - proj1_sig p)%nat) (proj1_sig r - proj1_sig p)%nat H12))).
 move=> H13.
 rewrite H13.
 rewrite H11.
 rewrite RCnInnerProductMatrix.
-suff: ((fun (l : Count M) =>
-               Mmult (RCfield K) M (N - proj1_sig p) 
-                 (N - proj1_sig p)
-                 (fun (m : Count M) (n : Count (N - proj1_sig p)) =>
-                  Q m
-                    (exist (fun (k : nat) => (k < N)%nat)
-                       (proj1_sig n + proj1_sig p)%nat 
-                       (H10 n)))
-                 (fun (m n : Count (N - proj1_sig p)) =>
-                  R
-                    (exist (fun (k : nat) => (k < N)%nat)
-                       (proj1_sig m + proj1_sig p)%nat 
-                       (H10 m))
-                    (exist (fun (k : nat) => (k < N)%nat)
-                       (proj1_sig n + proj1_sig p)%nat 
-                       (H10 n))) l
-                 (exist (fun (s : nat) => (s < N - proj1_sig p)%nat)
-                    (proj1_sig r - proj1_sig p)%nat H12))
-= MMatrixToVector (RCfield K) M (Mmult (RCfield K) M (N - proj1_sig p) 
-                 1 (fun (m : Count M) (n : Count (N - proj1_sig p)) =>
-                  Q m
-                    (exist (fun (k : nat) => (k < N)%nat)
-                       (proj1_sig n + proj1_sig p)%nat 
-                       (H10 n))) (fun (m : Count (N - proj1_sig p)) (n : Count 1) =>
-                  R
-                    (exist (fun (k : nat) => (k < N)%nat)
-                       (proj1_sig m + proj1_sig p)%nat 
-                       (H10 m))
-                    r))).
+suff: ((fun (l : Count M) => Mmult (RCfield K) M (N - proj1_sig p) (N - proj1_sig p) (fun (m : Count M) (n : Count (N - proj1_sig p)) => Q m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) (fun (m n : Count (N - proj1_sig p)) => R (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m + proj1_sig p)%nat (H10 m)) (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) l (exist (fun (s : nat) => (s < N - proj1_sig p)%nat) (proj1_sig r - proj1_sig p)%nat H12)) = MMatrixToVector (RCfield K) M (Mmult (RCfield K) M (N - proj1_sig p) 1 (fun (m : Count M) (n : Count (N - proj1_sig p)) => Q m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) (fun (m : Count (N - proj1_sig p)) (n : Count 1) => R (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m + proj1_sig p)%nat (H10 m)) r))).
 move=> H14.
 rewrite H14.
 rewrite (proj2 (MVectorMatrixRelation (RCfield K) M)).
 rewrite (AdjointMatrixRCMult K M (N - proj1_sig p) 1).
 rewrite (Mmult_assoc (RCfield K) 1 (N - proj1_sig p) M 1).
 rewrite - (Mmult_assoc (RCfield K) (N - proj1_sig p) M (N - proj1_sig p) 1).
-suff: (Mmult (RCfield K) (N - proj1_sig p) M (N - proj1_sig p)
-              (AdjointMatrixRC K M (N - proj1_sig p)
-                 (fun (m : Count M) (n : Count (N - proj1_sig p)) =>
-                  Q m
-                    (exist (fun (k : nat) => (k < N)%nat)
-                       (proj1_sig n + proj1_sig p)%nat 
-                       (H10 n))))
-              (fun (m : Count M) (n : Count (N - proj1_sig p)) =>
-               Q m
-                 (exist (fun (k : nat) => (k < N)%nat)
-                    (proj1_sig n + proj1_sig p)%nat 
-                    (H10 n))) = (fun (m n : Count (N - proj1_sig p)) => Mmult (RCfield K) N M N (AdjointMatrixRC K M N Q) Q (exist (fun (k : nat) => (k < N)%nat)
-                       (proj1_sig m + proj1_sig p)%nat 
-                       (H10 m)) (exist (fun (k : nat) => (k < N)%nat)
-                       (proj1_sig n + proj1_sig p)%nat 
-                       (H10 n)))).
+suff: (Mmult (RCfield K) (N - proj1_sig p) M (N - proj1_sig p) (AdjointMatrixRC K M (N - proj1_sig p) (fun (m : Count M) (n : Count (N - proj1_sig p)) => Q m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n)))) (fun (m : Count M) (n : Count (N - proj1_sig p)) => Q m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) = (fun (m n : Count (N - proj1_sig p)) => Mmult (RCfield K) N M N (AdjointMatrixRC K M N Q) Q (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m + proj1_sig p)%nat (H10 m)) (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n)))).
 move=> H15.
 rewrite H15.
 rewrite H4.
-suff: ((fun (m n : Count (N - proj1_sig p)) =>
-            MI (RCfield K) N
-              (exist (fun k : nat => (k < N)%nat)
-                 (proj1_sig m + proj1_sig p)%nat (H10 m))
-              (exist (fun k : nat => (k < N)%nat)
-                 (proj1_sig n + proj1_sig p)%nat (H10 n))) = MI (RCfield K) (N - proj1_sig p)).
+suff: ((fun (m n : Count (N - proj1_sig p)) => MI (RCfield K) N (exist (fun k : nat => (k < N)%nat) (proj1_sig m + proj1_sig p)%nat (H10 m)) (exist (fun k : nat => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) = MI (RCfield K) (N - proj1_sig p)).
 move=> H16.
 rewrite H16.
 rewrite (Mmult_I_l (RCfield K) (N - proj1_sig p) 1).
 unfold Mmult.
-suff: (MySumF2 (Count N)
-  (FiniteIntersection (Count N)
-     (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))
-     (fun (k : Count N) => (proj1_sig p <= proj1_sig k <= proj1_sig r)%nat)) RPCM
-  (fun (n : Count N) => RCabs K (R n r) * RCabs K (R n r)) = MySumF2 (Count N)
-  (FiniteIntersection (Count N)
-     (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))
-     (fun (k : Count N) => (proj1_sig p <= proj1_sig k)%nat)) RPCM
-  (fun (n : Count N) => RCabs K (R n r) * RCabs K (R n r))).
+suff: (MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (k : Count N) => (proj1_sig p <= proj1_sig k <= proj1_sig r)%nat)) RPCM (fun (n : Count N) => RCabs K (R n r) * RCabs K (R n r)) = MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (k : Count N) => (proj1_sig p <= proj1_sig k)%nat)) RPCM (fun (n : Count N) => RCabs K (R n r) * RCabs K (R n r))).
 move=> H17.
 rewrite H17.
-rewrite (MySumF2Included (Count N) (FiniteIm (Count (N - proj1_sig p)) (Count N) (fun (n : Count (N - proj1_sig p)) => (exist (fun (k : nat) => (k < N)%nat)
-                 (proj1_sig n + proj1_sig p)%nat (H10 n))) (exist (Finite (Count (N - proj1_sig p)))
-           (Full_set {n : nat | (n < N - proj1_sig p)%nat})
-           (CountFinite (N - proj1_sig p))))).
+rewrite (MySumF2Included (Count N) (FiniteIm (Count (N - proj1_sig p)) (Count N) (fun (n : Count (N - proj1_sig p)) => (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) (exist (Finite (Count (N - proj1_sig p))) (Full_set {n : nat | (n < N - proj1_sig p)%nat}) (CountFinite (N - proj1_sig p))))).
 rewrite - MySumF2BijectiveSame2.
 rewrite (MySumF2O (Count N)).
 rewrite CM_O_r.
 unfold Count.
-apply (FiniteSetInduction {n : nat | (n < N - proj1_sig p)%nat}
-  (exist (Finite {n : nat | (n < N - proj1_sig p)%nat})
-     (Full_set {n : nat | (n < N - proj1_sig p)%nat})
-     (CountFinite (N - proj1_sig p)))).
+apply (FiniteSetInduction {n : nat | (n < N - proj1_sig p)%nat} (exist (Finite {n : nat | (n < N - proj1_sig p)%nat}) (Full_set {n : nat | (n < N - proj1_sig p)%nat}) (CountFinite (N - proj1_sig p)))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
@@ -19408,10 +19133,7 @@ elim H19.
 move=> u1 H20 H21.
 suff: (proj1_sig u1 - proj1_sig p < N - proj1_sig p)%nat.
 move=> H22.
-apply (Im_intro (Count (N - proj1_sig p)) (Count N) (Full_set {n : nat | (n < N - proj1_sig p)%nat}) (fun (n : Count (N - proj1_sig p)) =>
-         exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat
-           (H10 n))
-         (exist (fun (k : nat) => (k < N - proj1_sig p)%nat) (proj1_sig u1 - proj1_sig p)%nat H22)).
+apply (Im_intro (Count (N - proj1_sig p)) (Count N) (Full_set {n : nat | (n < N - proj1_sig p)%nat}) (fun (n : Count (N - proj1_sig p)) => exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n)) (exist (fun (k : nat) => (k < N - proj1_sig p)%nat) (proj1_sig u1 - proj1_sig p)%nat H22)).
 apply (Full_intro (Count (N - proj1_sig p))).
 apply sig_map.
 simpl.
@@ -19424,8 +19146,7 @@ apply (proj2_sig u1).
 move=> u1 u2 H18 H19 H20.
 apply sig_map.
 apply (plus_reg_l (proj1_sig u1) (proj1_sig u2) (proj1_sig p)).
-suff: ((proj1_sig p + proj1_sig u1)%nat = proj1_sig (exist (fun (k : nat) => (k < N)%nat) (proj1_sig u1 + proj1_sig p)%nat
-        (H10 u1))).
+suff: ((proj1_sig p + proj1_sig u1)%nat = proj1_sig (exist (fun (k : nat) => (k < N)%nat) (proj1_sig u1 + proj1_sig p)%nat (H10 u1))).
 move=> H21.
 rewrite H21.
 rewrite H20.
@@ -19438,17 +19159,8 @@ rewrite H19.
 apply (Intersection_intro (Count N)).
 apply (le_plus_r (proj1_sig u1) (proj1_sig p)).
 apply (Full_intro (Count N)).
-rewrite (MySumF2Included (Count N)
-  (FiniteIntersection (Count N)
-     (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))
-     (fun (k : Count N) => (proj1_sig p <= proj1_sig k <= proj1_sig r)%nat)) (FiniteIntersection (Count N)
-     (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))
-     (fun (k : Count N) => (proj1_sig p <= proj1_sig k)%nat))).
-rewrite - {1} (Rplus_0_r (MySumF2 (Count N)
-  (FiniteIntersection (Count N)
-     (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))
-     (fun (k : Count N) => (proj1_sig p <= proj1_sig k <= proj1_sig r)%nat)) RPCM
-  (fun (n : Count N) => RCabs K (R n r) * RCabs K (R n r)))).
+rewrite (MySumF2Included (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (k : Count N) => (proj1_sig p <= proj1_sig k <= proj1_sig r)%nat)) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (k : Count N) => (proj1_sig p <= proj1_sig k)%nat))).
+rewrite - {1} (Rplus_0_r (MySumF2 (Count N) (FiniteIntersection (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (k : Count N) => (proj1_sig p <= proj1_sig k <= proj1_sig r)%nat)) RPCM (fun (n : Count N) => RCabs K (R n r) * RCabs K (R n r)))).
 apply Rplus_eq_compat_l.
 rewrite MySumF2O.
 reflexivity.
@@ -19506,11 +19218,7 @@ move=> m.
 unfold MMatrixToVector.
 unfold Mmult.
 simpl.
-suff: ((exist (fun (k : nat) => (k < N)%nat)
-           (proj1_sig r - proj1_sig p + proj1_sig p)%nat
-           (H10
-              (exist (fun (s : nat) => (s < N - proj1_sig p)%nat)
-                 (proj1_sig r - proj1_sig p)%nat H12))) = r).
+suff: ((exist (fun (k : nat) => (k < N)%nat) (proj1_sig r - proj1_sig p + proj1_sig p)%nat (H10 (exist (fun (s : nat) => (s < N - proj1_sig p)%nat) (proj1_sig r - proj1_sig p)%nat H12))) = r).
 move=> H14.
 rewrite H14.
 reflexivity.
@@ -19521,19 +19229,11 @@ apply (le_plus_minus_r (proj1_sig p) (proj1_sig r) H9).
 apply functional_extensionality.
 move=> m.
 unfold ResiVRC.
-suff: ((fun (n : Count M) => A n r) = (fun (n : Count M) => A n (exist (fun (k : nat) => (k < N)%nat) (proj1_sig (exist (fun (s : nat) => (s < N - proj1_sig p)%nat)
-     (proj1_sig r - proj1_sig p)%nat H12) + proj1_sig p)%nat (H10 (exist (fun (s : nat) => (s < N - proj1_sig p)%nat)
-     (proj1_sig r - proj1_sig p)%nat H12))))).
+suff: ((fun (n : Count M) => A n r) = (fun (n : Count M) => A n (exist (fun (k : nat) => (k < N)%nat) (proj1_sig (exist (fun (s : nat) => (s < N - proj1_sig p)%nat) (proj1_sig r - proj1_sig p)%nat H12) + proj1_sig p)%nat (H10 (exist (fun (s : nat) => (s < N - proj1_sig p)%nat) (proj1_sig r - proj1_sig p)%nat H12))))).
 move=> H13.
 rewrite H13.
 reflexivity.
-suff: ((exist (fun (k : nat) => (k < N)%nat)
-      (proj1_sig
-         (exist (fun (s : nat) => s < N - proj1_sig p) 
-            (proj1_sig r - proj1_sig p) H12) + proj1_sig p)%nat
-      (H10
-         (exist (fun (s : nat) => (s < N - proj1_sig p)%nat)
-            (proj1_sig r - proj1_sig p)%nat H12))) = r).
+suff: ((exist (fun (k : nat) => (k < N)%nat) (proj1_sig (exist (fun (s : nat) => s < N - proj1_sig p) (proj1_sig r - proj1_sig p) H12) + proj1_sig p)%nat (H10 (exist (fun (s : nat) => (s < N - proj1_sig p)%nat) (proj1_sig r - proj1_sig p)%nat H12))) = r).
 move=> H13.
 rewrite H13.
 reflexivity.
@@ -19545,63 +19245,11 @@ apply (plus_lt_reg_l (proj1_sig r - proj1_sig p) (N - proj1_sig p) (proj1_sig p)
 rewrite (le_plus_minus_r (proj1_sig p) (proj1_sig r) H9).
 rewrite (le_plus_minus_r (proj1_sig p) N (lt_le_weak (proj1_sig p) N (proj2_sig p))).
 apply (proj2_sig r).
-apply (Lemma5 K M (proj1_sig p) (N - proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) =>
-   A m
-     (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-        (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-           (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p)))))
-  (fun (m : Count M) (n : Count (N - proj1_sig p)) =>
-   A m
-     (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) (fun (m : Count M) (n : Count (proj1_sig p)) =>
-   Q m
-     (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-        (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-           (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p)))))
-(fun (m : Count M) (n : Count (N - proj1_sig p)) =>
-   Q m
-     (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n)))
-(fun (m n : Count (proj1_sig p)) =>
-   R (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m)
-        (le_trans (S (proj1_sig m)) (proj1_sig p) N 
-           (proj2_sig m) (lt_le_weak (proj1_sig p) N (proj2_sig p))))
-     (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-        (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-           (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p)))))
-(fun (m : Count (proj1_sig p)) (n : Count (N - proj1_sig p)) =>
-   R (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m)
-        (le_trans (S (proj1_sig m)) (proj1_sig p) N 
-           (proj2_sig m) (lt_le_weak (proj1_sig p) N (proj2_sig p))))
-     (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n)))
-  (fun (m n : Count (N - proj1_sig p)) =>
-   R (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m + proj1_sig p)%nat (H10 m))
-     (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n)))
-).
+apply (Lemma5 K M (proj1_sig p) (N - proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) (n : Count (N - proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) (fun (m : Count M) (n : Count (proj1_sig p)) => Q m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) (n : Count (N - proj1_sig p)) => Q m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) (fun (m n : Count (proj1_sig p)) => R (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m) (le_trans (S (proj1_sig m)) (proj1_sig p) N (proj2_sig m) (lt_le_weak (proj1_sig p) N (proj2_sig p)))) (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count (proj1_sig p)) (n : Count (N - proj1_sig p)) => R (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m) (le_trans (S (proj1_sig m)) (proj1_sig p) N (proj2_sig m) (lt_le_weak (proj1_sig p) N (proj2_sig p)))) (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) (fun (m n : Count (N - proj1_sig p)) => R (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m + proj1_sig p)%nat (H10 m)) (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))) ).
 suff: (Matrix (RCfield K) M N = Matrix (RCfield K) M (proj1_sig p + (N - proj1_sig p)))%nat.
 move=> H11.
 apply JMeq_eq.
-suff: (JMeq (Mmult (RCfield K) (proj1_sig p + (N - proj1_sig p)) M
-     (proj1_sig p + (N - proj1_sig p))
-     (AdjointMatrixRC K M (proj1_sig p + (N - proj1_sig p))
-        (MBlockW (RCfield K) M (proj1_sig p) (N - proj1_sig p)
-           (fun (m : Count M) (n : Count (proj1_sig p)) =>
-            Q m
-              (exist (fun k : nat => (k < N)%nat) (proj1_sig n)
-                 (Nat.le_trans (S (proj1_sig n)) (proj1_sig p) N 
-                    (proj2_sig n) (Nat.lt_le_incl (proj1_sig p) N (proj2_sig p)))))
-           (fun (m : Count M) (n : Count (N - proj1_sig p)) =>
-            Q m
-              (exist (fun k : nat => (k < N)%nat)
-                 (proj1_sig n + proj1_sig p)%nat (H10 n)))))
-     (MBlockW (RCfield K) M (proj1_sig p) (N - proj1_sig p)
-        (fun (m : Count M) (n : Count (proj1_sig p)) =>
-         Q m
-           (exist (fun k : nat => (k < N)%nat) (proj1_sig n)
-              (Nat.le_trans (S (proj1_sig n)) (proj1_sig p) N 
-                 (proj2_sig n) (Nat.lt_le_incl (proj1_sig p) N (proj2_sig p)))))
-        (fun (m : Count M) (n : Count (N - proj1_sig p)) =>
-         Q m
-           (exist (fun k : nat => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat
-              (H10 n))))) (Mmult (RCfield K) N M N (AdjointMatrixRC K M N Q) Q)).
+suff: (JMeq (Mmult (RCfield K) (proj1_sig p + (N - proj1_sig p)) M (proj1_sig p + (N - proj1_sig p)) (AdjointMatrixRC K M (proj1_sig p + (N - proj1_sig p)) (MBlockW (RCfield K) M (proj1_sig p) (N - proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => Q m (exist (fun k : nat => (k < N)%nat) (proj1_sig n) (Nat.le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (Nat.lt_le_incl (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) (n : Count (N - proj1_sig p)) => Q m (exist (fun k : nat => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))))) (MBlockW (RCfield K) M (proj1_sig p) (N - proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => Q m (exist (fun k : nat => (k < N)%nat) (proj1_sig n) (Nat.le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (Nat.lt_le_incl (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) (n : Count (N - proj1_sig p)) => Q m (exist (fun k : nat => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n))))) (Mmult (RCfield K) N M N (AdjointMatrixRC K M N Q) Q)).
 move=> H12.
 apply (JMeq_trans H12).
 rewrite H4.
@@ -19631,9 +19279,7 @@ elim (AddConnectInv (proj1_sig p) (N - proj1_sig p) n1).
 move=> n11.
 rewrite - (proj1 (AddConnectNature (proj1_sig p) (N - proj1_sig p)) n11).
 move=> H15.
-suff: ((exist (fun (k : nat) => (k < N)%nat) (proj1_sig n11)
-     (le_trans (S (proj1_sig n11)) (proj1_sig p) N 
-        (proj2_sig n11) (lt_le_weak (proj1_sig p) N (proj2_sig p)))) = n2).
+suff: ((exist (fun (k : nat) => (k < N)%nat) (proj1_sig n11) (le_trans (S (proj1_sig n11)) (proj1_sig p) N (proj2_sig n11) (lt_le_weak (proj1_sig p) N (proj2_sig p)))) = n2).
 move=> H16.
 rewrite H16.
 reflexivity.
@@ -19642,8 +19288,7 @@ apply H15.
 move=> n12.
 rewrite - (proj2 (AddConnectNature (proj1_sig p) (N - proj1_sig p)) n12).
 move=> H15.
-suff: ((exist (fun (k : nat) => (k < N)%nat) (proj1_sig n12 + proj1_sig p)%nat
-     (H10 n12)) = n2).
+suff: ((exist (fun (k : nat) => (k < N)%nat) (proj1_sig n12 + proj1_sig p)%nat (H10 n12)) = n2).
 move=> H16.
 rewrite H16.
 reflexivity.
@@ -19660,69 +19305,27 @@ elim.
 apply (JMeq_refl (Mmult (RCfield K) n2 M n2 (AdjointMatrixRC K M n2 Q1) Q1)).
 rewrite (le_plus_minus_r (proj1_sig p) N (lt_le_weak (proj1_sig p) N (proj2_sig p))).
 reflexivity.
-apply (proj2 (RankInvLExistRelation (RCfield K) M (proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) =>
-   A m
-     (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-        (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-           (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))))).
-elim (proj1 (RankInvLExistRelation (RCfield K) M L (fun (m : Count M) (n : Count L) =>
-   A m
-     (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-        (le_trans (S (proj1_sig n)) L N 
-           (proj2_sig n) H2)))) H3).
+apply (proj2 (RankInvLExistRelation (RCfield K) M (proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))))).
+elim (proj1 (RankInvLExistRelation (RCfield K) M L (fun (m : Count M) (n : Count L) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) L N (proj2_sig n) H2)))) H3).
 move=> B H11.
 exists (fun (m : Count (proj1_sig p)) (n : Count M) => B (exist (fun (k : nat) => (k < L)%nat) (proj1_sig m) (le_trans (S (proj1_sig m)) (proj1_sig p) L (proj2_sig m) (lt_le_weak (proj1_sig p) L H7))) n).
 apply functional_extensionality.
 move=> x.
 apply functional_extensionality.
 move=> y.
-suff: (Mmult (RCfield K) (proj1_sig p) M (proj1_sig p)
-  (fun (m : Count (proj1_sig p)) (n : Count M) =>
-   B
-     (exist (fun (k : nat) => (k < L)%nat) (proj1_sig m)
-        (le_trans (S (proj1_sig m)) (proj1_sig p) L 
-           (proj2_sig m) (lt_le_weak (proj1_sig p) L H7))) n)
-  (fun (m : Count M) (n : Count (proj1_sig p)) =>
-   A m
-     (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-        (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-           (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) x y
-= Mmult (RCfield K) L M L B
-        (fun (m : Count M) (n : Count L) =>
-         A m
-           (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-              (le_trans (S (proj1_sig n)) L N (proj2_sig n) H2))) 
- (exist (fun (k : nat) => (k < L)%nat) (proj1_sig x)
-        (le_trans (S (proj1_sig x)) (proj1_sig p) L 
-           (proj2_sig x) (lt_le_weak (proj1_sig p) L H7)))
- (exist (fun (k : nat) => (k < L)%nat) (proj1_sig y)
-        (le_trans (S (proj1_sig y)) (proj1_sig p) L 
-           (proj2_sig y) (lt_le_weak (proj1_sig p) L H7)))).
+suff: (Mmult (RCfield K) (proj1_sig p) M (proj1_sig p) (fun (m : Count (proj1_sig p)) (n : Count M) => B (exist (fun (k : nat) => (k < L)%nat) (proj1_sig m) (le_trans (S (proj1_sig m)) (proj1_sig p) L (proj2_sig m) (lt_le_weak (proj1_sig p) L H7))) n) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) x y = Mmult (RCfield K) L M L B (fun (m : Count M) (n : Count L) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) L N (proj2_sig n) H2))) (exist (fun (k : nat) => (k < L)%nat) (proj1_sig x) (le_trans (S (proj1_sig x)) (proj1_sig p) L (proj2_sig x) (lt_le_weak (proj1_sig p) L H7))) (exist (fun (k : nat) => (k < L)%nat) (proj1_sig y) (le_trans (S (proj1_sig y)) (proj1_sig p) L (proj2_sig y) (lt_le_weak (proj1_sig p) L H7)))).
 move=> H12.
 rewrite H12.
 rewrite H11.
 reflexivity.
 unfold Mmult.
-suff: ((le_trans (S (proj1_sig y)) (proj1_sig p) N 
-              (proj2_sig y) (lt_le_weak (proj1_sig p) N (proj2_sig p)))
-= (le_trans (S (proj1_sig y)) L N
-              (le_trans (S (proj1_sig y)) (proj1_sig p) L 
-                 (proj2_sig y) (lt_le_weak (proj1_sig p) L H7)) H2)).
+suff: ((le_trans (S (proj1_sig y)) (proj1_sig p) N (proj2_sig y) (lt_le_weak (proj1_sig p) N (proj2_sig p))) = (le_trans (S (proj1_sig y)) L N (le_trans (S (proj1_sig y)) (proj1_sig p) L (proj2_sig y) (lt_le_weak (proj1_sig p) L H7)) H2)).
 move=> H12.
 rewrite H12.
 reflexivity.
 apply proof_irrelevance.
 apply JMeq_eq.
-suff: (JMeq (MBlockW (RCfield K) M (proj1_sig p) (N - proj1_sig p)
-     (fun (m : Count M) (n : Count (proj1_sig p)) =>
-      A m
-        (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n)
-           (le_trans (S (proj1_sig n)) (proj1_sig p) N 
-              (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p)))))
-     (fun (m : Count M) (n : Count (N - proj1_sig p)) =>
-      A m
-        (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat
-           (H10 n)))) A).
+suff: (JMeq (MBlockW (RCfield K) M (proj1_sig p) (N - proj1_sig p) (fun (m : Count M) (n : Count (proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n) (le_trans (S (proj1_sig n)) (proj1_sig p) N (proj2_sig n) (lt_le_weak (proj1_sig p) N (proj2_sig p))))) (fun (m : Count M) (n : Count (N - proj1_sig p)) => A m (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n + proj1_sig p)%nat (H10 n)))) A).
 move=> H11.
 apply (JMeq_trans H11).
 rewrite H6.
@@ -19745,9 +19348,7 @@ elim (AddConnectInv (proj1_sig p) (N - proj1_sig p) n2).
 move=> n21.
 rewrite - (proj1 (AddConnectNature (proj1_sig p) (N - proj1_sig p)) n21).
 move=> H15.
-suff: (n1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n21)
-     (le_trans (S (proj1_sig n21)) (proj1_sig p) N 
-        (proj2_sig n21) (lt_le_weak (proj1_sig p) N (proj2_sig p))))).
+suff: (n1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n21) (le_trans (S (proj1_sig n21)) (proj1_sig p) N (proj2_sig n21) (lt_le_weak (proj1_sig p) N (proj2_sig p))))).
 move=> H16.
 rewrite H16.
 reflexivity.
@@ -19756,8 +19357,7 @@ apply H15.
 move=> n22.
 rewrite - (proj2 (AddConnectNature (proj1_sig p) (N - proj1_sig p)) n22).
 move=> H15.
-suff: (n1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n22 + proj1_sig p)%nat
-     (H10 n22))).
+suff: (n1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n22 + proj1_sig p)%nat (H10 n22))).
 move=> H16.
 rewrite H16.
 reflexivity.
@@ -19782,13 +19382,9 @@ elim (AddConnectInv (proj1_sig p) (N - proj1_sig p) n2).
 move=> n21.
 rewrite - (proj1 (AddConnectNature (proj1_sig p) (N - proj1_sig p)) n21).
 move=> H14.
-suff: (m1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m21)
-     (le_trans (S (proj1_sig m21)) (proj1_sig p) N 
-        (proj2_sig m21) (lt_le_weak (proj1_sig p) N (proj2_sig p))))).
+suff: (m1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m21) (le_trans (S (proj1_sig m21)) (proj1_sig p) N (proj2_sig m21) (lt_le_weak (proj1_sig p) N (proj2_sig p))))).
 move=> H15.
-suff: (n1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n21)
-     (le_trans (S (proj1_sig n21)) (proj1_sig p) N 
-        (proj2_sig n21) (lt_le_weak (proj1_sig p) N (proj2_sig p))))).
+suff: (n1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n21) (le_trans (S (proj1_sig n21)) (proj1_sig p) N (proj2_sig n21) (lt_le_weak (proj1_sig p) N (proj2_sig p))))).
 move=> H16.
 rewrite H15.
 rewrite H16.
@@ -19800,12 +19396,9 @@ apply H13.
 move=> n22.
 rewrite - (proj2 (AddConnectNature (proj1_sig p) (N - proj1_sig p)) n22).
 move=> H14.
-suff: (m1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m21)
-     (le_trans (S (proj1_sig m21)) (proj1_sig p) N 
-        (proj2_sig m21) (lt_le_weak (proj1_sig p) N (proj2_sig p))))).
+suff: (m1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m21) (le_trans (S (proj1_sig m21)) (proj1_sig p) N (proj2_sig m21) (lt_le_weak (proj1_sig p) N (proj2_sig p))))).
 move=> H15.
-suff: (n1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n22 + proj1_sig p)%nat
-     (H10 n22))).
+suff: (n1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n22 + proj1_sig p)%nat (H10 n22))).
 move=> H16.
 rewrite H15.
 rewrite H16.
@@ -19829,11 +19422,9 @@ apply (le_trans (S (proj1_sig n21)) (proj1_sig p) (proj1_sig p + proj1_sig m22) 
 move=> n22.
 rewrite - (proj2 (AddConnectNature (proj1_sig p) (N - proj1_sig p)) n22).
 move=> H14.
-suff: (m1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m22 + proj1_sig p)%nat
-     (H10 m22))).
+suff: (m1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig m22 + proj1_sig p)%nat (H10 m22))).
 move=> H15.
-suff: (n1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n22 + proj1_sig p)%nat
-     (H10 n22))).
+suff: (n1 = (exist (fun (k : nat) => (k < N)%nat) (proj1_sig n22 + proj1_sig p)%nat (H10 n22))).
 move=> H16.
 rewrite H15.
 rewrite H16.
@@ -19865,9 +19456,7 @@ elim (AddConnectInv (proj1_sig p) (N - proj1_sig p) n1).
 move=> n11.
 rewrite - (proj1 (AddConnectNature (proj1_sig p) (N - proj1_sig p)) n11).
 move=> H13.
-suff: ((exist (fun (k : nat) => (k < N)%nat) (proj1_sig n11)
-     (le_trans (S (proj1_sig n11)) (proj1_sig p) N 
-        (proj2_sig n11) (lt_le_weak (proj1_sig p) N (proj2_sig p)))) = n2).
+suff: ((exist (fun (k : nat) => (k < N)%nat) (proj1_sig n11) (le_trans (S (proj1_sig n11)) (proj1_sig p) N (proj2_sig n11) (lt_le_weak (proj1_sig p) N (proj2_sig p)))) = n2).
 move=> H14.
 rewrite H14.
 reflexivity.
@@ -19876,8 +19465,7 @@ apply H13.
 move=> n12.
 rewrite - (proj2 (AddConnectNature (proj1_sig p) (N - proj1_sig p)) n12).
 move=> H13.
-suff: ((exist (fun (k : nat) => (k < N)%nat) (proj1_sig n12 + proj1_sig p)%nat
-     (H10 n12)) = n2).
+suff: ((exist (fun (k : nat) => (k < N)%nat) (proj1_sig n12 + proj1_sig p)%nat (H10 n12)) = n2).
 move=> H14.
 rewrite H14.
 reflexivity.
@@ -19901,8 +19489,7 @@ elim.
 move=> A.
 reflexivity.
 move=> N H1 A.
-elim (proj1 (RCTwoNormNature K M N
-  (MBlockW (RCfield K) M 0 (S N) A (MO (RCfield K) M (S N))))).
+elim (proj1 (RCTwoNormNature K M N (MBlockW (RCfield K) M 0 (S N) A (MO (RCfield K) M (S N))))).
 move=> x H2.
 rewrite - (proj2 H2).
 apply (RCnNormNature2 K M).
@@ -19931,40 +19518,18 @@ move=> u1.
 apply (Fmul_O_l (RCfield K) (MVectorToMatrix (RCfield K) (S N) x u0 Single)).
 move=> N1 H1 N2 A.
 apply Rle_antisym.
-elim (proj1 (RCTwoNormNature K M (N1 + N2)
-  (MBlockW (RCfield K) M (S N1) N2 A (MO (RCfield K) M N2)))).
+elim (proj1 (RCTwoNormNature K M (N1 + N2) (MBlockW (RCfield K) M (S N1) N2 A (MO (RCfield K) M N2)))).
 move=> x H2.
 rewrite - (proj2 H2).
 elim (proj1 (RCnNormNature K (S N1) (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))))).
 move=> H3.
-apply (Rle_trans (RCnNorm K M
-  (MVmult (RCfield K) M (S (N1 + N2))
-     (MBlockW (RCfield K) M (S N1) N2 A (MO (RCfield K) M N2)) x))
-(RCnNorm K M
-  (MVmult (RCfield K) M (S N1)
-     A (RCnmult K (S N1) (IRRC K (1 / RCnNorm K (S N1) (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))))) (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))))))).
-suff: (MVmult (RCfield K) M (S N1) A
-     (RCnmult K (S N1)
-        (IRRC K
-           (1 /
-            RCnNorm K (S N1)
-              (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m)))))
-        (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))))
-= RCnmult K M (IRRC K
-           (1 /
-            RCnNorm K (S N1)
-              (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m)))))
-(MVmult (RCfield K) M (S N1) A (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))))).
+apply (Rle_trans (RCnNorm K M (MVmult (RCfield K) M (S (N1 + N2)) (MBlockW (RCfield K) M (S N1) N2 A (MO (RCfield K) M N2)) x)) (RCnNorm K M (MVmult (RCfield K) M (S N1) A (RCnmult K (S N1) (IRRC K (1 / RCnNorm K (S N1) (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))))) (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))))))).
+suff: (MVmult (RCfield K) M (S N1) A (RCnmult K (S N1) (IRRC K (1 / RCnNorm K (S N1) (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))))) (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m)))) = RCnmult K M (IRRC K (1 / RCnNorm K (S N1) (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))))) (MVmult (RCfield K) M (S N1) A (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))))).
 move=> H4.
 rewrite H4.
 rewrite (Proposition_4_4_1 K M).
-rewrite - (Rmult_1_l (RCnNorm K M
-  (MVmult (RCfield K) M (S (N1 + N2))
-     (MBlockW (RCfield K) M (S N1) N2 A (MO (RCfield K) M N2)) x))).
-suff: (MVmult (RCfield K) M (S (N1 + N2))
-     (MBlockW (RCfield K) M (S N1) N2 A (MO (RCfield K) M N2)) x
-= MVmult (RCfield K) M (S N1) A
-     (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m)))).
+rewrite - (Rmult_1_l (RCnNorm K M (MVmult (RCfield K) M (S (N1 + N2)) (MBlockW (RCfield K) M (S N1) N2 A (MO (RCfield K) M N2)) x))).
+suff: (MVmult (RCfield K) M (S (N1 + N2)) (MBlockW (RCfield K) M (S N1) N2 A (MO (RCfield K) M N2)) x = MVmult (RCfield K) M (S N1) A (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m)))).
 move=> H5.
 rewrite H5.
 apply Rmult_le_compat_r.
@@ -19987,21 +19552,9 @@ apply (RCnNormNature K (S (N1 + N2)) x).
 rewrite - (proj2 (RCnNormNature K (S N1) (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))))).
 rewrite - (proj2 (RCnNormNature K (S (N1 + N2)) x)).
 unfold RCnInnerProduct.
-rewrite (MySumF2Included (Count (S (N1 + N2)))
-     (FiniteIm (Count (S N1)) (Count (S (N1 + N2))) (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) (exist (Finite (Count (S N1))) (Full_set (Count (S N1)))
-        (CountFinite (S N1))))
-).
-rewrite - (Rplus_0_r (RCRe K
-  (MySumF2 (Count (S N1))
-     (exist (Finite (Count (S N1))) (Full_set (Count (S N1)))
-        (CountFinite (S N1))) (RCPCM K)
-     (fun (n : Count (S N1)) =>
-      RCmult K (x (AddConnect (S N1) N2 (inl n)))
-        (ConjugateRC K (x (AddConnect (S N1) N2 (inl n)))))))).
-rewrite - (MySumF2BijectiveSame2 (Count (S N1)) (Count (S (N1 + N2)))
-(exist (Finite (Count (S N1))) (Full_set (Count (S N1)))
-              (CountFinite (S N1)))
-(fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n))).
+rewrite (MySumF2Included (Count (S (N1 + N2))) (FiniteIm (Count (S N1)) (Count (S (N1 + N2))) (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) (exist (Finite (Count (S N1))) (Full_set (Count (S N1))) (CountFinite (S N1)))) ).
+rewrite - (Rplus_0_r (RCRe K (MySumF2 (Count (S N1)) (exist (Finite (Count (S N1))) (Full_set (Count (S N1))) (CountFinite (S N1))) (RCPCM K) (fun (n : Count (S N1)) => RCmult K (x (AddConnect (S N1) N2 (inl n))) (ConjugateRC K (x (AddConnect (S N1) N2 (inl n)))))))).
+rewrite - (MySumF2BijectiveSame2 (Count (S N1)) (Count (S (N1 + N2))) (exist (Finite (Count (S N1))) (Full_set (Count (S N1))) (CountFinite (S N1))) (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n))).
 rewrite RCReplus.
 apply Rplus_le_compat_l.
 apply (MySumF2Induction (Count (S (N1 + N2)))).
@@ -20067,16 +19620,11 @@ move=> m.
 unfold MVmult.
 unfold MMatrixToVector.
 unfold Mmult.
-rewrite (MySumF2Included {n : nat | (n < S (N1 + N2))%nat}
-(FiniteIm {n : nat | (n < S N1)%nat} {n : nat | (n < S (N1 + N2))%nat}
-(fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) (exist (Finite (Count (S N1))) (Full_set {n : nat | (n < S N1)%nat})
-     (CountFinite (S N1))))).
+rewrite (MySumF2Included {n : nat | (n < S (N1 + N2))%nat} (FiniteIm {n : nat | (n < S N1)%nat} {n : nat | (n < S (N1 + N2))%nat} (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) (exist (Finite (Count (S N1))) (Full_set {n : nat | (n < S N1)%nat}) (CountFinite (S N1))))).
 rewrite - MySumF2BijectiveSame2.
 rewrite (MySumF2O {n : nat | (n < S (N1 + N2))%nat}).
 rewrite (CM_O_r (FPCM (RCfield K))).
-apply (MySumF2Same {n : nat | (n < S N1)%nat}
-  (exist (Finite (Count (S N1))) (Full_set {n : nat | (n < S N1)%nat})
-     (CountFinite (S N1))) (FPCM (RCfield K))).
+apply (MySumF2Same {n : nat | (n < S N1)%nat} (exist (Finite (Count (S N1))) (Full_set {n : nat | (n < S N1)%nat}) (CountFinite (S N1))) (FPCM (RCfield K))).
 move=> u H5.
 unfold Basics.compose.
 unfold MBlockW.
@@ -20087,16 +19635,12 @@ unfold MBlockW.
 rewrite - {1} (proj2 (AddConnectInvRelation (S N1) N2) u).
 elim (AddConnectInv (S N1) N2 u).
 move=> u0 H5.
-suff: (Im {n : nat | (n < S N1)%nat}
-                   {n : nat | (n < S (N1 + N2))%nat} (Full_set {n : nat | (n < S N1)%nat})
-(fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) (AddConnect (S N1) N2 (inl u0))).
+suff: (Im {n : nat | (n < S N1)%nat} {n : nat | (n < S (N1 + N2))%nat} (Full_set {n : nat | (n < S N1)%nat}) (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) (AddConnect (S N1) N2 (inl u0))).
 elim H5.
 move=> u1 H6 H7 H8.
 elim H6.
 apply H8.
-apply (Im_intro {n : nat | (n < S N1)%nat} {n : nat | (n < S (N1 + N2))%nat}
-  (Full_set {n : nat | (n < S N1)%nat})
-  (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) u0 (Full_intro {n : nat | (n < S N1)%nat} u0)).
+apply (Im_intro {n : nat | (n < S N1)%nat} {n : nat | (n < S (N1 + N2))%nat} (Full_set {n : nat | (n < S N1)%nat}) (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) u0 (Full_intro {n : nat | (n < S N1)%nat} u0)).
 reflexivity.
 move=> u0 H5.
 apply (Fmul_O_l (RCfield K)).
@@ -20116,9 +19660,7 @@ unfold Fnmul.
 unfold MMatrixToVector.
 unfold MVectorToMatrix.
 unfold Mmult.
-apply (FiniteSetInduction {n : nat | (n < S N1)%nat}
-     (exist (Finite (Count (S N1))) (Full_set {n : nat | (n < S N1)%nat})
-        (CountFinite (S N1)))).
+apply (FiniteSetInduction {n : nat | (n < S N1)%nat} (exist (Finite (Count (S N1))) (Full_set {n : nat | (n < S N1)%nat}) (CountFinite (S N1)))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
@@ -20136,12 +19678,7 @@ reflexivity.
 apply H6.
 apply H6.
 apply (proj2 (RCTwoNormNature K M N1 A)).
-exists (RCnmult K (S N1)
-           (IRRC K
-              (1 /
-               RCnNorm K (S N1)
-                 (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m)))))
-           (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m)))).
+exists (RCnmult K (S N1) (IRRC K (1 / RCnNorm K (S N1) (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))))) (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m)))).
 apply conj.
 rewrite (Proposition_4_4_1 K (S N1)).
 suff: (forall (r : R), r >= 0 -> RCabs K (IRRC K r) = r).
@@ -20172,8 +19709,7 @@ rewrite (Rmult_0_l 0).
 apply (Rplus_0_r (r * r)).
 reflexivity.
 move=> H3.
-rewrite (RCnNormNature2 K M (MVmult (RCfield K) M (S (N1 + N2))
-     (MBlockW (RCfield K) M (S N1) N2 A (MO (RCfield K) M N2)) x) 0).
+rewrite (RCnNormNature2 K M (MVmult (RCfield K) M (S (N1 + N2)) (MBlockW (RCfield K) M (S N1) N2 A (MO (RCfield K) M N2)) x) 0).
 elim (proj1 (RCTwoNormNature K M N1 A)).
 move=> y H4.
 rewrite - (proj2 H4).
@@ -20199,8 +19735,7 @@ rewrite - {2} (proj2 (AddConnectInvRelation (S N1) N2) u0).
 elim (AddConnectInv (S N1) N2 u0).
 move=> u1.
 unfold MVectorToMatrix.
-suff: (let temp := (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))) in
-Fmul (RCfield K) (A u u1) (temp u1) = CMe (FPCM (RCfield K))).
+suff: (let temp := (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))) in Fmul (RCfield K) (A u u1) (temp u1) = CMe (FPCM (RCfield K))).
 apply.
 rewrite (Proposition_4_4_3_2 K (S N1) (fun (m : Count (S N1)) => x (AddConnect (S N1) N2 (inl m))) H3).
 apply (Fmul_O_r (RCfield K)).
@@ -20209,8 +19744,7 @@ apply (Fmul_O_l (RCfield K)).
 elim (proj1 (RCTwoNormNature K M N1 A)).
 move=> x H2.
 rewrite - (proj2 H2).
-apply (proj2 (RCTwoNormNature K M (N1 + N2)
-  (MBlockW (RCfield K) M (S N1) N2 A (MO (RCfield K) M N2)))).
+apply (proj2 (RCTwoNormNature K M (N1 + N2) (MBlockW (RCfield K) M (S N1) N2 A (MO (RCfield K) M N2)))).
 exists (fun (m : Count (S N1 + N2)) => match AddConnectInv (S N1) N2 m with
   | inl m0 => x m0
   | inr m0 => RCO K
@@ -20222,15 +19756,12 @@ apply conj.
 apply (proj1 (RCnNormNature K (S N1) x)).
 rewrite - (proj2 (RCnNormNature K (S N1) x)).
 unfold RCnInnerProduct.
-rewrite (MySumF2Included (Count (S (N1 + N2))) (FiniteIm (Count (S N1)) (Count (S (N1 + N2))) (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) (exist (Finite (Count (S N1))) (Full_set (Count (S N1)))
-        (CountFinite (S N1))))).
+rewrite (MySumF2Included (Count (S (N1 + N2))) (FiniteIm (Count (S N1)) (Count (S (N1 + N2))) (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) (exist (Finite (Count (S N1))) (Full_set (Count (S N1))) (CountFinite (S N1))))).
 rewrite - MySumF2BijectiveSame2.
 rewrite (MySumF2O (Count (S (N1 + N2)))).
 rewrite CM_O_r.
 apply f_equal.
-apply (MySumF2Same (Count (S N1))
-     (exist (Finite (Count (S N1))) (Full_set (Count (S N1)))
-        (CountFinite (S N1))) (RCPCM K)).
+apply (MySumF2Same (Count (S N1)) (exist (Finite (Count (S N1))) (Full_set (Count (S N1))) (CountFinite (S N1))) (RCPCM K)).
 move=> u H3.
 unfold Basics.compose.
 rewrite (proj1 (AddConnectInvRelation (S N1) N2) (inl u)).
@@ -20243,8 +19774,7 @@ suff: (Im (Count (S N1)) (Count (S (N1 + N2))) (Full_set (Count (S N1))) (fun (n
 elim H3.
 move=> u1 H4 H5 H6.
 elim (H4 H6).
-apply (Im_intro (Count (S N1)) (Count (S (N1 + N2))) (Full_set (Count (S N1)))
-  (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) u0 (Full_intro (Count (S N1)) u0)).
+apply (Im_intro (Count (S N1)) (Count (S (N1 + N2))) (Full_set (Count (S N1))) (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) u0 (Full_intro (Count (S N1)) u0)).
 reflexivity.
 move=> u0 H3.
 apply (Fmul_O_l (RCfield K)).
@@ -20262,14 +19792,11 @@ move=> m.
 unfold MVmult.
 unfold MMatrixToVector.
 unfold Mmult.
-rewrite (MySumF2Included (Count (S (N1 + N2))) (FiniteIm (Count (S N1)) (Count (S (N1 + N2))) (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) (exist (Finite (Count (S N1))) (Full_set (Count (S N1)))
-        (CountFinite (S N1))))).
+rewrite (MySumF2Included (Count (S (N1 + N2))) (FiniteIm (Count (S N1)) (Count (S (N1 + N2))) (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) (exist (Finite (Count (S N1))) (Full_set (Count (S N1))) (CountFinite (S N1))))).
 rewrite - MySumF2BijectiveSame2.
 rewrite (MySumF2O (Count (S (N1 + N2)))).
 rewrite CM_O_r.
-apply (MySumF2Same (Count (S N1))
-     (exist (Finite (Count (S N1))) (Full_set (Count (S N1)))
-        (CountFinite (S N1))) (RCPCM K)).
+apply (MySumF2Same (Count (S N1)) (exist (Finite (Count (S N1))) (Full_set (Count (S N1))) (CountFinite (S N1))) (RCPCM K)).
 move=> u H3.
 unfold Basics.compose.
 unfold MBlockW.
@@ -20285,8 +19812,7 @@ suff: (Im (Count (S N1)) (Count (S (N1 + N2))) (Full_set (Count (S N1))) (fun (n
 elim H3.
 move=> u1 H4 H5 H6.
 elim (H4 H6).
-apply (Im_intro (Count (S N1)) (Count (S (N1 + N2))) (Full_set (Count (S N1)))
-  (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) u0 (Full_intro (Count (S N1)) u0)).
+apply (Im_intro (Count (S N1)) (Count (S (N1 + N2))) (Full_set (Count (S N1))) (fun (n : Count (S N1)) => AddConnect (S N1) N2 (inl n)) u0 (Full_intro (Count (S N1)) u0)).
 reflexivity.
 move=> u0 H3.
 apply (Fmul_O_l (RCfield K)).
@@ -20302,33 +19828,14 @@ Qed.
 
 Lemma MBlockWRCTwoNormSame : forall (K : RC) (M N1 N2 : nat) (A1 : Matrix (RCfield K) M N1) (A2 : Matrix (RCfield K) M N2), RCTwoNorm K M (N1 + N2) (MBlockW (RCfield K) M N1 N2 A1 A2) = RCTwoNorm K M (N2 + N1) (MBlockW (RCfield K) M N2 N1 A2 A1).
 Proof.
-suff: (forall (K : RC) (M N1 N2 : nat) (A1 : Matrix (RCfield K) M N1)
-  (A2 : Matrix (RCfield K) M N2),
-RCTwoNorm K M (N1 + N2) (MBlockW (RCfield K) M N1 N2 A1 A2) >=
-RCTwoNorm K M (N2 + N1) (MBlockW (RCfield K) M N2 N1 A2 A1)).
+suff: (forall (K : RC) (M N1 N2 : nat) (A1 : Matrix (RCfield K) M N1) (A2 : Matrix (RCfield K) M N2), RCTwoNorm K M (N1 + N2) (MBlockW (RCfield K) M N1 N2 A1 A2) >= RCTwoNorm K M (N2 + N1) (MBlockW (RCfield K) M N2 N1 A2 A1)).
 move=> H1 K M N1 N2 A1 A2.
 apply Rge_antisym.
 apply (H1 K M N1 N2 A1 A2).
 apply (H1 K M N2 N1 A2 A1).
-suff: (forall (K : RC) (M N : nat), (exists (n : nat), S n = N) -> forall (A : Matrix (RCfield K) M N),
-       is_max
-         (fun (l : R) =>
-          exists (x : RCn K N),
-            RCnNorm K N x = 1 /\
-            RCnNorm K M (MVmult (RCfield K) M N A x) = l)
-         (RCTwoNorm K M N A)).
+suff: (forall (K : RC) (M N : nat), (exists (n : nat), S n = N) -> forall (A : Matrix (RCfield K) M N), is_max (fun (l : R) => exists (x : RCn K N), RCnNorm K N x = 1 /\ RCnNorm K M (MVmult (RCfield K) M N A x) = l) (RCTwoNorm K M N A)).
 move=> H1.
-suff: (forall (K : RC) (M N1 N2 : nat) (A1 : Matrix (RCfield K) M N1)
-  (A2 : Matrix (RCfield K) M N2) (r1 r2 : R), is_max
-         (fun (l : R) =>
-          exists (x : RCn K (N1 + N2)),
-            RCnNorm K (N1 + N2) x = 1 /\
-            RCnNorm K M (MVmult (RCfield K) M (N1 + N2) (MBlockW (RCfield K) M N1 N2 A1 A2) x) = l) r1
--> is_max
-         (fun (l : R) =>
-          exists (x : RCn K (N2 + N1)),
-            RCnNorm K (N2 + N1) x = 1 /\
-            RCnNorm K M (MVmult (RCfield K) M (N2 + N1) (MBlockW (RCfield K) M N2 N1 A2 A1) x) = l) r2 -> r1 >= r2).
+suff: (forall (K : RC) (M N1 N2 : nat) (A1 : Matrix (RCfield K) M N1) (A2 : Matrix (RCfield K) M N2) (r1 r2 : R), is_max (fun (l : R) => exists (x : RCn K (N1 + N2)), RCnNorm K (N1 + N2) x = 1 /\ RCnNorm K M (MVmult (RCfield K) M (N1 + N2) (MBlockW (RCfield K) M N1 N2 A1 A2) x) = l) r1 -> is_max (fun (l : R) => exists (x : RCn K (N2 + N1)), RCnNorm K (N2 + N1) x = 1 /\ RCnNorm K M (MVmult (RCfield K) M (N2 + N1) (MBlockW (RCfield K) M N2 N1 A2 A1) x) = l) r2 -> r1 >= r2).
 move=> H2 K M.
 elim.
 elim.
@@ -20358,7 +19865,7 @@ apply (proj2 H2 r2).
 elim (proj1 H3).
 move=> x H4.
 exists (fun (m : Count (N1 + N2)) => match AddConnectInv N1 N2 m with
-  | inl m0 => x (AddConnect N2 N1 (inr m0)) 
+  | inl m0 => x (AddConnect N2 N1 (inr m0))
   | inr m0 => x (AddConnect N2 N1 (inl m0))
 end).
 apply conj.
@@ -20369,17 +19876,14 @@ apply (proj1 (RCnNormNature K (N2 + N1) x)).
 rewrite - (proj2 (RCnNormNature K (N2 + N1) x)).
 unfold RCnInnerProduct.
 rewrite (MySumF2Included (Count (N2 + N1)) (FiniteIm (Count (N1 + N2)) (Count (N2 + N1)) (fun (m : Count (N1 + N2)) => match AddConnectInv N1 N2 m with
-  | inl m0 => AddConnect N2 N1 (inr m0) 
+  | inl m0 => AddConnect N2 N1 (inr m0)
   | inr m0 => AddConnect N2 N1 (inl m0)
-end) (exist (Finite (Count (N1 + N2))) (Full_set (Count (N1 + N2)))
-        (CountFinite (N1 + N2))))).
+end) (exist (Finite (Count (N1 + N2))) (Full_set (Count (N1 + N2))) (CountFinite (N1 + N2))))).
 rewrite - MySumF2BijectiveSame2.
 rewrite (MySumF2O (Count (N2 + N1))).
 rewrite CM_O_r.
 apply f_equal.
-apply (MySumF2Same (Count (N1 + N2))
-  (exist (Finite (Count (N1 + N2))) (Full_set (Count (N1 + N2)))
-     (CountFinite (N1 + N2))) (RCPCM K)).
+apply (MySumF2Same (Count (N1 + N2)) (exist (Finite (Count (N1 + N2))) (Full_set (Count (N1 + N2))) (CountFinite (N1 + N2))) (RCPCM K)).
 move=> u H5.
 unfold Basics.compose.
 elim (AddConnectInv N1 N2 u).
@@ -20391,14 +19895,13 @@ move=> u.
 elim.
 move=> u0.
 elim.
-apply (Im_intro (Count (N1 + N2)) (Count (N2 + N1)) (Full_set (Count (N1 + N2))) (fun (m : Count (N1 + N2)) =>
-         match AddConnectInv N1 N2 m with
-         | inl m0 => AddConnect N2 N1 (inr m0)
-         | inr m0 => AddConnect N2 N1 (inl m0)
-         end) match AddConnectInv N2 N1 u0 with
-         | inl u1 => AddConnect N1 N2 (inr u1)
-         | inr u1 => AddConnect N1 N2 (inl u1)
-         end).
+apply (Im_intro (Count (N1 + N2)) (Count (N2 + N1)) (Full_set (Count (N1 + N2))) (fun (m : Count (N1 + N2)) => match AddConnectInv N1 N2 m with
+  | inl m0 => AddConnect N2 N1 (inr m0)
+  | inr m0 => AddConnect N2 N1 (inl m0)
+end) match AddConnectInv N2 N1 u0 with
+  | inl u1 => AddConnect N1 N2 (inr u1)
+  | inr u1 => AddConnect N1 N2 (inl u1)
+end).
 apply (Full_intro (Count (N1 + N2))).
 rewrite - {1} (proj2 (AddConnectInvRelation N2 N1) u0).
 elim (AddConnectInv N2 N1 u0).
@@ -20470,42 +19973,28 @@ rewrite - (proj2 H4).
 apply RCnNormNature2.
 apply conj.
 apply (proj1 (RCnNormNature K M (MVmult (RCfield K) M (N2 + N1) (MBlockW (RCfield K) M N2 N1 A2 A1) x))).
-rewrite - (proj2 (RCnNormNature K  M
-  (MVmult (RCfield K) M (N2 + N1) (MBlockW (RCfield K) M N2 N1 A2 A1) x))).
+rewrite - (proj2 (RCnNormNature K M (MVmult (RCfield K) M (N2 + N1) (MBlockW (RCfield K) M N2 N1 A2 A1) x))).
 unfold RCnInnerProduct.
 apply f_equal.
-apply (MySumF2Same (Count M)
-  (exist (Finite (Count M)) (Full_set (Count M)) (CountFinite M)) 
-  (RCPCM K)).
+apply (MySumF2Same (Count M) (exist (Finite (Count M)) (Full_set (Count M)) (CountFinite M)) (RCPCM K)).
 move=> v H5.
 unfold MVmult.
 unfold Mmult.
 unfold MMatrixToVector.
 rewrite (MySumF2Included (Count (N2 + N1)) (FiniteIm (Count (N1 + N2)) (Count (N2 + N1)) (fun (m : Count (N1 + N2)) => match AddConnectInv N1 N2 m with
-  | inl m0 => AddConnect N2 N1 (inr m0) 
+  | inl m0 => AddConnect N2 N1 (inr m0)
   | inr m0 => AddConnect N2 N1 (inl m0)
-end) (exist (Finite (Count (N1 + N2))) (Full_set (Count (N1 + N2)))
-        (CountFinite (N1 + N2))))).
+end) (exist (Finite (Count (N1 + N2))) (Full_set (Count (N1 + N2))) (CountFinite (N1 + N2))))).
 rewrite - MySumF2BijectiveSame2.
 rewrite (MySumF2O (Count (N2 + N1))).
 rewrite CM_O_r.
-suff: ((fun (n : Count (N1 + N2)) =>
-      Fmul (RCfield K) (MBlockW (RCfield K) M N1 N2 A1 A2 v n)
-        (MVectorToMatrix (RCfield K) (N1 + N2)
-           (fun (m : Count (N1 + N2)) =>
-            match AddConnectInv N1 N2 m with
-            | inl m0 => x (AddConnect N2 N1 (inr m0))
-            | inr m0 => x (AddConnect N2 N1 (inl m0))
-            end) n Single)) =
-(Basics.compose
-        (fun (n : Count (N2 + N1)) =>
-         Fmul (RCfield K) (MBlockW (RCfield K) M N2 N1 A2 A1 v n)
-           (MVectorToMatrix (RCfield K) (N2 + N1) x n Single))
-        (fun (m : Count (N1 + N2)) =>
-         match AddConnectInv N1 N2 m with
-         | inl m0 => AddConnect N2 N1 (inr m0)
-         | inr m0 => AddConnect N2 N1 (inl m0)
-         end))).
+suff: ((fun (n : Count (N1 + N2)) => Fmul (RCfield K) (MBlockW (RCfield K) M N1 N2 A1 A2 v n) (MVectorToMatrix (RCfield K) (N1 + N2) (fun (m : Count (N1 + N2)) => match AddConnectInv N1 N2 m with
+  | inl m0 => x (AddConnect N2 N1 (inr m0))
+  | inr m0 => x (AddConnect N2 N1 (inl m0))
+end) n Single)) = (Basics.compose (fun (n : Count (N2 + N1)) => Fmul (RCfield K) (MBlockW (RCfield K) M N2 N1 A2 A1 v n) (MVectorToMatrix (RCfield K) (N2 + N1) x n Single)) (fun (m : Count (N1 + N2)) => match AddConnectInv N1 N2 m with
+  | inl m0 => AddConnect N2 N1 (inr m0)
+  | inr m0 => AddConnect N2 N1 (inl m0)
+end))).
 move=> H6.
 rewrite H6.
 reflexivity.
@@ -20525,14 +20014,13 @@ move=> u.
 elim.
 move=> u0.
 elim.
-apply (Im_intro (Count (N1 + N2)) (Count (N2 + N1)) (Full_set (Count (N1 + N2))) (fun (m : Count (N1 + N2)) =>
-         match AddConnectInv N1 N2 m with
-         | inl m0 => AddConnect N2 N1 (inr m0)
-         | inr m0 => AddConnect N2 N1 (inl m0)
-         end) match AddConnectInv N2 N1 u0 with
-         | inl u1 => AddConnect N1 N2 (inr u1)
-         | inr u1 => AddConnect N1 N2 (inl u1)
-         end).
+apply (Im_intro (Count (N1 + N2)) (Count (N2 + N1)) (Full_set (Count (N1 + N2))) (fun (m : Count (N1 + N2)) => match AddConnectInv N1 N2 m with
+  | inl m0 => AddConnect N2 N1 (inr m0)
+  | inr m0 => AddConnect N2 N1 (inl m0)
+end) match AddConnectInv N2 N1 u0 with
+  | inl u1 => AddConnect N1 N2 (inr u1)
+  | inr u1 => AddConnect N1 N2 (inl u1)
+end).
 apply (Full_intro (Count (N1 + N2))).
 rewrite - {1} (proj2 (AddConnectInvRelation N2 N1) u0).
 elim (AddConnectInv N2 N1 u0).
@@ -20607,20 +20095,7 @@ rewrite - H1.
 apply (RCTwoNormNature K M n).
 Qed.
 
-Lemma Formula_P763_2 : forall (K : RC) (M N1 N2 : nat) (A1 : Matrix (RCfield K) M N1)
-         (A2 : Matrix (RCfield K) M N2) (Q1 : Matrix (RCfield K) M N1)
-         (Q2 : Matrix (RCfield K) M N2) (R1 : Matrix (RCfield K) N1 N1)
-         (R2 : Matrix (RCfield K) N1 N2) (R3 : Matrix (RCfield K) N2 N2),
-       Mmult (RCfield K) (N1 + N2) M (N1 + N2)
-         (AdjointMatrixRC K M (N1 + N2) (MBlockW (RCfield K) M N1 N2 Q1 Q2))
-         (MBlockW (RCfield K) M N1 N2 Q1 Q2) = MI (RCfield K) (N1 + N2) ->
-       Rank (RCfield K) M N1 A1 = N1 ->
-       MBlockW (RCfield K) M N1 N2 A1 A2 =
-       Mmult (RCfield K) M (N1 + N2) (N1 + N2)
-         (MBlockW (RCfield K) M N1 N2 Q1 Q2)
-         (MBlockH (RCfield K) N1 N2 (N1 + N2)
-            (MBlockW (RCfield K) N1 N1 N2 R1 R2)
-            (MBlockW (RCfield K) N2 N1 N2 (MO (RCfield K) N2 N1) R3)) -> RCTwoNorm K M (N1 + N2) (Mminus (RCfield K) M (N1 + N2) (MBlockW (RCfield K) M N1 N2 A1 A2) (Mmult (RCfield K) M N1 (N1 + N2) Q1 (MBlockW (RCfield K) N1 N1 N2 R1 R2))) = RCTwoNorm K M N2 (ResiRC K M N1 N2 A1 A2).
+Lemma Formula_P763_2 : forall (K : RC) (M N1 N2 : nat) (A1 : Matrix (RCfield K) M N1) (A2 : Matrix (RCfield K) M N2) (Q1 : Matrix (RCfield K) M N1) (Q2 : Matrix (RCfield K) M N2) (R1 : Matrix (RCfield K) N1 N1) (R2 : Matrix (RCfield K) N1 N2) (R3 : Matrix (RCfield K) N2 N2), Mmult (RCfield K) (N1 + N2) M (N1 + N2) (AdjointMatrixRC K M (N1 + N2) (MBlockW (RCfield K) M N1 N2 Q1 Q2)) (MBlockW (RCfield K) M N1 N2 Q1 Q2) = MI (RCfield K) (N1 + N2) -> Rank (RCfield K) M N1 A1 = N1 -> MBlockW (RCfield K) M N1 N2 A1 A2 = Mmult (RCfield K) M (N1 + N2) (N1 + N2) (MBlockW (RCfield K) M N1 N2 Q1 Q2) (MBlockH (RCfield K) N1 N2 (N1 + N2) (MBlockW (RCfield K) N1 N1 N2 R1 R2) (MBlockW (RCfield K) N2 N1 N2 (MO (RCfield K) N2 N1) R3)) -> RCTwoNorm K M (N1 + N2) (Mminus (RCfield K) M (N1 + N2) (MBlockW (RCfield K) M N1 N2 A1 A2) (Mmult (RCfield K) M N1 (N1 + N2) Q1 (MBlockW (RCfield K) N1 N1 N2 R1 R2))) = RCTwoNorm K M N2 (ResiRC K M N1 N2 A1 A2).
 Proof.
 move=> K M N1 N2 A1 A2 Q1 Q2 R1 R2 R3 H1 H2 H3.
 rewrite (Lemma5 K M N1 N2 A1 A2 Q1 Q2 R1 R2 R3 H1 H2 H3).
@@ -20632,10 +20107,7 @@ rewrite (Mplus_assoc (RCfield K) M (N1 + N2)).
 rewrite (Mplus_opp_r (RCfield K) M (N1 + N2)).
 rewrite (Mplus_O_r (RCfield K) M (N1 + N2)).
 rewrite (MBlockWMult (RCfield K) M N2 N1 N2 Q2 (MO (RCfield K) N2 N1) R3).
-rewrite (MBlockWRCTwoNormSame K M N1 N2 (Mmult (RCfield K) M N2 N1 Q2 (MO (RCfield K) N2 N1))
-     (Mmult (RCfield K) M N2 N2 Q2 R3)).
+rewrite (MBlockWRCTwoNormSame K M N1 N2 (Mmult (RCfield K) M N2 N1 Q2 (MO (RCfield K) N2 N1)) (Mmult (RCfield K) M N2 N2 Q2 R3)).
 rewrite (Mmult_O_r (RCfield K) M N2 N1 Q2).
 apply (MBlockWMORCTwoNorm K M N2 N1 (Mmult (RCfield K) M N2 N2 Q2 R3)).
 Qed.
-
-
