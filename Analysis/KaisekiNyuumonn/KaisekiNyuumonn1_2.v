@@ -76,38 +76,40 @@ Definition RRnopp : forall (K : RRn), RRnT K -> RRnT K := fun (K : RRn) => match
   | RnK N => Rnopp N
 end.
 
-Definition RRnminus : forall (K : RRn), RRnT K -> RRnT K -> RRnT K := fun (K : RRn) => match K with
-  | R1K => Rminus
-  | RnK N => Rnminus N
-end.
+Definition RRnminus := fun (K : RRn) (a b : RRnT K) => RRnplus K a (RRnopp K b).
 
 Definition RRnplus_comm : forall (K : RRn) (a b : RRnT K), RRnplus K a b = RRnplus K b a := fun (K : RRn) => match K with
-  | R1K => Rplus_comm
+  | R1K => Fadd_comm Rfield
   | RnK N => Fnadd_comm Rfield N
 end.
 
 Definition RRnplus_assoc : forall (K : RRn) (a b c : RRnT K), RRnplus K (RRnplus K a b) c = RRnplus K a (RRnplus K b c) := fun (K : RRn) => match K with
-  | R1K => Rplus_assoc
+  | R1K => Fadd_assoc Rfield
   | RnK N => Fnadd_assoc Rfield N
 end.
 
 Definition RRnplus_0_l : forall (K : RRn) (a : RRnT K), RRnplus K (RRnO K) a = a := fun (K : RRn) => match K with
-  | R1K => Rplus_0_l
+  | R1K => Fadd_O_l Rfield
   | RnK N => Fnadd_O_l Rfield N
 end.
 
+Definition RRnplus_0_r : forall (K : RRn) (a : RRnT K), RRnplus K a (RRnO K) = a := fun (K : RRn) => match K with
+  | R1K => Fadd_O_r Rfield
+  | RnK N => Vadd_O_r Rfield (RnVS N)
+end.
+
 Definition RRnplus_opp_r : forall (K : RRn) (a : RRnT K), RRnplus K a (RRnopp K a) = RRnO K := fun (K : RRn) => match K with
-  | R1K => Rplus_opp_r
+  | R1K => Fadd_opp_r Rfield
   | RnK N => Fnadd_opp_r Rfield N
 end.
 
 Definition RRnmult_plus_distr_l : forall (K : RRn) (a : R) (b c : RRnT K), RRnmult K a (RRnplus K b c) = RRnplus K (RRnmult K a b) (RRnmult K a c) := fun (K : RRn) => match K with
-  | R1K => Rmult_plus_distr_l
+  | R1K => Fmul_add_distr_l Rfield
   | RnK N => Fnadd_distr_l Rfield N
 end.
 
 Definition RRnmult_plus_distr_r : forall (K : RRn) (a b : R) (c : RRnT K), RRnmult K (a + b) c = RRnplus K (RRnmult K a c) (RRnmult K b c) := fun (K : RRn) => match K with
-  | R1K => Rmult_plus_distr_r
+  | R1K => Fmul_add_distr_r Rfield
   | RnK N => Fnadd_distr_r Rfield N
 end.
 
@@ -5006,6 +5008,8 @@ reflexivity.
 Qed.
 
 Definition RnPCM (N : nat) : CommutativeMonoid := mkCommutativeMonoid (Rn N) (RnO N) (Rnplus N) (Fnadd_comm Rfield N) (Vadd_O_r Rfield (RnVS N)) (Fnadd_assoc Rfield N).
+
+Definition RRnPCM (K : RRn) : CommutativeMonoid := mkCommutativeMonoid (RRnT K) (RRnO K) (RRnplus K) (RRnplus_comm K) (RRnplus_0_r K) (RRnplus_assoc K).
 
 Lemma MySumF2RPNCM_component : forall (N : nat) (U : Type) (A : {X : Ensemble U | Finite U X}) (f : U -> Rn N), MySumF2 U A (RnPCM N) f = (fun (m : Count N) => MySumF2 U A RPCM (fun (n : U) => f n m)).
 Proof.
