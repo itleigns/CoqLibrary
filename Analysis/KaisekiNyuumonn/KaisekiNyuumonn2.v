@@ -15,6 +15,8 @@ Require Import Coq.Logic.Description.
 Require Import Coq.Logic.ClassicalDescription.
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Program.Basics.
+Require Import Coq.Program.Combinators.
+Require Import BasicProperty.MappingProperty.
 Require Import MyAlgebraicStructure.MyField.
 Require Import MyAlgebraicStructure.MyVectorSpace.
 Require Import Tools.MySum.
@@ -2374,8 +2376,6 @@ Definition DifferentialR_Rn_OpenSet_N_Nature1 (N : nat) : forall (A : Ensemble R
 
 Definition DifferentialR_R_OpenSet_N_Nature1 : forall (A : Ensemble R) (f : R -> R) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat) (H2 : DifferentiableR_R_OpenSet_N A f B H1 n) (H3 : DifferentiableR_R_OpenSet_N A f B H1 (S n)) (H4 : DifferentiableR_R_OpenSet A (DifferentialR_R_OpenSet_N A f B H1 n H2) B H1), DifferentialR_R_OpenSet_N A f B H1 (S n) H3 = DifferentialR_R_OpenSet A (DifferentialR_R_OpenSet_N A f B H1 n H2) B H1 H4 := DifferentialR_RRn_OpenSet_N_Nature1 R1K.
 
-Require Import Coq.Program.Combinators.
-
 Lemma DifferentialR_RRn_OpenSet_N_Nature2 : forall (K : RRn) (A : Ensemble R) (f : R -> RRnT K) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat) (H2 : DifferentiableR_RRn_OpenSet K A f B H1) (H3 : DifferentiableR_RRn_OpenSet_N K A f B H1 (S n)) (H4 : DifferentiableR_RRn_OpenSet_N K A (DifferentialR_RRn_OpenSet K A f B H1 H2) B H1 n), DifferentialR_RRn_OpenSet_N K A f B H1 (S n) H3 = DifferentialR_RRn_OpenSet_N K A (DifferentialR_RRn_OpenSet K A f B H1 H2) B H1 n H4.
 Proof.
 move=> K A f B H1 n.
@@ -2824,8 +2824,6 @@ apply (DifferentiableR_RRn_OpenSet_N_le R1K A g B H2 1 (S n)).
 apply (le_n_S O n (le_0_n n)).
 apply H4.
 Qed.
-
-Require Import BasicProperty.MappingProperty.
 
 Lemma Proposition_1_5_R : forall (A : Ensemble R) (f g : R -> R) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat), DifferentiableR_R_OpenSet_N A f B H1 n -> DifferentiableR_R_OpenSet_N A g B H1 n -> forall (H2 : DifferentiableR_R_OpenSet_N A (fun (r : R) => f r * g r) B H1 n) (H3 : forall (m : Count (S n)), DifferentiableR_R_OpenSet_N A f B H1 (proj1_sig m)) (H4 : forall (m : Count (S n)), DifferentiableR_R_OpenSet_N A g B H1 (n - proj1_sig m)%nat), DifferentialR_R_OpenSet_N A (fun (r : R) => f r * g r) B H1 n H2 = (fun (r : R) => MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) RPCM (fun (u : Count (S n)) => INR (conv n (proj1_sig u)) * (DifferentialR_R_OpenSet_N A f B H1 (proj1_sig u) (H3 u) r * DifferentialR_R_OpenSet_N A g B H1 (n - proj1_sig u) (H4 u) r))).
 Proof.
