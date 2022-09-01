@@ -1,4 +1,4 @@
-all:  BasicTools.vo NatProperty.vo MappingProperty.vo MySum.vo MyProd.vo Parity.vo Permutation.vo DatatypesExtension.vo EnsemblesExtension.vo MyField.vo MyVectorSpace.vo SenkeiDaisuunoSekai1.vo Matrix.vo ShuugouIsouNyuumonn1.vo ShuugouIsouNyuumonn1AC.vo KaisekiNyuumonn1_1.vo ShuugouIsouNyuumonn2.vo ShuugouIsouNyuumonn2AC.vo KaisekiNyuumonn1_2.vo
+all:  BasicTools.vo NatProperty.vo MappingProperty.vo MySum.vo MyProd.vo Parity.vo Permutation.vo DatatypesExtension.vo EnsemblesExtension.vo MyField.vo MyVectorSpace.vo SenkeiDaisuunoSekai1.vo Matrix.vo ShuugouIsouNyuumonn1.vo ShuugouIsouNyuumonn1AC.vo KaisekiNyuumonn1_1.vo KaisekiNyuumonn1_2.vo KaisekiNyuumonn2.vo ShuugouIsouNyuumonn2.vo ShuugouIsouNyuumonn2AC.vo
 
 BasicTools.vo: Tools/BasicTools.v
 	coqc -Q Tools Tools Tools/BasicTools.v
@@ -50,6 +50,9 @@ KaisekiNyuumonn1_1.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.v
 
 KaisekiNyuumonn1_2.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.v KaisekiNyuumonn1_1.vo MyField.vo MyVectorSpace.vo MySum.vo
 	coqc -Q Analysis/KaisekiNyuumonn Analysis.KaisekiNyuumonn Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.v
+
+KaisekiNyuumonn2.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.v MappingProperty.vo MyField.vo MyVectorSpace.vo MySum.vo KaisekiNyuumonn1_1.vo KaisekiNyuumonn1_2.vo
+	coqc -Q Analysis/KaisekiNyuumonn Analysis.KaisekiNyuumonn Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.v
 
 ShuugouIsouNyuumonn2.vo: Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2.v MappingProperty.vo EnsemblesExtension.vo ShuugouIsouNyuumonn1.vo DatatypesExtension.vo KaisekiNyuumonn1_1.vo NatProperty.vo
 	coqc -Q Topology/ShuugouIsouNyuumonn Topology.ShuugouIsouNyuumonn Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2.v
