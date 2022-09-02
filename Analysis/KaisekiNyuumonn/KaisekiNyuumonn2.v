@@ -15,6 +15,8 @@ Require Import Coq.Logic.Description.
 Require Import Coq.Logic.ClassicalDescription.
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Program.Basics.
+Require Import Coq.Program.Combinators.
+Require Import BasicProperty.MappingProperty.
 Require Import MyAlgebraicStructure.MyField.
 Require Import MyAlgebraicStructure.MyVectorSpace.
 Require Import Tools.MySum.
@@ -32,14 +34,11 @@ Lemma DifferentialR_RRn_sub : forall (K : RRn) (A : Ensemble R) (f : R -> RRnT K
 Proof.
 move=> K A f r H1 H2.
 apply constructive_definite_description.
-apply (unique_existence (fun (x : RRnT K) => limit_in R_met (RRn_met K)
-    (fun (h : R) => RRnmult K (/ h) (RRnminus K (f (r + h)) (f r)))
-    (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 x)).
+apply (unique_existence (fun (x : RRnT K) => limit_in R_met (RRn_met K) (fun (h : R) => RRnmult K (/ h) (RRnminus K (f (r + h)) (f r))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 x)).
 apply conj.
 apply H2.
 move=> x1 x2 H3 H4.
-apply (Proposition_6_3 R_met (RRn_met K) (fun (h : R) => RRnmult K (/ h) (RRnminus K (f (r + h)) (f r)))
-       (fun (h : R) => h <> 0 /\ In R A (r + h)) 0).
+apply (Proposition_6_3 R_met (RRn_met K) (fun (h : R) => RRnmult K (/ h) (RRnminus K (f (r + h)) (f r))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0).
 move=> eps H5.
 elim (H1 eps H5).
 move=> x H6.
@@ -77,8 +76,7 @@ Definition DifferentialR_RnNature (N : nat) (A : Ensemble R) (f : R -> Rn N) (r 
 Lemma DifferentialR_RRnNature2 : forall (K : RRn) (A : Ensemble R) (f : R -> RRnT K) (r : R) (H1 : ClosureMet R_met (fun (x : R) => x <> r /\ In R A x) r) (H2 : DifferentiableR_RRn K A f r) (c : RRnT K), limit_in R_met (RRn_met K) (fun (h : R) => RRnmult K (/ h) (RRnminus K (f (r + h)) (f r))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 c -> DifferentialR_RRn K A f r H1 H2 = c.
 Proof.
 move=> K A f r H1 H2 c H3.
-apply (Proposition_6_3 R_met (RRn_met K) (fun (h : R) => RRnmult K (/ h) (RRnminus K (f (r + h)) (f r)))
-       (fun (h : R) => h <> 0 /\ In R A (r + h)) 0).
+apply (Proposition_6_3 R_met (RRn_met K) (fun (h : R) => RRnmult K (/ h) (RRnminus K (f (r + h)) (f r))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0).
 move=> eps H4.
 elim (H1 eps H4).
 move=> x H5.
@@ -112,19 +110,14 @@ apply conj.
 elim.
 move=> c H1 m.
 exists (c m).
-apply (proj1 (Theorem_6_8_1 R_met N (fun (h : R) => Rnmult N (/ h) (Rnminus N (f (r + h)) (f r)))
-       (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 c) H1 m).
+apply (proj1 (Theorem_6_8_1 R_met N (fun (h : R) => Rnmult N (/ h) (Rnminus N (f (r + h)) (f r))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 c) H1 m).
 move=> H1.
-suff: (forall (n : nat), (n <= N)%nat ->
-     exists (c : Rn N), forall (m : Count N), (proj1_sig m < n)%nat ->
-       limit_in R_met R_met (fun h : R => / h * (f (r + h) m - f r m))
-         (fun h : R => h <> 0 /\ In R A (r + h)) 0 (c m)).
+suff: (forall (n : nat), (n <= N)%nat -> exists (c : Rn N), forall (m : Count N), (proj1_sig m < n)%nat -> limit_in R_met R_met (fun h : R => / h * (f (r + h) m - f r m)) (fun h : R => h <> 0 /\ In R A (r + h)) 0 (c m)).
 move=> H2.
 elim (H2 N (le_n N)).
 move=> c H3.
 exists c.
-apply (proj2 (Theorem_6_8_1 R_met N (fun (h : R) => Rnmult N (/ h) (Rnminus N (f (r + h)) (f r)))
-       (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 c)).
+apply (proj2 (Theorem_6_8_1 R_met N (fun (h : R) => Rnmult N (/ h) (Rnminus N (f (r + h)) (f r))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 c)).
 move=> n.
 apply (H3 n (proj2_sig n)).
 elim.
@@ -174,8 +167,7 @@ Lemma Proposition_1_1_2 : forall (N : nat) (A : Ensemble R) (f : R -> Rn N) (r :
 Proof.
 move=> N A f r H1 H2 H3.
 apply (DifferentialR_RnNature2 N A f r H1 H2).
-apply (proj2 (Theorem_6_8_1 R_met N (fun (h : R) => Rnmult N (/ h) (Rnminus N (f (r + h)) (f r)))
-       (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 (fun (m : Count N) => DifferentialR_R A (fun (r0 : R) => f r0 m) r H1 (H3 m)))).
+apply (proj2 (Theorem_6_8_1 R_met N (fun (h : R) => Rnmult N (/ h) (Rnminus N (f (r + h)) (f r))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 (fun (m : Count N) => DifferentialR_R A (fun (r0 : R) => f r0 m) r H1 (H3 m)))).
 move=> n.
 apply (DifferentialR_RNature A (fun (x : R) => f x n) r H1 (H3 n)).
 Qed.
@@ -228,9 +220,7 @@ rewrite ((fun (K : RRn) => match K with
 end) : forall (K : RRn) (r : R) (x : RRnT K), RRnNorm K (RRnmult K r x) = Rabs r * RRnNorm K x).
 rewrite - (eps2 eps).
 apply Rplus_lt_compat.
-suff: (RRnminus K (RRnminus K (f x) (f r)) (RRnmult K (x - r) c)
-=
-RRnmult K (x - r) (RRnminus K (RRnmult K (/ (x - r)) (RRnminus K (f (r + (x - r))) (f r))) c)).
+suff: (RRnminus K (RRnminus K (f x) (f r)) (RRnmult K (x - r) c) = RRnmult K (x - r) (RRnminus K (RRnmult K (/ (x - r)) (RRnminus K (f (r + (x - r))) (f r))) c)).
 move=> H6.
 rewrite H6.
 rewrite ((fun (K : RRn) => match K with
@@ -243,8 +233,7 @@ rewrite (Rmult_assoc (Rabs (x - r))).
 apply (Rmult_lt_compat_l (Rabs (x - r))).
 apply (Rabs_pos_lt (x - r)).
 apply (Rminus_eq_contra x r H5).
-apply (Rlt_trans (RRnNorm K
-  (RRnminus K (RRnmult K (/ (x - r)) (RRnminus K (f (r + (x - r))) (f r))) c)) 1).
+apply (Rlt_trans (RRnNorm K (RRnminus K (RRnmult K (/ (x - r)) (RRnminus K (f (r + (x - r))) (f r))) c)) 1).
 apply (proj2 H3 (x - r)).
 apply conj.
 apply conj.
@@ -359,11 +348,7 @@ move=> c1 H1.
 elim.
 move=> c2 H2.
 exists (RRnplus K c1 c2).
-suff: ((fun (h : R) =>
-   RRnmult K (/ h)
-     (RRnminus K (RRnplus K (f (r + h)) (g (r + h))) (RRnplus K (f r) (g r))))
-= (fun (h : R) => RRnplus K (RRnmult K (/ h) (RRnminus K (f (r + h)) (f r))) (RRnmult K (/ h) (RRnminus K (g (r + h)) (g r)))
-)).
+suff: ((fun (h : R) => RRnmult K (/ h) (RRnminus K (RRnplus K (f (r + h)) (g (r + h))) (RRnplus K (f r) (g r)))) = (fun (h : R) => RRnplus K (RRnmult K (/ h) (RRnminus K (f (r + h)) (f r))) (RRnmult K (/ h) (RRnminus K (g (r + h)) (g r))) )).
 move=> H3.
 rewrite H3.
 apply Theorem_6_6_1_1.
@@ -371,8 +356,7 @@ apply H1.
 apply H2.
 apply functional_extensionality.
 unfold RRnminus.
-suff: (forall (r : R) (a b c d : RRnT K), Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) (Vadd Rfield (RRnVS K) a b) (Vopp Rfield (RRnVS K) (Vadd Rfield (RRnVS K) c d)))
-= Vadd Rfield (RRnVS K) (Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) a (Vopp Rfield (RRnVS K) c))) (Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) b (Vopp Rfield (RRnVS K) d)))).
+suff: (forall (r : R) (a b c d : RRnT K), Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) (Vadd Rfield (RRnVS K) a b) (Vopp Rfield (RRnVS K) (Vadd Rfield (RRnVS K) c d))) = Vadd Rfield (RRnVS K) (Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) a (Vopp Rfield (RRnVS K) c))) (Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) b (Vopp Rfield (RRnVS K) d)))).
 move=> H3 x.
 apply (H3 (/ x)).
 move=> x a b c d.
@@ -389,11 +373,7 @@ Lemma Proposition_1_3_1_plus : forall (K : RRn) (A : Ensemble R) (f g : R -> RRn
 Proof.
 move=> K A f g r H1 H2 H3 H4.
 apply DifferentialR_RRnNature2.
-suff: ((fun (h : R) =>
-   RRnmult K (/ h)
-     (RRnminus K (RRnplus K (f (r + h)) (g (r + h))) (RRnplus K (f r) (g r))))
-= (fun (h : R) => RRnplus K (RRnmult K (/ h) (RRnminus K (f (r + h)) (f r))) (RRnmult K (/ h) (RRnminus K (g (r + h)) (g r)))
-)).
+suff: ((fun (h : R) => RRnmult K (/ h) (RRnminus K (RRnplus K (f (r + h)) (g (r + h))) (RRnplus K (f r) (g r)))) = (fun (h : R) => RRnplus K (RRnmult K (/ h) (RRnminus K (f (r + h)) (f r))) (RRnmult K (/ h) (RRnminus K (g (r + h)) (g r))) )).
 move=> H5.
 rewrite H5.
 apply Theorem_6_6_1_1.
@@ -401,8 +381,7 @@ apply DifferentialR_RRnNature.
 apply DifferentialR_RRnNature.
 apply functional_extensionality.
 unfold RRnminus.
-suff: (forall (r : R) (a b c d : RRnT K), Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) (Vadd Rfield (RRnVS K) a b) (Vopp Rfield (RRnVS K) (Vadd Rfield (RRnVS K) c d)))
-= Vadd Rfield (RRnVS K) (Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) a (Vopp Rfield (RRnVS K) c))) (Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) b (Vopp Rfield (RRnVS K) d)))).
+suff: (forall (r : R) (a b c d : RRnT K), Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) (Vadd Rfield (RRnVS K) a b) (Vopp Rfield (RRnVS K) (Vadd Rfield (RRnVS K) c d))) = Vadd Rfield (RRnVS K) (Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) a (Vopp Rfield (RRnVS K) c))) (Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) b (Vopp Rfield (RRnVS K) d)))).
 move=> H5 x.
 apply (H5 (/ x)).
 move=> x a b c d.
@@ -421,17 +400,13 @@ move=> K A f r.
 elim.
 move=> c H1.
 exists (RRnopp K c).
-suff: ((fun (h : R) =>
-   RRnmult K (/ h) (RRnminus K (RRnopp K (f (r + h))) (RRnopp K (f r))))
-= (fun (h : R) => RRnopp K (RRnmult K (/ h) (RRnminus K (f (r + h)) (f r)))
-)).
+suff: ((fun (h : R) => RRnmult K (/ h) (RRnminus K (RRnopp K (f (r + h))) (RRnopp K (f r)))) = (fun (h : R) => RRnopp K (RRnmult K (/ h) (RRnminus K (f (r + h)) (f r))) )).
 move=> H2.
 rewrite H2.
 apply Theorem_6_6_1_4.
 apply H1.
 apply functional_extensionality.
-suff: (forall (r : R) (a b : RRnT K), Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) (Vopp Rfield (RRnVS K) a) (Vopp Rfield (RRnVS K) (Vopp Rfield (RRnVS K) b)))
-= Vopp Rfield (RRnVS K) (Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) a (Vopp Rfield (RRnVS K) b)))).
+suff: (forall (r : R) (a b : RRnT K), Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) (Vopp Rfield (RRnVS K) a) (Vopp Rfield (RRnVS K) (Vopp Rfield (RRnVS K) b))) = Vopp Rfield (RRnVS K) (Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) a (Vopp Rfield (RRnVS K) b)))).
 move=> H2 x.
 apply (H2 (/ x)).
 move=> x a b.
@@ -444,18 +419,13 @@ Lemma Proposition_1_3_1_opp : forall (K : RRn) (A : Ensemble R) (f : R -> RRnT K
 Proof.
 move=> K A f r H1 H2 H3.
 apply DifferentialR_RRnNature2.
-suff: ((fun (h : R) =>
-   RRnmult K (/ h)
-     (RRnminus K (RRnopp K (f (r + h))) (RRnopp K (f r))))
-= (fun (h : R) => RRnopp K (RRnmult K (/ h) (RRnminus K (f (r + h)) (f r)))
-)).
+suff: ((fun (h : R) => RRnmult K (/ h) (RRnminus K (RRnopp K (f (r + h))) (RRnopp K (f r)))) = (fun (h : R) => RRnopp K (RRnmult K (/ h) (RRnminus K (f (r + h)) (f r))) )).
 move=> H4.
 rewrite H4.
 apply Theorem_6_6_1_4.
 apply DifferentialR_RRnNature.
 apply functional_extensionality.
-suff: (forall (r : R) (a b : RRnT K), Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) (Vopp Rfield (RRnVS K) a) (Vopp Rfield (RRnVS K) (Vopp Rfield (RRnVS K) b)))
-= Vopp Rfield (RRnVS K) (Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) a (Vopp Rfield (RRnVS K) b)))).
+suff: (forall (r : R) (a b : RRnT K), Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) (Vopp Rfield (RRnVS K) a) (Vopp Rfield (RRnVS K) (Vopp Rfield (RRnVS K) b))) = Vopp Rfield (RRnVS K) (Vmul Rfield (RRnVS K) r (Vadd Rfield (RRnVS K) a (Vopp Rfield (RRnVS K) b)))).
 move=> H4 x.
 apply (H4 (/ x)).
 move=> x a b.
@@ -521,8 +491,7 @@ Qed.
 
 Definition Proposition_1_3_1_MySumF2_R_differentiable (U : Type) (S : {X : Ensemble U | Finite U X}) : forall (A : Ensemble R) (f : U -> R -> R) (r : R), (forall (u : U), (In U (proj1_sig S) u) -> DifferentiableR_R A (f u) r) -> DifferentiableR_R A (fun (x : R) => MySumF2 U S RPCM (fun (u : U) => f u x)) r := Proposition_1_3_1_MySumF2_differentiable U S R1K.
 
-Lemma Proposition_1_3_1_MySumF2 : forall (U : Type) (S : {X : Ensemble U | Finite_sets.Finite U X}) (K : RRn) (A : Ensemble R) (f : U -> R -> RRnT K) (r : R) (H1 : ClosureMet R_met (fun (x : R) => x <> r /\ In R A x) r) (H2 : forall (u : U), DifferentiableR_RRn K A (f u) r) (H3 : DifferentiableR_RRn K A (fun (x : R) => MySumF2 U S (RRnPCM K) (fun (u : U) => f u x)) r), 
-DifferentialR_RRn K A (fun (x : R) => MySumF2 U S (RRnPCM K) (fun (u : U) => f u x)) r H1 H3 = MySumF2 U S (RRnPCM K) (fun (u : U) => DifferentialR_RRn K A (f u) r H1 (H2 u)).
+Lemma Proposition_1_3_1_MySumF2 : forall (U : Type) (S : {X : Ensemble U | Finite_sets.Finite U X}) (K : RRn) (A : Ensemble R) (f : U -> R -> RRnT K) (r : R) (H1 : ClosureMet R_met (fun (x : R) => x <> r /\ In R A x) r) (H2 : forall (u : U), DifferentiableR_RRn K A (f u) r) (H3 : DifferentiableR_RRn K A (fun (x : R) => MySumF2 U S (RRnPCM K) (fun (u : U) => f u x)) r), DifferentialR_RRn K A (fun (x : R) => MySumF2 U S (RRnPCM K) (fun (u : U) => f u x)) r H1 H3 = MySumF2 U S (RRnPCM K) (fun (u : U) => DifferentialR_RRn K A (f u) r H1 (H2 u)).
 Proof.
 move=> U S K A f r H1 H2.
 apply (FiniteSetInduction U S).
@@ -563,15 +532,7 @@ apply MySumF2Add.
 apply H5.
 Qed.
 
-Definition Proposition_1_3_1_MySumF2_R (U : Type) (S : {X : Ensemble U | Finite_sets.Finite U X}) : forall (A : Ensemble R) (f : U -> R -> R) 
-         (r : R) (H1 : ClosureMet R_met (fun (x : R) => x <> r /\ In R A x) r)
-         (H2 : forall (u : U), DifferentiableR_R A (f u) r)
-         (H3 : DifferentiableR_R A
-                 (fun (x : R) => MySumF2 U S RPCM (fun (u : U) => f u x)) r),
-       DifferentialR_R A
-         (fun (x : R) => MySumF2 U S RPCM (fun (u : U) => f u x)) r H1 H3 =
-       MySumF2 U S RPCM
-         (fun (u : U) => DifferentialR_R A (f u) r H1 (H2 u)) := Proposition_1_3_1_MySumF2 U S R1K.
+Definition Proposition_1_3_1_MySumF2_R (U : Type) (S : {X : Ensemble U | Finite_sets.Finite U X}) : forall (A : Ensemble R) (f : U -> R -> R) (r : R) (H1 : ClosureMet R_met (fun (x : R) => x <> r /\ In R A x) r) (H2 : forall (u : U), DifferentiableR_R A (f u) r) (H3 : DifferentiableR_R A (fun (x : R) => MySumF2 U S RPCM (fun (u : U) => f u x)) r), DifferentialR_R A (fun (x : R) => MySumF2 U S RPCM (fun (u : U) => f u x)) r H1 H3 = MySumF2 U S RPCM (fun (u : U) => DifferentialR_R A (f u) r H1 (H2 u)) := Proposition_1_3_1_MySumF2 U S R1K.
 
 Lemma Proposition_1_3_3_mult_R_differentiable : forall (A : Ensemble R) (f g : R -> R) (r : R), DifferentiableR_R A f r -> DifferentiableR_R A g r -> DifferentiableR_R A (fun (x : R) => (f x) * (g x)) r.
 Proof.
@@ -581,9 +542,7 @@ move=> c1 H1 H2.
 elim H2.
 move=> c2 H3.
 exists (c1 * (g r) + (f r) * c2).
-suff: ((fun (h : R) => / h * (f (r + h) * g (r + h) - f r * g r))
-=
-(fun (h : R) => / h * (f (r + h) - f r) * g (r + h) + / h * (f r) * (g (r + h) - g r))).
+suff: ((fun (h : R) => / h * (f (r + h) * g (r + h) - f r * g r)) = (fun (h : R) => / h * (f (r + h) - f r) * g (r + h) + / h * (f r) * (g (r + h) - g r))).
 move=> H4.
 rewrite H4.
 apply Theorem_6_6_1_1_R.
@@ -609,8 +568,7 @@ rewrite (Rplus_opp_l r).
 rewrite (Rplus_0_l x).
 rewrite - (Rminus_0_r x).
 apply (proj2 H7).
-suff: ((fun (h : Base R_met) => / h * f r * (g (r + h) - g r))
-= (fun (h : Base R_met) =>  f r * (/ h * (g (r + h) - g r)))).
+suff: ((fun (h : Base R_met) => / h * f r * (g (r + h) - g r)) = (fun (h : Base R_met) => f r * (/ h * (g (r + h) - g r)))).
 move=> H5.
 rewrite H5.
 apply Theorem_6_6_1_3_R.
@@ -641,9 +599,7 @@ Lemma Proposition_1_3_3_mult_R : forall (A : Ensemble R) (f g : R -> R) (r : R) 
 Proof.
 move=> A f g r H1 H2 H3 H4.
 apply (DifferentialR_RNature2 A).
-suff: ((fun (h : R) => / h * (f (r + h) * g (r + h) - f r * g r))
-=
-(fun (h : R) => / h * (f (r + h) - f r) * g (r + h) + / h * (f r) * (g (r + h) - g r))).
+suff: ((fun (h : R) => / h * (f (r + h) * g (r + h) - f r * g r)) = (fun (h : R) => / h * (f (r + h) - f r) * g (r + h) + / h * (f r) * (g (r + h) - g r))).
 move=> H5.
 rewrite H5.
 apply Theorem_6_6_1_1_R.
@@ -669,8 +625,7 @@ rewrite (Rplus_opp_l r).
 rewrite (Rplus_0_l x).
 rewrite - (Rminus_0_r x).
 apply (proj2 H8).
-suff: ((fun (h : Base R_met) => / h * f r * (g (r + h) - g r))
-= (fun (h : Base R_met) =>  f r * (/ h * (g (r + h) - g r)))).
+suff: ((fun (h : Base R_met) => / h * f r * (g (r + h) - g r)) = (fun (h : Base R_met) => f r * (/ h * (g (r + h) - g r)))).
 move=> H6.
 rewrite H6.
 apply Theorem_6_6_1_3_R.
@@ -705,18 +660,11 @@ move=> c1 H1 H2.
 elim H2.
 move=> c2 H3.
 exists (Cplus (Cmult c1 (g r)) (Cmult (f r) c2)).
-suff: ((fun (h : R) =>
-   Rnmult 2 (/ h)
-     (Rnminus 2 (Cmult (f (r + h)) (g (r + h))) (Cmult (f r) (g r))))
-=
-(fun (h : R) => Cplus (Rnmult 2 (/ h) (Cmult (Cminus (f (r + h)) (f r)) (g (r + h)))) (Rnmult 2 (/ h) (Cmult (f r) (Cminus (g (r + h)) (g r)))))).
+suff: ((fun (h : R) => Rnmult 2 (/ h) (Rnminus 2 (Cmult (f (r + h)) (g (r + h))) (Cmult (f r) (g r)))) = (fun (h : R) => Cplus (Rnmult 2 (/ h) (Cmult (Cminus (f (r + h)) (f r)) (g (r + h)))) (Rnmult 2 (/ h) (Cmult (f r) (Cminus (g (r + h)) (g r)))))).
 move=> H4.
 rewrite H4.
 apply (Theorem_6_6_1_1_Rn R_met 2).
-suff: ((fun (h : Base R_met) =>
-   Rnmult 2 (/ h) (Cmult (Cminus (f (r + h)) (f r)) (g (r + h))))
-= (fun (h : Base R_met) =>
-   (Cmult (Rnmult 2 (/ h) (Cminus (f (r + h)) (f r))) (g (r + h))))).
+suff: ((fun (h : Base R_met) => Rnmult 2 (/ h) (Cmult (Cminus (f (r + h)) (f r)) (g (r + h)))) = (fun (h : Base R_met) => (Cmult (Rnmult 2 (/ h) (Cminus (f (r + h)) (f r))) (g (r + h))))).
 move=> H5.
 rewrite H5.
 apply (Theorem_6_6_2_1_C R_met).
@@ -768,8 +716,7 @@ rewrite CmakeIm.
 rewrite Rmult_assoc.
 rewrite Rmult_assoc.
 apply (Rmult_plus_distr_l (/ x)).
-suff: ((fun (h : Base R_met) => Rnmult 2 (/ h) (Cmult (f r) (Cminus (g (r + h)) (g r))))
-= (fun (h : Base R_met) => Cmult (f r) (Rnmult 2 (/ h) (Cminus (g (r + h)) (g r))))).
+suff: ((fun (h : Base R_met) => Rnmult 2 (/ h) (Cmult (f r) (Cminus (g (r + h)) (g r)))) = (fun (h : Base R_met) => Cmult (f r) (Rnmult 2 (/ h) (Cminus (g (r + h)) (g r))))).
 move=> H5.
 rewrite H5.
 apply Theorem_6_6_2_1_C.
@@ -839,8 +786,7 @@ simpl.
 rewrite (Rplus_assoc (Cmult (g (r + h)) (f (r + h)) m)).
 rewrite - (Rplus_assoc (Cmult (g (r + h)) (Fnopp Rfield 2 (f r)) m)).
 rewrite (Cmult_comm (f r) (g (r + h))).
-suff: (Cmult (g (r + h)) (Fnopp Rfield 2 (f r)) m + Cmult (g (r + h)) (f r) m
-= Cplus (Cmult (g (r + h)) (Fnopp Rfield 2 (f r))) (Cmult (g (r + h)) (f r)) m).
+suff: (Cmult (g (r + h)) (Fnopp Rfield 2 (f r)) m + Cmult (g (r + h)) (f r) m = Cplus (Cmult (g (r + h)) (Fnopp Rfield 2 (f r))) (Cmult (g (r + h)) (f r)) m).
 move=> H4.
 rewrite H4.
 rewrite - Cmult_plus_distr_l.
@@ -862,18 +808,11 @@ Lemma Proposition_1_3_3_mult_C : forall (A : Ensemble R) (f g : R -> C) (r : R) 
 Proof.
 move=> A f g r H1 H2 H3 H4.
 apply (DifferentialR_RnNature2 2 A).
-suff: ((fun (h : R) =>
-   Rnmult 2 (/ h)
-     (Rnminus 2 (Cmult (f (r + h)) (g (r + h))) (Cmult (f r) (g r))))
-=
-(fun (h : R) => Cplus (Rnmult 2 (/ h) (Cmult (Cminus (f (r + h)) (f r)) (g (r + h)))) (Rnmult 2 (/ h) (Cmult (f r) (Cminus (g (r + h)) (g r)))))).
+suff: ((fun (h : R) => Rnmult 2 (/ h) (Rnminus 2 (Cmult (f (r + h)) (g (r + h))) (Cmult (f r) (g r)))) = (fun (h : R) => Cplus (Rnmult 2 (/ h) (Cmult (Cminus (f (r + h)) (f r)) (g (r + h)))) (Rnmult 2 (/ h) (Cmult (f r) (Cminus (g (r + h)) (g r)))))).
 move=> H5.
 rewrite H5.
 apply (Theorem_6_6_1_1_Rn R_met 2).
-suff: ((fun (h : Base R_met) =>
-   Rnmult 2 (/ h) (Cmult (Cminus (f (r + h)) (f r)) (g (r + h))))
-= (fun (h : Base R_met) =>
-   (Cmult (Rnmult 2 (/ h) (Cminus (f (r + h)) (f r))) (g (r + h))))).
+suff: ((fun (h : Base R_met) => Rnmult 2 (/ h) (Cmult (Cminus (f (r + h)) (f r)) (g (r + h)))) = (fun (h : Base R_met) => (Cmult (Rnmult 2 (/ h) (Cminus (f (r + h)) (f r))) (g (r + h))))).
 move=> H6.
 rewrite H6.
 apply (Theorem_6_6_2_1_C R_met).
@@ -925,8 +864,7 @@ rewrite CmakeIm.
 rewrite Rmult_assoc.
 rewrite Rmult_assoc.
 apply (Rmult_plus_distr_l (/ x)).
-suff: ((fun (h : Base R_met) => Rnmult 2 (/ h) (Cmult (f r) (Cminus (g (r + h)) (g r))))
-= (fun (h : Base R_met) => Cmult (f r) (Rnmult 2 (/ h) (Cminus (g (r + h)) (g r))))).
+suff: ((fun (h : Base R_met) => Rnmult 2 (/ h) (Cmult (f r) (Cminus (g (r + h)) (g r)))) = (fun (h : Base R_met) => Cmult (f r) (Rnmult 2 (/ h) (Cminus (g (r + h)) (g r))))).
 move=> H6.
 rewrite H6.
 apply Theorem_6_6_2_1_C.
@@ -996,8 +934,7 @@ simpl.
 rewrite (Rplus_assoc (Cmult (g (r + h)) (f (r + h)) m)).
 rewrite - (Rplus_assoc (Cmult (g (r + h)) (Fnopp Rfield 2 (f r)) m)).
 rewrite (Cmult_comm (f r) (g (r + h))).
-suff: (Cmult (g (r + h)) (Fnopp Rfield 2 (f r)) m + Cmult (g (r + h)) (f r) m
-= Cplus (Cmult (g (r + h)) (Fnopp Rfield 2 (f r))) (Cmult (g (r + h)) (f r)) m).
+suff: (Cmult (g (r + h)) (Fnopp Rfield 2 (f r)) m + Cmult (g (r + h)) (f r) m = Cplus (Cmult (g (r + h)) (Fnopp Rfield 2 (f r))) (Cmult (g (r + h)) (f r)) m).
 move=> H5.
 rewrite H5.
 rewrite - Cmult_plus_distr_l.
@@ -1023,8 +960,7 @@ move=> c H3.
 exists (- (c / (f r * f r))).
 suff: (exists (dlt : R), dlt > 0 /\ forall (h : R), h <> 0 -> In R A (r + h) -> Rabs (h - 0) < dlt -> / h * (/ f (r + h) - / f r) = / h * (f (r + h) - f r) * - / (f r * f (r + h))).
 move=> H4.
-suff: (limit_in R_met R_met (fun (h : R) => / h * (f (r + h) - f r) * - / (f r * f (r + h))))
-  (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 (- (c / (f r * f r))).
+suff: (limit_in R_met R_met (fun (h : R) => / h * (f (r + h) - f r) * - / (f r * f (r + h)))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 (- (c / (f r * f r))).
 move=> H5 eps H6.
 elim (H5 eps H6).
 move=> dlt1 H7.
@@ -1120,8 +1056,7 @@ Proof.
 move=> A f r H1 H2 H3 H4.
 suff: (exists (dlt : R), dlt > 0 /\ forall (h : R), h <> 0 -> In R A (r + h) -> Rabs (h - 0) < dlt -> / h * (/ f (r + h) - / f r) = / h * (f (r + h) - f r) * - / (f r * f (r + h))).
 move=> H5.
-suff: (limit_in R_met R_met (fun (h : R) => / h * (f (r + h) - f r) * - / (f r * f (r + h))))
-  (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 (- (DifferentialR_R A f r H1 H2 / (f r * f r))).
+suff: (limit_in R_met R_met (fun (h : R) => / h * (f (r + h) - f r) * - / (f r * f (r + h)))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 (- (DifferentialR_R A f r H1 H2 / (f r * f r))).
 move=> H6.
 apply (DifferentialR_RNature2 A (fun (x : R) => / f x) r H1 H4).
 move=> eps H7.
@@ -1222,8 +1157,7 @@ move=> c H3.
 exists (Copp (Cmult c (Cinv (Cmult (f r) (f r))))).
 suff: (exists (dlt : R), dlt > 0 /\ forall (h : R), h <> 0 -> In R A (r + h) -> Rabs (h - 0) < dlt -> Rnmult 2 (/ h) (Rnminus 2 (Cinv (f (r + h))) (Cinv (f r))) = Cmult (Rnmult 2 (/ h) (Cminus (f (r + h)) (f r))) (Copp (Cinv (Cmult (f r) (f (r + h)))))).
 move=> H4.
-suff: (limit_in R_met C_met (fun (h : R) => Cmult (Rnmult 2 (/ h) (Cminus (f (r + h)) (f r))) (Copp (Cinv (Cmult (f r) (f (r + h))))))
-  (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 (Copp (Cmult c (Cinv (Cmult (f r) (f r)))))).
+suff: (limit_in R_met C_met (fun (h : R) => Cmult (Rnmult 2 (/ h) (Cminus (f (r + h)) (f r))) (Copp (Cinv (Cmult (f r) (f (r + h)))))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 (Copp (Cmult c (Cinv (Cmult (f r) (f r)))))).
 move=> H5 eps H6.
 elim (H5 eps H6).
 move=> dlt1 H7.
@@ -1360,8 +1294,7 @@ Proof.
 move=> A f r H1 H2 H3 H4.
 suff: (exists (dlt : R), dlt > 0 /\ forall (h : R), h <> 0 -> In R A (r + h) -> Rabs (h - 0) < dlt -> Rnmult 2 (/ h) (Rnminus 2 (Cinv (f (r + h))) (Cinv (f r))) = Cmult (Rnmult 2 (/ h) (Cminus (f (r + h)) (f r))) (Copp (Cinv (Cmult (f r) (f (r + h)))))).
 move=> H5.
-suff: (limit_in R_met C_met (fun (h : R) => Cmult (Rnmult 2 (/ h) (Cminus (f (r + h)) (f r))) (Copp (Cinv (Cmult (f r) (f (r + h))))))
-  (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 (Copp (Cmult (DifferentialR_Rn 2 A f r H1 H2) (Cinv (Cmult (f r) (f r)))))).
+suff: (limit_in R_met C_met (fun (h : R) => Cmult (Rnmult 2 (/ h) (Cminus (f (r + h)) (f r))) (Copp (Cinv (Cmult (f r) (f (r + h)))))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 (Copp (Cmult (DifferentialR_Rn 2 A f r H1 H2) (Cinv (Cmult (f r) (f r)))))).
 move=> H6.
 apply (DifferentialR_RnNature2 2).
 move=> eps H7.
@@ -1580,21 +1513,15 @@ move=> H6.
 suff: (forall (u : Count N), DifferentiableR_R A (fun (x : R) => f x u * g x u) r).
 move=> H7.
 rewrite Proposition_1_3_1_MySumF2_R.
-rewrite (MySumF2Distr (Count N) RPCM
-  (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N))
-(fun (u : Count N) => (DifferentialR_R A (fun (x : R) => f x u) r H1 (H5 u)) * g r u)
-(fun (u : Count N) => f r u * DifferentialR_R A (fun (x : R) => g x u) r H1 (H6 u))
-(fun (u : Count N) => DifferentialR_R A (fun (x : R) => f x u * g x u) r H1 (H7 u))).
+rewrite (MySumF2Distr (Count N) RPCM (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) (fun (u : Count N) => (DifferentialR_R A (fun (x : R) => f x u) r H1 (H5 u)) * g r u) (fun (u : Count N) => f r u * DifferentialR_R A (fun (x : R) => g x u) r H1 (H6 u)) (fun (u : Count N) => DifferentialR_R A (fun (x : R) => f x u * g x u) r H1 (H7 u))).
 suff: (forall (r1 r2 r3 r4 : R), r1 = r2 -> r3 = r4 -> r1 + r3 = r2 + r4).
 move=> H8.
 apply H8.
-apply (MySumF2Same (Count N)
-  (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) RPCM).
+apply (MySumF2Same (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) RPCM).
 move=> u H9.
 rewrite (Proposition_1_1_2 N A f r H1 H2 H5).
 reflexivity.
-apply (MySumF2Same (Count N)
-  (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) RPCM).
+apply (MySumF2Same (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) RPCM).
 move=> u H9.
 rewrite (Proposition_1_1_2 N A g r H1 H3 H6).
 reflexivity.
@@ -1658,8 +1585,7 @@ suff: (a <= a <= b).
 move=> H4.
 suff: (a <= b <= b).
 move=> H5.
-suff: (forall (r : R), a <= r <= b -> ClosureMet R_met
-    (fun (x : R) => x <> r /\ In R A x /\ a <= x <= b) r).
+suff: (forall (r : R), a <= r <= b -> ClosureMet R_met (fun (x : R) => x <> r /\ In R A x /\ a <= x <= b) r).
 move=> H6.
 exists (fun (r : R) => match Rle_lt_dec a r with
   | left _ => match Rle_lt_dec r b with
@@ -1719,9 +1645,7 @@ rewrite (Rplus_assoc x (r + - a)).
 rewrite (Rplus_opp_r (r + - a)).
 rewrite (Rplus_0_r x).
 rewrite (proj1 H7 x).
-rewrite (proj2 (dist_refl (RRn_met K) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f a 
-     (H6 a H4) (H3 a H4)) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f a 
-     (H6 a H4) (H3 a H4)))).
+rewrite (proj2 (dist_refl (RRn_met K) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f a (H6 a H4) (H3 a H4)) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f a (H6 a H4) (H3 a H4)))).
 apply H9.
 reflexivity.
 apply (proj1 (proj1 H10)).
@@ -1780,9 +1704,7 @@ rewrite - (Rplus_assoc (- a) a x).
 rewrite (Rplus_opp_l a).
 rewrite (Rplus_0_l x).
 rewrite (proj1 H7).
-rewrite (proj2 (dist_refl (RRn_met K) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f a 
-     (H6 a H4) (H3 a H4)) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f a 
-     (H6 a H4) (H3 a H4)))).
+rewrite (proj2 (dist_refl (RRn_met K) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f a (H6 a H4) (H3 a H4)) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f a (H6 a H4) (H3 a H4)))).
 apply H9.
 reflexivity.
 apply (proj1 (proj1 H11)).
@@ -1845,9 +1767,7 @@ rewrite (Rplus_assoc x (r + - b)).
 rewrite (Rplus_opp_r (r + - b)).
 rewrite (Rplus_0_r x).
 rewrite (proj1 H7 x).
-rewrite (proj2 (dist_refl (RRn_met K) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f b 
-     (H6 b H5) (H3 b H5)) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f b
-     (H6 b H5) (H3 b H5)))).
+rewrite (proj2 (dist_refl (RRn_met K) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f b (H6 b H5) (H3 b H5)) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f b (H6 b H5) (H3 b H5)))).
 apply H10.
 reflexivity.
 apply (proj1 (proj1 H11)).
@@ -1899,9 +1819,7 @@ rewrite - (Rplus_assoc (- b) b x).
 rewrite (Rplus_opp_l b).
 rewrite (Rplus_0_l x).
 rewrite (proj1 H7).
-rewrite (proj2 (dist_refl (RRn_met K) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f b
-     (H6 b H5) (H3 b H5)) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f b 
-     (H6 b H5) (H3 b H5)))).
+rewrite (proj2 (dist_refl (RRn_met K) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f b (H6 b H5) (H3 b H5)) (DifferentialR_RRn K (fun (x0 : R) => In R A x0 /\ a <= x0 <= b) f b (H6 b H5) (H3 b H5)))).
 apply H10.
 reflexivity.
 apply (proj1 (proj1 H12)).
@@ -2095,7 +2013,7 @@ Proof.
 move=> A H1 r H2 eps H3.
 elim (H1 r H2).
 move=> dlt H4.
-exists (r + Rmin dlt eps  / 2).
+exists (r + Rmin dlt eps / 2).
 apply conj.
 unfold NeighborhoodMet.
 unfold dist.
@@ -2192,15 +2110,13 @@ apply conj.
 move=> r.
 elim.
 move=> H3.
-elim (excluded_middle_informative
-    (ClosureMet R_met (fun x : R => x <> r /\ In R A x) r)).
+elim (excluded_middle_informative (ClosureMet R_met (fun x : R => x <> r /\ In R A x) r)).
 move=> H4.
 elim (H3 H4).
 move=> H4.
 reflexivity.
 move=> H3.
-elim (excluded_middle_informative
-    (ClosureMet R_met (fun x : R => x <> r /\ In R A x) r)).
+elim (excluded_middle_informative (ClosureMet R_met (fun x : R => x <> r /\ In R A x) r)).
 move=> H4.
 elim (excluded_middle_informative (In R B r)).
 move=> H5.
@@ -2328,22 +2244,15 @@ Definition DifferentiableR_R_OpenSet_N (A : Ensemble R) (f : R -> R) (B : Ensemb
   | Some _ => True
 end.
 
-Definition DifferentialR_RRn_OpenSet_N (K : RRn) (A : Ensemble R) (f : R -> RRnT K) (B : Ensemble R)
-  (H1 : OpenSetMet R_met B) (n : nat) : DifferentiableR_RRn_OpenSet_N K A f B H1 n -> R -> RRnT K := option_rec
-  (fun (o : option (R -> RRnT K)) =>
-   match o with
-   | Some _ => True
-   | None => False
-   end -> R -> RRnT K) (fun (g : R -> RRnT K) (_ : True) => g)
-  (fun (H2 : False) => match H2 return (R -> RRnT K) with
-                     end : R -> RRnT K)
-  (DifferentialR_RRn_OpenSet_N_sub K A f B H1 n).
+Definition DifferentialR_RRn_OpenSet_N (K : RRn) (A : Ensemble R) (f : R -> RRnT K) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat) : DifferentiableR_RRn_OpenSet_N K A f B H1 n -> R -> RRnT K := option_rec (fun (o : option (R -> RRnT K)) => match o with
+  | Some _ => True
+  | None => False
+end -> R -> RRnT K) (fun (g : R -> RRnT K) (_ : True) => g) (fun (H2 : False) => match H2 return (R -> RRnT K) with
+end : R -> RRnT K) (DifferentialR_RRn_OpenSet_N_sub K A f B H1 n).
 
-Definition DifferentialR_Rn_OpenSet_N (N : nat) (A : Ensemble R) (f : R -> Rn N) (B : Ensemble R)
-  (H1 : OpenSetMet R_met B) (n : nat) : DifferentiableR_Rn_OpenSet_N N A f B H1 n -> R -> Rn N := DifferentialR_RRn_OpenSet_N (RnK N) A f B H1 n.
+Definition DifferentialR_Rn_OpenSet_N (N : nat) (A : Ensemble R) (f : R -> Rn N) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat) : DifferentiableR_Rn_OpenSet_N N A f B H1 n -> R -> Rn N := DifferentialR_RRn_OpenSet_N (RnK N) A f B H1 n.
 
-Definition DifferentialR_R_OpenSet_N (A : Ensemble R) (f : R -> R) (B : Ensemble R)
-  (H1 : OpenSetMet R_met B) (n : nat) : DifferentiableR_R_OpenSet_N A f B H1 n -> R -> R := DifferentialR_RRn_OpenSet_N R1K A f B H1 n.
+Definition DifferentialR_R_OpenSet_N (A : Ensemble R) (f : R -> R) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat) : DifferentiableR_R_OpenSet_N A f B H1 n -> R -> R := DifferentialR_RRn_OpenSet_N R1K A f B H1 n.
 
 Lemma DifferentialR_RRn_OpenSet_N_Nature1 : forall (K : RRn) (A : Ensemble R) (f : R -> RRnT K) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat) (H2 : DifferentiableR_RRn_OpenSet_N K A f B H1 n) (H3 : DifferentiableR_RRn_OpenSet_N K A f B H1 (S n)) (H4 : DifferentiableR_RRn_OpenSet K A (DifferentialR_RRn_OpenSet_N K A f B H1 n H2) B H1), DifferentialR_RRn_OpenSet_N K A f B H1 (S n) H3 = DifferentialR_RRn_OpenSet K A (DifferentialR_RRn_OpenSet_N K A f B H1 n H2) B H1 H4.
 Proof.
@@ -2353,8 +2262,7 @@ unfold DifferentiableR_RRn_OpenSet_N.
 unfold DifferentialR_RRn_OpenSet_N_sub.
 simpl.
 unfold compose.
-elim (repeat (option (R -> RRnT K))
-            (DifferentialR_RRn_OpenSet_option K A B H1) n (Some f)).
+elim (repeat (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) n (Some f)).
 move=> g H2.
 unfold DifferentialR_RRn_OpenSet_option.
 elim (excluded_middle_informative (DifferentiableR_RRn_OpenSet K A g B H1)).
@@ -2374,8 +2282,6 @@ Definition DifferentialR_Rn_OpenSet_N_Nature1 (N : nat) : forall (A : Ensemble R
 
 Definition DifferentialR_R_OpenSet_N_Nature1 : forall (A : Ensemble R) (f : R -> R) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat) (H2 : DifferentiableR_R_OpenSet_N A f B H1 n) (H3 : DifferentiableR_R_OpenSet_N A f B H1 (S n)) (H4 : DifferentiableR_R_OpenSet A (DifferentialR_R_OpenSet_N A f B H1 n H2) B H1), DifferentialR_R_OpenSet_N A f B H1 (S n) H3 = DifferentialR_R_OpenSet A (DifferentialR_R_OpenSet_N A f B H1 n H2) B H1 H4 := DifferentialR_RRn_OpenSet_N_Nature1 R1K.
 
-Require Import Coq.Program.Combinators.
-
 Lemma DifferentialR_RRn_OpenSet_N_Nature2 : forall (K : RRn) (A : Ensemble R) (f : R -> RRnT K) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat) (H2 : DifferentiableR_RRn_OpenSet K A f B H1) (H3 : DifferentiableR_RRn_OpenSet_N K A f B H1 (S n)) (H4 : DifferentiableR_RRn_OpenSet_N K A (DifferentialR_RRn_OpenSet K A f B H1 H2) B H1 n), DifferentialR_RRn_OpenSet_N K A f B H1 (S n) H3 = DifferentialR_RRn_OpenSet_N K A (DifferentialR_RRn_OpenSet K A f B H1 H2) B H1 n H4.
 Proof.
 move=> K A f B H1 n.
@@ -2392,8 +2298,7 @@ unfold DifferentialR_RRn_OpenSet_option at 2.
 unfold DifferentialR_RRn_OpenSet_option at 4.
 unfold compose.
 simpl.
-elim (excluded_middle_informative
-                (DifferentiableR_RRn_OpenSet K A f B H1)).
+elim (excluded_middle_informative (DifferentiableR_RRn_OpenSet K A f B H1)).
 move=> H3 H4.
 suff: (H3 = H4).
 move=> H5.
@@ -2432,8 +2337,7 @@ unfold DifferentialR_RRn_OpenSet_N.
 unfold DifferentialR_RRn_OpenSet_N_sub.
 simpl.
 unfold compose.
-elim (repeat (option (R -> RRnT K))
-            (DifferentialR_RRn_OpenSet_option K A B H1) n (Some f)).
+elim (repeat (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) n (Some f)).
 move=> g H2.
 unfold DifferentialR_RRn_OpenSet_option.
 elim (excluded_middle_informative (DifferentiableR_RRn_OpenSet K A g B H1)).
@@ -2511,8 +2415,7 @@ unfold DifferentiableR_RRn_OpenSet_N at 1.
 unfold DifferentialR_RRn_OpenSet_N_sub.
 simpl.
 unfold compose.
-elim (repeat (option (R -> RRnT K))
-      (DifferentialR_RRn_OpenSet_option K A B H1) k (Some f)).
+elim (repeat (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) k (Some f)).
 move=> g H3 H4.
 apply (H3 I).
 move=> H3.
@@ -2568,33 +2471,22 @@ unfold DifferentiableR_RRn_OpenSet_N.
 unfold DifferentialR_RRn_OpenSet_N.
 unfold DifferentialR_RRn_OpenSet_N_sub.
 rewrite (plus_comm n m).
-rewrite (repeat_add (option (R -> RRnT K))
-    (fun (g : option (R -> RRnT K)) =>
-     match g with
-     | Some h =>
-         match
-           excluded_middle_informative (DifferentiableR_RRn_OpenSet K A h B H1)
-         with
-         | left H => Some (DifferentialR_RRn_OpenSet K A h B H1 H)
-         | right _ => None
-         end
-     | None => None
-     end) m n).
+rewrite (repeat_add (option (R -> RRnT K)) (fun (g : option (R -> RRnT K)) => match g with
+  | Some h => match excluded_middle_informative (DifferentiableR_RRn_OpenSet K A h B H1) with
+    | left H => Some (DifferentialR_RRn_OpenSet K A h B H1 H)
+    | right _ => None
+  end
+  | None => None
+end) m n).
 unfold compose.
 unfold DifferentialR_RRn_OpenSet_option.
-elim (repeat (option (R -> RRnT K))
-           (fun (g : option (R -> RRnT K)) =>
-            match g with
-            | Some h =>
-                match
-                  excluded_middle_informative
-                    (DifferentiableR_RRn_OpenSet K A h B H1)
-                with
-                | left H => Some (DifferentialR_RRn_OpenSet K A h B H1 H)
-                | right _ => None
-                end
-            | None => None
-            end) n (Some f)).
+elim (repeat (option (R -> RRnT K)) (fun (g : option (R -> RRnT K)) => match g with
+  | Some h => match excluded_middle_informative (DifferentiableR_RRn_OpenSet K A h B H1) with
+    | left H => Some (DifferentialR_RRn_OpenSet K A h B H1 H)
+    | right _ => None
+  end
+  | None => None
+end) n (Some f)).
 move=> g H2.
 apply conj.
 move=> H3.
@@ -2611,23 +2503,16 @@ unfold DifferentiableR_RRn_OpenSet_N.
 unfold DifferentialR_RRn_OpenSet_N.
 unfold DifferentialR_RRn_OpenSet_N_sub.
 rewrite (plus_comm n m).
-rewrite (repeat_add (option (R -> RRnT K))
-    (DifferentialR_RRn_OpenSet_option K A B H1) m n).
+rewrite (repeat_add (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) m n).
 unfold compose.
 unfold DifferentialR_RRn_OpenSet_option.
-elim (repeat (option (R -> RRnT K))
-           (fun (g : option (R -> RRnT K)) =>
-            match g with
-            | Some h =>
-                match
-                  excluded_middle_informative
-                    (DifferentiableR_RRn_OpenSet K A h B H1)
-                with
-                | left H => Some (DifferentialR_RRn_OpenSet K A h B H1 H)
-                | right _ => None
-                end
-            | None => None
-            end) n (Some f)).
+elim (repeat (option (R -> RRnT K)) (fun (g : option (R -> RRnT K)) => match g with
+  | Some h => match excluded_middle_informative (DifferentiableR_RRn_OpenSet K A h B H1) with
+    | left H => Some (DifferentialR_RRn_OpenSet K A h B H1 H)
+    | right _ => None
+  end
+  | None => None
+end) n (Some f)).
 move=> g H2 H3 H4.
 suff: (H3 = H4).
 move=> H5.
@@ -2640,7 +2525,7 @@ Qed.
 Lemma DifferentialR_RRn_OpenSet_N_plus : forall (K : RRn) (A : Ensemble R) (f g : R -> RRnT K) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat), DifferentiableR_RRn_OpenSet_N K A f B H1 n -> DifferentiableR_RRn_OpenSet_N K A g B H1 n -> DifferentiableR_RRn_OpenSet_N K A (fun (r : R) => RRnplus K (f r) (g r)) B H1 n.
 Proof.
 suff: (forall (n : nat) (K : RRn) (A : Ensemble R) (f g : R -> RRnT K) (B : Ensemble R) (H1 : OpenSetMet R_met B), DifferentiableR_RRn_OpenSet_N K A f B H1 n -> DifferentiableR_RRn_OpenSet_N K A g B H1 n -> DifferentiableR_RRn_OpenSet_N K A (fun (r : R) => RRnplus K (f r) (g r)) B H1 n).
-move=> H1 K A f g B H2 n. 
+move=> H1 K A f g B H2 n.
 apply (H1 n K A f g B H2).
 elim.
 move=> K A f g B H1 H2 H3.
@@ -2653,8 +2538,7 @@ move=> H6.
 suff: (DifferentiableR_RRn_OpenSet K A (fun (r : R) => RRnplus K (f r) (g r)) B H2).
 move=> H7.
 apply (proj2 (DifferentiableR_RRn_OpenSet_N_Nature2 K A (fun (r : R) => RRnplus K (f r) (g r)) B H2 n H7)).
-suff: (DifferentialR_RRn_OpenSet K A (fun r : R => RRnplus K (f r) (g r)) B H2 H7
-= (fun (r : R) => RRnplus K (DifferentialR_RRn_OpenSet K A f B H2 H5 r) (DifferentialR_RRn_OpenSet K A g B H2 H6 r))).
+suff: (DifferentialR_RRn_OpenSet K A (fun r : R => RRnplus K (f r) (g r)) B H2 H7 = (fun (r : R) => RRnplus K (DifferentialR_RRn_OpenSet K A f B H2 H5 r) (DifferentialR_RRn_OpenSet K A g B H2 H6 r))).
 move=> H8.
 rewrite H8.
 apply H1.
@@ -2702,8 +2586,7 @@ suff: (DifferentiableR_RRn_OpenSet K A (fun (r : R) => RRnplus K (f r) (g r)) B 
 move=> H8.
 rewrite (DifferentialR_RRn_OpenSet_N_Nature2 K A (fun (r : R) => RRnplus K (f r) (g r)) B H2 n H8).
 apply (proj1 (DifferentiableR_RRn_OpenSet_N_Nature2 K A (fun (r : R) => RRnplus K (f r) (g r)) B H2 n H8) H5).
-suff: (DifferentialR_RRn_OpenSet K A (fun r : R => RRnplus K (f r) (g r)) B H2 H8
-= (fun (r : R) => RRnplus K (DifferentialR_RRn_OpenSet K A f B H2 H6 r) (DifferentialR_RRn_OpenSet K A g B H2 H7 r))).
+suff: (DifferentialR_RRn_OpenSet K A (fun r : R => RRnplus K (f r) (g r)) B H2 H8 = (fun (r : R) => RRnplus K (DifferentialR_RRn_OpenSet K A f B H2 H6 r) (DifferentialR_RRn_OpenSet K A g B H2 H7 r))).
 move=> H9.
 rewrite H9.
 move=> H10.
@@ -2790,8 +2673,7 @@ move=> r H9 H10.
 suff: (DifferentialR_RRn R1K = DifferentialR_R).
 move=> H11.
 rewrite H11.
-rewrite (Proposition_1_3_3_mult_R (Intersection R A B) f g r (OpenSetNotIsolatedR_Intersection A B H2 r H10 H9) 
-  (H7 r H10) (H8 r H10) (H6 r H10)).
+rewrite (Proposition_1_3_3_mult_R (Intersection R A B) f g r (OpenSetNotIsolatedR_Intersection A B H2 r H10 H9) (H7 r H10) (H8 r H10) (H6 r H10)).
 rewrite (proj2 (DifferentialR_R_OpenSet_Nature A f B H2 H7) r H9 H10).
 rewrite (proj2 (DifferentialR_R_OpenSet_Nature A g B H2 H8) r H9 H10).
 reflexivity.
@@ -2824,8 +2706,6 @@ apply (DifferentiableR_RRn_OpenSet_N_le R1K A g B H2 1 (S n)).
 apply (le_n_S O n (le_0_n n)).
 apply H4.
 Qed.
-
-Require Import BasicProperty.MappingProperty.
 
 Lemma Proposition_1_5_R : forall (A : Ensemble R) (f g : R -> R) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat), DifferentiableR_R_OpenSet_N A f B H1 n -> DifferentiableR_R_OpenSet_N A g B H1 n -> forall (H2 : DifferentiableR_R_OpenSet_N A (fun (r : R) => f r * g r) B H1 n) (H3 : forall (m : Count (S n)), DifferentiableR_R_OpenSet_N A f B H1 (proj1_sig m)) (H4 : forall (m : Count (S n)), DifferentiableR_R_OpenSet_N A g B H1 (n - proj1_sig m)%nat), DifferentialR_R_OpenSet_N A (fun (r : R) => f r * g r) B H1 n H2 = (fun (r : R) => MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) RPCM (fun (u : Count (S n)) => INR (conv n (proj1_sig u)) * (DifferentialR_R_OpenSet_N A f B H1 (proj1_sig u) (H3 u) r * DifferentialR_R_OpenSet_N A g B H1 (n - proj1_sig u) (H4 u) r))).
 Proof.
@@ -2862,9 +2742,7 @@ apply Full_intro.
 move=> n H1 A f g B H2 H3 H4 H5 H6 H7.
 suff: (DifferentiableR_R_OpenSet A (fun (r : R) => f r * g r) B H2).
 move=> H8.
-suff: (DifferentiableR_RRn_OpenSet_N R1K A
-                (DifferentialR_RRn_OpenSet R1K A (fun r : R => f r * g r) B
-                   H2 H8) B H2 n).
+suff: (DifferentiableR_RRn_OpenSet_N R1K A (DifferentialR_RRn_OpenSet R1K A (fun r : R => f r * g r) B H2 H8) B H2 n).
 move=> H9.
 suff: (DifferentialR_R_OpenSet_N = DifferentialR_RRn_OpenSet_N R1K).
 move=> H10.
@@ -2917,93 +2795,30 @@ elim.
 move=> H20 H21.
 suff: (forall (m : Count (S (S n))), proj1_sig m <> O -> pred (proj1_sig m) < S n)%nat.
 move=> H22.
-rewrite - (Rplus_0_r (MySumF2 (Count (S n))
-     (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n)))
-     RPCM
-     (fun (u : Count (S n)) =>
-      INR (conv n (proj1_sig u)) *
-      (DifferentialR_R_OpenSet_N A
-         (fun (r : R) => DifferentialR_R_OpenSet A f B H2 H11 r) B H2
-         (proj1_sig u) (H15 u) r *
-       DifferentialR_R_OpenSet_N A g B H2 (n - proj1_sig u) (H16 u) r)))).
-suff: (MySumF2 (Count (S (S n)))
-(exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n))))
-              (CountFinite (S (S n))))
-RPCM (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m = O) with
-  | left _ => 0  
-  | right H => INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H)))) *
-      (DifferentialR_R_OpenSet_N A
-         (fun (r : R) => DifferentialR_R_OpenSet A f B H2 H11 r) B H2
-         (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H15 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r *
-       DifferentialR_R_OpenSet_N A g B H2 (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H16 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r)
-end)
-=
-MySumF2 (Count (S n))
-     (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n)))
-     RPCM
-     (fun (u : Count (S n)) =>
-      INR (conv n (proj1_sig u)) *
-      (DifferentialR_R_OpenSet_N A
-         (fun r0 : R => DifferentialR_R_OpenSet A f B H2 H11 r0) B H2
-         (proj1_sig u) (H15 u) r *
-       DifferentialR_R_OpenSet_N A g B H2 (n - proj1_sig u) (H16 u) r)) + 0).
+rewrite - (Rplus_0_r (MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) RPCM (fun (u : Count (S n)) => INR (conv n (proj1_sig u)) * (DifferentialR_R_OpenSet_N A (fun (r : R) => DifferentialR_R_OpenSet A f B H2 H11 r) B H2 (proj1_sig u) (H15 u) r * DifferentialR_R_OpenSet_N A g B H2 (n - proj1_sig u) (H16 u) r)))).
+suff: (MySumF2 (Count (S (S n))) (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n)))) RPCM (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m = O) with
+  | left _ => 0
+  | right H => INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H)))) * (DifferentialR_R_OpenSet_N A (fun (r : R) => DifferentialR_R_OpenSet A f B H2 H11 r) B H2 (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H15 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r * DifferentialR_R_OpenSet_N A g B H2 (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H16 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r)
+end) = MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) RPCM (fun (u : Count (S n)) => INR (conv n (proj1_sig u)) * (DifferentialR_R_OpenSet_N A (fun r0 : R => DifferentialR_R_OpenSet A f B H2 H11 r0) B H2 (proj1_sig u) (H15 u) r * DifferentialR_R_OpenSet_N A g B H2 (n - proj1_sig u) (H16 u) r)) + 0).
 move=> H23.
 rewrite - H23.
-rewrite - (Rplus_0_r (MySumF2 (Count (S n))
-     (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n)))
-     RPCM
-     (fun (u : Count (S n)) =>
-      INR (conv n (proj1_sig u)) *
-      (DifferentialR_R_OpenSet_N A f B H2 (proj1_sig u) (H17 u) r *
-       DifferentialR_R_OpenSet_N A
-         (fun (r : R) => DifferentialR_R_OpenSet A g B H2 H12 r) B H2
-         (n - proj1_sig u) (H18 u) r)))).
-suff: (MySumF2 (Count (S (S n)))
-(exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n))))
-              (CountFinite (S (S n))))
-RPCM (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
-  | left H => INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H))) *
-(DifferentialR_R_OpenSet_N A f B H2 (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H17 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r *
-       DifferentialR_R_OpenSet_N A
-         (fun (r : R) => DifferentialR_R_OpenSet A g B H2 H12 r) B H2
-         (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H18 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r)      
+rewrite - (Rplus_0_r (MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) RPCM (fun (u : Count (S n)) => INR (conv n (proj1_sig u)) * (DifferentialR_R_OpenSet_N A f B H2 (proj1_sig u) (H17 u) r * DifferentialR_R_OpenSet_N A (fun (r : R) => DifferentialR_R_OpenSet A g B H2 H12 r) B H2 (n - proj1_sig u) (H18 u) r)))).
+suff: (MySumF2 (Count (S (S n))) (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n)))) RPCM (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
+  | left H => INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H))) * (DifferentialR_R_OpenSet_N A f B H2 (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H17 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r * DifferentialR_R_OpenSet_N A (fun (r : R) => DifferentialR_R_OpenSet A g B H2 H12 r) B H2 (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H18 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r)
   | right _ => 0
-end)
-= MySumF2 (Count (S n))
-        (exist (Finite (Count (S n))) (Full_set (Count (S n)))
-           (CountFinite (S n))) RPCM
-        (fun (u : Count (S n)) =>
-      INR (conv n (proj1_sig u)) *
-      (DifferentialR_R_OpenSet_N A f B H2 (proj1_sig u) (H17 u) r *
-       DifferentialR_R_OpenSet_N A
-         (fun (r : R) => DifferentialR_R_OpenSet A g B H2 H12 r) B H2
-         (n - proj1_sig u) (H18 u) r)) + 0).
+end) = MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) RPCM (fun (u : Count (S n)) => INR (conv n (proj1_sig u)) * (DifferentialR_R_OpenSet_N A f B H2 (proj1_sig u) (H17 u) r * DifferentialR_R_OpenSet_N A (fun (r : R) => DifferentialR_R_OpenSet A g B H2 H12 r) B H2 (n - proj1_sig u) (H18 u) r)) + 0).
 move=> H24.
 rewrite - H24.
 suff: (RRnplus R1K = CMc RPCM).
 move=> H25.
 rewrite H25.
-rewrite - (MySumF2Distr (Count (S (S n))) RPCM (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n))))
-     (CountFinite (S (S n)))) (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m = O) with
-  | left _ => 0  
-  | right H => INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H)))) *
-      (DifferentialR_R_OpenSet_N A
-         (fun (r : R) => DifferentialR_R_OpenSet A f B H2 H11 r) B H2
-         (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H15 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r *
-       DifferentialR_R_OpenSet_N A g B H2 (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H16 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r)
-end)
-(fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
-  | left H => INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H))) *
-(DifferentialR_R_OpenSet_N A f B H2 (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H17 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r *
-       DifferentialR_R_OpenSet_N A
-         (fun (r : R) => DifferentialR_R_OpenSet A g B H2 H12 r) B H2
-         (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H18 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r)      
+rewrite - (MySumF2Distr (Count (S (S n))) RPCM (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n)))) (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m = O) with
+  | left _ => 0
+  | right H => INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H)))) * (DifferentialR_R_OpenSet_N A (fun (r : R) => DifferentialR_R_OpenSet A f B H2 H11 r) B H2 (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H15 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r * DifferentialR_R_OpenSet_N A g B H2 (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H16 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r)
+end) (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
+  | left H => INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H))) * (DifferentialR_R_OpenSet_N A f B H2 (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H17 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r * DifferentialR_R_OpenSet_N A (fun (r : R) => DifferentialR_R_OpenSet A g B H2 H12 r) B H2 (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H18 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r)
   | right _ => 0
-end)
-(fun (u : Count (S (S n))) =>
-   INR (conv (S n) (proj1_sig u)) *
-   (DifferentialR_R_OpenSet_N A f B H2 (proj1_sig u) (H6 u) r *
-    DifferentialR_R_OpenSet_N A g B H2 (S n - proj1_sig u) (H7 u) r))).
+end) (fun (u : Count (S (S n))) => INR (conv (S n) (proj1_sig u)) * (DifferentialR_R_OpenSet_N A f B H2 (proj1_sig u) (H6 u) r * DifferentialR_R_OpenSet_N A g B H2 (S n - proj1_sig u) (H7 u) r))).
 reflexivity.
 move=> u H26.
 elim (excluded_middle_informative (proj1_sig u < S n)%nat).
@@ -3072,16 +2887,14 @@ move=> H32.
 suff: (H30 = H17 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig u) H27)).
 move=> H33.
 rewrite H33.
-suff: (H16
-      (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig u))
-         (H22 u H28)) = H32).
+suff: (H16 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig u)) (H22 u H28)) = H32).
 move=> H34.
 rewrite H34.
 rewrite - Rmult_plus_distr_r.
 suff: (INR match proj1_sig u with
-    | O => 1
-    | S k => conv n k + conv n (S k)
-    end = INR (conv n (pred (proj1_sig u))) + INR (conv n (proj1_sig u))).
+  | O => 1
+  | S k => conv n k + conv n (S k)
+end = INR (conv n (pred (proj1_sig u))) + INR (conv n (proj1_sig u))).
 move=> H35.
 rewrite H35.
 apply Rmult_eq_compat_l.
@@ -3155,19 +2968,15 @@ suff: (H6 u = H30).
 move=> H31.
 rewrite H31.
 suff: (INR match proj1_sig u with
-    | O => 1
-    | S k => conv n k + conv n (S k)
-    end = INR (conv n (pred (proj1_sig u)))).
+  | O => 1
+  | S k => conv n k + conv n (S k)
+end = INR (conv n (pred (proj1_sig u)))).
 move=> H32.
 rewrite H32.
-suff: (DifferentialR_R_OpenSet_N A g B H2
-   match proj1_sig u with
-   | O => S n
-   | S l => n - l
-   end (H7 u) r = DifferentialR_R_OpenSet_N A g B H2 (n - pred (proj1_sig u))
-   (H16
-      (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig u))
-         (H22 u H28))) r).
+suff: (DifferentialR_R_OpenSet_N A g B H2 match proj1_sig u with
+  | O => S n
+  | S l => n - l
+end (H7 u) r = DifferentialR_R_OpenSet_N A g B H2 (n - pred (proj1_sig u)) (H16 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig u)) (H22 u H28))) r).
 move=> H33.
 rewrite H33.
 reflexivity.
@@ -3233,15 +3042,10 @@ apply proof_irrelevance.
 apply proof_irrelevance.
 move=> H25.
 elim (H25 (proj2_sig m)).
-rewrite (MySumF2Included (Count (S (S n))) (FiniteIm (Count (S (S n))) (Count (S (S n)))
-(fun (m : Count (S (S n))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
+rewrite (MySumF2Included (Count (S (S n))) (FiniteIm (Count (S (S n))) (Count (S (S n))) (fun (m : Count (S (S n))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
   | left H => exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H)
   | right _ => exist (fun (k : nat) => (k < S (S n))%nat) O (le_n_S O (S n) (le_0_n (S n)))
-end)
-(exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n))))
-     (CountFinite (S (S n)))))
-  (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n))))
-     (CountFinite (S (S n)))) RPCM).
+end) (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n))))) (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n)))) RPCM).
 rewrite - MySumF2BijectiveSame2.
 rewrite (H21 RPCM).
 rewrite (MySumF2O (Count (S (S n)))).
@@ -3268,16 +3072,10 @@ elim (lt_irrefl (S (proj1_sig m))).
 rewrite {1} H26.
 apply (le_n_S O (proj1_sig m) (le_0_n (proj1_sig m))).
 move=> H26.
-suff: (H15 (exist (fun k : nat => (k < S n)%nat) (proj1_sig m)
-         (H22
-            (exist (fun (k : nat) => (k < S (S n))%nat) 
-               (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H25)) H26)) = H15 m).
+suff: (H15 (exist (fun k : nat => (k < S n)%nat) (proj1_sig m) (H22 (exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H25)) H26)) = H15 m).
 move=> H27.
 rewrite H27.
-suff: (H16 (exist (fun k : nat => (k < S n)%nat) (proj1_sig m)
-         (H22
-            (exist (fun (k : nat) => (k < S (S n))%nat) 
-               (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H25)) H26)) = H16 m).
+suff: (H16 (exist (fun k : nat => (k < S n)%nat) (proj1_sig m) (H22 (exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H25)) H26)) = H16 m).
 move=> H28.
 rewrite H28.
 reflexivity.
@@ -3294,15 +3092,10 @@ elim H23.
 elim u0.
 elim.
 move=> H25.
-apply (Im_intro (Count (S (S n))) (Count (S (S n))) (Full_set (Count (S (S n)))) (fun (m : Count (S (S n))) =>
-         match excluded_middle_informative (proj1_sig m < S n)%nat with
-         | left H =>
-             exist (fun (k : nat) => (k < S (S n))%nat) 
-               (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H)
-         | right _ =>
-             exist (fun (k : nat) => (k < S (S n))%nat) 0%nat
-               (le_n_S 0 (S n) (le_0_n (S n)))
-         end) (exist (fun (k : nat) => (k < S (S n))%nat) (S n) (le_n (S (S n))))).
+apply (Im_intro (Count (S (S n))) (Count (S (S n))) (Full_set (Count (S (S n)))) (fun (m : Count (S (S n))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
+  | left H => exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H)
+  | right _ => exist (fun (k : nat) => (k < S (S n))%nat) 0%nat (le_n_S 0 (S n) (le_0_n (S n)))
+end) (exist (fun (k : nat) => (k < S (S n))%nat) (S n) (le_n (S (S n))))).
 apply (Full_intro (Count (S (S n)))).
 simpl.
 elim (excluded_middle_informative (S n < S n)%nat).
@@ -3312,15 +3105,10 @@ move=> H26.
 apply sig_map.
 reflexivity.
 move=> m H25 H26.
-apply (Im_intro (Count (S (S n))) (Count (S (S n))) (Full_set (Count (S (S n)))) (fun (m : Count (S (S n))) =>
-         match excluded_middle_informative (proj1_sig m < S n)%nat with
-         | left H =>
-             exist (fun (k : nat) => (k < S (S n))%nat) 
-               (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H)
-         | right _ =>
-             exist (fun (k : nat) => (k < S (S n))%nat) 0%nat
-               (le_n_S 0 (S n) (le_0_n (S n)))
-         end) (exist (fun (k : nat) => (k < S (S n))%nat) m (le_trans (S m) (S (S m)) (S (S n)) (le_S (S m) (S m) (le_n (S m))) H26))).
+apply (Im_intro (Count (S (S n))) (Count (S (S n))) (Full_set (Count (S (S n)))) (fun (m : Count (S (S n))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
+  | left H => exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H)
+  | right _ => exist (fun (k : nat) => (k < S (S n))%nat) 0%nat (le_n_S 0 (S n) (le_0_n (S n)))
+end) (exist (fun (k : nat) => (k < S (S n))%nat) m (le_trans (S m) (S (S m)) (S (S n)) (le_S (S m) (S m) (le_n (S m))) H26))).
 apply (Full_intro (Count (S (S n)))).
 simpl.
 elim (excluded_middle_informative (m < S n)%nat).
@@ -3335,23 +3123,20 @@ move=> H25.
 elim (excluded_middle_informative (proj1_sig u2 < S n)%nat).
 move=> H26 H27.
 apply sig_map.
-suff: (proj1_sig u1 = pred (proj1_sig (exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig u1))
-        (le_n_S (S (proj1_sig u1)) (S n) H25)))).
+suff: (proj1_sig u1 = pred (proj1_sig (exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig u1)) (le_n_S (S (proj1_sig u1)) (S n) H25)))).
 move=> H28.
 rewrite H28.
 rewrite H27.
 reflexivity.
 reflexivity.
 move=> H26 H27.
-elim (lt_irrefl (proj1_sig (exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig u1))
-  (le_n_S (S (proj1_sig u1)) (S n) H25)))).
+elim (lt_irrefl (proj1_sig (exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig u1)) (le_n_S (S (proj1_sig u1)) (S n) H25)))).
 rewrite {1} H27.
 apply (le_n_S O (proj1_sig u1) (le_0_n (proj1_sig u1))).
 move=> H25.
 elim (excluded_middle_informative (proj1_sig u2 < S n)%nat).
 move=> H26 H27.
-elim (lt_irrefl (proj1_sig (exist (fun (k : nat) => (k < S (S n))%nat) O
-  (le_n_S 0 (S n) (le_0_n (S n)))))).
+elim (lt_irrefl (proj1_sig (exist (fun (k : nat) => (k < S (S n))%nat) O (le_n_S 0 (S n) (le_0_n (S n)))))).
 rewrite {2} H27.
 apply (le_n_S O (proj1_sig u2) (le_0_n (proj1_sig u2))).
 move=> H26 H27.
@@ -3392,8 +3177,7 @@ apply (Rplus_0_l 0).
 move=> r H13 H14.
 rewrite (proj2 (DifferentialR_R_OpenSet_Nature A f B H2 H11) r H13 H14).
 rewrite (proj2 (DifferentialR_R_OpenSet_Nature A g B H2 H12) r H13 H14).
-rewrite - (Proposition_1_3_3_mult_R (Intersection R A B) f g r (OpenSetNotIsolatedR_Intersection A B H2 r H14 H13) 
-  (H11 r H14) (H12 r H14) (H8 r H14)).
+rewrite - (Proposition_1_3_3_mult_R (Intersection R A B) f g r (OpenSetNotIsolatedR_Intersection A B H2 r H14 H13) (H11 r H14) (H12 r H14) (H8 r H14)).
 reflexivity.
 apply (DifferentiableR_RRn_OpenSet_N_1 R1K A g B H2).
 apply (DifferentiableR_RRn_OpenSet_N_le R1K A g B H2 1 (S n) (le_n_S O n (le_0_n n)) H4).
@@ -3410,11 +3194,9 @@ Proof.
 move=> A f g B H1 n H2 H3.
 suff: (DifferentiableR_R_OpenSet_N A (fun (r : R) => f r * g r) B H1 n).
 move=> H4.
-suff: (forall (m : Count (S n)),
-      DifferentiableR_R_OpenSet_N A f B H1 (proj1_sig m)).
+suff: (forall (m : Count (S n)), DifferentiableR_R_OpenSet_N A f B H1 (proj1_sig m)).
 move=> H5.
-suff: (forall (m : Count (S n)),
-      DifferentiableR_R_OpenSet_N A g B H1 (n - proj1_sig m)).
+suff: (forall (m : Count (S n)), DifferentiableR_R_OpenSet_N A g B H1 (n - proj1_sig m)).
 move=> H6.
 exists H4.
 exists H5.
@@ -3474,8 +3256,7 @@ move=> r H9 H10.
 suff: (DifferentialR_RRn (RnK 2) = DifferentialR_Rn 2).
 move=> H11.
 rewrite H11.
-rewrite (Proposition_1_3_3_mult_C (Intersection R A B) f g r (OpenSetNotIsolatedR_Intersection A B H2 r H10 H9) 
-  (H7 r H10) (H8 r H10) (H6 r H10)).
+rewrite (Proposition_1_3_3_mult_C (Intersection R A B) f g r (OpenSetNotIsolatedR_Intersection A B H2 r H10 H9) (H7 r H10) (H8 r H10) (H6 r H10)).
 rewrite (proj2 (DifferentialR_Rn_OpenSet_Nature 2 A f B H2 H7) r H9 H10).
 rewrite (proj2 (DifferentialR_Rn_OpenSet_Nature 2 A g B H2 H8) r H9 H10).
 reflexivity.
@@ -3544,9 +3325,7 @@ apply Full_intro.
 move=> n H1 A f g B H2 H3 H4 H5 H6 H7.
 suff: (DifferentiableR_Rn_OpenSet 2 A (fun (r : R) => Cmult (f r) (g r)) B H2).
 move=> H8.
-suff: (DifferentiableR_RRn_OpenSet_N (RnK 2) A
-                (DifferentialR_RRn_OpenSet (RnK 2) A (fun (r : R) => Cmult (f r) (g r)) B
-                   H2 H8) B H2 n).
+suff: (DifferentiableR_RRn_OpenSet_N (RnK 2) A (DifferentialR_RRn_OpenSet (RnK 2) A (fun (r : R) => Cmult (f r) (g r)) B H2 H8) B H2 n).
 move=> H9.
 suff: (DifferentialR_Rn_OpenSet_N 2 = DifferentialR_RRn_OpenSet_N (RnK 2)).
 move=> H10.
@@ -3599,96 +3378,32 @@ elim.
 move=> H20 H21.
 suff: (forall (m : Count (S (S n))), proj1_sig m <> O -> pred (proj1_sig m) < S n)%nat.
 move=> H22.
-rewrite - (Cplus_0_l (MySumF2 (Count (S n))
-     (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n)))
-     CPCM
-     (fun (u : Count (S n)) =>
-      Cmult (IRC (INR (conv n (proj1_sig u))))
-        (Cmult
-           (DifferentialR_Rn_OpenSet_N 2 A
-              (fun (r0 : R) => DifferentialR_Rn_OpenSet 2 A f B H2 H11 r0) B H2
-              (proj1_sig u) (H15 u) r)
-           (DifferentialR_Rn_OpenSet_N 2 A g B H2 (n - proj1_sig u) (H16 u) r))))).
+rewrite - (Cplus_0_l (MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) CPCM (fun (u : Count (S n)) => Cmult (IRC (INR (conv n (proj1_sig u)))) (Cmult (DifferentialR_Rn_OpenSet_N 2 A (fun (r0 : R) => DifferentialR_Rn_OpenSet 2 A f B H2 H11 r0) B H2 (proj1_sig u) (H15 u) r) (DifferentialR_Rn_OpenSet_N 2 A g B H2 (n - proj1_sig u) (H16 u) r))))).
 rewrite (Cplus_comm CO).
-suff: (MySumF2 (Count (S (S n)))
-(exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n))))
-              (CountFinite (S (S n))))
-CPCM (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m = O) with
+suff: (MySumF2 (Count (S (S n))) (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n)))) CPCM (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m = O) with
   | left _ => CO
-  | right H => Cmult (IRC (INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))))))
-      (Cmult (DifferentialR_Rn_OpenSet_N 2 A
-         (fun (r : R) => DifferentialR_Rn_OpenSet 2 A f B H2 H11 r) B H2
-         (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H15 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r)
-       (DifferentialR_Rn_OpenSet_N 2 A g B H2 (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H16 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r))
-end)
-=
-Cplus (MySumF2 (Count (S n))
-     (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n)))
-     CPCM
-     (fun (u : Count (S n)) =>
-      Cmult (IRC (INR (conv n (proj1_sig u))))
-      (Cmult (DifferentialR_Rn_OpenSet_N 2 A
-         (fun (r0 : R) => DifferentialR_Rn_OpenSet 2 A f B H2 H11 r0) B H2
-         (proj1_sig u) (H15 u) r)
-       (DifferentialR_Rn_OpenSet_N 2 A g B H2 (n - proj1_sig u) (H16 u) r)))) CO).
+  | right H => Cmult (IRC (INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H)))))) (Cmult (DifferentialR_Rn_OpenSet_N 2 A (fun (r : R) => DifferentialR_Rn_OpenSet 2 A f B H2 H11 r) B H2 (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H15 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r) (DifferentialR_Rn_OpenSet_N 2 A g B H2 (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H16 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r))
+end) = Cplus (MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) CPCM (fun (u : Count (S n)) => Cmult (IRC (INR (conv n (proj1_sig u)))) (Cmult (DifferentialR_Rn_OpenSet_N 2 A (fun (r0 : R) => DifferentialR_Rn_OpenSet 2 A f B H2 H11 r0) B H2 (proj1_sig u) (H15 u) r) (DifferentialR_Rn_OpenSet_N 2 A g B H2 (n - proj1_sig u) (H16 u) r)))) CO).
 move=> H23.
 rewrite - H23.
-rewrite - (Cplus_0_l (MySumF2 (Count (S n))
-     (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n)))
-     CPCM
-     (fun (u : Count (S n)) =>
-      Cmult (IRC (INR (conv n (proj1_sig u))))
-      (Cmult (DifferentialR_Rn_OpenSet_N 2 A f B H2 (proj1_sig u) (H17 u) r)
-       (DifferentialR_Rn_OpenSet_N 2 A
-         (fun (r : R) => DifferentialR_Rn_OpenSet 2 A g B H2 H12 r) B H2
-         (n - proj1_sig u) (H18 u) r))))).
+rewrite - (Cplus_0_l (MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) CPCM (fun (u : Count (S n)) => Cmult (IRC (INR (conv n (proj1_sig u)))) (Cmult (DifferentialR_Rn_OpenSet_N 2 A f B H2 (proj1_sig u) (H17 u) r) (DifferentialR_Rn_OpenSet_N 2 A (fun (r : R) => DifferentialR_Rn_OpenSet 2 A g B H2 H12 r) B H2 (n - proj1_sig u) (H18 u) r))))).
 rewrite (Cplus_comm CO).
-suff: (MySumF2 (Count (S (S n)))
-(exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n))))
-              (CountFinite (S (S n))))
-CPCM (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
-  | left H => Cmult (IRC (INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)))))
-(Cmult (DifferentialR_Rn_OpenSet_N 2 A f B H2 (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H17 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r)
-       (DifferentialR_Rn_OpenSet_N 2 A
-         (fun (r : R) => DifferentialR_Rn_OpenSet 2 A g B H2 H12 r) B H2
-         (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H18 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r))
+suff: (MySumF2 (Count (S (S n))) (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n)))) CPCM (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
+  | left H => Cmult (IRC (INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H))))) (Cmult (DifferentialR_Rn_OpenSet_N 2 A f B H2 (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H17 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r) (DifferentialR_Rn_OpenSet_N 2 A (fun (r : R) => DifferentialR_Rn_OpenSet 2 A g B H2 H12 r) B H2 (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H18 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r))
   | right _ => CO
-end)
-= Cplus (MySumF2 (Count (S n))
-        (exist (Finite (Count (S n))) (Full_set (Count (S n)))
-           (CountFinite (S n))) CPCM
-        (fun (u : Count (S n)) =>
-      Cmult (IRC (INR (conv n (proj1_sig u))))
-      (Cmult (DifferentialR_Rn_OpenSet_N 2 A f B H2 (proj1_sig u) (H17 u) r)
-       (DifferentialR_Rn_OpenSet_N 2 A
-         (fun (r : R) => DifferentialR_Rn_OpenSet 2 A g B H2 H12 r) B H2
-         (n - proj1_sig u) (H18 u) r)))) CO).
+end) = Cplus (MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) CPCM (fun (u : Count (S n)) => Cmult (IRC (INR (conv n (proj1_sig u)))) (Cmult (DifferentialR_Rn_OpenSet_N 2 A f B H2 (proj1_sig u) (H17 u) r) (DifferentialR_Rn_OpenSet_N 2 A (fun (r : R) => DifferentialR_Rn_OpenSet 2 A g B H2 H12 r) B H2 (n - proj1_sig u) (H18 u) r)))) CO).
 move=> H24.
 rewrite - H24.
 suff: (RRnplus (RnK 2) = CMc CPCM).
 move=> H25.
 rewrite H25.
-rewrite - (MySumF2Distr (Count (S (S n))) CPCM (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n))))
-     (CountFinite (S (S n)))) (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m = O) with
+rewrite - (MySumF2Distr (Count (S (S n))) CPCM (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n)))) (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m = O) with
   | left _ => CO
-  | right H => Cmult (IRC (INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))))))
-      (Cmult (DifferentialR_Rn_OpenSet_N 2 A
-         (fun (r : R) => DifferentialR_Rn_OpenSet 2 A f B H2 H11 r) B H2
-         (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H15 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r)
-       (DifferentialR_Rn_OpenSet_N 2 A g B H2 (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H16 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r))
-end)
-(fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
-  | left H => Cmult (IRC (INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)))))
-(Cmult (DifferentialR_Rn_OpenSet_N 2 A f B H2 (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H17 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r)
-       (DifferentialR_Rn_OpenSet_N 2 A
-         (fun (r : R) => DifferentialR_Rn_OpenSet 2 A g B H2 H12 r) B H2
-         (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H18 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r))
+  | right H => Cmult (IRC (INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H)))))) (Cmult (DifferentialR_Rn_OpenSet_N 2 A (fun (r : R) => DifferentialR_Rn_OpenSet 2 A f B H2 H11 r) B H2 (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H15 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r) (DifferentialR_Rn_OpenSet_N 2 A g B H2 (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) (H16 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H22 m H))) r))
+end) (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
+  | left H => Cmult (IRC (INR (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H))))) (Cmult (DifferentialR_Rn_OpenSet_N 2 A f B H2 (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H17 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r) (DifferentialR_Rn_OpenSet_N 2 A (fun (r : R) => DifferentialR_Rn_OpenSet 2 A g B H2 H12 r) B H2 (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) (H18 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) r))
   | right _ => CO
-end)
-(fun (u : Count (S (S n))) =>
-   Cmult (IRC (INR (conv (S n) (proj1_sig u))))
-   (Cmult (DifferentialR_Rn_OpenSet_N 2 A f B H2 (proj1_sig u) (H6 u) r)
-    (DifferentialR_Rn_OpenSet_N 2 A g B H2 (S n - proj1_sig u) (H7 u) r)))).
+end) (fun (u : Count (S (S n))) => Cmult (IRC (INR (conv (S n) (proj1_sig u)))) (Cmult (DifferentialR_Rn_OpenSet_N 2 A f B H2 (proj1_sig u) (H6 u) r) (DifferentialR_Rn_OpenSet_N 2 A g B H2 (S n - proj1_sig u) (H7 u) r)))).
 reflexivity.
 move=> u H26.
 elim (excluded_middle_informative (proj1_sig u < S n)%nat).
@@ -3757,16 +3472,14 @@ move=> H32.
 suff: (H30 = H17 (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig u) H27)).
 move=> H33.
 rewrite H33.
-suff: (H16
-      (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig u))
-         (H22 u H28)) = H32).
+suff: (H16 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig u)) (H22 u H28)) = H32).
 move=> H34.
 rewrite H34.
 rewrite - (Fmul_add_distr_r Cfield : forall (x y z : C), Cmult (Cplus x y) z = Cplus (Cmult x z) (Cmult y z)).
 suff: (IRC (INR match proj1_sig u with
-    | O => 1
-    | S k => conv n k + conv n (S k)
-    end) = Cplus (IRC (INR (conv n (pred (proj1_sig u))))) (IRC (INR (conv n (proj1_sig u))))).
+  | O => 1
+  | S k => conv n k + conv n (S k)
+end) = Cplus (IRC (INR (conv n (pred (proj1_sig u))))) (IRC (INR (conv n (proj1_sig u))))).
 move=> H35.
 rewrite H35.
 apply (Fmul_eq_compat_l Cfield : forall (x y z : C), y = z -> Cmult x y = Cmult x z).
@@ -3842,19 +3555,15 @@ suff: (H6 u = H30).
 move=> H31.
 rewrite H31.
 suff: (INR match proj1_sig u with
-    | O => 1
-    | S k => conv n k + conv n (S k)
-    end = INR (conv n (pred (proj1_sig u)))).
+  | O => 1
+  | S k => conv n k + conv n (S k)
+end = INR (conv n (pred (proj1_sig u)))).
 move=> H32.
 rewrite H32.
-suff: (DifferentialR_Rn_OpenSet_N 2 A g B H2
-   match proj1_sig u with
-   | O => S n
-   | S l => n - l
-   end (H7 u) r = DifferentialR_Rn_OpenSet_N 2 A g B H2 (n - pred (proj1_sig u))
-   (H16
-      (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig u))
-         (H22 u H28))) r).
+suff: (DifferentialR_Rn_OpenSet_N 2 A g B H2 match proj1_sig u with
+  | O => S n
+  | S l => n - l
+end (H7 u) r = DifferentialR_Rn_OpenSet_N 2 A g B H2 (n - pred (proj1_sig u)) (H16 (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig u)) (H22 u H28))) r).
 move=> H33.
 rewrite H33.
 reflexivity.
@@ -3920,15 +3629,10 @@ apply proof_irrelevance.
 apply proof_irrelevance.
 move=> H25.
 elim (H25 (proj2_sig m)).
-rewrite (MySumF2Included (Count (S (S n))) (FiniteIm (Count (S (S n))) (Count (S (S n)))
-(fun (m : Count (S (S n))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
+rewrite (MySumF2Included (Count (S (S n))) (FiniteIm (Count (S (S n))) (Count (S (S n))) (fun (m : Count (S (S n))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
   | left H => exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H)
   | right _ => exist (fun (k : nat) => (k < S (S n))%nat) O (le_n_S O (S n) (le_0_n (S n)))
-end)
-(exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n))))
-     (CountFinite (S (S n)))))
-  (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n))))
-     (CountFinite (S (S n)))) CPCM).
+end) (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n))))) (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n)))) CPCM).
 rewrite - MySumF2BijectiveSame2.
 rewrite (H21 CPCM).
 rewrite (MySumF2O (Count (S (S n)))).
@@ -3955,16 +3659,10 @@ elim (lt_irrefl (S (proj1_sig m))).
 rewrite {1} H26.
 apply (le_n_S O (proj1_sig m) (le_0_n (proj1_sig m))).
 move=> H26.
-suff: (H15 (exist (fun k : nat => (k < S n)%nat) (proj1_sig m)
-         (H22
-            (exist (fun (k : nat) => (k < S (S n))%nat) 
-               (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H25)) H26)) = H15 m).
+suff: (H15 (exist (fun k : nat => (k < S n)%nat) (proj1_sig m) (H22 (exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H25)) H26)) = H15 m).
 move=> H27.
 rewrite H27.
-suff: (H16 (exist (fun k : nat => (k < S n)%nat) (proj1_sig m)
-         (H22
-            (exist (fun (k : nat) => (k < S (S n))%nat) 
-               (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H25)) H26)) = H16 m).
+suff: (H16 (exist (fun k : nat => (k < S n)%nat) (proj1_sig m) (H22 (exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H25)) H26)) = H16 m).
 move=> H28.
 rewrite H28.
 reflexivity.
@@ -3981,15 +3679,10 @@ elim H23.
 elim u0.
 elim.
 move=> H25.
-apply (Im_intro (Count (S (S n))) (Count (S (S n))) (Full_set (Count (S (S n)))) (fun (m : Count (S (S n))) =>
-         match excluded_middle_informative (proj1_sig m < S n)%nat with
-         | left H =>
-             exist (fun (k : nat) => (k < S (S n))%nat) 
-               (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H)
-         | right _ =>
-             exist (fun (k : nat) => (k < S (S n))%nat) 0%nat
-               (le_n_S 0 (S n) (le_0_n (S n)))
-         end) (exist (fun (k : nat) => (k < S (S n))%nat) (S n) (le_n (S (S n))))).
+apply (Im_intro (Count (S (S n))) (Count (S (S n))) (Full_set (Count (S (S n)))) (fun (m : Count (S (S n))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
+  | left H => exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H)
+  | right _ => exist (fun (k : nat) => (k < S (S n))%nat) 0%nat (le_n_S 0 (S n) (le_0_n (S n)))
+end) (exist (fun (k : nat) => (k < S (S n))%nat) (S n) (le_n (S (S n))))).
 apply (Full_intro (Count (S (S n)))).
 simpl.
 elim (excluded_middle_informative (S n < S n)%nat).
@@ -3999,15 +3692,10 @@ move=> H26.
 apply sig_map.
 reflexivity.
 move=> m H25 H26.
-apply (Im_intro (Count (S (S n))) (Count (S (S n))) (Full_set (Count (S (S n)))) (fun (m : Count (S (S n))) =>
-         match excluded_middle_informative (proj1_sig m < S n)%nat with
-         | left H =>
-             exist (fun (k : nat) => (k < S (S n))%nat) 
-               (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H)
-         | right _ =>
-             exist (fun (k : nat) => (k < S (S n))%nat) 0%nat
-               (le_n_S 0 (S n) (le_0_n (S n)))
-         end) (exist (fun (k : nat) => (k < S (S n))%nat) m (le_trans (S m) (S (S m)) (S (S n)) (le_S (S m) (S m) (le_n (S m))) H26))).
+apply (Im_intro (Count (S (S n))) (Count (S (S n))) (Full_set (Count (S (S n)))) (fun (m : Count (S (S n))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
+  | left H => exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) (S n) H)
+  | right _ => exist (fun (k : nat) => (k < S (S n))%nat) 0%nat (le_n_S 0 (S n) (le_0_n (S n)))
+end) (exist (fun (k : nat) => (k < S (S n))%nat) m (le_trans (S m) (S (S m)) (S (S n)) (le_S (S m) (S m) (le_n (S m))) H26))).
 apply (Full_intro (Count (S (S n)))).
 simpl.
 elim (excluded_middle_informative (m < S n)%nat).
@@ -4022,23 +3710,20 @@ move=> H25.
 elim (excluded_middle_informative (proj1_sig u2 < S n)%nat).
 move=> H26 H27.
 apply sig_map.
-suff: (proj1_sig u1 = pred (proj1_sig (exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig u1))
-        (le_n_S (S (proj1_sig u1)) (S n) H25)))).
+suff: (proj1_sig u1 = pred (proj1_sig (exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig u1)) (le_n_S (S (proj1_sig u1)) (S n) H25)))).
 move=> H28.
 rewrite H28.
 rewrite H27.
 reflexivity.
 reflexivity.
 move=> H26 H27.
-elim (lt_irrefl (proj1_sig (exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig u1))
-  (le_n_S (S (proj1_sig u1)) (S n) H25)))).
+elim (lt_irrefl (proj1_sig (exist (fun (k : nat) => (k < S (S n))%nat) (S (proj1_sig u1)) (le_n_S (S (proj1_sig u1)) (S n) H25)))).
 rewrite {1} H27.
 apply (le_n_S O (proj1_sig u1) (le_0_n (proj1_sig u1))).
 move=> H25.
 elim (excluded_middle_informative (proj1_sig u2 < S n)%nat).
 move=> H26 H27.
-elim (lt_irrefl (proj1_sig (exist (fun (k : nat) => (k < S (S n))%nat) O
-  (le_n_S 0 (S n) (le_0_n (S n)))))).
+elim (lt_irrefl (proj1_sig (exist (fun (k : nat) => (k < S (S n))%nat) O (le_n_S 0 (S n) (le_0_n (S n)))))).
 rewrite {2} H27.
 apply (le_n_S O (proj1_sig u2) (le_0_n (proj1_sig u2))).
 move=> H26 H27.
@@ -4079,8 +3764,7 @@ apply (Cplus_0_l CO).
 move=> r H13 H14.
 rewrite (proj2 (DifferentialR_Rn_OpenSet_Nature 2 A f B H2 H11) r H13 H14).
 rewrite (proj2 (DifferentialR_Rn_OpenSet_Nature 2 A g B H2 H12) r H13 H14).
-rewrite - (Proposition_1_3_3_mult_C (Intersection R A B) f g r (OpenSetNotIsolatedR_Intersection A B H2 r H14 H13) 
-  (H11 r H14) (H12 r H14) (H8 r H14)).
+rewrite - (Proposition_1_3_3_mult_C (Intersection R A B) f g r (OpenSetNotIsolatedR_Intersection A B H2 r H14 H13) (H11 r H14) (H12 r H14) (H8 r H14)).
 reflexivity.
 apply (DifferentiableR_RRn_OpenSet_N_1 (RnK 2) A g B H2).
 apply (DifferentiableR_RRn_OpenSet_N_le (RnK 2) A g B H2 1 (S n) (le_n_S O n (le_0_n n)) H4).
@@ -4097,11 +3781,9 @@ Proof.
 move=> A f g B H1 n H2 H3.
 suff: (DifferentiableR_Rn_OpenSet_N 2 A (fun (r : R) => Cmult (f r) (g r)) B H1 n).
 move=> H4.
-suff: (forall (m : Count (S n)),
-      DifferentiableR_Rn_OpenSet_N 2 A f B H1 (proj1_sig m)).
+suff: (forall (m : Count (S n)), DifferentiableR_Rn_OpenSet_N 2 A f B H1 (proj1_sig m)).
 move=> H5.
-suff: (forall (m : Count (S n)),
-      DifferentiableR_Rn_OpenSet_N 2 A g B H1 (n - proj1_sig m)).
+suff: (forall (m : Count (S n)), DifferentiableR_Rn_OpenSet_N 2 A g B H1 (n - proj1_sig m)).
 move=> H6.
 exists H4.
 exists H5.
