@@ -30,10 +30,10 @@ LibraryExtension/EnsemblesExtension.vo: LibraryExtension/EnsemblesExtension.v
 MyAlgebraicStructure/MyField.vo: MyAlgebraicStructure/MyField.v BasicProperty/NatProperty.vo
 	coqc -Q MyAlgebraicStructure MyAlgebraicStructure MyAlgebraicStructure/MyField.v
 
-MyAlgebraicStructure/MyVectorSpace.vo: MyAlgebraicStructure/MyVectorSpace.v MyAlgebraicStructure/MyField.vo BasicProperty/MappingProperty.v
+MyAlgebraicStructure/MyVectorSpace.vo: MyAlgebraicStructure/MyVectorSpace.v MyAlgebraicStructure/MyField.vo BasicProperty/MappingProperty.vo
 	coqc -Q MyAlgebraicStructure MyAlgebraicStructure MyAlgebraicStructure/MyVectorSpace.v
 
-LinearAlgebra/SenkeiDaisuunoSekai/SenkeiDaisuunoSekai1.vo: MyAlgebraicStructure/MyField.v MyAlgebraicStructure/MyVectorSpace.v BasicProperty/MappingProperty.v BasicProperty/NatProperty.v Tools/MySum.v Tools/BasicTools.v LibraryExtension/DatatypesExtension.v LibraryExtension/EnsemblesExtension.v
+LinearAlgebra/SenkeiDaisuunoSekai/SenkeiDaisuunoSekai1.vo: MyAlgebraicStructure/MyField.v MyAlgebraicStructure/MyVectorSpace.vo BasicProperty/MappingProperty.vo BasicProperty/NatProperty.vo Tools/MySum.vo Tools/BasicTools.vo LibraryExtension/DatatypesExtension.vo LibraryExtension/EnsemblesExtension.vo
 	coqc -Q LinearAlgebra/SenkeiDaisuunoSekai LinearAlgebra.SenkeiDaisuunoSekai LinearAlgebra/SenkeiDaisuunoSekai/SenkeiDaisuunoSekai1.v
 
 LinearAlgebra/Matrix.vo: LinearAlgebra/Matrix.v MyAlgebraicStructure/MyField.vo MyAlgebraicStructure/MyVectorSpace.vo Tools/MySum.vo Tools/MyProd.vo
