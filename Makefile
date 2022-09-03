@@ -1,4 +1,4 @@
-all:  Tools/BasicTools.vo BasicProperty/NatProperty.vo BasicProperty/MappingProperty.vo Tools/MyProd.vo Tools/MySum.vo BasicNotation/Parity.vo BasicNotation/Permutation.vo LibraryExtension/DatatypesExtension.vo LibraryExtension/EnsemblesExtension.vo MyAlgebraicStructure/MyField.vo MyAlgebraicStructure/MyVectorSpace.vo LinearAlgebra/SenkeiDaisuunoSekai/SenkeiDaisuunoSekai1.vo LinearAlgebra/Matrix.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1AC.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2AC.vo
+all:  Tools/BasicTools.vo BasicProperty/NatProperty.vo BasicProperty/MappingProperty.vo Tools/MyProd.vo Tools/MySum.vo BasicNotation/Parity.vo BasicNotation/Permutation.vo LibraryExtension/ComposeExtension.vo LibraryExtension/DatatypesExtension.vo LibraryExtension/EnsemblesExtension.vo MyAlgebraicStructure/MyField.vo MyAlgebraicStructure/MyVectorSpace.vo LinearAlgebra/SenkeiDaisuunoSekai/SenkeiDaisuunoSekai1.vo LinearAlgebra/Matrix.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1AC.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2AC.vo
 
 Tools/BasicTools.vo: Tools/BasicTools.v
 	coqc -Q Tools Tools Tools/BasicTools.v
@@ -20,6 +20,9 @@ BasicNotation/Parity.vo: BasicNotation/Parity.v Tools/MySum.vo
 
 BasicNotation/Permutation.vo: BasicNotation/Permutation.v BasicNotation/Parity.vo Tools/MySum.vo
 	coqc -Q BasicNotation BasicNotation BasicNotation/Permutation.v
+
+LibraryExtension/ComposeExtension.vo: LibraryExtension/ComposeExtension.v
+	coqc -Q LibraryExtension LibraryExtension LibraryExtension/ComposeExtension.v
 
 LibraryExtension/DatatypesExtension.vo: LibraryExtension/DatatypesExtension.v
 	coqc -Q LibraryExtension LibraryExtension LibraryExtension/DatatypesExtension.v
@@ -51,7 +54,7 @@ Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo: Analysis/KaisekiNyuumonn/Kaiseki
 Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.v Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo MyAlgebraicStructure/MyField.vo MyAlgebraicStructure/MyVectorSpace.vo Tools/MySum.vo
 	coqc -Q Analysis/KaisekiNyuumonn Analysis.KaisekiNyuumonn Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.v
 
-Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.v BasicProperty/MappingProperty.vo MyAlgebraicStructure/MyField.vo MyAlgebraicStructure/MyVectorSpace.vo Tools/MySum.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.vo
+Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.v BasicProperty/MappingProperty.vo LibraryExtension/ComposeExtension.vo MyAlgebraicStructure/MyField.vo MyAlgebraicStructure/MyVectorSpace.vo Tools/MySum.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.vo
 	coqc -Q Analysis/KaisekiNyuumonn Analysis.KaisekiNyuumonn Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.v
 
 Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2.vo: Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2.v BasicProperty/MappingProperty.vo LibraryExtension/EnsemblesExtension.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1.vo LibraryExtension/DatatypesExtension.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo BasicProperty/NatProperty.vo
