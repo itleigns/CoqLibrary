@@ -1,6 +1,7 @@
 Add LoadPath "MyAlgebraicStructure" as MyAlgebraicStructure.
 Add LoadPath "Tools" as Tools.
 Add LoadPath "BasicProperty" as BasicProperty.
+Add LoadPath "LibraryExtension" as LibraryExtension.
 Add LoadPath "Analysis/KaisekiNyuumonn" as Analysis.KaisekiNyuumonn.
 
 From mathcomp Require Import ssreflect.
@@ -17,6 +18,7 @@ Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Program.Basics.
 Require Import Coq.Program.Combinators.
 Require Import BasicProperty.MappingProperty.
+Require Import LibraryExtension.ComposeExtension.
 Require Import MyAlgebraicStructure.MyField.
 Require Import MyAlgebraicStructure.MyVectorSpace.
 Require Import Tools.MySum.
@@ -2189,36 +2191,6 @@ Definition DifferentialR_Rn_OpenSet_Nature2 (N : nat) : forall (A : Ensemble R) 
 
 Definition DifferentialR_R_OpenSet_Nature2 : forall (A : Ensemble R) (f : R -> R) (B : Ensemble R) (H1 : OpenSetMet R_met B) (H2 : DifferentiableR_R_OpenSet A f B H1) (g : R -> R), ((forall (r : R), ~ (ClosureMet R_met (fun (x : R) => x <> r /\ In R A x) r) \/ ~ (In R B r) -> g r = 0) /\ forall (r : R) (H3 : ClosureMet R_met (fun (x : R) => x <> r /\ In R A x) r) (H4 : In R B r), g r = DifferentialR_R (Intersection R A B) f r (OpenSetNotIsolatedR_Intersection A B H1 r H4 H3) (H2 r H4)) -> DifferentialR_R_OpenSet A f B H1 H2 = g := DifferentialR_RRn_OpenSet_Nature2 R1K.
 
-Fixpoint repeat (T : Type) (f : T -> T) (n : nat) : T -> T := match n with
-  | O => Datatypes.id
-  | S m => compose f (repeat T f m)
-end.
-
-Lemma repeat_add : forall (T : Type) (f : T -> T) (n m : nat), repeat T f (n + m) = compose (repeat T f n) (repeat T f m).
-Proof.
-move=> T f.
-elim.
-move=> m.
-reflexivity.
-move=> n H1 m.
-simpl.
-rewrite H1.
-reflexivity.
-Qed.
-
-Lemma repeat_def2 : forall (T : Type) (f : T -> T), repeat T f = fix rep (n : nat) : T -> T := match n with
-  | O => Datatypes.id
-  | S m => compose f (repeat T f m)
-end.
-Proof.
-move=> T f.
-apply functional_extensionality.
-elim.
-reflexivity.
-move=> n H1.
-apply (repeat_add T f 1 n).
-Qed.
-
 Definition DifferentialR_RRn_OpenSet_option (K : RRn) (A : Ensemble R) (B : Ensemble R) (H1 : OpenSetMet R_met B) := (fun (g : option (R -> RRnT K)) => match g with
   | None => None
   | Some h => match excluded_middle_informative (DifferentiableR_RRn_OpenSet K A h B H1) with
@@ -2227,7 +2199,7 @@ Definition DifferentialR_RRn_OpenSet_option (K : RRn) (A : Ensemble R) (B : Ense
   end
 end).
 
-Definition DifferentialR_RRn_OpenSet_N_sub (K : RRn) (A : Ensemble R) (f : R -> RRnT K) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat) := repeat (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) n (Some f).
+Definition DifferentialR_RRn_OpenSet_N_sub (K : RRn) (A : Ensemble R) (f : R -> RRnT K) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat) := repeat_compose (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) n (Some f).
 
 Definition DifferentiableR_RRn_OpenSet_N (K : RRn) (A : Ensemble R) (f : R -> RRnT K) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat) := match DifferentialR_RRn_OpenSet_N_sub K A f B H1 n with
   | None => False
@@ -2262,7 +2234,7 @@ unfold DifferentiableR_RRn_OpenSet_N.
 unfold DifferentialR_RRn_OpenSet_N_sub.
 simpl.
 unfold compose.
-elim (repeat (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) n (Some f)).
+elim (repeat_compose (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) n (Some f)).
 move=> g H2.
 unfold DifferentialR_RRn_OpenSet_option.
 elim (excluded_middle_informative (DifferentiableR_RRn_OpenSet K A g B H1)).
@@ -2291,7 +2263,7 @@ unfold DifferentialR_RRn_OpenSet_N_sub.
 suff: (S n = n + 1)%nat.
 move=> H2.
 rewrite H2.
-rewrite repeat_add.
+rewrite repeat_compose_add.
 simpl.
 rewrite compose_id_right.
 unfold DifferentialR_RRn_OpenSet_option at 2.
@@ -2337,7 +2309,7 @@ unfold DifferentialR_RRn_OpenSet_N.
 unfold DifferentialR_RRn_OpenSet_N_sub.
 simpl.
 unfold compose.
-elim (repeat (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) n (Some f)).
+elim (repeat_compose (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) n (Some f)).
 move=> g H2.
 unfold DifferentialR_RRn_OpenSet_option.
 elim (excluded_middle_informative (DifferentiableR_RRn_OpenSet K A g B H1)).
@@ -2368,7 +2340,7 @@ unfold DifferentialR_RRn_OpenSet_N_sub.
 suff: (S n = n + 1)%nat.
 move=> H2.
 rewrite H2.
-rewrite repeat_add.
+rewrite repeat_compose_add.
 simpl.
 rewrite compose_id_right.
 simpl.
@@ -2415,7 +2387,7 @@ unfold DifferentiableR_RRn_OpenSet_N at 1.
 unfold DifferentialR_RRn_OpenSet_N_sub.
 simpl.
 unfold compose.
-elim (repeat (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) k (Some f)).
+elim (repeat_compose (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) k (Some f)).
 move=> g H3 H4.
 apply (H3 I).
 move=> H3.
@@ -2471,7 +2443,7 @@ unfold DifferentiableR_RRn_OpenSet_N.
 unfold DifferentialR_RRn_OpenSet_N.
 unfold DifferentialR_RRn_OpenSet_N_sub.
 rewrite (plus_comm n m).
-rewrite (repeat_add (option (R -> RRnT K)) (fun (g : option (R -> RRnT K)) => match g with
+rewrite (repeat_compose_add (option (R -> RRnT K)) (fun (g : option (R -> RRnT K)) => match g with
   | Some h => match excluded_middle_informative (DifferentiableR_RRn_OpenSet K A h B H1) with
     | left H => Some (DifferentialR_RRn_OpenSet K A h B H1 H)
     | right _ => None
@@ -2480,7 +2452,7 @@ rewrite (repeat_add (option (R -> RRnT K)) (fun (g : option (R -> RRnT K)) => ma
 end) m n).
 unfold compose.
 unfold DifferentialR_RRn_OpenSet_option.
-elim (repeat (option (R -> RRnT K)) (fun (g : option (R -> RRnT K)) => match g with
+elim (repeat_compose (option (R -> RRnT K)) (fun (g : option (R -> RRnT K)) => match g with
   | Some h => match excluded_middle_informative (DifferentiableR_RRn_OpenSet K A h B H1) with
     | left H => Some (DifferentialR_RRn_OpenSet K A h B H1 H)
     | right _ => None
@@ -2503,10 +2475,10 @@ unfold DifferentiableR_RRn_OpenSet_N.
 unfold DifferentialR_RRn_OpenSet_N.
 unfold DifferentialR_RRn_OpenSet_N_sub.
 rewrite (plus_comm n m).
-rewrite (repeat_add (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) m n).
+rewrite (repeat_compose_add (option (R -> RRnT K)) (DifferentialR_RRn_OpenSet_option K A B H1) m n).
 unfold compose.
 unfold DifferentialR_RRn_OpenSet_option.
-elim (repeat (option (R -> RRnT K)) (fun (g : option (R -> RRnT K)) => match g with
+elim (repeat_compose (option (R -> RRnT K)) (fun (g : option (R -> RRnT K)) => match g with
   | Some h => match excluded_middle_informative (DifferentiableR_RRn_OpenSet K A h B H1) with
     | left H => Some (DifferentialR_RRn_OpenSet K A h B H1 H)
     | right _ => None
