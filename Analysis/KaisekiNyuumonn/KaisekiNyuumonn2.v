@@ -6141,6 +6141,10 @@ apply (proj1 (DifferentiableR_RRn_OpenSet_N_Nature1 R1K A f A H1 1 H7) H3).
 apply (DifferentiableR_RRn_OpenSet_N_le R1K A f A H1 1 2 (le_S 1 1 (le_n 1)) H3).
 Qed.
 
+Definition Theorem_2_6_min : forall (f : R -> R) (A : Ensemble R) (H1 : OpenSetMet R_met A) (H2 : DifferentiableR_R_OpenSet A f A H1) (H3 : DifferentiableR_R_OpenSet_N A f A H1 2) (r : R), In R A r -> DifferentialR_R_OpenSet A f A H1 H2 r = 0 -> 0 < DifferentialR_R_OpenSet_N A f A H1 2 H3 r -> is_minimal_met_R_narrow R_met A f r := Theorem_2_6 RlK.
+
+Definition Theorem_2_6_max : forall (f : R -> R) (A : Ensemble R) (H1 : OpenSetMet R_met A) (H2 : DifferentiableR_R_OpenSet A f A H1) (H3 : DifferentiableR_R_OpenSet_N A f A H1 2) (r : R), In R A r -> DifferentialR_R_OpenSet A f A H1 H2 r = 0 -> 0 > DifferentialR_R_OpenSet_N A f A H1 2 H3 r -> is_maximal_met_R_narrow R_met A f r := Theorem_2_6 RgK.
+
 Lemma Theorem_2_7_R : forall (f : R -> R) (A : Ensemble R) (H1 : OpenSetMet R_met A) (r : R) (H2 : In R A r), (forall (x : R), In R A x -> ContinuousMet R_met R_met f A x) -> forall (H3 : forall (x : R), x <> r -> In R A x -> DifferentiableR_R A f x) (c : R), (forall (g : R -> R), (forall (x : R) (H4 : x <> r) (H5 : In R A x), g x = DifferentialR_R A f x (OpenSetNotIsolatedR A H1 x H5) (H3 x H4 H5)) -> limit_in R_met R_met g (fun (x : R) => x <> r /\ In R A x) r c) -> exists (H6 : DifferentiableR_R A f r), DifferentialR_R A f r (OpenSetNotIsolatedR A H1 r H2) H6 = c.
 Proof.
 move=> f A H1 r H2 H0 H3 c H4.
