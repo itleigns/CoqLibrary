@@ -15627,8 +15627,7 @@ apply H7.
 move=> x1.
 elim.
 move=> x2 H13 H14.
-suff: (In R (BoundedClosedSection
-          (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) x2).
+suff: (In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) x2).
 move=> H15 eps H16.
 elim (H2 x2 H15 eps H16).
 move=> dlt H17.
@@ -15698,8 +15697,7 @@ apply H7.
 move=> x1.
 elim.
 move=> x2 H13 H14.
-suff: (In R (BoundedClosedSection
-          (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) x2).
+suff: (In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) x2).
 move=> H15 eps H16.
 elim (H2 x2 H15 eps H16).
 move=> dlt H17.

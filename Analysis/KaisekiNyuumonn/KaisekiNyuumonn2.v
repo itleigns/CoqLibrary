@@ -3828,7 +3828,7 @@ Definition DifferentiableR_Rn_OpenSet_N_continuously (N : nat) (A : Ensemble R) 
 
 Definition DifferentiableR_R_OpenSet_N_continuously (A : Ensemble R) (f : R -> R) (B : Ensemble R) (H1 : OpenSetMet R_met B) (n : nat) := DifferentiableR_R_OpenSet_N A f B H1 n /\ forall (H : DifferentiableR_R_OpenSet_N A f B H1 n) (r : R), In R A r -> ContinuousMet R_met R_met (DifferentialR_R_OpenSet_N A f B H1 n H) (Intersection R A B) r.
 
-Inductive Rlg : Set := 
+Inductive Rlg : Set :=
   | RlK : Rlg
   | RgK : Rlg.
 
@@ -4328,8 +4328,7 @@ Lemma ClosedSectionSequentiallyCompact : forall (a b : R), a <= b -> Sequentiall
 Proof.
 move=> a b H1.
 apply Theorem_7_2_2_2_R.
-suff: ((fun (r : R) => a <= r <= b) = (BoundedClosedSection
-            (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1))).
+suff: ((fun (r : R) => a <= r <= b) = (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1))).
 move=> H2.
 rewrite H2.
 apply BoundedClosedSectionBoundedClosed.
@@ -4376,9 +4375,7 @@ move=> x H8 H9.
 apply (Rge_le (f x) (f r) (H6 x H9)).
 suff: (Inhabited R (fun (x : R) => a <= x <= b)).
 move=> H5.
-suff: (forall (r : Base R_met),
-In (Base R_met) (fun x : R => a <= x <= b) r ->
-ContinuousMet R_met R_met f (fun (x : R) => a <= x <= b) r).
+suff: (forall (r : Base R_met), In (Base R_met) (fun x : R => a <= x <= b) r -> ContinuousMet R_met R_met f (fun (x : R) => a <= x <= b) r).
 move=> H6.
 suff: (SequentiallyCompactMet R_met (fun (x : R) => a <= x <= b)).
 move=> H7.
@@ -4516,8 +4513,7 @@ Qed.
 Lemma Theorem_2_3 : forall (a b : R) (H1 : a < b) (f : R -> R), (forall (r : R), a <= r <= b -> ContinuousMet R_met R_met f (fun (x : R) => a <= x <= b) r) -> forall (H2 : forall (r : R), a < r < b -> DifferentiableR_R (fun (x : R) => a < x < b) f r), exists (r : R) (H3 : a < r < b), DifferentialR_R (fun (x : R) => a < x < b) f r (InteriorNotIsolatedR (fun (x : R) => a < x < b) r (OpenSectionOpen a b H1 r H3)) (H2 r H3) = (f b - f a) / (b - a).
 Proof.
 move=> a b H1 f H2 H3.
-suff: (forall (r : R),
-     a <= r <= b -> ContinuousMet R_met R_met (fun (x : R) => f x - (f b - f a) / (b - a) * x) (fun (x : R) => a <= x <= b) r).
+suff: (forall (r : R), a <= r <= b -> ContinuousMet R_met R_met (fun (x : R) => f x - (f b - f a) / (b - a) * x) (fun (x : R) => a <= x <= b) r).
 move=> H4.
 suff: (forall (r : R), a < r < b -> DifferentiableR_R (fun (x : R) => a < x < b) (fun (x : R) => f x - (f b - f a) / (b - a) * x) r).
 move=> H5.
@@ -4529,25 +4525,14 @@ exists r.
 exists H6.
 apply Rminus_diag_uniq.
 rewrite - H7.
-suff: (forall (c : R), DifferentiableR_R (fun (x : R) => a < x < b)
-  (fun (x : R) => c * x) r).
+suff: (forall (c : R), DifferentiableR_R (fun (x : R) => a < x < b) (fun (x : R) => c * x) r).
 move=> H8.
-suff: (forall (c : R), DifferentialR_RRn R1K (fun (x : R) => a < x < b)
-  (fun (x : R) => c * x) r (InteriorNotIsolatedR (fun (x : R) => a < x < b) r
-     (OpenSectionOpen a b H1 r H6)) (H8 c) = c).
+suff: (forall (c : R), DifferentialR_RRn R1K (fun (x : R) => a < x < b) (fun (x : R) => c * x) r (InteriorNotIsolatedR (fun (x : R) => a < x < b) r (OpenSectionOpen a b H1 r H6)) (H8 c) = c).
 move=> H9.
-suff: (DifferentialR_R (fun x : R => a < x < b)
-  (fun (x : R) => f x - (f b - f a) / (b - a) * x) r
-  (InteriorNotIsolatedR (fun (x : R) => a < x < b) r
-     (OpenSectionOpen a b H1 r H6)) (H5 r H6)
-= DifferentialR_RRn R1K (fun x : R => a < x < b)
-  (fun (x : R) => RRnminus R1K (f x) ((f b - f a) / (b - a) * x)) r
-  (InteriorNotIsolatedR (fun (x : R) => a < x < b) r
-     (OpenSectionOpen a b H1 r H6)) (H5 r H6)).
+suff: (DifferentialR_R (fun x : R => a < x < b) (fun (x : R) => f x - (f b - f a) / (b - a) * x) r (InteriorNotIsolatedR (fun (x : R) => a < x < b) r (OpenSectionOpen a b H1 r H6)) (H5 r H6) = DifferentialR_RRn R1K (fun x : R => a < x < b) (fun (x : R) => RRnminus R1K (f x) ((f b - f a) / (b - a) * x)) r (InteriorNotIsolatedR (fun (x : R) => a < x < b) r (OpenSectionOpen a b H1 r H6)) (H5 r H6)).
 move=> H10.
 rewrite H10.
-rewrite (Proposition_1_3_1_minus R1K (fun (x : R) => a < x < b) f (fun (x : R) => (f b - f a) / (b - a) * x) r (InteriorNotIsolatedR (fun (x : R) => a < x < b) r
-     (OpenSectionOpen a b H1 r H6)) (H3 r H6) (H8 ((f b - f a) / (b - a))) (H5 r H6)).
+rewrite (Proposition_1_3_1_minus R1K (fun (x : R) => a < x < b) f (fun (x : R) => (f b - f a) / (b - a) * x) r (InteriorNotIsolatedR (fun (x : R) => a < x < b) r (OpenSectionOpen a b H1 r H6)) (H3 r H6) (H8 ((f b - f a) / (b - a))) (H5 r H6)).
 rewrite H9.
 reflexivity.
 reflexivity.
@@ -4613,8 +4598,7 @@ move=> r H5.
 apply (Proposition_1_3_1_minus_differentiable R1K).
 apply H3.
 apply H5.
-suff: (forall (c : R), DifferentiableR_R (fun (x : R) => a < x < b)
-  (fun (x : R) => c * x) r).
+suff: (forall (c : R), DifferentiableR_R (fun (x : R) => a < x < b) (fun (x : R) => c * x) r).
 move=> H6.
 apply H6.
 move=> c.
@@ -4950,8 +4934,7 @@ Proof.
 move=> f A H1.
 apply conj.
 move=> H2 r H3.
-suff: (limit_in R_met R_met (fun (h : R) => / h * (f (r + h) - f r))
-    (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 0).
+suff: (limit_in R_met R_met (fun (h : R) => / h * (f (r + h) - f r)) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 0).
 move=> H4.
 suff: (DifferentiableR_R A f r).
 move=> H5.
@@ -4985,12 +4968,9 @@ move=> H6.
 rewrite (H3 r2 r1 H6 H5 H4).
 reflexivity.
 move=> r1 r2 H3 H4 H5.
-suff: (forall (r : R),
-              r1 < r < r2 -> DifferentiableR_R (fun (x : R) => r1 < x < r2) f r).
+suff: (forall (r : R), r1 < r < r2 -> DifferentiableR_R (fun (x : R) => r1 < x < r2) f r).
 move=> H6.
-suff: ((forall (r : R),
-        r1 <= r <= r2 ->
-        ContinuousMet R_met R_met f (fun (x : R) => r1 <= x <= r2) r)).
+suff: ((forall (r : R), r1 <= r <= r2 -> ContinuousMet R_met R_met f (fun (x : R) => r1 <= x <= r2) r)).
 move=> H7.
 elim (Theorem_2_3 r1 r2 H3 f H7 H6).
 move=> r.
@@ -4998,10 +4978,7 @@ elim.
 move=> H8 H9.
 apply (Rminus_diag_uniq_sym (f r1) (f r2)).
 apply (Rmult_eq_reg_r (/ (r2 - r1))).
-rewrite - (H9 : DifferentialR_R (fun (x : R) => r1 < x < r2) f r
-       (InteriorNotIsolatedR (fun (x : R) => r1 < x < r2) r
-          (OpenSectionOpen r1 r2 H3 r H8)) (H6 r H8) =
-     (f r2 - f r1) * / (r2 - r1)).
+rewrite - (H9 : DifferentialR_R (fun (x : R) => r1 < x < r2) f r (InteriorNotIsolatedR (fun (x : R) => r1 < x < r2) r (OpenSectionOpen r1 r2 H3 r H8)) (H6 r H8) = (f r2 - f r1) * / (r2 - r1)).
 rewrite (Rmult_0_l (/ (r2 - r1))).
 suff: (In R A r).
 move=> H10.
@@ -5103,9 +5080,7 @@ Proof.
 move=> N f A H1.
 apply conj.
 move=> H2 r H3.
-suff: (limit_in R_met (Rn_met N)
-    (fun (h : R) => Rnmult N (/ h) (Rnminus N (f (r + h)) (f r)))
-    (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 (RnO N)).
+suff: (limit_in R_met (Rn_met N) (fun (h : R) => Rnmult N (/ h) (Rnminus N (f (r + h)) (f r))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 (RnO N)).
 move=> H4.
 suff: (DifferentiableR_Rn N A f r).
 move=> H5.
@@ -5166,9 +5141,7 @@ move=> r1.
 elim.
 move=> r2 H3.
 exists (RRnminus K (f r1) (g r1)).
-suff: (forall (r : R) (H2 : In R A r),
-        exists (H3 : DifferentiableR_RRn K A (fun (r : R) => RRnminus K (f r) (g r)) r),
-          DifferentialR_RRn K A (fun (r : R) => RRnminus K (f r) (g r)) r (SectionRNotIsolated A H1 r H2) H3 = RRnO K).
+suff: (forall (r : R) (H2 : In R A r), exists (H3 : DifferentiableR_RRn K A (fun (r : R) => RRnminus K (f r) (g r)) r), DifferentialR_RRn K A (fun (r : R) => RRnminus K (f r) (g r)) r (SectionRNotIsolated A H1 r H2) H3 = RRnO K).
 move=> H4 r H5.
 rewrite (proj2 (Theorem_2_4 K (fun (r : R) => RRnminus K (f r) (g r)) A H1) H4 r1 r (proj1 (proj2 H3)) H5).
 unfold RRnminus.
@@ -5191,8 +5164,7 @@ apply (RRnplus_opp_r K).
 apply (Proposition_1_3_1_minus_differentiable K A f g r H5 H6).
 Qed.
 
-Lemma Theorem_2_5_1 : forall (K : Rlg) (f : R -> R) (A : Ensemble R) (H1 : SectionR A) (H2 : forall (r : R), In R A r -> DifferentiableR_R A f r), (forall (r1 r2 : R), In R A r1 -> In R A r2 -> r1 <= r2 -> Rlge K (f r1) (f r2)) <-> (forall (r : R) (H : In R A r),
-        Rlge K 0 (DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H))).
+Lemma Theorem_2_5_1 : forall (K : Rlg) (f : R -> R) (A : Ensemble R) (H1 : SectionR A) (H2 : forall (r : R), In R A r -> DifferentiableR_R A f r), (forall (r1 r2 : R), In R A r1 -> In R A r2 -> r1 <= r2 -> Rlge K (f r1) (f r2)) <-> (forall (r : R) (H : In R A r), Rlge K 0 (DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H))).
 Proof.
 move=> K f A H1 H2.
 apply conj.
@@ -5349,11 +5321,9 @@ apply (Rinv_0_lt_compat (r2 - r1) (Rgt_minus r2 r1 H6)).
 rewrite (Rmult_0_l (/ (r2 - r1))).
 apply Rge_le.
 apply H7.
-suff: (forall (r : R),
-        r1 <= r <= r2 -> ContinuousMet R_met R_met f (fun (x : R) => r1 <= x <= r2) r).
+suff: (forall (r : R), r1 <= r <= r2 -> ContinuousMet R_met R_met f (fun (x : R) => r1 <= x <= r2) r).
 move=> H7.
-suff: (forall (r : R),
-        r1 < r < r2 -> DifferentiableR_R (fun (x : R) => r1 < x < r2) f r).
+suff: (forall (r : R), r1 < r < r2 -> DifferentiableR_R (fun (x : R) => r1 < x < r2) f r).
 move=> H8.
 elim (Theorem_2_3 r1 r2 H6 f H7 H8).
 move=> c.
@@ -5362,10 +5332,7 @@ move=> H9 H10.
 rewrite - H10.
 suff: (In R A c).
 move=> H11.
-suff: (DifferentialR_R (fun x : R => r1 < x < r2) f c
-     (InteriorNotIsolatedR (fun x : R => r1 < x < r2) c
-        (OpenSectionOpen r1 r2 H6 c H9)) (H8 c H9)
-= DifferentialR_R A f c (SectionRNotIsolated A H1 c H11) (H2 c H11)).
+suff: (DifferentialR_R (fun x : R => r1 < x < r2) f c (InteriorNotIsolatedR (fun x : R => r1 < x < r2) c (OpenSectionOpen r1 r2 H6 c H9)) (H8 c H9) = DifferentialR_R A f c (SectionRNotIsolated A H1 c H11) (H2 c H11)).
 move=> H12.
 rewrite H12.
 apply (H3 c H11).
@@ -5468,8 +5435,7 @@ right.
 reflexivity.
 Qed.
 
-Lemma Theorem_2_5_2 : forall (K : Rlg) (f : R -> R) (A : Ensemble R) (H1 : SectionR A) (H2 : forall (r : R), In R A r -> DifferentiableR_R A f r), (forall (r1 r2 : R), In R A r1 -> In R A r2 -> r1 < r2 -> Rlgt K (f r1) (f r2)) <-> ((forall (r : R) (H : In R A r),
-        Rlge K 0 (DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H))) /\ forall (r1 r2 : R), r1 < r2 -> In R A r1 -> In R A r2 -> ~ forall (r : R) (H : In R A r), r1 < r < r2 -> DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H) = 0).
+Lemma Theorem_2_5_2 : forall (K : Rlg) (f : R -> R) (A : Ensemble R) (H1 : SectionR A) (H2 : forall (r : R), In R A r -> DifferentiableR_R A f r), (forall (r1 r2 : R), In R A r1 -> In R A r2 -> r1 < r2 -> Rlgt K (f r1) (f r2)) <-> ((forall (r : R) (H : In R A r), Rlge K 0 (DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H))) /\ forall (r1 r2 : R), r1 < r2 -> In R A r1 -> In R A r2 -> ~ forall (r : R) (H : In R A r), r1 < r < r2 -> DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H) = 0).
 Proof.
 move=> K f A H1 H2.
 apply conj.
@@ -5501,8 +5467,7 @@ apply (Rlt_not_eq (f r1) (f r2) H9 H8).
 move=> H9.
 apply (Rgt_not_eq (f r1) (f r2) H9 H8).
 apply (H3 r1 r2 H5 H6 H4).
-suff: (forall (r : R),
-        r1 <= r <= r2 -> ContinuousMet R_met R_met f (fun (x : R) => r1 <= x <= r2) r).
+suff: (forall (r : R), r1 <= r <= r2 -> ContinuousMet R_met R_met f (fun (x : R) => r1 <= x <= r2) r).
 move=> H8.
 suff: (forall (r : R), r1 < r < r2 -> DifferentiableR_R (fun (x : R) => r1 < x < r2) f r).
 move=> H9.
@@ -5522,8 +5487,7 @@ apply (DifferentialR_RRnSame R1K).
 suff: (Intersection R (fun (x : R) => r1 < x < r2) A = (fun (x : R) => r1 < x < r2)).
 move=> H13.
 rewrite H13.
-apply (InteriorNotIsolatedR (fun (x : R) => r1 < x < r2) c
-           (OpenSectionOpen r1 r2 H4 c H10)).
+apply (InteriorNotIsolatedR (fun (x : R) => r1 < x < r2) c (OpenSectionOpen r1 r2 H4 c H10)).
 apply Extensionality_Ensembles.
 apply conj.
 move=> x.
@@ -5618,8 +5582,7 @@ apply (DifferentialR_RRnSame R1K).
 suff: (Intersection R A (fun (x : R) => r1 < x < r2) = (fun (x : R) => r1 < x < r2)).
 move=> H14.
 rewrite H14.
-apply (InteriorNotIsolatedR (fun (x : R) => r1 < x < r2) r
-           (OpenSectionOpen r1 r2 H6 r H9)).
+apply (InteriorNotIsolatedR (fun (x : R) => r1 < x < r2) r (OpenSectionOpen r1 r2 H6 r H9)).
 apply Extensionality_Ensembles.
 apply conj.
 move=> x.
@@ -5707,8 +5670,7 @@ left.
 apply (proj2 H12).
 Qed.
 
-Lemma Theorem_2_5_corollary : forall (K : Rlg) (f : R -> R) (A : Ensemble R) (H1 : SectionR A) (H2 : forall (r : R), In R A r -> DifferentiableR_R A f r), (forall (r : R) (H : In R A r),
-        Rlgt K 0 (DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H))) -> (forall (r1 r2 : R), In R A r1 -> In R A r2 -> r1 < r2 -> Rlgt K (f r1) (f r2)).
+Lemma Theorem_2_5_corollary : forall (K : Rlg) (f : R -> R) (A : Ensemble R) (H1 : SectionR A) (H2 : forall (r : R), In R A r -> DifferentiableR_R A f r), (forall (r : R) (H : In R A r), Rlgt K 0 (DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H))) -> (forall (r1 r2 : R), In R A r1 -> In R A r2 -> r1 < r2 -> Rlgt K (f r1) (f r2)).
 Proof.
 move=> K f A H1 H2 H3.
 apply (proj2 (Theorem_2_5_2 K f A H1 H2)).
@@ -5751,11 +5713,9 @@ Definition Theorem_2_5_2_increase : forall (f : R -> R) (A : Ensemble R) (H1 : S
 
 Definition Theorem_2_5_2_decrease : forall (f : R -> R) (A : Ensemble R) (H1 : SectionR A) (H2 : forall (r : R), In R A r -> DifferentiableR_R A f r), (forall (r1 r2 : R), In R A r1 -> In R A r2 -> r1 < r2 -> f r1 > f r2) <-> ((forall (r : R) (H : In R A r), 0 >= DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H)) /\ forall (r1 r2 : R), r1 < r2 -> In R A r1 -> In R A r2 -> ~ forall (r : R) (H : In R A r), r1 < r < r2 -> DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H) = 0) := Theorem_2_5_2 RgK.
 
-Definition Theorem_2_5_corollary_increase : forall (f : R -> R) (A : Ensemble R) (H1 : SectionR A) (H2 : forall (r : R), In R A r -> DifferentiableR_R A f r), (forall (r : R) (H : In R A r),
-        0 < DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H)) -> (forall (r1 r2 : R), In R A r1 -> In R A r2 -> r1 < r2 -> f r1 < f r2) := Theorem_2_5_corollary RlK.
+Definition Theorem_2_5_corollary_increase : forall (f : R -> R) (A : Ensemble R) (H1 : SectionR A) (H2 : forall (r : R), In R A r -> DifferentiableR_R A f r), (forall (r : R) (H : In R A r), 0 < DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H)) -> (forall (r1 r2 : R), In R A r1 -> In R A r2 -> r1 < r2 -> f r1 < f r2) := Theorem_2_5_corollary RlK.
 
-Definition Theorem_2_5_corollary_decrease : forall (f : R -> R) (A : Ensemble R) (H1 : SectionR A) (H2 : forall (r : R), In R A r -> DifferentiableR_R A f r), (forall (r : R) (H : In R A r),
-        0 > DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H)) -> (forall (r1 r2 : R), In R A r1 -> In R A r2 -> r1 < r2 -> f r1 > f r2) := Theorem_2_5_corollary RgK.
+Definition Theorem_2_5_corollary_decrease : forall (f : R -> R) (A : Ensemble R) (H1 : SectionR A) (H2 : forall (r : R), In R A r -> DifferentiableR_R A f r), (forall (r : R) (H : In R A r), 0 > DifferentialR_R A f r (SectionRNotIsolated A H1 r H) (H2 r H)) -> (forall (r1 r2 : R), In R A r1 -> In R A r2 -> r1 < r2 -> f r1 > f r2) := Theorem_2_5_corollary RgK.
 
 Lemma Theorem_2_6 : forall (K : Rlg) (f : R -> R) (A : Ensemble R) (H1 : OpenSetMet R_met A) (H2 : DifferentiableR_R_OpenSet A f A H1) (H3 : DifferentiableR_R_OpenSet_N A f A H1 2) (r : R), In R A r -> DifferentialR_R_OpenSet A f A H1 H2 r = 0 -> Rlgt K 0 (DifferentialR_R_OpenSet_N A f A H1 2 H3 r) -> is_maxminimal_met_R_narrow K R_met A f r.
 Proof.
@@ -5795,21 +5755,16 @@ move=> H13.
 rewrite H13.
 suff: (Included R (fun (y : R) => x < y < r) A).
 move=> H14.
-suff: (forall (y : R),
-        x <= y <= r ->
-        ContinuousMet R_met R_met f (fun (z : R) => x <= z <= r) y).
+suff: (forall (y : R), x <= y <= r -> ContinuousMet R_met R_met f (fun (z : R) => x <= z <= r) y).
 move=> H15.
-suff: (forall (y : R),
-              x < y < r -> DifferentiableR_R (fun (z : R) => x < z < r) f y).
+suff: (forall (y : R), x < y < r -> DifferentiableR_R (fun (z : R) => x < z < r) f y).
 move=> H16.
 elim (Theorem_2_3 x r H11 f H15 H16).
 move=> c.
 elim.
 move=> H17 H18.
 rewrite - H18.
-suff: (DifferentialR_R (fun (y : R) => x < y < r) f c
-     (InteriorNotIsolatedR (fun (y : R) => x < y < r) c
-        (OpenSectionOpen x r H11 c H17)) (H16 c H17) = DifferentialR_R_OpenSet A f A H1 H2 c).
+suff: (DifferentialR_R (fun (y : R) => x < y < r) f c (InteriorNotIsolatedR (fun (y : R) => x < y < r) c (OpenSectionOpen x r H11 c H17)) (H16 c H17) = DifferentialR_R_OpenSet A f A H1 H2 c).
 move=> H19.
 rewrite H19.
 suff: (Rlgt K 0 (DifferentialR_R_OpenSet A f A H1 H2 c / (c - r))).
@@ -5853,8 +5808,7 @@ apply (DifferentialR_RRnSame R1K).
 suff: (Intersection R (fun (y : R) => x < y < r) (Intersection R A A) = (fun (y : R) => x < y < r)).
 move=> H21.
 rewrite H21.
-apply (InteriorNotIsolatedR (fun (y : R) => x < y < r) c
-           (OpenSectionOpen x r H11 c H17)).
+apply (InteriorNotIsolatedR (fun (y : R) => x < y < r) c (OpenSectionOpen x r H11 c H17)).
 apply Extensionality_Ensembles.
 apply conj.
 move=> y.
@@ -5952,21 +5906,16 @@ rewrite Rmult_0_l.
 apply H12.
 suff: (Included R (fun (y : R) => r < y < x) A).
 move=> H12.
-suff: (forall (y : R),
-        r <= y <= x ->
-        ContinuousMet R_met R_met f (fun (z : R) => r <= z <= x) y).
+suff: (forall (y : R), r <= y <= x -> ContinuousMet R_met R_met f (fun (z : R) => r <= z <= x) y).
 move=> H13.
-suff: (forall (y : R),
-              r < y < x -> DifferentiableR_R (fun (z : R) => r < z < x) f y).
+suff: (forall (y : R), r < y < x -> DifferentiableR_R (fun (z : R) => r < z < x) f y).
 move=> H14.
 elim (Theorem_2_3 r x H11 f H13 H14).
 move=> c.
 elim.
 move=> H15 H16.
 rewrite - H16.
-suff: (DifferentialR_R (fun (y : R) => r < y < x) f c
-     (InteriorNotIsolatedR (fun (y : R) => r < y < x) c
-        (OpenSectionOpen r x H11 c H15)) (H14 c H15) = DifferentialR_R_OpenSet A f A H1 H2 c).
+suff: (DifferentialR_R (fun (y : R) => r < y < x) f c (InteriorNotIsolatedR (fun (y : R) => r < y < x) c (OpenSectionOpen r x H11 c H15)) (H14 c H15) = DifferentialR_R_OpenSet A f A H1 H2 c).
 move=> H17.
 rewrite H17.
 suff: (Rlgt K 0 (DifferentialR_R_OpenSet A f A H1 H2 c / (c - r))).
@@ -6005,8 +5954,7 @@ apply (DifferentialR_RRnSame R1K).
 suff: (Intersection R (fun (y : R) => r < y < x) (Intersection R A A) = (fun (y : R) => r < y < x)).
 move=> H19.
 rewrite H19.
-apply (InteriorNotIsolatedR (fun (y : R) => r < y < x) c
-           (OpenSectionOpen r x H11 c H15)).
+apply (InteriorNotIsolatedR (fun (y : R) => r < y < x) c (OpenSectionOpen r x H11 c H15)).
 apply Extensionality_Ensembles.
 apply conj.
 move=> y.
@@ -6081,11 +6029,9 @@ apply (Rgt_minus y r (proj1 H12)).
 apply H8.
 suff: (DifferentiableR_R_OpenSet_N A f A H1 1).
 move=> H7.
-suff: (DifferentiableR_R (Intersection R A A)
-         (DifferentialR_R_OpenSet_N A f A H1 1 H7) r).
+suff: (DifferentiableR_R (Intersection R A A) (DifferentialR_R_OpenSet_N A f A H1 1 H7) r).
 move=> H8.
-elim (DifferentialR_RNature (Intersection R A A) (DifferentialR_R_OpenSet_N A f A H1 1 H7) r
-  (OpenSetNotIsolatedR_Intersection A A H1 r H4 (OpenSetNotIsolatedR A H1 r H4)) H8 (Rabs (DifferentialR_R_OpenSet_N A f A H1 2 H3 r))).
+elim (DifferentialR_RNature (Intersection R A A) (DifferentialR_R_OpenSet_N A f A H1 1 H7) r (OpenSetNotIsolatedR_Intersection A A H1 r H4 (OpenSetNotIsolatedR A H1 r H4)) H8 (Rabs (DifferentialR_R_OpenSet_N A f A H1 2 H3 r))).
 move=> dlt1 H9.
 elim (H1 r H4).
 move=> dlt2 H10.
@@ -6113,8 +6059,7 @@ rewrite {1} H13.
 suff: (forall (r1 : R), Rlgt K 0 r1 -> forall (r2 : R), dist R_met r2 r1 < Rabs r1 -> Rlgt K 0 r2).
 move=> H14.
 apply (H14 (DifferentialR_R_OpenSet_N A f A H1 2 H3 r) H6).
-suff: (DifferentiableR_R_OpenSet A (DifferentialR_R_OpenSet_N A f A H1 1 H7) A
-  H1).
+suff: (DifferentiableR_R_OpenSet A (DifferentialR_R_OpenSet_N A f A H1 1 H7) A H1).
 move=> H15.
 rewrite {1} (DifferentialR_R_OpenSet_N_Nature1 A f A H1 1 H7 H3 H15).
 rewrite (proj2 (DifferentialR_R_OpenSet_Nature A (DifferentialR_R_OpenSet_N A f A H1 1 H7) A H1 H15) r (OpenSetNotIsolatedR A H1 r H4)).
@@ -6199,8 +6144,7 @@ Qed.
 Lemma Theorem_2_7_R : forall (f : R -> R) (A : Ensemble R) (H1 : OpenSetMet R_met A) (r : R) (H2 : In R A r), (forall (x : R), In R A x -> ContinuousMet R_met R_met f A x) -> forall (H3 : forall (x : R), x <> r -> In R A x -> DifferentiableR_R A f x) (c : R), (forall (g : R -> R), (forall (x : R) (H4 : x <> r) (H5 : In R A x), g x = DifferentialR_R A f x (OpenSetNotIsolatedR A H1 x H5) (H3 x H4 H5)) -> limit_in R_met R_met g (fun (x : R) => x <> r /\ In R A x) r c) -> exists (H6 : DifferentiableR_R A f r), DifferentialR_R A f r (OpenSetNotIsolatedR A H1 r H2) H6 = c.
 Proof.
 move=> f A H1 r H2 H0 H3 c H4.
-suff: (limit_in R_met R_met (fun (h : R) => / h * (f (r + h) - f r))
-    (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 c).
+suff: (limit_in R_met R_met (fun (h : R) => / h * (f (r + h) - f r)) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 c).
 move=> H5.
 suff: (DifferentiableR_R A f r).
 move=> H6.
@@ -6211,15 +6155,10 @@ apply H5.
 move=> eps H5.
 elim (H1 r H2).
 move=> dlt1 H6.
-suff: (forall (x : R) (H4 : x <> r) (H5 : In R A x),
-        match excluded_middle_informative (x <> r /\ In R A x) with
-        | left H =>
-            DifferentialR_R A f x (OpenSetNotIsolatedR A H1 x (proj2 H))
-              (H3 x (proj1 H) (proj2 H))
-        | right _ => 0
-        end =
-        DifferentialR_R A f x (OpenSetNotIsolatedR A H1 x H5)
-          (H3 x H4 H5)).
+suff: (forall (x : R) (H4 : x <> r) (H5 : In R A x), match excluded_middle_informative (x <> r /\ In R A x) with
+  | left H => DifferentialR_R A f x (OpenSetNotIsolatedR A H1 x (proj2 H)) (H3 x (proj1 H) (proj2 H))
+  | right _ => 0
+end = DifferentialR_R A f x (OpenSetNotIsolatedR A H1 x H5) (H3 x H4 H5)).
 move=> H7.
 elim (H4 (fun (x : R) => match excluded_middle_informative (x <> r /\ In R A x) with
   | left H => DifferentialR_R A f x (OpenSetNotIsolatedR A H1 x (proj2 H)) (H3 x (proj1 H) (proj2 H))
@@ -6235,20 +6174,16 @@ apply (proj1 H6).
 move=> H9.
 apply (proj1 H8).
 move=> x H9.
-suff: (exists (y : R) (H : y <> r /\ In R A y), dist R_met y r < dlt2 /\ / x * (f (r + x) - f r) = DifferentialR_R A f y (OpenSetNotIsolatedR A H1 y (proj2 H))
-        (H3 y (proj1 H) (proj2 H))).
+suff: (exists (y : R) (H : y <> r /\ In R A y), dist R_met y r < dlt2 /\ / x * (f (r + x) - f r) = DifferentialR_R A f y (OpenSetNotIsolatedR A H1 y (proj2 H)) (H3 y (proj1 H) (proj2 H))).
 elim.
 move=> y.
 elim.
 move=> H10 H11.
 rewrite (proj2 H11).
-suff: (DifferentialR_R A f y (OpenSetNotIsolatedR A H1 y (proj2 H10))
-     (H3 y (proj1 H10) (proj2 H10)) = match excluded_middle_informative (y <> r /\ In R A y) with
-        | left H =>
-            DifferentialR_R A f y (OpenSetNotIsolatedR A H1 y (proj2 H))
-              (H3 y (proj1 H) (proj2 H))
-        | right _ => 0
-        end).
+suff: (DifferentialR_R A f y (OpenSetNotIsolatedR A H1 y (proj2 H10)) (H3 y (proj1 H10) (proj2 H10)) = match excluded_middle_informative (y <> r /\ In R A y) with
+  | left H => DifferentialR_R A f y (OpenSetNotIsolatedR A H1 y (proj2 H)) (H3 y (proj1 H) (proj2 H))
+  | right _ => 0
+end).
 move=> H12.
 rewrite H12.
 apply (proj2 H8 y).
@@ -6271,13 +6206,9 @@ suff: (r + x < r).
 move=> H11.
 suff: (Included R (fun (x0 : R) => r + x <= x0 <= r) A).
 move=> H12.
-suff: (forall (r0 : R),
-        r + x <= r0 <= r ->
-        ContinuousMet R_met R_met f (fun (x0 : R) => r + x <= x0 <= r) r0).
+suff: (forall (r0 : R), r + x <= r0 <= r -> ContinuousMet R_met R_met f (fun (x0 : R) => r + x <= x0 <= r) r0).
 move=> H13.
-suff: (forall (r0 : R),
-              r + x < r0 < r ->
-              DifferentiableR_R (fun (x0 : R) => r + x < x0 < r) f r0).
+suff: (forall (r0 : R), r + x < r0 < r -> DifferentiableR_R (fun (x0 : R) => r + x < x0 < r) f r0).
 move=> H14.
 elim (Theorem_2_3 (r + x) r H11 f H13 H14).
 move=> y.
@@ -6452,13 +6383,9 @@ suff: (r < r + x).
 move=> H11.
 suff: (Included R (fun (x0 : R) => r <= x0 <= r + x) A).
 move=> H12.
-suff: (forall (r0 : R),
-        r <= r0 <= r + x ->
-        ContinuousMet R_met R_met f (fun (x0 : R) => r <= x0 <= r + x) r0).
+suff: (forall (r0 : R), r <= r0 <= r + x -> ContinuousMet R_met R_met f (fun (x0 : R) => r <= x0 <= r + x) r0).
 move=> H13.
-suff: (forall (r0 : R),
-              r < r0 < r + x ->
-              DifferentiableR_R (fun (x0 : R) => r < x0 < r + x) f r0).
+suff: (forall (r0 : R), r < r0 < r + x -> DifferentiableR_R (fun (x0 : R) => r < x0 < r + x) f r0).
 move=> H14.
 elim (Theorem_2_3 r (r + x) H11 f H13 H14).
 move=> y.
@@ -6655,9 +6582,7 @@ Qed.
 Lemma Theorem_2_7_Rn : forall (N : nat) (f : R -> Rn N) (A : Ensemble R) (H1 : OpenSetMet R_met A) (r : R) (H2 : In R A r), (forall (x : R), In R A x -> ContinuousMet R_met (Rn_met N) f A x) -> forall (H3 : forall (x : R), x <> r -> In R A x -> DifferentiableR_Rn N A f x) (c : Rn N), (forall (g : R -> Rn N), (forall (x : R) (H4 : x <> r) (H5 : In R A x), g x = DifferentialR_Rn N A f x (OpenSetNotIsolatedR A H1 x H5) (H3 x H4 H5)) -> limit_in R_met (Rn_met N) g (fun (x : R) => x <> r /\ In R A x) r c) -> exists (H6 : DifferentiableR_Rn N A f r), DifferentialR_Rn N A f r (OpenSetNotIsolatedR A H1 r H2) H6 = c.
 Proof.
 move=> N f A H1 r H2 H3 H4 c H5.
-suff: (limit_in R_met (Rn_met N)
-    (fun (h : R) => Rnmult N (/ h) (Rnminus N (f (r + h)) (f r)))
-    (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 c).
+suff: (limit_in R_met (Rn_met N) (fun (h : R) => Rnmult N (/ h) (Rnminus N (f (r + h)) (f r))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 c).
 move=> H6.
 suff: (DifferentiableR_Rn N A f r).
 move=> H7.
@@ -6665,37 +6590,27 @@ exists H7.
 apply (DifferentialR_RnNature2 N A f r (OpenSetNotIsolatedR A H1 r H2) H7 c H6).
 exists c.
 apply H6.
-apply (proj2 (Theorem_6_8_1 R_met N (fun (h : R) => Rnmult N (/ h) (Rnminus N (f (r + h)) (f r)))
-  (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 c)).
+apply (proj2 (Theorem_6_8_1 R_met N (fun (h : R) => Rnmult N (/ h) (Rnminus N (f (r + h)) (f r))) (fun (h : R) => h <> 0 /\ In R A (r + h)) 0 c)).
 move=> m.
-suff: (forall (x : R),
-        In R A x -> ContinuousMet R_met R_met (fun (x0 : R) => f x0 m) A x).
+suff: (forall (x : R), In R A x -> ContinuousMet R_met R_met (fun (x0 : R) => f x0 m) A x).
 move=> H6.
-suff: (forall x : R,
-               x <> r ->
-               In R A x -> DifferentiableR_R A (fun (x0 : R) => f x0 m) x).
+suff: (forall x : R, x <> r -> In R A x -> DifferentiableR_R A (fun (x0 : R) => f x0 m) x).
 move=> H7.
 elim (Theorem_2_7_R (fun (x : R) => f x m) A H1 r H2 H6 H7 (c m)).
 move=> H8 H9.
 rewrite - H9.
-apply (DifferentialR_RNature A (fun x : R => f x m) r
-     (OpenSetNotIsolatedR A H1 r H2) H8).
+apply (DifferentialR_RNature A (fun x : R => f x m) r (OpenSetNotIsolatedR A H1 r H2) H8).
 move=> g H8.
 suff: (g = (fun (y : R) => let temp := (fun (x : R) (n : Count N) => match excluded_middle_informative (x <> r /\ In R A x) with
-  | left H => DifferentialR_Rn N A f x (OpenSetNotIsolatedR A H1 x (proj2 H))
-        (H4 x (proj1 H) (proj2 H)) n
+  | left H => DifferentialR_Rn N A f x (OpenSetNotIsolatedR A H1 x (proj2 H)) (H4 x (proj1 H) (proj2 H)) n
   | right _ => g x
 end) in temp y m)).
 move=> H9.
 rewrite H9.
-apply (proj1 (Theorem_6_8_1 R_met N (fun (x : R) (n : Count N) =>
-     match excluded_middle_informative (x <> r /\ In R A x) with
-     | left H =>
-         DifferentialR_Rn N A f x (OpenSetNotIsolatedR A H1 x (proj2 H))
-           (H4 x (proj1 H) (proj2 H)) n
-     | right _ => g x
-     end)
-  (fun (x : R) => x <> r /\ In R A x) r c)).
+apply (proj1 (Theorem_6_8_1 R_met N (fun (x : R) (n : Count N) => match excluded_middle_informative (x <> r /\ In R A x) with
+  | left H => DifferentialR_Rn N A f x (OpenSetNotIsolatedR A H1 x (proj2 H)) (H4 x (proj1 H) (proj2 H)) n
+  | right _ => g x
+end) (fun (x : R) => x <> r /\ In R A x) r c)).
 apply H5.
 move=> x H10 H11.
 elim (excluded_middle_informative (x <> r /\ In R A x)).
@@ -6719,8 +6634,7 @@ simpl.
 elim (excluded_middle_informative (x <> r /\ In R A x)).
 move=> H9.
 rewrite (H8 x (proj1 H9) (proj2 H9)).
-rewrite (Proposition_1_1_2 N A f x (OpenSetNotIsolatedR A H1 x (proj2 H9))
-  (H4 x (proj1 H9) (proj2 H9)) (proj1 (Proposition_1_1_1 N A f x) (H4 x (proj1 H9) (proj2 H9)))).
+rewrite (Proposition_1_1_2 N A f x (OpenSetNotIsolatedR A H1 x (proj2 H9)) (H4 x (proj1 H9) (proj2 H9)) (proj1 (Proposition_1_1_1 N A f x) (H4 x (proj1 H9) (proj2 H9)))).
 suff: (H7 x (proj1 H9) (proj2 H9) = proj1 (Proposition_1_1_1 N A f x) (H4 x (proj1 H9) (proj2 H9)) m).
 move=> H10.
 rewrite H10.
@@ -6739,25 +6653,9 @@ Definition Theorem_2_7 (K : RRn) : forall (f : R -> RRnT K) (A : Ensemble R) (H1
   | RnK N => Theorem_2_7_Rn N
 end.
 
-Lemma Theorem_2_8 : forall (f : R -> R) (a b : R) (H1 : a < b) (H2 : forall (r : R),
-        a <= r <= b ->
-        (DifferentiableR_R (fun (x : R) => a <= x <= b) f r)) (c : R), 
-(DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1))) < c < DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))) \/ DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))) < c < DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1)))
-) ->
-exists (x : R) (H3 : a < x < b), DifferentialR_R (fun (x : R) => a <= x <= b) f x (ClosedSectionRNotIsolated a b H1 x (conj (or_introl (proj1 H3)) (or_introl (proj2 H3)))) (H2 x (conj (or_introl (proj1 H3)) (or_introl (proj2 H3)))) = c.
+Lemma Theorem_2_8 : forall (f : R -> R) (a b : R) (H1 : a < b) (H2 : forall (r : R), a <= r <= b -> (DifferentiableR_R (fun (x : R) => a <= x <= b) f r)) (c : R), (DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1))) < c < DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))) \/ DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))) < c < DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1))) ) -> exists (x : R) (H3 : a < x < b), DifferentialR_R (fun (x : R) => a <= x <= b) f x (ClosedSectionRNotIsolated a b H1 x (conj (or_introl (proj1 H3)) (or_introl (proj2 H3)))) (H2 x (conj (or_introl (proj1 H3)) (or_introl (proj2 H3)))) = c.
 Proof.
-suff: (forall (K : Rlg) (f : R -> R) (a b : R) (H1 : a < b)
-  (H2 : forall r : R,
-        a <= r <= b -> DifferentiableR_R (fun (x : R) => a <= x <= b) f r)
-  (c : R), (Rlgt K (DifferentialR_R (fun (x : R) => a <= x <= b) f a
-  (ClosedSectionRNotIsolated a b H1 a
-     (conj (or_intror eq_refl) (or_introl H1)))
-  (H2 a (conj (or_intror eq_refl) (or_introl H1))))
-c /\ Rlgt K c (DifferentialR_R (fun (x : R) => a <= x <= b) f b
-  (ClosedSectionRNotIsolated a b H1 b
-     (conj (or_introl H1) (or_intror eq_refl)))
-  (H2 b (conj (or_introl H1) (or_intror eq_refl))))) -> exists (x : R) (H3 : a < x < b), DifferentialR_R (fun (x : R) => a <= x <= b) f x (ClosedSectionRNotIsolated a b H1 x (conj (or_introl (proj1 H3)) (or_introl (proj2 H3)))) (H2 x (conj (or_introl (proj1 H3)) (or_introl (proj2 H3)))) = c
-).
+suff: (forall (K : Rlg) (f : R -> R) (a b : R) (H1 : a < b) (H2 : forall r : R, a <= r <= b -> DifferentiableR_R (fun (x : R) => a <= x <= b) f r) (c : R), (Rlgt K (DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1)))) c /\ Rlgt K c (DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))))) -> exists (x : R) (H3 : a < x < b), DifferentialR_R (fun (x : R) => a <= x <= b) f x (ClosedSectionRNotIsolated a b H1 x (conj (or_introl (proj1 H3)) (or_introl (proj2 H3)))) (H2 x (conj (or_introl (proj1 H3)) (or_introl (proj2 H3)))) = c ).
 move=> H1 f a b H2 H3 c.
 elim.
 apply (H1 RlK f a b H2 H3 c).
@@ -6767,42 +6665,26 @@ apply conj.
 apply (proj2 H4).
 apply (proj1 H4).
 move=> K f a b H1 H2 c H3.
-suff: (forall (r : R),
-     a <= r <= b -> DifferentiableR_R (fun (x : R) => a <= x <= b) (fun (x : R) => f x - c * x) r).
-suff: (exists (m : R),
-         In R
-           (Im (Base R_met) R (fun (x : R) => a <= x <= b)
-              (fun (x : R) => f x - c * x)) m /\ forall (y : R), In R
-           (Im (Base R_met) R (fun (x : R) => a <= x <= b)
-              (fun (x : R) => f x - c * x)) y -> Rlge K m y).
+suff: (forall (r : R), a <= r <= b -> DifferentiableR_R (fun (x : R) => a <= x <= b) (fun (x : R) => f x - c * x) r).
+suff: (exists (m : R), In R (Im (Base R_met) R (fun (x : R) => a <= x <= b) (fun (x : R) => f x - c * x)) m /\ forall (y : R), In R (Im (Base R_met) R (fun (x : R) => a <= x <= b) (fun (x : R) => f x - c * x)) y -> Rlge K m y).
 elim.
 move=> y0 H4.
-suff: (forall (y : R),
-      In R
-        (Im (Base R_met) R (fun (x : R) => a <= x <= b)
-           (fun (x : R) => f x - c * x)) y -> Rlge K y0 y).
+suff: (forall (y : R), In R (Im (Base R_met) R (fun (x : R) => a <= x <= b) (fun (x : R) => f x - c * x)) y -> Rlge K y0 y).
 elim (proj1 H4).
 move=> x H5 y H6 H7 H8.
 exists x.
 suff: (a < x < b).
 move=> H9.
 exists H9.
-suff: (DifferentialR_R (fun (x : R) => a <= x <= b) (fun (x : R) => f x - c * x) x
-  (ClosedSectionRNotIsolated a b H1 x
-     (conj (or_introl (proj1 H9)) (or_introl (proj2 H9))))
-  (H8 x (conj (or_introl (proj1 H9)) (or_introl (proj2 H9)))) = 0).
-suff: (DifferentiableR_R (fun (x : R) => a <= x <= b)
-  (fun (x : R) => c * x) x).
+suff: (DifferentialR_R (fun (x : R) => a <= x <= b) (fun (x : R) => f x - c * x) x (ClosedSectionRNotIsolated a b H1 x (conj (or_introl (proj1 H9)) (or_introl (proj2 H9)))) (H8 x (conj (or_introl (proj1 H9)) (or_introl (proj2 H9)))) = 0).
+suff: (DifferentiableR_R (fun (x : R) => a <= x <= b) (fun (x : R) => c * x) x).
 move=> H10.
-suff: (DifferentialR_RRn R1K (fun (x : R) => a <= x <= b)
-  (fun (x : R) => c * x) x (ClosedSectionRNotIsolated a b H1 x
-     (conj (or_introl (proj1 H9)) (or_introl (proj2 H9)))) H10 = c).
+suff: (DifferentialR_RRn R1K (fun (x : R) => a <= x <= b) (fun (x : R) => c * x) x (ClosedSectionRNotIsolated a b H1 x (conj (or_introl (proj1 H9)) (or_introl (proj2 H9)))) H10 = c).
 move=> H11.
 suff: (DifferentialR_R = DifferentialR_RRn R1K).
 move=> H12.
 rewrite H12.
-rewrite (Proposition_1_3_1_minus R1K (fun (x : R) => a <= x <= b) f (fun (x : R) => c * x) x (ClosedSectionRNotIsolated a b H1 x
-     (conj (or_introl (proj1 H9)) (or_introl (proj2 H9)))) (H2 x (conj (or_introl (proj1 H9)) (or_introl (proj2 H9)))) H10 (H8 x (conj (or_introl (proj1 H9)) (or_introl (proj2 H9))))).
+rewrite (Proposition_1_3_1_minus R1K (fun (x : R) => a <= x <= b) f (fun (x : R) => c * x) x (ClosedSectionRNotIsolated a b H1 x (conj (or_introl (proj1 H9)) (or_introl (proj2 H9)))) (H2 x (conj (or_introl (proj1 H9)) (or_introl (proj2 H9)))) H10 (H8 x (conj (or_introl (proj1 H9)) (or_introl (proj2 H9))))).
 rewrite H11.
 apply Rminus_diag_uniq.
 reflexivity.
@@ -6846,18 +6728,13 @@ apply H10.
 reflexivity.
 suff: (In R (InteriorMet R_met (fun (x : R) => a <= x <= b)) x).
 move=> H10.
-rewrite - (Theorem_2_1 (fun (x : R) => a <= x <= b) (fun (x : R) => f x - c * x)
-x H10 (H8 x (conj (or_introl (proj1 H9)) (or_introl (proj2 H9))))).
-suff: (ClosedSectionRNotIsolated a b H1 x
-     (conj (or_introl (proj1 H9)) (or_introl (proj2 H9))) = InteriorNotIsolatedR (fun (x : R) => a <= x <= b) x H10).
+rewrite - (Theorem_2_1 (fun (x : R) => a <= x <= b) (fun (x : R) => f x - c * x) x H10 (H8 x (conj (or_introl (proj1 H9)) (or_introl (proj2 H9))))).
+suff: (ClosedSectionRNotIsolated a b H1 x (conj (or_introl (proj1 H9)) (or_introl (proj2 H9))) = InteriorNotIsolatedR (fun (x : R) => a <= x <= b) x H10).
 move=> H11.
 rewrite H11.
 reflexivity.
 apply proof_irrelevance.
-suff: (forall (y0 : R),
-     In R
-       (Im (Base R_met) R (fun (x : R) => a <= x <= b)
-          (fun (x : R) => f x - c * x)) y0 -> Rlge K y y0).
+suff: (forall (y0 : R), In R (Im (Base R_met) R (fun (x : R) => a <= x <= b) (fun (x : R) => f x - c * x)) y0 -> Rlge K y y0).
 elim K.
 move=> H11.
 right.
@@ -6927,8 +6804,7 @@ elim (Rlt_not_le y (f z - c * z) H14 H13).
 move=> H13 H14.
 elim (Rgt_not_ge y (f z - c * z) H14 H13).
 apply (H7 (f z - c * z)).
-apply (Im_intro R R (fun (x : R) => a <= x <= b)
-     (fun (x : R) => f x - c * x) z).
+apply (Im_intro R R (fun (x : R) => a <= x <= b) (fun (x : R) => f x - c * x) z).
 apply conj.
 left.
 apply (Rlt_trans a bl z (proj1 (proj1 H11)) (proj1 H12)).
@@ -6937,13 +6813,7 @@ apply (proj2 H12).
 reflexivity.
 apply (proj2 H11 z H12).
 apply (proj2 (proj1 H11)).
-elim (DifferentialR_RNature (fun (x : R) => a <= x <= b) f b
-          (ClosedSectionRNotIsolated a b H1 b
-             (conj (or_introl H1) (or_intror eq_refl)))
-          (H2 b (conj (or_introl H1) (or_intror eq_refl))) (Rabs (c - (DifferentialR_R (fun (x : R) => a <= x <= b) f b
-          (ClosedSectionRNotIsolated a b H1 b
-             (conj (or_introl H1) (or_intror eq_refl)))
-          (H2 b (conj (or_introl H1) (or_intror eq_refl))))))).
+elim (DifferentialR_RNature (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))) (Rabs (c - (DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))))))).
 move=> dlt H11.
 suff: (forall (z : R), a <= z < b -> b - z < dlt -> Rlgt K c ((f b - f z) / (b - z))).
 move=> H12.
@@ -7032,32 +6902,14 @@ rewrite - (Rplus_assoc (- dlt) dlt z).
 rewrite (Rplus_opp_l dlt).
 rewrite (Rplus_0_l z).
 apply (Rle_lt_trans (b - dlt) (Rmax d (b - dlt)) z (Rmax_r d (b - dlt)) (proj1 H14)).
-suff: (Rlgt K c
-       (DifferentialR_R (fun (x : R) => a <= x <= b) f b
-          (ClosedSectionRNotIsolated a b H1 b
-             (conj (or_introl H1) (or_intror eq_refl)))
-          (H2 b (conj (or_introl H1) (or_intror eq_refl))))).
+suff: (Rlgt K c (DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))))).
 elim K.
 move=> H12 z H13 H14.
 apply (Ropp_lt_cancel c ((f b - f z) / (b - z))).
-apply (Rplus_lt_reg_l (DifferentialR_R (fun (x : R) => a <= x <= b) f b
-           (ClosedSectionRNotIsolated a b H1 b
-              (conj (or_introl H1) (or_intror eq_refl)))
-           (H2 b (conj (or_introl H1) (or_intror eq_refl))))).
-rewrite - (Rabs_right (DifferentialR_R (fun (x : R) => a <= x <= b) f b
-  (ClosedSectionRNotIsolated a b H1 b
-     (conj (or_introl H1) (or_intror eq_refl)))
-  (H2 b (conj (or_introl H1) (or_intror eq_refl))) + 
-- c)).
+apply (Rplus_lt_reg_l (DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))))).
+rewrite - (Rabs_right (DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))) + - c)).
 rewrite Rabs_minus_sym.
-apply (Rle_lt_trans (DifferentialR_R (fun (x : R) => a <= x <= b) f b
-  (ClosedSectionRNotIsolated a b H1 b
-     (conj (or_introl H1) (or_intror eq_refl)))
-  (H2 b (conj (or_introl H1) (or_intror eq_refl))) - ((f b - f z) / (b - z))) (dist R_met (/ (z - b) * (f (b + (z - b)) - f b))
-         (DifferentialR_R (fun (x : R) => a <= x <= b) f b
-            (ClosedSectionRNotIsolated a b H1 b
-               (conj (or_introl H1) (or_intror eq_refl)))
-            (H2 b (conj (or_introl H1) (or_intror eq_refl)))))).
+apply (Rle_lt_trans (DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))) - ((f b - f z) / (b - z))) (dist R_met (/ (z - b) * (f (b + (z - b)) - f b)) (DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl)))))).
 rewrite (Rmult_comm (/ (z - b))).
 rewrite (Rplus_comm b (z - b)).
 rewrite (Rplus_assoc z (- b) b : z - b + b = z + (- b + b)).
@@ -7093,24 +6945,10 @@ left.
 apply Rgt_minus.
 apply H12.
 move=> H12 z H13 H14.
-apply (Rplus_lt_reg_l (- DifferentialR_R (fun (x : R) => a <= x <= b) f b
-           (ClosedSectionRNotIsolated a b H1 b
-              (conj (or_introl H1) (or_intror eq_refl)))
-           (H2 b (conj (or_introl H1) (or_intror eq_refl))))).
-rewrite - (Rabs_right (- DifferentialR_R (fun (x : R) => a <= x <= b) f b
-  (ClosedSectionRNotIsolated a b H1 b
-     (conj (or_introl H1) (or_intror eq_refl)))
-  (H2 b (conj (or_introl H1) (or_intror eq_refl))) + 
-c)).
+apply (Rplus_lt_reg_l (- DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))))).
+rewrite - (Rabs_right (- DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))) + c)).
 rewrite - (Rplus_comm c).
-apply (Rle_lt_trans (- DifferentialR_R (fun (x : R) => a <= x <= b) f b
-  (ClosedSectionRNotIsolated a b H1 b
-     (conj (or_introl H1) (or_intror eq_refl)))
-  (H2 b (conj (or_introl H1) (or_intror eq_refl))) + ((f b - f z) / (b - z))) (dist R_met (/ (z - b) * (f (b + (z - b)) - f b))
-         (DifferentialR_R (fun (x : R) => a <= x <= b) f b
-            (ClosedSectionRNotIsolated a b H1 b
-               (conj (or_introl H1) (or_intror eq_refl)))
-            (H2 b (conj (or_introl H1) (or_intror eq_refl)))))).
+apply (Rle_lt_trans (- DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))) + ((f b - f z) / (b - z))) (dist R_met (/ (z - b) * (f (b + (z - b)) - f b)) (DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl)))))).
 rewrite (Rmult_comm (/ (z - b))).
 rewrite (Rplus_comm b (z - b)).
 rewrite (Rplus_assoc z (- b) b : z - b + b = z + (- b + b)).
@@ -7147,11 +6985,7 @@ rewrite Rplus_comm.
 apply Rgt_minus.
 apply H12.
 apply (proj2 H3).
-suff: (Rlgt K c
-       (DifferentialR_R (fun (x : R) => a <= x <= b) f b
-          (ClosedSectionRNotIsolated a b H1 b
-             (conj (or_introl H1) (or_intror eq_refl)))
-          (H2 b (conj (or_introl H1) (or_intror eq_refl))))).
+suff: (Rlgt K c (DifferentialR_R (fun (x : R) => a <= x <= b) f b (ClosedSectionRNotIsolated a b H1 b (conj (or_introl H1) (or_intror eq_refl))) (H2 b (conj (or_introl H1) (or_intror eq_refl))))).
 elim K.
 rewrite Rabs_minus_sym.
 move=> H11.
@@ -7183,8 +7017,7 @@ elim (Rlt_not_le y (f z - c * z) H13 H12).
 move=> H12 H13.
 elim (Rgt_not_ge y (f z - c * z) H13 H12).
 apply (H7 (f z - c * z)).
-apply (Im_intro R R (fun (x : R) => a <= x <= b)
-     (fun (x : R) => f x - c * x) z).
+apply (Im_intro R R (fun (x : R) => a <= x <= b) (fun (x : R) => f x - c * x) z).
 apply conj.
 left.
 apply (proj1 H11).
@@ -7193,13 +7026,7 @@ apply (Rlt_trans z ar b (proj2 H11) (proj2 (proj1 H10))).
 reflexivity.
 apply (proj2 H10 z H11).
 apply (proj1 (proj1 H10)).
-elim (DifferentialR_RNature (fun (x : R) => a <= x <= b) f a
-          (ClosedSectionRNotIsolated a b H1 a
-             (conj (or_intror eq_refl) (or_introl H1)))
-          (H2 a (conj (or_intror eq_refl) (or_introl H1))) (Rabs (c - (DifferentialR_R (fun (x : R) => a <= x <= b) f a
-          (ClosedSectionRNotIsolated a b H1 a
-             (conj (or_intror eq_refl) (or_introl H1)))
-          (H2 a (conj (or_intror eq_refl) (or_introl H1))))))).
+elim (DifferentialR_RNature (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1))) (Rabs (c - (DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1))))))).
 move=> dlt H10.
 suff: (forall (z : R), a < z <= b -> z - a < dlt -> Rlgt K ((f z - f a) / (z - a)) c).
 move=> H11.
@@ -7285,31 +7112,13 @@ rewrite (Rplus_opp_l a).
 rewrite (Rplus_0_r z).
 rewrite (Rplus_comm dlt a).
 apply (Rlt_le_trans z (Rmin d (a + dlt)) (a + dlt) (proj2 H13) (Rmin_r d (a + dlt))).
-suff: (Rlgt K
-       (DifferentialR_R (fun (x : R) => a <= x <= b) f a
-          (ClosedSectionRNotIsolated a b H1 a
-             (conj (or_intror eq_refl) (or_introl H1)))
-          (H2 a (conj (or_intror eq_refl) (or_introl H1)))) c).
+suff: (Rlgt K (DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1)))) c).
 elim K.
 move=> H11 z H12 H13.
-apply (Rplus_lt_reg_l (- DifferentialR_R (fun (x : R) => a <= x <= b) f a
-           (ClosedSectionRNotIsolated a b H1 a
-              (conj (or_intror eq_refl) (or_introl H1)))
-           (H2 a (conj (or_intror eq_refl) (or_introl H1))))).
-rewrite - (Rabs_right (- DifferentialR_R (fun (x : R) => a <= x <= b) f a
-           (ClosedSectionRNotIsolated a b H1 a
-              (conj (or_intror eq_refl) (or_introl H1)))
-           (H2 a (conj (or_intror eq_refl) (or_introl H1))) + 
-c)).
+apply (Rplus_lt_reg_l (- DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1))))).
+rewrite - (Rabs_right (- DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1))) + c)).
 rewrite - (Rplus_comm c).
-apply (Rle_lt_trans (- DifferentialR_R (fun (x : R) => a <= x <= b) f a
-           (ClosedSectionRNotIsolated a b H1 a
-              (conj (or_intror eq_refl) (or_introl H1)))
-           (H2 a (conj (or_intror eq_refl) (or_introl H1))) + ((f z - f a) / (z - a))) (dist R_met (/ (z - a) * (f (a + (z - a)) - f a))
-         (DifferentialR_R (fun (x : R) => a <= x <= b) f a
-            (ClosedSectionRNotIsolated a b H1 a
-               (conj (or_intror eq_refl) (or_introl H1)))
-            (H2 a (conj (or_intror eq_refl) (or_introl H1)))))).
+apply (Rle_lt_trans (- DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1))) + ((f z - f a) / (z - a))) (dist R_met (/ (z - a) * (f (a + (z - a)) - f a)) (DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1)))))).
 rewrite (Rmult_comm (/ (z - a))).
 rewrite (Rplus_comm a (z - a)).
 rewrite (Rplus_assoc z (- a) a : z - a + a = z + (- a + a)).
@@ -7342,24 +7151,10 @@ apply Rgt_minus.
 apply H11.
 move=> H11 z H12 H13.
 apply (Ropp_lt_cancel c ((f z - f a) / (z - a))).
-apply (Rplus_lt_reg_l (DifferentialR_R (fun (x : R) => a <= x <= b) f a
-            (ClosedSectionRNotIsolated a b H1 a
-               (conj (or_intror eq_refl) (or_introl H1)))
-            (H2 a (conj (or_intror eq_refl) (or_introl H1))))).
-rewrite - (Rabs_right (DifferentialR_R (fun (x : R) => a <= x <= b) f a
-            (ClosedSectionRNotIsolated a b H1 a
-               (conj (or_intror eq_refl) (or_introl H1)))
-            (H2 a (conj (or_intror eq_refl) (or_introl H1))) + 
-- c)).
+apply (Rplus_lt_reg_l (DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1))))).
+rewrite - (Rabs_right (DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1))) + - c)).
 rewrite Rabs_minus_sym.
-apply (Rle_lt_trans (DifferentialR_R (fun (x : R) => a <= x <= b) f a
-            (ClosedSectionRNotIsolated a b H1 a
-               (conj (or_intror eq_refl) (or_introl H1)))
-            (H2 a (conj (or_intror eq_refl) (or_introl H1))) - ((f z - f a) / (z - a))) (dist R_met (/ (z - a) * (f (a + (z - a)) - f a))
-         (DifferentialR_R (fun (x : R) => a <= x <= b) f a
-            (ClosedSectionRNotIsolated a b H1 a
-               (conj (or_intror eq_refl) (or_introl H1)))
-            (H2 a (conj (or_intror eq_refl) (or_introl H1)))))).
+apply (Rle_lt_trans (DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1))) - ((f z - f a) / (z - a))) (dist R_met (/ (z - a) * (f (a + (z - a)) - f a)) (DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1)))))).
 rewrite (Rmult_comm (/ (z - a))).
 rewrite (Rplus_comm a (z - a)).
 rewrite (Rplus_assoc z (- a) a : z - a + a = z + (- a + a)).
@@ -7391,11 +7186,7 @@ left.
 apply Rgt_minus.
 apply H11.
 apply (proj1 H3).
-suff: (Rlgt K
-       (DifferentialR_R (fun (x : R) => a <= x <= b) f a
-     (ClosedSectionRNotIsolated a b H1 a
-        (conj (or_intror eq_refl) (or_introl H1)))
-     (H2 a (conj (or_intror eq_refl) (or_introl H1)))) c).
+suff: (Rlgt K (DifferentialR_R (fun (x : R) => a <= x <= b) f a (ClosedSectionRNotIsolated a b H1 a (conj (or_intror eq_refl) (or_introl H1))) (H2 a (conj (or_intror eq_refl) (or_introl H1)))) c).
 elim K.
 move=> H10.
 rewrite Rabs_right.
@@ -7416,10 +7207,7 @@ apply (proj1 H3).
 apply (proj2 H4).
 suff: (Inhabited R (fun (x : R) => a <= x <= b)).
 move=> H4.
-suff: (forall (z : Base R_met),
-        In (Base R_met) (fun( x : R) => a <= x <= b) z ->
-        ContinuousMet R_met R_met (fun (x : R) => f x - c * x)
-          (fun (x : R) => a <= x <= b) z).
+suff: (forall (z : Base R_met), In (Base R_met) (fun( x : R) => a <= x <= b) z -> ContinuousMet R_met R_met (fun (x : R) => f x - c * x) (fun (x : R) => a <= x <= b) z).
 move=> H5.
 suff: (SequentiallyCompactMet R_met (fun (x : R) => a <= x <= b)).
 move=> H6.
@@ -7445,8 +7233,7 @@ left.
 apply H1.
 move=> z H5.
 apply Theorem_6_6_3_2_R.
-apply (Proposition_1_2 R1K (fun (x : R) => a <= x <= b)
-  f z).
+apply (Proposition_1_2 R1K (fun (x : R) => a <= x <= b) f z).
 apply (H2 z H5).
 apply Theorem_6_6_3_5_R.
 move=> eps H6.
