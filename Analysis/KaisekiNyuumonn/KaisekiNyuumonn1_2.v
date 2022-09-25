@@ -9535,8 +9535,7 @@ Qed.
 
 Lemma Proposition_6_1_2 : forall (m : Metric_Space) (A : Ensemble (Base m)), Included (Base m) A (ClosureMet m A).
 Proof.
-move=> m A a H1.
-move=> eps H2.
+move=> m A a H1 eps H2.
 exists a.
 apply conj.
 unfold NeighborhoodMet.
@@ -10113,9 +10112,91 @@ apply H6.
 apply H7.
 Qed.
 
-Lemma Proposition_6_3 : forall (M1 M2 : Metric_Space) (f : Base M1 -> Base M2) (B : Ensemble (Base M1)) (x : Base M1), (ClosureMet M1 B x) -> (forall (y1 y2 : Base M2), limit_in M1 M2 f B x y1 -> limit_in M1 M2 f B x y2 -> y1 = y2).
+Lemma Theorem_2_6_func : forall (M : Metric_Space) (f g : Base M -> R) (B : Ensemble (Base M)) (b : Base M), ClosureMet M B b -> forall (x y : R), limit_in M R_met f B b x -> limit_in M R_met g B b y -> (forall (r : Base M), In (Base M) B r -> f r <= g r) -> x <= y.
 Proof.
-move=> M1 M2 f B x H1 y1 y2 H2 H3.
+move=> M f g B b H1 x y H2 H3 H4.
+elim (proj1 (Proposition_6_1_1 M B b) H1).
+move=> an H5.
+apply (Theorem_2_6 (fun (n : nat) => f (an n)) (fun (n : nat) => g (an n)) x y).
+apply (proj1 (Theorem_6_2 M R_met f B b x) H2 (fun (n : nat) => exist B (an n) (proj1 H5 n)) (proj2 H5)).
+apply (proj1 (Theorem_6_2 M R_met g B b y) H3 (fun (n : nat) => exist B (an n) (proj1 H5 n)) (proj2 H5)).
+move=> n.
+apply (H4 (an n) (proj1 H5 n)).
+Qed.
+
+Lemma Theorem_2_6_2_func : forall (M : Metric_Space) (f g : Base M -> R) (B : Ensemble (Base M)) (b : Base M), ClosureMet M B b -> forall (x y : R), limit_in M R_met f B b x -> limit_in M R_met g B b y -> (exists (eps : R), eps > 0 /\ forall (r : Base M), In (Base M) (NeighborhoodMet M b eps) r -> In (Base M) B r -> f r <= g r) -> x <= y.
+Proof.
+move=> M f g B b H1 x y H2 H3.
+elim.
+move=> eps H4.
+elim (proj1 (Proposition_6_1_1 M B b) H1).
+move=> an H5.
+apply (Theorem_2_6_2 (fun (n : nat) => f (an n)) (fun (n : nat) => g (an n)) x y).
+apply (proj1 (Theorem_6_2 M R_met f B b x) H2 (fun (n : nat) => exist B (an n) (proj1 H5 n)) (proj2 H5)).
+apply (proj1 (Theorem_6_2 M R_met g B b y) H3 (fun (n : nat) => exist B (an n) (proj1 H5 n)) (proj2 H5)).
+elim (proj2 H5 eps (proj1 H4)).
+move=> N H6.
+exists N.
+move=> n H7.
+apply (proj2 H4 (an n)).
+apply (H6 n H7).
+apply (proj1 H5 n).
+Qed.
+
+Lemma Theorem_2_6_Collorary_1_func : forall (M : Metric_Space) (f : Base M -> R) (B : Ensemble (Base M)) (b : Base M), ClosureMet M B b -> forall (x y : R), limit_in M R_met f B b x -> (forall (r : Base M), In (Base M) B r -> f r <= y) -> x <= y.
+Proof.
+move=> M f B b H1 x y H2 H3.
+elim (proj1 (Proposition_6_1_1 M B b) H1).
+move=> an H4.
+apply (Theorem_2_6_Collorary_1 (fun (n : nat) => f (an n)) x y).
+apply (proj1 (Theorem_6_2 M R_met f B b x) H2 (fun (n : nat) => exist B (an n) (proj1 H4 n)) (proj2 H4)).
+move=> n.
+apply (H3 (an n) (proj1 H4 n)).
+Qed.
+
+Lemma Theorem_2_6_Collorary_2_func : forall (M : Metric_Space) (f : Base M -> R) (B : Ensemble (Base M)) (b : Base M), ClosureMet M B b -> forall (x y : R), limit_in M R_met f B b x -> (forall (r : Base M), In (Base M) B r -> y <= f r) -> y <= x.
+Proof.
+move=> M f B b H1 x y H2 H3.
+elim (proj1 (Proposition_6_1_1 M B b) H1).
+move=> an H4.
+apply (Theorem_2_6_Collorary_2 (fun (n : nat) => f (an n)) x y).
+apply (proj1 (Theorem_6_2 M R_met f B b x) H2 (fun (n : nat) => exist B (an n) (proj1 H4 n)) (proj2 H4)).
+move=> n.
+apply (H3 (an n) (proj1 H4 n)).
+Qed.
+
+Lemma Proposition_2_7_func : forall (M : Metric_Space) (f g : Base M -> R) (B : Ensemble (Base M)) (b : Base M) (x : R), limit_in M R_met f B b x -> limit_in M R_met g B b x -> forall (h : Base M -> R), (forall (r : Base M), In (Base M) B r -> f r <= h r <= g r) -> limit_in M R_met h B b x.
+Proof.
+move=> M f g B b x H1 H2 h H3.
+apply (proj2 (Theorem_6_2 M R_met h B b x)).
+move=> an H4.
+apply (Proposition_2_7 (fun (n : nat) => f (proj1_sig (an n))) (fun (n : nat) => g (proj1_sig (an n)))).
+apply (proj1 (Theorem_6_2 M R_met f B b x) H1 an H4).
+apply (proj1 (Theorem_6_2 M R_met g B b x) H2 an H4).
+move=> n.
+apply (H3 (proj1_sig (an n)) (proj2_sig (an n))).
+Qed.
+
+Lemma Proposition_2_7_2_func : forall (M : Metric_Space) (f g : Base M -> R) (B : Ensemble (Base M)) (b : Base M) (x : R), limit_in M R_met f B b x -> limit_in M R_met g B b x -> forall (h : Base M -> R), (exists (eps : R), eps > 0 /\ forall (r : Base M), In (Base M) (NeighborhoodMet M b eps) r -> In (Base M) B r -> f r <= h r <= g r) -> limit_in M R_met h B b x.
+Proof.
+move=> M f g B b x H1 H2 h.
+elim.
+move=> eps H3.
+apply (proj2 (Theorem_6_2 M R_met h B b x)).
+move=> an H4.
+apply (Proposition_2_7_2 (fun (n : nat) => f (proj1_sig (an n))) (fun (n : nat) => g (proj1_sig (an n)))).
+apply (proj1 (Theorem_6_2 M R_met f B b x) H1 an H4).
+apply (proj1 (Theorem_6_2 M R_met g B b x) H2 an H4).
+elim (H4 eps (proj1 H3)).
+move=> N H5.
+exists N.
+move=> n H6.
+apply (proj2 H3 (proj1_sig (an n)) (H5 n H6) (proj2_sig (an n))).
+Qed.
+
+Lemma Proposition_6_3_Strong : forall (M1 M2 : Metric_Space) (f : Base M1 -> Base M2) (B1 B2 : Ensemble (Base M1)) (x : Base M1), (ClosureMet M1 (Intersection (Base M1) B1 B2) x) ->(forall (y1 y2 : Base M2), limit_in M1 M2 f B1 x y1 -> limit_in M1 M2 f B2 x y2 -> y1 = y2).
+Proof.
+move=> M1 M2 f B1 B2 x H1 y1 y2 H2 H3.
 apply NNPP.
 move=> H4.
 suff: (dist M2 y1 y2 / 2 > 0).
@@ -10134,13 +10215,17 @@ rewrite - (eps2 (dist M2 y1 y2)).
 apply Rplus_lt_compat.
 apply (proj2 H6 x0).
 apply conj.
-apply (proj2 H8).
+elim (proj2 H8).
+move=> x1 H9 H10.
+apply H9.
 apply (Rlt_le_trans (dist M1 x0 x) (Rmin dlt1 dlt2) dlt1).
 apply (proj1 H8).
 apply (Rmin_l dlt1 dlt2).
 apply (proj2 H7 x0).
 apply conj.
-apply (proj2 H8).
+elim (proj2 H8).
+move=> x1 H9 H10.
+apply H10.
 apply (Rlt_le_trans (dist M1 x0 x) (Rmin dlt1 dlt2) dlt2).
 apply (proj1 H8).
 apply (Rmin_r dlt1 dlt2).
@@ -10152,6 +10237,50 @@ move=> H5.
 apply False_ind.
 apply H4.
 apply (proj1 (dist_refl M2 y1 y2) H5).
+Qed.
+
+Lemma Proposition_6_3 : forall (M1 M2 : Metric_Space) (f : Base M1 -> Base M2) (B : Ensemble (Base M1)) (x : Base M1), (ClosureMet M1 B x) -> (forall (y1 y2 : Base M2), limit_in M1 M2 f B x y1 -> limit_in M1 M2 f B x y2 -> y1 = y2).
+Proof.
+move=> M1 M2 f B x H1 y1 y2 H2 H3.
+apply (Proposition_6_3_Strong M1 M2 f B B x).
+suff: (Intersection (Base M1) B B = B).
+move=> H4.
+rewrite H4.
+apply H1.
+apply Extensionality_Ensembles.
+apply conj.
+move=> b.
+elim.
+move=> b0 H4 H5.
+apply H4.
+move=> b H4.
+apply (Intersection_intro (Base M1) B B b H4 H4).
+apply H2.
+apply H3.
+Qed.
+
+Lemma Proposition_6_3_included : forall (M1 M2 : Metric_Space) (f : Base M1 -> Base M2) (B1 B2 : Ensemble (Base M1)) (x : Base M1) (y : Base M2), Included (Base M1) B1 B2 -> limit_in M1 M2 f B2 x y -> limit_in M1 M2 f B1 x y.
+Proof.
+move=> M1 M2 f B1 B2 x y H1 H2 eps H3.
+elim (H2 eps H3).
+move=> dlt H4.
+exists dlt.
+apply conj.
+apply (proj1 H4).
+move=> z H5.
+apply (proj2 H4 z).
+apply conj.
+apply (H1 z (proj1 H5)).
+apply (proj2 H5).
+Qed.
+
+Lemma Proposition_6_3_included_corollary : forall (M1 M2 : Metric_Space) (f : Base M1 -> Base M2) (B1 B2 : Ensemble (Base M1)) (x : Base M1), Included (Base M1) B1 B2 -> (exists (y : Base M2), limit_in M1 M2 f B2 x y) -> (exists (y : Base M2), limit_in M1 M2 f B1 x y).
+Proof.
+move=> M1 M2 f B1 B2 x H1.
+elim.
+move=> y H2.
+exists y.
+apply (Proposition_6_3_included M1 M2 f B1 B2 x y H1 H2).
 Qed.
 
 Lemma Proposition_2_3_met : forall (M : Metric_Space) (an : nat -> Base M) (x y : Base M), (Un_cv_met M an x) -> (Un_cv_met M an y) -> x = y.
@@ -13473,9 +13602,11 @@ apply H4.
 apply H2.
 Qed.
 
+Definition InteriorMet (M : Metric_Space) (A : Ensemble (Base M)) := fun (a : Base M) => exists (eps : R), eps > 0 /\ (Included (Base M) (NeighborhoodMet M a eps) A).
+
 Definition ClosedSetMet (M : Metric_Space) (A : Ensemble (Base M)) := A = (ClosureMet M A).
 
-Definition OpenSetMet (M : Metric_Space) (A : Ensemble (Base M)) := forall (a : Base M), (In (Base M) A a) -> exists (eps : R), eps > 0 /\ (Included (Base M) (NeighborhoodMet M a eps) A).
+Definition OpenSetMet (M : Metric_Space) (A : Ensemble (Base M)) := forall (a : Base M), (In (Base M) A a) -> In (Base M) (InteriorMet M A) a.
 
 Lemma Proposition_7_1_1 : forall (M : Metric_Space) (A : Ensemble (Base M)), (ClosedSetMet M A) <-> (forall (an : nat -> Base M) (a : Base M), (forall (n : nat), A (an n)) -> (Un_cv_met M an a) -> (A a)).
 Proof.
@@ -13893,10 +14024,9 @@ apply H2.
 apply H3.
 Qed.
 
-Lemma Theorem_7_3_1_1 : forall (M1 M2 : Metric_Space) (f : Base M1 -> Base M2) (A : Ensemble (Base M1)), (forall (a : (Base M1)), (In (Base M1) A a) -> (ContinuousMet M1 M2 f (Full_set (Base M1)) a)) -> SequentiallyCompactMet M1 A -> SequentiallyCompactMet M2 (Im (Base M1) (Base M2) A f).
+Lemma Theorem_7_3_1_1 : forall (M1 M2 : Metric_Space) (f : Base M1 -> Base M2) (A : Ensemble (Base M1)), (forall (a : (Base M1)), (In (Base M1) A a) -> (ContinuousMet M1 M2 f A a)) -> SequentiallyCompactMet M1 A -> SequentiallyCompactMet M2 (Im (Base M1) (Base M2) A f).
 Proof.
-move=> M1 M2 f A H1 H2.
-move=> fan H3.
+move=> M1 M2 f A H1 H2 fan H3.
 suff: (exists (an : nat -> Base M1), forall (n : nat), (In (Base M1) A (an n)) /\ (fan n) = f (an n)).
 elim.
 move=> an H4.
@@ -13920,8 +14050,14 @@ apply conj.
 apply (Im_intro (Base M1) (Base M2) A f b).
 apply (proj1 H6).
 reflexivity.
-apply (proj1 (Theorem_6_2 M1 M2 f (Full_set (Base M1)) b (f b)) (H1 b (proj1 H6)) (fun (n : nat) => (exist (Full_set (Base M1)) (bn n) (Full_intro (Base M1) (bn n))))).
+suff: (forall (n : nat), In (Base M1) A (bn n)).
+move=> H7.
+apply (proj1 (Theorem_6_2 M1 M2 f A b (f b)) (H1 b (proj1 H6)) (fun (n : nat) => (exist A (bn n) (H7 n)))).
 apply (proj2 H6).
+elim (proj1 H5).
+move=> cn H7 n.
+rewrite (proj2 H7 n).
+apply (proj1 (H4 (cn n))).
 move=> n.
 apply (proj1 (H4 n)).
 apply (functional_choice (fun (n : nat) (x : Base M1) => In (Base M1) A x /\ fan n = f x)).
@@ -13934,14 +14070,14 @@ apply H4.
 apply H5.
 Qed.
 
-Lemma Theorem_7_3_1_2 : forall (M1 M2 : Metric_Space) (f : Base M1 -> Base M2) (A : Ensemble (Base M1)) (m : Base M2), (forall (a : (Base M1)), (In (Base M1) A a) -> (ContinuousMet M1 M2 f (Full_set (Base M1)) a)) -> SequentiallyCompactMet M1 A -> BoundedMet M2 (Im (Base M1) (Base M2) A f).
+Lemma Theorem_7_3_1_2 : forall (M1 M2 : Metric_Space) (f : Base M1 -> Base M2) (A : Ensemble (Base M1)) (m : Base M2), (forall (a : (Base M1)), (In (Base M1) A a) -> (ContinuousMet M1 M2 f A a)) -> SequentiallyCompactMet M1 A -> BoundedMet M2 (Im (Base M1) (Base M2) A f).
 Proof.
 move=> M1 M2 f A m H1 H2.
 apply (Theorem_7_2_2_1 M2 (Im (Base M1) (Base M2) A f) m).
 apply (Theorem_7_3_1_1 M1 M2 f A H1 H2).
 Qed.
 
-Lemma Theorem_7_3_2_1 : forall (M : Metric_Space) (f : Base M -> R) (A : Ensemble (Base M)), (Inhabited (Base M) A) -> (forall (a : (Base M)), (In (Base M) A a) -> (ContinuousMet M R_met f (Full_set (Base M)) a)) -> SequentiallyCompactMet M A -> exists (m : R), is_max (Im (Base M) R A f) m.
+Lemma Theorem_7_3_2_1 : forall (M : Metric_Space) (f : Base M -> R) (A : Ensemble (Base M)), (Inhabited (Base M) A) -> (forall (a : (Base M)), (In (Base M) A a) -> (ContinuousMet M R_met f A a)) -> SequentiallyCompactMet M A -> exists (m : R), is_max (Im (Base M) R A f) m.
 Proof.
 move=> M f A H1 H2 H3.
 suff: (BoundedMet R_met (Im (Base M) R A f) /\ ClosedSetMet R_met (Im (Base M) R A f)).
@@ -14006,7 +14142,7 @@ apply 0.
 apply (Theorem_7_3_1_1 M R_met f A H2 H3).
 Qed.
 
-Lemma Theorem_7_3_2_2 : forall (M : Metric_Space) (f : Base M -> R) (A : Ensemble (Base M)), (Inhabited (Base M) A) -> (forall (a : (Base M)), (In (Base M) A a) -> (ContinuousMet M R_met f (Full_set (Base M)) a)) -> SequentiallyCompactMet M A -> exists (m : R), is_min (Im (Base M) R A f) m.
+Lemma Theorem_7_3_2_2 : forall (M : Metric_Space) (f : Base M -> R) (A : Ensemble (Base M)), (Inhabited (Base M) A) -> (forall (a : (Base M)), (In (Base M) A a) -> (ContinuousMet M R_met f A a)) -> SequentiallyCompactMet M A -> exists (m : R), is_min (Im (Base M) R A f) m.
 Proof.
 move=> M f A H1 H2 H3.
 suff: (exists m : R, is_max (Im (Base M) R A (fun (x : Base M) => - (f x))) m).
@@ -14033,7 +14169,7 @@ apply H5.
 reflexivity.
 apply (Theorem_7_3_2_1 M (fun x : Base M => - f x) A H1).
 move=> a H4.
-apply (Theorem_6_6_3_4_R M f (Full_set (Base M)) a).
+apply (Theorem_6_6_3_4_R M f A a).
 apply (H2 a H4).
 apply H3.
 Qed.
@@ -15082,15 +15218,15 @@ simpl.
 apply (proj2 H4).
 Qed.
 
-Lemma Theorem_8_1 : forall (f : R -> R) (a b : R) (H : a <= b), (forall (x : R), In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a,b) H)) x -> ContinuousMet R_met R_met f (Full_set R) x) -> (forall (y : R), ((f a <= y /\ y <= f b) \/ (f b <= y /\ y <= f a)) -> exists (x : R), (In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a,b) H)) x) /\ y = f x).
+Lemma Theorem_8_1 : forall (f : R -> R) (a b : R) (H : a <= b), (forall (x : R), In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a,b) H)) x -> ContinuousMet R_met R_met f (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a,b) H)) x) -> (forall (y : R), ((f a <= y /\ y <= f b) \/ (f b <= y /\ y <= f a)) -> exists (x : R), (In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a,b) H)) x) /\ y = f x).
 Proof.
-suff: (forall (f : R -> R) (a b : R) (H : a <= b), (forall (x : R), In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a,b) H)) x -> ContinuousMet R_met R_met f (Full_set R) x) -> (forall (y : R), (f a <= y /\ y <= f b) -> exists (x : R), (In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a,b) H)) x) /\ y = f x)).
+suff: (forall (f : R -> R) (a b : R) (H : a <= b), (forall (x : R), In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a,b) H)) x -> ContinuousMet R_met R_met f (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a,b) H)) x) -> (forall (y : R), (f a <= y /\ y <= f b) -> exists (x : R), (In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a,b) H)) x) /\ y = f x)).
 move=> H1 f a b H2 H3 y H4.
 elim H4.
 move=> H5.
 apply (H1 f a b H2 H3 y H5).
 move=> H5.
-suff: (forall (x : R), In R (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (a, b) H2)) x -> ContinuousMet R_met R_met (fun (x0 : R) => - f x0) (Full_set R) x).
+suff: (forall (x : R), In R (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (a, b) H2)) x -> ContinuousMet R_met R_met (fun (x0 : R) => - f x0) (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a,b) H2)) x).
 move=> H6.
 elim (H1 (fun (x : R) => - f x) a b H2 H6 (- y)).
 move=> x H7.
@@ -15105,7 +15241,7 @@ apply conj.
 apply (Ropp_le_contravar (f a) y (proj2 H5)).
 apply (Ropp_le_contravar y (f b) (proj1 H5)).
 move=> x H6.
-apply (Theorem_6_6_3_4_R R_met f (Full_set R) x (H3 x H6)).
+apply (Theorem_6_6_3_4_R R_met f (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a,b) H2)) x (H3 x H6)).
 move=> f a b H1 H2 y H3.
 suff: (exists (IN : nat -> BoundedClosedSectionSet), (forall (n : nat), Included R (proj1_sig (IN (S n))) (proj1_sig (IN n))) /\ (Un_cv (fun (m : nat) => BoundedClosedSectionToR (IN m) - BoundedClosedSectionToL (IN m)) 0) /\ (forall (n : nat), f (BoundedClosedSectionToL (IN n)) <= y <= f (BoundedClosedSectionToR (IN n))) /\ (forall (n : nat), Included R (proj1_sig (IN n)) (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (a, b) H1)))).
 elim.
@@ -15128,13 +15264,31 @@ move=> n H10.
 rewrite (proj2 (R_dist_refl y y)).
 apply H9.
 reflexivity.
-apply (proj1 (Theorem_6_2 R_met R_met f (Full_set R) x (f x)) (H2 x H8) (fun (n : nat) => exist (Full_set R) (BoundedClosedSectionToR (IN n)) (Full_intro R (BoundedClosedSectionToR (IN n))))).
+suff: (forall (n : nat), In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) (BoundedClosedSectionToR (IN n))).
+move=> H9.
+apply (proj1 (Theorem_6_2 R_met R_met f (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) x (f x)) (H2 x H8) (fun (n : nat) => exist (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) (BoundedClosedSectionToR (IN n)) (H9 n))).
 apply (proj2 (H7 x H5)).
+move=> n.
+apply (proj2 (proj2 (proj2 H4)) n).
+rewrite (BoundedClosedSectionEqual (IN n)).
+apply BoundedClosedSection_intro.
+apply BoundedClosedSectionLleqR.
+right.
+reflexivity.
 move=> n.
 apply (proj2 (proj1 (proj2 (proj2 H4)) n)).
 apply (Theorem_2_6 (fun (n : nat) => f (BoundedClosedSectionToL (IN n))) (fun (_ : nat) => y) (f x) y).
-apply (proj1 (Theorem_6_2 R_met R_met f (Full_set R) x (f x)) (H2 x H8) (fun (n : nat) => exist (Full_set R) (BoundedClosedSectionToL (IN n)) (Full_intro R (BoundedClosedSectionToL (IN n))))).
+suff: (forall (n : nat), In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) (BoundedClosedSectionToL (IN n))).
+move=> H9.
+apply (proj1 (Theorem_6_2 R_met R_met f (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) x (f x)) (H2 x H8) (fun (n : nat) => exist (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) (BoundedClosedSectionToL (IN n)) (H9 n))).
 apply (proj1 (H7 x H5)).
+move=> n.
+apply (proj2 (proj2 (proj2 H4)) n).
+rewrite (BoundedClosedSectionEqual (IN n)).
+apply BoundedClosedSection_intro.
+right.
+reflexivity.
+apply BoundedClosedSectionLleqR.
 move=> eps H9.
 exists O.
 move=> n H10.
@@ -15414,7 +15568,7 @@ apply H6.
 apply (Rgt_minus x b H3).
 Qed.
 
-Lemma Theorem_8_1_corollary_2 : forall (f : R -> R) (a b : R) (H1 : a <= b), (forall (x : R), In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) x -> ContinuousMet R_met R_met f (Full_set R) x) -> forall (m M : R), is_greatest_lower_bound (Im R R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) f) m -> is_least_upper_bound (Im R R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) f) M -> forall (H2 : m <= M), Im R R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) f = (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (m, M) H2)).
+Lemma Theorem_8_1_corollary_2 : forall (f : R -> R) (a b : R) (H1 : a <= b), (forall (x : R), In R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) x -> ContinuousMet R_met R_met f (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (a, b) H1)) x) -> forall (m M : R), is_greatest_lower_bound (Im R R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) f) m -> is_least_upper_bound (Im R R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) f) M -> forall (H2 : m <= M), Im R R (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) f = (BoundedClosedSection (exist (fun (lr : R * R) => fst lr <= snd lr) (m, M) H2)).
 Proof.
 move=> f a b H1 H2 m M H3 H4 H5.
 apply Extensionality_Ensembles.
@@ -15441,7 +15595,7 @@ elim.
 move=> mx H11.
 elim (Rle_or_lt mx Mx).
 move=> H12.
-suff: ((forall x : R, In R (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (mx, Mx) H12)) x -> ContinuousMet R_met R_met f (Full_set R) x)).
+suff: ((forall x : R, In R (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (mx, Mx) H12)) x -> ContinuousMet R_met R_met f (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (mx, Mx) H12)) x)).
 move=> H13.
 elim (Theorem_8_1 f mx Mx H12 H13 x0).
 move=> x1 H14.
@@ -15473,7 +15627,33 @@ apply H7.
 move=> x1.
 elim.
 move=> x2 H13 H14.
-apply (H2 x2).
+suff: (In R (BoundedClosedSection
+          (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) x2).
+move=> H15 eps H16.
+elim (H2 x2 H15 eps H16).
+move=> dlt H17.
+exists dlt.
+apply conj.
+apply (proj1 H17).
+move=> x3 H18.
+apply (proj2 H17).
+apply conj.
+apply BoundedClosedSection_intro.
+apply (Rle_trans a mx x3).
+elim (proj1 H11).
+move=> x4 H19 H20.
+apply H19.
+elim (proj1 H18).
+move=> x4 H19 H20.
+apply H19.
+apply (Rle_trans x3 Mx b).
+elim (proj1 H18).
+move=> x4 H19 H20.
+apply H20.
+elim (proj1 H9).
+move=> x4 H19 H20.
+apply H20.
+apply (proj2 H18).
 apply (BoundedClosedSection_intro (exist (fun lr : R * R => fst lr <= snd lr) (a, b) H1) x2).
 apply (Rle_trans a mx x2).
 elim (proj1 H11).
@@ -15486,7 +15666,7 @@ elim (proj1 H9).
 move=> x3 H15 H16.
 apply H16.
 move=> H12.
-suff: ((forall x : R, In R (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (Mx, mx) (Rlt_le Mx mx H12))) x -> ContinuousMet R_met R_met f (Full_set R) x)).
+suff: ((forall x : R, In R (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (Mx, mx) (Rlt_le Mx mx H12))) x -> ContinuousMet R_met R_met f (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (Mx, mx) (Rlt_le Mx mx H12))) x)).
 move=> H13.
 elim (Theorem_8_1 f Mx mx (Rlt_le Mx mx H12) H13 x0).
 move=> x1 H14.
@@ -15518,7 +15698,33 @@ apply H7.
 move=> x1.
 elim.
 move=> x2 H13 H14.
-apply (H2 x2).
+suff: (In R (BoundedClosedSection
+          (exist (fun (lr : R * R) => fst lr <= snd lr) (a, b) H1)) x2).
+move=> H15 eps H16.
+elim (H2 x2 H15 eps H16).
+move=> dlt H17.
+exists dlt.
+apply conj.
+apply (proj1 H17).
+move=> x3 H18.
+apply (proj2 H17).
+apply conj.
+apply BoundedClosedSection_intro.
+apply (Rle_trans a Mx x3).
+elim (proj1 H9).
+move=> x4 H19 H20.
+apply H19.
+elim (proj1 H18).
+move=> x4 H19 H20.
+apply H19.
+apply (Rle_trans x3 mx b).
+elim (proj1 H18).
+move=> x4 H19 H20.
+apply H20.
+elim (proj1 H11).
+move=> x4 H19 H20.
+apply H20.
+apply (proj2 H18).
 apply (BoundedClosedSection_intro (exist (fun lr : R * R => fst lr <= snd lr) (a, b) H1) x2).
 apply (Rle_trans a Mx x2).
 elim (proj1 H9).
@@ -15541,7 +15747,15 @@ apply (BoundedClosedSection_intro (exist (fun lr : R * R => fst lr <= snd lr) (a
 right.
 reflexivity.
 apply H1.
-apply H2.
+move=> y H10 eps H11.
+elim (H2 y H10 eps H11).
+move=> dlt H12.
+exists dlt.
+apply conj.
+apply (proj1 H12).
+move=> z H13.
+apply (proj2 H12).
+apply H13.
 apply (Theorem_7_2_2_2_R (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (a, b) H1))).
 apply (BoundedClosedSectionBoundedClosed a b H1).
 elim (proj1 H8).
@@ -15555,7 +15769,15 @@ apply (BoundedClosedSection_intro (exist (fun lr : R * R => fst lr <= snd lr) (a
 right.
 reflexivity.
 apply H1.
-apply H2.
+move=> y H8 eps H9.
+elim (H2 y H8 eps H9).
+move=> dlt H10.
+exists dlt.
+apply conj.
+apply (proj1 H10).
+move=> z H11.
+apply (proj2 H10).
+apply H11.
 apply (Theorem_7_2_2_2_R (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (a, b) H1))).
 apply (BoundedClosedSectionBoundedClosed a b H1).
 Qed.
@@ -15566,9 +15788,9 @@ Definition RextendFunUnWrapRextend (f : R -> R) := fun (r : Rextend) => Rval (ma
   | Rval r => (f r)
 end).
 
-Lemma Theorem_8_1_corollary_3_sub : forall (f : R -> R) (a b : Rextend), (Rextendlt a b) -> (forall (x : R), (Rextendlt a (Rval x)) -> (Rextendlt (Rval x) b) -> ContinuousMet R_met R_met f (Full_set R) x) -> forall (m M : Rextend), limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun (r : Rextend) => Rextendlt a r) a m -> limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun (r : Rextend) => Rextendlt r b) b M -> forall (y : R), ((Rextendlt m (Rval y) /\ Rextendlt (Rval y) M) \/ (Rextendlt M (Rval y) /\ Rextendlt (Rval y) m)) -> exists (x : R), Rextendlt a (Rval x) /\ Rextendlt (Rval x) b /\ y = f x.
+Lemma Theorem_8_1_corollary_3_sub : forall (f : R -> R) (a b : Rextend), (Rextendlt a b) -> (forall (x : R), (Rextendlt a (Rval x)) -> (Rextendlt (Rval x) b) -> ContinuousMet R_met R_met f (fun (y : R) => Rextendlt a (Rval y) /\ Rextendlt (Rval y) b) x) -> forall (m M : Rextend), limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun (r : Rextend) => Rextendlt a r) a m -> limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun (r : Rextend) => Rextendlt r b) b M -> forall (y : R), ((Rextendlt m (Rval y) /\ Rextendlt (Rval y) M) \/ (Rextendlt M (Rval y) /\ Rextendlt (Rval y) m)) -> exists (x : R), Rextendlt a (Rval x) /\ Rextendlt (Rval x) b /\ y = f x.
 Proof.
-suff: (forall (f : R -> R) (a b : Rextend), Rextendlt a b -> (forall (x : R), Rextendlt a (Rval x) -> Rextendlt (Rval x) b -> ContinuousMet R_met R_met f (Full_set R) x) -> forall (m M : Rextend), limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rextend => Rextendlt a r) a m -> limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rextend => Rextendlt r b) b M -> forall (y : R), Rextendlt m (Rval y) /\ Rextendlt (Rval y) M -> exists (x : R), Rextendlt a (Rval x) /\ Rextendlt (Rval x) b /\ y = f x).
+suff: (forall (f : R -> R) (a b : Rextend), Rextendlt a b -> (forall (x : R), Rextendlt a (Rval x) -> Rextendlt (Rval x) b -> ContinuousMet R_met R_met f (fun (y : R) => Rextendlt a (Rval y) /\ Rextendlt (Rval y) b) x) -> forall (m M : Rextend), limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rextend => Rextendlt a r) a m -> limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rextend => Rextendlt r b) b M -> forall (y : R), Rextendlt m (Rval y) /\ Rextendlt (Rval y) M -> exists (x : R), Rextendlt a (Rval x) /\ Rextendlt (Rval x) b /\ y = f x).
 move => H1.
 suff: (forall (f : R -> R) (A : Ensemble Rextend) (x : Rextend) (y : Rextend), limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) A x y -> limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend (fun r : R => - f r)) A x match y with
   | Rinf => Rminf
@@ -15589,7 +15811,7 @@ suff: (limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend (fun (r : R) =>
   | Rval r => Rval (- r)
 end)).
 move=> H9.
-suff: (forall x : R, Rextendlt a (Rval x) -> Rextendlt (Rval x) b -> ContinuousMet R_met R_met (fun r : R => - f r) (Full_set R) x).
+suff: (forall x : R, Rextendlt a (Rval x) -> Rextendlt (Rval x) b -> ContinuousMet R_met R_met (fun r : R => - f r) (fun (y : R) => Rextendlt a (Rval y) /\ Rextendlt (Rval y) b) x).
 move=> H10.
 elim (H1 (fun (r : R) => - f r) a b H3 H10 (match m with Rinf => Rminf
   | Rminf => Rinf
@@ -15653,7 +15875,7 @@ apply (Ropp_lt_contravar r y (proj2 H11)).
 apply (Ropp_lt_contravar y rr (proj1 H11)).
 apply H7.
 move=> x H10 H11.
-apply (Theorem_6_6_3_4_R R_met f (Full_set R) x (H4 x H10 H11)).
+apply (Theorem_6_6_3_4_R R_met f (fun (y : R) => Rextendlt a (Rval y) /\ Rextendlt (Rval y) b) x (H4 x H10 H11)).
 apply (H2 f (fun r : Rextend => Rextendlt r b) b M H6).
 apply (H2 f (fun r : Rextend => Rextendlt a r) a m H5).
 move=> f A x.
@@ -15766,7 +15988,7 @@ move=> m0 H6.
 suff: (exists (M0 : R), Rextendlt a (Rval M0) /\ Rextendlt (Rval M0) b /\ m0 <= M0 /\ y < f M0).
 elim.
 move=> M0 H7.
-suff: (forall (x : R), In R (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (m0, M0) (proj1 (proj2 (proj2 H7))))) x -> ContinuousMet R_met R_met f (Full_set R) x).
+suff: (forall (x : R), In R (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (m0, M0) (proj1 (proj2 (proj2 H7))))) x -> ContinuousMet R_met R_met f (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (m0, M0) (proj1 (proj2 (proj2 H7))))) x).
 move=> H8.
 elim (Theorem_8_1 f m0 M0 (proj1 (proj2 (proj2 H7))) H8 y).
 move=> x H9.
@@ -15804,32 +16026,65 @@ left.
 apply (proj2 (proj2 H6)).
 left.
 apply (proj2 (proj2 (proj2 H7))).
-move=> x H8.
-apply (H2 x).
+move=> x H8 eps H9.
+suff: (Rextendlt a (Rval x)).
+move=> H10.
+suff: (Rextendlt (Rval x) b).
+move=> H11.
+elim (H2 x H10 H11 eps H9).
+move=> dlt H12.
+exists dlt.
+apply conj.
+apply (proj1 H12).
+move=> x0 H13.
+apply (proj2 H12).
+apply conj.
+apply conj.
 suff: (Rextendlt a (Rval m0)).
-unfold Rextendlt.
 elim a.
+elim.
 apply.
-apply.
-move=> r H9.
-apply (Rlt_le_trans r m0 x).
-apply H9.
-elim H8.
-move=> x0 H10 H11.
-apply H10.
+move=> r H14.
+apply (Rlt_le_trans r m0 x0 H14).
+elim (proj1 H13).
+move=> x1 H15 H16.
+apply H15.
 apply (proj1 H6).
 suff: (Rextendlt (Rval M0) b).
-unfold Rextendlt.
 elim b.
-apply.
-apply.
-move=> r H9.
+move=> H14.
+apply I.
+elim.
+move=> r H14.
+apply (Rle_lt_trans x0 M0 r).
+elim (proj1 H13).
+move=> x1 H15 H16.
+apply H16.
+apply H14.
+apply (proj1 (proj2 H7)).
+apply (proj2 H13).
+suff: (Rextendlt (Rval M0) b).
+elim b.
+move=> H11.
+apply I.
+elim.
+move=> r H11.
 apply (Rle_lt_trans x M0 r).
 elim H8.
-move=> x0 H10 H11.
+move=> x1 H12 H13.
+apply H13.
 apply H11.
-apply H9.
 apply (proj1 (proj2 H7)).
+suff: (Rextendlt a (Rval m0)).
+elim a.
+elim.
+apply.
+move=> r H10.
+apply (Rlt_le_trans r m0 x H10).
+elim H8.
+move=> x1 H11 H12.
+apply H11.
+apply (proj1 H6).
 suff: (limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rextend => Rextendlt r b) b M).
 suff: (Rextendlt (Rval y) M).
 suff: (Rextendlt (Rval m0) b).
@@ -16677,7 +16932,7 @@ apply H3.
 apply H1.
 Qed.
 
-Lemma Theorem_8_1_corollary_3_1 : forall (f : R -> R) (a b : R), a < b -> (forall (x : R), a < x -> x < b -> ContinuousMet R_met R_met f (Full_set R) x) -> forall (m M : R), limit_in R_met R_met f (fun (r : R) => a < r) a m -> limit_in R_met R_met f (fun (r : R) => r < b) b M -> forall (y : R), ((m < y /\ y < M) \/ (M < y /\ y < m)) -> exists (x : R), a < x /\ x < b /\ y = f x.
+Lemma Theorem_8_1_corollary_3_1 : forall (f : R -> R) (a b : R), a < b -> (forall (x : R), a < x -> x < b -> ContinuousMet R_met R_met f (fun (r : R) => a < r < b) x) -> forall (m M : R), limit_in R_met R_met f (fun (r : R) => a < r) a m -> limit_in R_met R_met f (fun (r : R) => r < b) b M -> forall (y : R), ((m < y /\ y < M) \/ (M < y /\ y < m)) -> exists (x : R), a < x /\ x < b /\ y = f x.
 Proof.
 move=> f a b H1 H2 m M H3 H4 y H5.
 suff: (limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rextend => Rextendlt (Rval a) r) (Rval a) (Rval m)).
@@ -16826,7 +17081,7 @@ reflexivity.
 apply H3.
 Qed.
 
-Lemma Theorem_8_1_corollary_3_2 : forall (f : R -> R) (b : R), (forall (x : R), x < b -> ContinuousMet R_met R_met f (Full_set R) x) -> forall (m M : R), limit_R_minf R_met f (Full_set R) m -> limit_in R_met R_met f (fun (r : R) => r < b) b M -> forall (y : R), ((m < y /\ y < M) \/ (M < y /\ y < m)) -> exists (x : R), x < b /\ y = f x.
+Lemma Theorem_8_1_corollary_3_2 : forall (f : R -> R) (b : R), (forall (x : R), x < b -> ContinuousMet R_met R_met f (fun (r : R) => r < b) x) -> forall (m M : R), limit_R_minf R_met f (Full_set R) m -> limit_in R_met R_met f (fun (r : R) => r < b) b M -> forall (y : R), ((m < y /\ y < M) \/ (M < y /\ y < m)) -> exists (x : R), x < b /\ y = f x.
 Proof.
 move=> f b H1 m M H2 H3 y H4.
 suff: (limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rextend => Rextendlt Rminf r) Rminf (Rval m)).
@@ -16835,15 +17090,26 @@ suff: (limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rex
 move=> H6.
 suff: (Rextendlt Rminf (Rval b)).
 move=> H7.
-suff: (forall (x : R), Rextendlt Rminf (Rval x) -> Rextendlt (Rval x) (Rval b) -> ContinuousMet R_met R_met f (Full_set R) x).
+suff: (forall (x : R), Rextendlt Rminf (Rval x) -> Rextendlt (Rval x) (Rval b) -> ContinuousMet R_met R_met f (fun (r : R) => True /\ r < b) x).
 move=> H8.
 elim (Theorem_8_1_corollary_3_sub f Rminf (Rval b) H7 H8 (Rval m) (Rval M) H5 H6 y H4).
 move=> x H9.
 exists x.
 apply (proj2 H9).
 move=> x H8 H9.
+suff: ((fun (r : R) => True /\ r < b) = (fun (r : R) => r < b)).
+move=> H10.
+rewrite H10.
 apply (H1 x).
 apply H9.
+apply Extensionality_Ensembles.
+apply conj.
+move=> r H10.
+apply (proj2 H10).
+move=> r H10.
+apply conj.
+apply I.
+apply H10.
 apply I.
 apply (proj1 (limit_in_R_R_extend_same_2 Rextend_met (fun (r : Rextend) => (match r with
   | Rinf => 0
@@ -16983,7 +17249,7 @@ reflexivity.
 apply H2.
 Qed.
 
-Lemma Theorem_8_1_corollary_3_3 : forall (f : R -> R) (a : R), (forall (x : R), a < x -> ContinuousMet R_met R_met f (Full_set R) x) -> forall (m M : R), limit_in R_met R_met f (fun (r : R) => a < r) a m -> limit_R_inf R_met f (Full_set R) M -> forall (y : R), ((m < y /\ y < M) \/ (M < y /\ y < m)) -> exists (x : R), a < x /\ y = f x.
+Lemma Theorem_8_1_corollary_3_3 : forall (f : R -> R) (a : R), (forall (x : R), a < x -> ContinuousMet R_met R_met f (fun (r : R) => a < r) x) -> forall (m M : R), limit_in R_met R_met f (fun (r : R) => a < r) a m -> limit_R_inf R_met f (Full_set R) M -> forall (y : R), ((m < y /\ y < M) \/ (M < y /\ y < m)) -> exists (x : R), a < x /\ y = f x.
 Proof.
 move=> f a H1 m M H2 H3 y H4.
 suff: (limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rextend => Rextendlt (Rval a) r) (Rval a) (Rval m)).
@@ -16992,7 +17258,7 @@ suff: (limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rex
 move=> H6.
 suff: (Rextendlt (Rval a) Rinf).
 move=> H7.
-suff: (forall (x : R), Rextendlt (Rval a) (Rval x) -> Rextendlt (Rval x) Rinf -> ContinuousMet R_met R_met f (Full_set R) x).
+suff: (forall (x : R), Rextendlt (Rval a) (Rval x) -> Rextendlt (Rval x) Rinf -> ContinuousMet R_met R_met f (fun (r : R) => a < r /\ True) x).
 move=> H8.
 elim (Theorem_8_1_corollary_3_sub f (Rval a) Rinf H7 H8 (Rval m) (Rval M) H5 H6 y H4).
 move=> x H9.
@@ -17001,8 +17267,19 @@ apply conj.
 apply (proj1 H9).
 apply (proj2 (proj2 H9)).
 move=> x H8 H9.
+suff: ((fun (r : R) => a < r /\ True) = (fun (r : R) => a < r)).
+move=> H10.
+rewrite H10.
 apply (H1 x).
 apply H8.
+apply Extensionality_Ensembles.
+apply conj.
+move=> r H10.
+apply (proj1 H10).
+move=> r H10.
+apply conj.
+apply H10.
+apply I.
 apply I.
 apply (proj1 (limit_in_R_R_extend_same_2 Rextend_met (fun (r : Rextend) => (match r with
   | Rinf => 0
@@ -17151,14 +17428,25 @@ suff: (limit_in Rextend_met Rextend_met (RextendFunUnWrapRextend f) (fun r : Rex
 move=> H6.
 suff: (Rextendlt Rminf Rinf).
 move=> H7.
-suff: (forall (x : R), Rextendlt Rminf (Rval x) -> Rextendlt (Rval x) Rinf -> ContinuousMet R_met R_met f (Full_set R) x).
+suff: (forall (x : R), Rextendlt Rminf (Rval x) -> Rextendlt (Rval x) Rinf -> ContinuousMet R_met R_met f (fun (r : R) => True /\ True) x).
 move=> H8.
 elim (Theorem_8_1_corollary_3_sub f Rminf Rinf H7 H8 (Rval m) (Rval M) H5 H6 y H4).
 move=> x H9.
 exists x.
 apply (proj2 (proj2 H9)).
 move=> x H8 H9.
+suff: ((fun (r : R) => True /\ True) = Full_set R).
+move=> H10.
+rewrite H10.
 apply (H1 x).
+apply Extensionality_Ensembles.
+apply conj.
+move=> r H10.
+apply (Full_intro R r).
+move=> r H10.
+apply conj.
+apply I.
+apply I.
 apply I.
 apply (proj1 (limit_in_R_R_extend_same_2 Rextend_met (fun (r : Rextend) => (match r with
   | Rinf => 0
@@ -17307,7 +17595,7 @@ apply conj.
 suff: (exists (r : R), r >= 0 /\ pow r n >= x).
 elim.
 move=> r H3.
-suff: (forall (x0 : R), In R (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (0, r) (Rge_le r 0 (proj1 H3)))) x0 -> ContinuousMet R_met R_met (fun x1 : R => x1 ^ n) (Full_set R) x0).
+suff: (forall (x0 : R), In R (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (0, r) (Rge_le r 0 (proj1 H3)))) x0 -> ContinuousMet R_met R_met (fun x1 : R => x1 ^ n) (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (0, r) (Rge_le r 0 (proj1 H3)))) x0).
 move=> H4.
 elim (Theorem_8_1 (fun (x0 : R) => pow x0 n) 0 r (Rge_le r 0 (proj1 H3)) H4 x).
 move=> x0 H5.
@@ -17335,7 +17623,7 @@ simpl.
 rewrite (Rmult_0_l (pow 0 n0)).
 apply (Rge_le x 0 H2).
 apply (Rge_le (pow r n) x (proj2 H3)).
-suff: (forall (n0 : nat) (x0 : R), ContinuousMet R_met R_met (fun x1 : R => x1 ^ n0) (Full_set R) x0).
+suff: (forall (n0 : nat) (x0 : R), ContinuousMet R_met R_met (fun x1 : R => x1 ^ n0) (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (0, r) (Rge_le r 0 (proj1 H3)))) x0).
 move=> H4 x1 H5.
 apply (H4 n x1).
 elim.
@@ -17349,7 +17637,7 @@ rewrite (proj2 (dist_refl R_met 1 1)).
 apply H4.
 reflexivity.
 move=> n0 H4 x0.
-apply (Theorem_6_6_3_5_R R_met (fun (x1 : R) => x1) (fun (x1 : R) => pow x1 n0) (Full_set R) x0).
+apply (Theorem_6_6_3_5_R R_met (fun (x1 : R) => x1) (fun (x1 : R) => pow x1 n0) (BoundedClosedSection (exist (fun lr : R * R => fst lr <= snd lr) (0, r) (Rge_le r 0 (proj1 H3)))) x0).
 move=> eps H5.
 exists eps.
 apply conj.
