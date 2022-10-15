@@ -1,4 +1,4 @@
-all:  Tools/BasicTools.vo BasicProperty/NatProperty.vo BasicProperty/MappingProperty.vo Tools/MyProd.vo Tools/MySum.vo BasicNotation/Parity.vo BasicNotation/Permutation.vo LibraryExtension/ComposeExtension.vo LibraryExtension/DatatypesExtension.vo LibraryExtension/EnsemblesExtension.vo MyAlgebraicStructure/MyField.vo MyAlgebraicStructure/MyVectorSpace.vo LinearAlgebra/SenkeiDaisuunoSekai/SenkeiDaisuunoSekai1.vo LinearAlgebra/Matrix.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1AC.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2AC.vo
+all:  Tools/BasicTools.vo BasicProperty/NatProperty.vo BasicProperty/MappingProperty.vo Tools/MyProd.vo Tools/MySum.vo BasicNotation/Parity.vo BasicNotation/Permutation.vo LibraryExtension/ComposeExtension.vo LibraryExtension/DatatypesExtension.vo LibraryExtension/EnsemblesExtension.vo MyAlgebraicStructure/MyField.vo MyAlgebraicStructure/MyVectorSpace.vo BasicNotation/Combination.vo LinearAlgebra/SenkeiDaisuunoSekai/SenkeiDaisuunoSekai1.vo LinearAlgebra/Matrix.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1AC.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2AC.vo
 
 Tools/BasicTools.vo: Tools/BasicTools.v
 	coqc -Q Tools Tools Tools/BasicTools.v
@@ -35,6 +35,9 @@ MyAlgebraicStructure/MyField.vo: MyAlgebraicStructure/MyField.v BasicProperty/Na
 
 MyAlgebraicStructure/MyVectorSpace.vo: MyAlgebraicStructure/MyVectorSpace.v MyAlgebraicStructure/MyField.vo BasicProperty/MappingProperty.vo
 	coqc -Q MyAlgebraicStructure MyAlgebraicStructure MyAlgebraicStructure/MyVectorSpace.v
+
+BasicNotation/Combination.vo: BasicNotation/Combination.v Tools/MySum.vo MyAlgebraicStructure/MyField.vo
+	coqc -Q BasicNotation BasicNotation BasicNotation/Combination.v
 
 LinearAlgebra/SenkeiDaisuunoSekai/SenkeiDaisuunoSekai1.vo: MyAlgebraicStructure/MyField.v MyAlgebraicStructure/MyVectorSpace.vo BasicProperty/MappingProperty.vo BasicProperty/NatProperty.vo Tools/MySum.vo Tools/BasicTools.vo LibraryExtension/DatatypesExtension.vo LibraryExtension/EnsemblesExtension.vo
 	coqc -Q LinearAlgebra/SenkeiDaisuunoSekai LinearAlgebra.SenkeiDaisuunoSekai LinearAlgebra/SenkeiDaisuunoSekai/SenkeiDaisuunoSekai1.v

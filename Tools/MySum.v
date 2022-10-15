@@ -4554,6 +4554,149 @@ exists (le_n (S N)).
 apply (MySumF2Sn2 N (fun (m : Count N) => le_S (S (proj1_sig m)) N (proj2_sig m)) (le_n (S N))).
 Qed.
 
+Lemma MySumF2NShiftL : forall (N : nat) (CM : CommutativeMonoid) (F : Count N -> CMT CM), MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) CM F = MySumF2 (Count (S N)) (exist (Finite (Count (S N))) (Full_set (Count (S N))) (CountFinite (S N))) CM (fun (n : Count (S N)) => match excluded_middle_informative (proj1_sig n < N) with
+  | left H => F (exist (fun (m : nat) => m < N) (proj1_sig n) H)
+  | right _ => CMe CM
+end).
+Proof.
+intros N CM F.
+rewrite (MySumF2Included (Count (S N)) (FiniteIm (Count N) (Count (S N)) (fun (m : Count N) => exist (fun (k : nat) => k < S N) (proj1_sig m) (le_S (S (proj1_sig m)) N (proj2_sig m))) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)))).
+rewrite<- MySumF2BijectiveSame2.
+rewrite (MySumF2O (Count (S N))).
+rewrite (CM_O_r CM).
+apply MySumF2Same.
+intros u H1.
+unfold compose.
+simpl.
+elim (excluded_middle_informative (proj1_sig u < N)).
+intro H2.
+apply f_equal.
+apply sig_map.
+reflexivity.
+intro H2.
+elim (H2 (proj2_sig u)).
+intros u H1.
+elim (excluded_middle_informative (proj1_sig u < N)).
+elim H1.
+intros u0 H2 H3 H4.
+elim H2.
+apply (Im_intro (Count N) (Count (S N)) (Full_set (Count N)) (fun (m : Count N) => exist (fun (k : nat) => k < S N) (proj1_sig m) (le_S (S (proj1_sig m)) N (proj2_sig m))) (exist (fun (k : nat) => k < N) (proj1_sig u0) H4)).
+apply (Full_intro (Count N)).
+apply sig_map.
+reflexivity.
+intro H2.
+reflexivity.
+intros u1 u2 H1 H2 H3.
+apply sig_map.
+cut (let t := exist (fun (k : nat) => k < S N) (proj1_sig u1) (le_S (S (proj1_sig u1)) N (proj2_sig u1)) in proj1_sig t = proj1_sig u2).
+intro H4.
+apply H4.
+rewrite H3.
+reflexivity.
+intros u H1.
+apply (Full_intro (Count (S N)) u).
+Qed.
+
+Lemma MySumF2NShiftR : forall (N : nat) (H1 : forall (m : Count (S N)), proj1_sig m <> O -> pred (proj1_sig m) < N) (CM : CommutativeMonoid) (F : Count N -> CMT CM), MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) CM F = MySumF2 (Count (S N)) (exist (Finite (Count (S N))) (Full_set (Count (S N))) (CountFinite (S N))) CM (fun (n : Count (S N)) => match excluded_middle_informative (proj1_sig n = O) with
+  | left _ => CMe CM
+  | right H => F (exist (fun (m : nat) => m < N) (pred (proj1_sig n)) (H1 n H))
+end).
+Proof.
+intros N H1 CM F.
+rewrite (MySumF2Included (Count (S N)) (FiniteIm (Count N) (Count (S N)) (fun (m : Count N) => exist (fun (k : nat) => k < S N) (S (proj1_sig m)) (le_n_S (S (proj1_sig m)) N (proj2_sig m))) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)))).
+rewrite<- MySumF2BijectiveSame2.
+rewrite (MySumF2O (Count (S N))).
+rewrite (CM_O_r CM).
+apply MySumF2Same.
+intros u H2.
+unfold compose.
+simpl.
+elim (excluded_middle_informative (S (proj1_sig u) = 0)).
+intro H3.
+cut (let t := S (proj1_sig u) in match t with
+  | O => True
+  | S _ => False
+end).
+intro H4.
+elim H4.
+rewrite H3.
+apply I.
+intro H3.
+apply f_equal.
+apply sig_map.
+reflexivity.
+intros u H2.
+elim H2.
+intros u0 H3 H4.
+elim (excluded_middle_informative (proj1_sig u0 = 0)).
+intro H5.
+reflexivity.
+intro H6.
+cut (exists (m : nat), proj1_sig u0 = S m).
+intro H7.
+elim H7.
+intros m H8.
+elim H3.
+cut (m < N).
+intro H9.
+apply (Im_intro (Count N) (Count (S N)) (Full_set (Count N)) (fun (l : Count N) => exist (fun (k : nat) => k < S N) (S (proj1_sig l)) (le_n_S (S (proj1_sig l)) N (proj2_sig l))) (exist (fun (k : nat) => k < N) m H9)).
+apply (Full_intro (Count N)).
+apply sig_map.
+apply H8.
+apply (le_S_n (S m) N).
+rewrite<- H8.
+apply (proj2_sig u0).
+cut (proj1_sig u0 <> O).
+elim (proj1_sig u0).
+intro H7.
+elim H7.
+reflexivity.
+intros n H7 H8.
+exists n.
+reflexivity.
+apply H6.
+intros u1 u2 H2 H3 H4.
+apply sig_map.
+cut (let t := exist (fun (k : nat) => k < S N) (S (proj1_sig u1)) (le_n_S (S (proj1_sig u1)) N (proj2_sig u1)) in pred (proj1_sig t) = proj1_sig u2).
+intro H5.
+apply H5.
+rewrite H4.
+reflexivity.
+intros m H2.
+apply (Full_intro (Count (S N)) m).
+Qed.
+
+Lemma MySumF2NShiftR_exists : forall (N : nat), exists (H1 : forall (m : Count (S N)), proj1_sig m <> O -> pred (proj1_sig m) < N), forall (CM : CommutativeMonoid) (F : Count N -> CMT CM), MySumF2 (Count N) (exist (Finite (Count N)) (Full_set (Count N)) (CountFinite N)) CM F = MySumF2 (Count (S N)) (exist (Finite (Count (S N))) (Full_set (Count (S N))) (CountFinite (S N))) CM (fun (n : Count (S N)) => match excluded_middle_informative (proj1_sig n = O) with
+  | left _ => CMe CM
+  | right H => F (exist (fun (m : nat) => m < N) (pred (proj1_sig n)) (H1 n H))
+end).
+Proof.
+intros N.
+cut (forall (m : Count (S N)), proj1_sig m <> 0 -> Nat.pred (proj1_sig m) < N).
+intro H1.
+exists H1.
+apply (MySumF2NShiftR N H1).
+intros m H1.
+cut (exists (k : nat), proj1_sig m = S k).
+intro H2.
+elim H2.
+intros k H3.
+rewrite H3.
+unfold lt.
+simpl.
+rewrite<- H3.
+apply (le_S_n (proj1_sig m) N (proj2_sig m)).
+cut (proj1_sig m <> O).
+elim (proj1_sig m).
+intro H2.
+elim H2.
+reflexivity.
+intros n H2 H3.
+exists n.
+reflexivity.
+apply H1.
+Qed.
+
 Lemma MySumF2Distr : forall (U : Type) (CM : CommutativeMonoid) (A : {X : Ensemble U | Finite U X}) (F G FG : U -> CMT CM), (forall (u : U), In U (proj1_sig A) u -> FG u = CMc CM (F u) (G u)) -> MySumF2 U A CM FG = CMc CM (MySumF2 U A CM F) (MySumF2 U A CM G).
 Proof.
 intros U CM A F G FG H1.

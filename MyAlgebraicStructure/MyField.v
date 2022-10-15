@@ -637,15 +637,48 @@ Fixpoint PowF (f : Field) (x : FT f) (N : nat) := match N with
   | S n => Fmul f (PowF f x n) x
 end.
 
-Definition NatCorrespondField := fun (f : Field) => (fix NatCorrespond (n : nat) : FT f := match n with
+Fixpoint INF (f : Field) (n : nat) : FT f := match n with
   | O => FO f
-  | S n0 => (Fadd f (NatCorrespond n0) (FI f))
-end).
+  | S n0 => (Fadd f (INF f n0) (FI f))
+end.
 
-Definition CharacteristicField := fun (f : Field) => (match excluded_middle_informative (Inhabited nat (fun (n : nat) => NatCorrespondField f (S n) = FO f)) with
-  | left H => S (proj1_sig (min_nat_get (fun (n : nat) => NatCorrespondField f (S n) = FO f) H))
+Definition CharacteristicField := fun (f : Field) => (match excluded_middle_informative (Inhabited nat (fun (n : nat) => INF f (S n) = FO f)) with
+  | left H => S (proj1_sig (min_nat_get (fun (n : nat) => INF f (S n) = FO f) H))
   | right _ => O
 end).
+
+Lemma plus_INF : forall (f : Field) (n m : nat), INF f (n + m) = Fadd f (INF f n) (INF f m).
+Proof.
+move=> f.
+elim.
+move=> m.
+rewrite (Fadd_O_l f (INF f m) : Fadd f (INF f 0) (INF f m) = INF f m).
+reflexivity.
+move=> n H1 m.
+simpl.
+rewrite (H1 m).
+rewrite (Fadd_assoc f (INF f n) (INF f m) (FI f)).
+rewrite (Fadd_assoc f (INF f n) (FI f) (INF f m)). 
+rewrite (Fadd_comm f (INF f m) (FI f)).
+reflexivity.
+Qed.
+
+Lemma mult_INF : forall (f : Field) (n m : nat), INF f (n * m) = Fmul f (INF f n) (INF f m).
+Proof.
+move=> f.
+elim.
+move=> m.
+rewrite (Fmul_O_l f (INF f m) : Fmul f (INF f 0) (INF f m) = FO f).
+reflexivity.
+move=> n H1 m.
+rewrite (plus_INF f m (n * m) : INF f ((S n) * m) = Fadd f (INF f m) (INF f (n * m))).
+rewrite (H1 m).
+simpl.
+rewrite (Fadd_comm f (INF f n) (FI f)).
+rewrite (Fmul_add_distr_r f (FI f) (INF f n) (INF f m)).
+rewrite (Fmul_I_l f (INF f m)).
+reflexivity.
+Qed.
 
 Definition FPCM (f : Field) := mkCommutativeMonoid (FT f) (FO f) (Fadd f) (Fadd_comm f) (Fadd_O_r f) (Fadd_assoc f).
 
