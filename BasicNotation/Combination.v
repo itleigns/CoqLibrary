@@ -53,7 +53,6 @@ apply I.
 apply H1.
 Qed.
 
-
 Lemma permNature1 : forall (n : nat), perm n O = 1.
 Proof.
 elim.
@@ -372,9 +371,7 @@ move=> f.
 elim.
 move=> x y.
 rewrite (MySumF2Included (Count 1) (FiniteSingleton (Count 1) (exist (fun (n : nat) => (n < 1)) O (le_n 1)))).
-rewrite (MySumF2Singleton (Count 1) (FPCM f) (fun (u : Count 1) =>
-   Fmul f (INF f (conv 0 (proj1_sig u)))
-     (Fmul f (PowF f x (proj1_sig u)) (PowF f y (0 - proj1_sig u)))) (exist (fun (n : nat) => (n < 1)) O (le_n 1))).
+rewrite (MySumF2Singleton (Count 1) (FPCM f) (fun (u : Count 1) => Fmul f (INF f (conv 0 (proj1_sig u))) (Fmul f (PowF f x (proj1_sig u)) (PowF f y (0 - proj1_sig u)))) (exist (fun (n : nat) => (n < 1)) O (le_n 1))).
 rewrite MySumF2O.
 simpl.
 rewrite (Fmul_I_l f (FI f)).
@@ -407,62 +404,26 @@ rewrite (H2 x y).
 suff: (forall (m : Count (S (S n))), proj1_sig m <> O -> pred (proj1_sig m) < S n)%nat.
 move=> H5.
 rewrite (Fmul_add_distr_r f x y).
-suff: (Fmul f x
-     (MySumF2 (Count (S n))
-        (exist (Finite (Count (S n))) (Full_set (Count (S n)))
-           (CountFinite (S n))) (FPCM f)
-        (fun (u : Count (S n)) =>
-         Fmul f (INF f (conv n (proj1_sig u)))
-           (Fmul f (PowF f x (proj1_sig u)) (PowF f y (n - proj1_sig u)))))
-= MySumF2 (Count (S n))
-        (exist (Finite (Count (S n))) (Full_set (Count (S n)))
-           (CountFinite (S n))) (FPCM f)
-        (fun (u : Count (S n)) => Fmul f x
-         (Fmul f (INF f (conv n (proj1_sig u)))
-           (Fmul f (PowF f x (proj1_sig u)) (PowF f y (n - proj1_sig u)))))).
+suff: (Fmul f x (MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) (FPCM f) (fun (u : Count (S n)) => Fmul f (INF f (conv n (proj1_sig u))) (Fmul f (PowF f x (proj1_sig u)) (PowF f y (n - proj1_sig u))))) = MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) (FPCM f) (fun (u : Count (S n)) => Fmul f x (Fmul f (INF f (conv n (proj1_sig u))) (Fmul f (PowF f x (proj1_sig u)) (PowF f y (n - proj1_sig u)))))).
 move=> H6.
 rewrite H6.
 suff: (MySumF2 (Count (S (S n))) (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n)))) (FPCM f) (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m = O) with
   | left _ => FO f
   | right H => Fmul f x (Fmul f (INF f (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H5 m H))))) (Fmul f (PowF f x (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H5 m H)))) (PowF f y (n - proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (pred (proj1_sig m)) (H5 m H))))))
-end) = MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) (FPCM f) (fun (u : Count (S n)) => Fmul f x (Fmul f (INF f (conv n (proj1_sig u)))
-           (Fmul f (PowF f x (proj1_sig u)) (PowF f y (n - proj1_sig u)))))).
+end) = MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) (FPCM f) (fun (u : Count (S n)) => Fmul f x (Fmul f (INF f (conv n (proj1_sig u))) (Fmul f (PowF f x (proj1_sig u)) (PowF f y (n - proj1_sig u)))))).
 move=> H7.
 rewrite - H7.
-suff: (Fmul f y
-     (MySumF2 (Count (S n))
-        (exist (Finite (Count (S n))) (Full_set (Count (S n)))
-           (CountFinite (S n))) (FPCM f)
-        (fun (u : Count (S n)) =>
-         Fmul f (INF f (conv n (proj1_sig u)))
-           (Fmul f (PowF f x (proj1_sig u)) (PowF f y (n - proj1_sig u)))))
-= MySumF2 (Count (S n))
-        (exist (Finite (Count (S n))) (Full_set (Count (S n)))
-           (CountFinite (S n))) (FPCM f)
-        (fun (u : Count (S n)) => Fmul f y 
-         (Fmul f (INF f (conv n (proj1_sig u)))
-           (Fmul f (PowF f x (proj1_sig u)) (PowF f y (n - proj1_sig u)))))).
+suff: (Fmul f y (MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) (FPCM f) (fun (u : Count (S n)) => Fmul f (INF f (conv n (proj1_sig u))) (Fmul f (PowF f x (proj1_sig u)) (PowF f y (n - proj1_sig u))))) = MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) (FPCM f) (fun (u : Count (S n)) => Fmul f y (Fmul f (INF f (conv n (proj1_sig u))) (Fmul f (PowF f x (proj1_sig u)) (PowF f y (n - proj1_sig u)))))).
 move=> H8.
 rewrite H8.
 suff: (MySumF2 (Count (S (S n))) (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n)))) (FPCM f) (fun (m : (Count (S (S n)))) => match excluded_middle_informative (proj1_sig m < S n)%nat with
-  | left H => Fmul f y (Fmul f (INF f (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H))
-))
-           (Fmul f (PowF f x (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H))
-) (PowF f y (n - (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H))
-))))
+  | left H => Fmul f y (Fmul f (INF f (conv n (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) )) (Fmul f (PowF f x (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) ) (PowF f y (n - (proj1_sig (exist (fun (k : nat) => (k < S n)%nat) (proj1_sig m) H)) ))))
   | right _ => FO f
-end) =
-MySumF2 (Count (S n))
-        (exist (Finite (Count (S n))) (Full_set (Count (S n)))
-           (CountFinite (S n))) (FPCM f)
-        (fun (u : Count (S n)) => Fmul f y 
-         (Fmul f (INF f (conv n (proj1_sig u)))
-           (Fmul f (PowF f x (proj1_sig u)) (PowF f y (n - proj1_sig u)))))).
+end) = MySumF2 (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n))) (FPCM f) (fun (u : Count (S n)) => Fmul f y (Fmul f (INF f (conv n (proj1_sig u))) (Fmul f (PowF f x (proj1_sig u)) (PowF f y (n - proj1_sig u)))))).
 move=> H9.
 rewrite - H9.
 apply eq_sym.
-apply (MySumF2Distr (Count (S (S n))) (FPCM f)
-        (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n))))).
+apply (MySumF2Distr (Count (S (S n))) (FPCM f) (exist (Finite (Count (S (S n)))) (Full_set (Count (S (S n)))) (CountFinite (S (S n))))).
 move=> u H10.
 elim (excluded_middle_informative (proj1_sig u = O)).
 move=> H11.
@@ -553,9 +514,7 @@ move=> H13.
 apply H13.
 rewrite (MySumF2NShiftL (S n)).
 reflexivity.
-apply (FiniteSetInduction (Count (S n))
-     (exist (Finite (Count (S n))) (Full_set (Count (S n)))
-        (CountFinite (S n)))).
+apply (FiniteSetInduction (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n)))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
@@ -570,9 +529,7 @@ apply H10.
 apply H10.
 rewrite (MySumF2NShiftR (S n) H5).
 reflexivity.
-apply (FiniteSetInduction (Count (S n))
-     (exist (Finite (Count (S n))) (Full_set (Count (S n)))
-        (CountFinite (S n)))).
+apply (FiniteSetInduction (Count (S n)) (exist (Finite (Count (S n))) (Full_set (Count (S n))) (CountFinite (S n)))).
 apply conj.
 rewrite MySumF2Empty.
 rewrite MySumF2Empty.
