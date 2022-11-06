@@ -1,6 +1,7 @@
 Add LoadPath "MyAlgebraicStructure" as MyAlgebraicStructure.
 Add LoadPath "Tools" as Tools.
 Add LoadPath "BasicProperty" as BasicProperty.
+Add LoadPath "BasicNotation" as BasicNotation.
 Add LoadPath "LibraryExtension" as LibraryExtension.
 Add LoadPath "Analysis/KaisekiNyuumonn" as Analysis.KaisekiNyuumonn.
 
@@ -18,6 +19,7 @@ Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Program.Basics.
 Require Import Coq.Program.Combinators.
 Require Import BasicProperty.MappingProperty.
+Require Import BasicNotation.Combination.
 Require Import LibraryExtension.ComposeExtension.
 Require Import MyAlgebraicStructure.MyField.
 Require Import MyAlgebraicStructure.MyVectorSpace.
@@ -3018,7 +3020,7 @@ apply proof_irrelevance.
 suff: (proj1_sig u = S n).
 move=> H32.
 rewrite H32.
-rewrite (proj2 (conv_fact n) (S n) (le_n (S n))).
+rewrite (convOutSideDomain n (S n) (le_n (S n))).
 rewrite plus_comm.
 reflexivity.
 elim (le_lt_or_eq (proj1_sig u) (S n)).
@@ -3605,7 +3607,7 @@ apply proof_irrelevance.
 suff: (proj1_sig u = S n).
 move=> H32.
 rewrite H32.
-rewrite (proj2 (conv_fact n) (S n) (le_n (S n))).
+rewrite (convOutSideDomain n (S n) (le_n (S n))).
 rewrite plus_comm.
 reflexivity.
 elim (le_lt_or_eq (proj1_sig u) (S n)).

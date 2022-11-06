@@ -4467,7 +4467,8 @@ end).
 move=> H23.
 rewrite H23.
 simpl.
-rewrite - (Fmul_assoc f (Fmul f (PowF f (Fopp f (FI f)) n) (Fopp f (FI f)))).
+rewrite - (Fmul_assoc f (Fmul f (Fopp f (FI f)) (PowF f (Fopp f (FI f)) n))).
+rewrite (Fmul_comm f (Fopp f (FI f)) (PowF f (Fopp f (FI f)) n)).
 rewrite (Fmul_assoc f (PowF f (Fopp f (FI f)) n) (Fopp f (FI f))).
 rewrite (Fmul_opp_opp f (FI f) (FI f)).
 rewrite (Fmul_I_r f (FI f)).
@@ -6420,6 +6421,7 @@ end))).
 move=> H4.
 rewrite H4.
 simpl.
+rewrite (Fmul_comm f (Fopp f (FI f)) (PowF f (Fopp f (FI f)) m)).
 rewrite - (Fmul_assoc f (Fmul f (PowF f (Fopp f (FI f)) m) (Fopp f (FI f)))).
 rewrite (Fmul_assoc f (PowF f (Fopp f (FI f)) m)).
 rewrite (Fmul_opp_opp f (FI f)).
@@ -8320,7 +8322,6 @@ move=> H22.
 rewrite H22.
 rewrite (H14 H20 (proj1_sig y) (proj2_sig y) (exist (fun (n : nat) => n < S N) x0 H20) y).
 rewrite - (Fmul_assoc f (Fopp f (FI f))).
-rewrite (Fmul_comm f (Fopp f (FI f))).
 rewrite H17.
 reflexivity.
 reflexivity.
@@ -9396,18 +9397,15 @@ reflexivity.
 simpl.
 move=> n H8.
 rewrite H8.
-rewrite (Fmul_assoc f (PowF f (Fopp f (FI f)) n) (Fopp f (FI f))).
-rewrite (Fmul_assoc f (PowF f (Fopp f (FI f)) n) (PowF f (Fopp f (FI f)) (proj1_sig y))).
-rewrite (Fmul_comm f (Fopp f (FI f))).
+rewrite (Fmul_assoc f (Fopp f (FI f)) (PowF f (Fopp f (FI f)) n)).
 reflexivity.
 move=> n H8.
 rewrite H8.
 simpl.
-rewrite (Fmul_comm f (PowF f (Fopp f (FI f)) (n + proj1_sig y)) (Fopp f (FI f))).
-rewrite (Fmul_assoc f (PowF f (Fopp f (FI f)) (n + proj1_sig x)) (Fopp f (FI f))).
-rewrite - (Fmul_assoc f (Fopp f (FI f)) (Fopp f (FI f))).
-rewrite (Fmul_opp_opp f (FI f) (FI f)).
-rewrite (Fmul_I_r f (FI f)).
+rewrite (Fopp_mul_distr_l_reverse f (FI f) (PowF f (Fopp f (FI f)) (n + proj1_sig x))).
+rewrite (Fopp_mul_distr_l_reverse f (FI f) (PowF f (Fopp f (FI f)) (n + proj1_sig y))).
+rewrite (Fmul_opp_opp f).
+rewrite (Fmul_I_l f (PowF f (Fopp f (FI f)) (n + proj1_sig x))).
 rewrite (Fmul_I_l f (PowF f (Fopp f (FI f)) (n + proj1_sig y))).
 reflexivity.
 apply H6.

@@ -437,11 +437,11 @@ rewrite (convNature1 n).
 simpl.
 rewrite (Fadd_O_l f (FI f)).
 rewrite - (minus_n_O n).
-rewrite (Fmul_I_l f (Fmul f (PowF f y n) y)).
-rewrite (Fmul_I_l f (Fmul f (PowF f y n) y)).
+rewrite (Fmul_I_l f (Fmul f y (PowF f y n))).
+rewrite (Fmul_I_l f (Fmul f y (PowF f y n))).
 rewrite (Fmul_I_l f (PowF f y n)).
 rewrite (Fmul_I_l f (PowF f y n)).
-apply (Fmul_comm f (PowF f y n) y).
+reflexivity.
 elim.
 rewrite H11.
 apply (le_n_S O n (le_0_n n)).
@@ -459,14 +459,12 @@ rewrite - (Fmul_assoc f x (INF f (conv n m))).
 rewrite (Fmul_comm f x (INF f (conv n m))).
 rewrite (Fmul_assoc f (INF f (conv n m)) x).
 rewrite - (Fmul_assoc f x (PowF f x m) (PowF f y (n - m))).
-rewrite (Fmul_comm f x (PowF f x m)).
 rewrite - (Fmul_assoc f y (INF f (conv n (S m)))).
 rewrite (Fmul_comm f y (INF f (conv n (S m)))).
 rewrite (Fmul_assoc f (INF f (conv n (S m))) y).
-rewrite - (Fmul_assoc f y (Fmul f (PowF f x m) x) (PowF f y (n - S m))).
+rewrite - (Fmul_assoc f y (Fmul f x (PowF f x m)) (PowF f y (n - S m))).
 rewrite (H1 x y H3 (S m)).
 rewrite (Fmul_assoc f (PowF f x (S m)) y (PowF f y (n - S m))).
-rewrite (Fmul_comm f y (PowF f y (n - S m))).
 suff: (n - m = S (n - S m)).
 move=> H14.
 rewrite H14.
@@ -500,11 +498,11 @@ rewrite - (minus_n_n n).
 rewrite (convNature1 n).
 simpl.
 rewrite (Fadd_O_l f (FI f)).
-rewrite (Fmul_I_r f (Fmul f (PowF f x n) x)).
+rewrite (Fmul_I_r f (Fmul f x (PowF f x n))).
 rewrite (Fmul_I_r f (PowF f x n)).
-rewrite (Fmul_I_l f (Fmul f (PowF f x n) x)).
+rewrite (Fmul_I_l f (Fmul f x (PowF f x n))).
 rewrite (Fmul_I_l f (PowF f x n)).
-apply (Fmul_comm f (PowF f x n) x).
+reflexivity.
 apply (le_n n).
 apply (le_n (S n)).
 elim (le_lt_or_eq (proj1_sig u) (S n) (le_S_n (proj1_sig u) (S n) (proj2_sig u))).
@@ -559,7 +557,7 @@ move=> k H6 H7.
 exists k.
 reflexivity.
 apply H5.
-apply (Fmul_comm f (PowF f (Fadd f x y) n) (Fadd f x y)).
+reflexivity.
 apply (Fmul_comm f x y).
 move=> x y H1.
 elim.
@@ -567,10 +565,10 @@ rewrite (Fmul_I_l f y : Fmul f (PowF f x 0) y = y).
 apply (Fmul_I_r f y).
 move=> n H2.
 simpl.
-rewrite - (Fmul_assoc f y (PowF f x n) x).
+rewrite - (Fmul_assoc f y x (PowF f x n)).
+rewrite (Fmul_comm f y x).
+rewrite (Fmul_assoc f x y).
 rewrite H2.
-rewrite (Fmul_assoc f (PowF f x n) y x).
-rewrite (Fmul_assoc f (PowF f x n) x y).
-rewrite H1.
+rewrite (Fmul_assoc f x (PowF f x n) y).
 reflexivity.
 Qed.

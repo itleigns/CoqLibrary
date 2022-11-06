@@ -632,14 +632,14 @@ rewrite (Fmul_I_l f (Finv f y)).
 reflexivity.
 Qed.
 
-Fixpoint PowF (f : Field) (x : FT f) (N : nat) := match N with
+Definition PowF (f : Field) := fix powF (x : FT f) (N : nat) {struct N} : FT f := match N with
   | O => FI f
-  | S n => Fmul f (PowF f x n) x
+  | S n => Fmul f x (powF x n)
 end.
 
-Fixpoint INF (f : Field) (n : nat) : FT f := match n with
+Definition INF (f : Field) := fix inF (n : nat) : FT f := match n with
   | O => FO f
-  | S n0 => (Fadd f (INF f n0) (FI f))
+  | S n0 => (Fadd f (inF n0) (FI f))
 end.
 
 Definition CharacteristicField := fun (f : Field) => (match excluded_middle_informative (Inhabited nat (fun (n : nat) => INF f (S n) = FO f)) with

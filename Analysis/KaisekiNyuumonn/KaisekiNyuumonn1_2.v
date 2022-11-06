@@ -1,6 +1,7 @@
 Add LoadPath "MyAlgebraicStructure" as MyAlgebraicStructure.
 Add LoadPath "Tools" as Tools.
 Add LoadPath "BasicProperty" as BasicProperty.
+Add LoadPath "BasicNotation" as BasicNotation.
 Add LoadPath "Analysis/KaisekiNyuumonn" as Analysis.KaisekiNyuumonn.
 
 From mathcomp Require Import ssreflect.
@@ -24,6 +25,7 @@ Require Import MyAlgebraicStructure.MyField.
 Require Import MyAlgebraicStructure.MyVectorSpace.
 Require Import Tools.MySum.
 Require Import BasicProperty.MappingProperty.
+Require Import BasicNotation.Combination.
 Require Import Analysis.KaisekiNyuumonn.KaisekiNyuumonn1_1.
 Local Open Scope R_scope.
 
@@ -6787,146 +6789,111 @@ apply H5.
 suff: (/ x = (/ x - 1) + 1).
 move=> H5.
 rewrite {2} H5.
-rewrite Binomial_Theorem.
-apply (Rlt_le_trans (INR (S n0) * (/ x - 1)) (sigma (fun k : nat => INR (conv (S n0) k) * (/ x - 1) ^ k * 1 ^ (S n0 - k)) 0 (S O)) (sigma (fun k : nat => INR (conv (S n0) k) * (/ x - 1) ^ k * 1 ^ (S n0 - k)) 0 (S n0))).
-unfold sigma.
+suff: (INF Rfield = INR).
+move=> H6.
+rewrite (BinomialTheoremF Rfield (S n0) (/ x - 1) 1 : (/ x - 1 + 1) ^ S n0
+= MySumF2 (Count (S (S n0)))
+         (exist (Finite (Count (S (S n0))))
+            (Full_set (Count (S (S n0)))) (CountFinite (S (S n0))))
+         RPCM
+         (fun (u : Count (S (S n0))) =>
+          (INF Rfield (conv (S n0) (proj1_sig u))) *
+            (((/ x - 1) ^ (proj1_sig u)) *
+               (1 ^ (S n0 - proj1_sig u))))).
+rewrite H6.
+rewrite (MySumF2Included (Count (S (S n0))) (FiniteSingleton (Count (S (S n0))) (exist (fun (n : nat) => (n < S (S n0))%nat) (S O) (le_n_S (S O) (S n0) (le_n_S O n0 (le_0_n n0)))))).
+rewrite MySumF2Singleton.
+rewrite - (Rplus_0_r (INR (S n0) * (/ x - 1))).
+unfold proj1_sig.
+rewrite - (mult_1_r (conv (S n0) 1)).
+rewrite (convNature2 n0 O).
+rewrite (convNature1 n0).
+rewrite (mult_1_r (S n0)).
 simpl.
-rewrite Rmult_1_l.
-rewrite Rmult_1_l.
-rewrite Rmult_1_l.
 rewrite Rmult_1_r.
 suff: (forall (m : nat), 1 ^ m = 1).
-move=> H6.
-rewrite H6.
-rewrite H6.
+move=> H7.
+rewrite H7.
 rewrite Rmult_1_r.
-suff: ((conv n0 O + conv n0 1%nat)%nat = S n0).
-move=> H7.
-rewrite H7.
-rewrite - {1} (Rplus_0_l (match n0 with
-  | 0%nat => 1
-  | S _ => INR n0 + 1
-end * (/ x - 1))).
-simpl.
-apply Rplus_lt_compat_r.
+apply Rplus_lt_compat_l.
+rewrite (MySumF2Included (Count (S (S n0))) (FiniteSingleton (Count (S (S n0))) (exist (fun (n : nat) => (n < S (S n0))%nat) O (le_n_S O (S n0) (le_0_n (S n0)))))).
+rewrite MySumF2Singleton.
+apply (Rlt_le_trans 0 1).
 apply Rlt_0_1.
-suff: (forall (n : nat), exists (m : nat), S m = fact n).
-move=> H7.
-suff: (conv n0 0 = 1%nat).
-move=> H8.
-rewrite H8.
-suff: (conv n0 1 = n0).
-move=> H10.
-rewrite H10.
-auto.
-elim (classic (n0 = O)).
-move=> H10.
-rewrite H10.
-apply (proj2 (conv_fact 0) 1%nat).
-apply le_n.
-move=> H12.
-elim (H7 1%nat).
-move=> m1 H10.
-apply (mult_S_eq_reg_l m1).
-rewrite mult_comm.
-rewrite H10.
-elim (H7 (n0 - 1)%nat).
-move=> m2 H11.
-apply (mult_S_eq_reg_l m2).
-rewrite mult_comm.
-rewrite H11.
-rewrite (proj1 (conv_fact n0) 1%nat).
-unfold fact at 3.
-rewrite mult_1_l.
-rewrite mult_1_l.
-rewrite mult_comm.
-rewrite - pred_of_minus.
-move: H12.
-elim n0.
-move=> H12.
-apply False_ind.
-apply H12.
-reflexivity.
-move=> n1 H12 H13.
-rewrite Nat.pred_succ.
-reflexivity.
-apply neq_0_lt.
-move=> H13.
-apply H12.
-rewrite H13.
-reflexivity.
-unfold conv.
-elim n0.
-reflexivity.
-reflexivity.
-suff: (forall n1 : nat, (fact n1 > O)%nat).
-move=> H7 n1.
-exists (pred (fact n1)).
-rewrite - (S_pred (fact n1) O).
-reflexivity.
-apply H7.
-elim.
-apply le_n.
-move=> n1 H7.
-suff: (fact (S n1) = ((S n1) * (fact n1))%nat).
-move=> H8.
-rewrite H8.
-rewrite - (mult_0_r (S n1)).
-apply mult_lt_compat_l.
-apply H7.
-apply (le_n_S O n1 (le_0_n n1)).
-reflexivity.
-elim.
-reflexivity.
-move=> n1 H6.
+rewrite - {1} (Rplus_0_r 1).
+rewrite (H7 (S n0)).
 simpl.
-rewrite H6.
-apply (Rmult_1_l 1).
-suff: (forall (n1 : nat), sigma (fun k : nat => INR (conv (S n0) k) * (/ x - 1) ^ k * 1 ^ (S n0 - k)) 0 1 <= sigma (fun k : nat => INR (conv (S n0) k) * (/ x - 1) ^ k * 1 ^ (S n0 - k)) 0 (S n1)).
-move=> H6.
-apply H6.
-elim.
-apply Req_le.
-reflexivity.
-move=> n1 H6.
-suff: (sigma (fun k : nat => INR (conv (S n0) k) * (/ x - 1) ^ k * 1 ^ (S n0 - k)) 0 (S (S n1)) = sigma (fun k : nat => INR (conv (S n0) k) * (/ x - 1) ^ k * 1 ^ (S n0 - k)) 0 (S n1) + INR (conv (S n0) (S (S n1))) * (/ x - 1) ^ (S (S n1)) * 1 ^ (S n0 - (S (S n1)))).
-move=> H7.
-apply (Rle_trans (sigma (fun k : nat => INR (conv (S n0) k) * (/ x - 1) ^ k * 1 ^ (S n0 - k)) 0 1) (sigma (fun k : nat => INR (conv (S n0) k) * (/ x - 1) ^ k * 1 ^ (S n0 - k)) 0 (S n1)) (sigma (fun k : nat => INR (conv (S n0) k) * (/ x - 1) ^ k * 1 ^ (S n0 - k)) 0 (S (S n1)))).
-apply H6.
-rewrite - (Rplus_0_r (sigma (fun k : nat => INR (conv (S n0) k) * (/ x - 1) ^ k * 1 ^ (S n0 - k)) 0 (S n1))).
-rewrite H7.
+rewrite (Rmult_1_l 1).
+rewrite (Rmult_1_l 1).
 apply Rplus_le_compat_l.
-rewrite - (Rmult_0_r (INR (conv (S n0) (S (S n1))) * (/ x - 1) ^ S (S n1))).
-apply Rmult_le_compat_l.
-rewrite - (Rmult_0_r (INR (conv (S n0) (S (S n1))))).
-apply Rmult_le_compat_l.
-suff: (0 = INR O).
+apply MySumF2Induction.
+apply conj.
+right.
+reflexivity.
+move=> cm u H8 H10.
+rewrite - (Rplus_0_l 0).
+apply Rplus_le_compat.
+apply H10.
+rewrite - (Rmult_0_l 0).
+apply Rmult_le_compat.
+right.
+reflexivity.
+right.
+reflexivity.
+apply (le_INR O (conv (S n0) (proj1_sig u))).
+apply le_0_n.
+rewrite H7.
+rewrite Rmult_1_r.
+elim (let (a, _) := u in a).
+simpl.
+left.
+apply Rlt_0_1.
+move=> m H11.
+simpl.
+rewrite - (Rmult_0_l 0).
+apply Rmult_le_compat.
+right.
+reflexivity.
+right.
+reflexivity.
+left.
+apply H2.
+apply H11.
+move=> u.
+elim.
+apply (Intersection_intro (Count (S (S n0)))).
+move=> H8.
+elim (lt_irrefl O).
+suff: (O = proj1_sig (exist (fun (n : nat) => (n < S (S n0))%nat) O
+          (le_n_S 0 (S n0) (le_0_n (S n0))))).
+move=> H10.
+rewrite {2} H10.
+elim H8.
+apply (le_n 1).
+reflexivity.
+apply (Full_intro (Count (S (S n0)))).
+elim.
+reflexivity.
+move=> m H7.
+simpl.
+rewrite H7.
+apply (Rmult_1_l 1).
+move=> u H7.
+apply (Full_intro (Count (S (S n0))) u).
+apply functional_extensionality.
+elim.
+reflexivity.
+elim.
+move=> H6.
+simpl.
+apply (Rplus_0_l 1).
+move=> n1 H6 H7.
+suff: (INF Rfield (S (S n1)) = INF Rfield (S n1) + 1).
 move=> H8.
 rewrite H8.
-apply le_INR.
-apply le_0_n.
-reflexivity.
-apply Rlt_le.
-suff: (forall (n2 : nat), 0 < (/ x - 1) ^ n2).
-move=> H8.
-apply H8.
-elim.
-apply Rlt_0_1.
-move=> n2 H8.
+rewrite H7.
 simpl.
-apply Rmult_gt_0_compat.
-apply H2.
-apply H8.
-apply Rlt_le.
-suff: (forall (n2 : nat), 0 < 1 ^ n2).
-move=> H8.
-apply H8.
-elim.
-apply Rlt_0_1.
-move=> n2 H8.
-apply Rmult_gt_0_compat.
-apply Rlt_0_1.
-apply H8.
+reflexivity.
 reflexivity.
 rewrite Rplus_assoc.
 rewrite Rplus_opp_l.
