@@ -54,10 +54,10 @@ Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1AC.vo: Topology/ShuugouIsouNyuu
 Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.v
 	coqc -Q Analysis/KaisekiNyuumonn Analysis.KaisekiNyuumonn Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.v
 
-Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.v Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo MyAlgebraicStructure/MyField.vo MyAlgebraicStructure/MyVectorSpace.vo Tools/MySum.vo
+Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.v Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo MyAlgebraicStructure/MyField.vo MyAlgebraicStructure/MyVectorSpace.vo Tools/MySum.vo BasicNotation/Combination.vo
 	coqc -Q Analysis/KaisekiNyuumonn Analysis.KaisekiNyuumonn Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.v
 
-Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.v BasicProperty/MappingProperty.vo LibraryExtension/ComposeExtension.vo MyAlgebraicStructure/MyField.vo MyAlgebraicStructure/MyVectorSpace.vo Tools/MySum.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.vo
+Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.vo: Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.v BasicProperty/MappingProperty.vo LibraryExtension/ComposeExtension.vo MyAlgebraicStructure/MyField.vo MyAlgebraicStructure/MyVectorSpace.vo Tools/MySum.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_2.vo BasicNotation/Combination.vo
 	coqc -Q Analysis/KaisekiNyuumonn Analysis.KaisekiNyuumonn Analysis/KaisekiNyuumonn/KaisekiNyuumonn2.v
 
 Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2.vo: Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn2.v BasicProperty/MappingProperty.vo LibraryExtension/EnsemblesExtension.vo Topology/ShuugouIsouNyuumonn/ShuugouIsouNyuumonn1.vo LibraryExtension/DatatypesExtension.vo Analysis/KaisekiNyuumonn/KaisekiNyuumonn1_1.vo BasicProperty/NatProperty.vo
