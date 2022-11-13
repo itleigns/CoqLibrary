@@ -6791,15 +6791,7 @@ move=> H5.
 rewrite {2} H5.
 suff: (INF Rfield = INR).
 move=> H6.
-rewrite (BinomialTheoremF Rfield (S n0) (/ x - 1) 1 : (/ x - 1 + 1) ^ S n0
-= MySumF2 (Count (S (S n0)))
-         (exist (Finite (Count (S (S n0))))
-            (Full_set (Count (S (S n0)))) (CountFinite (S (S n0))))
-         RPCM
-         (fun (u : Count (S (S n0))) =>
-          (INF Rfield (conv (S n0) (proj1_sig u))) *
-            (((/ x - 1) ^ (proj1_sig u)) *
-               (1 ^ (S n0 - proj1_sig u))))).
+rewrite (BinomialTheoremF Rfield (S n0) (/ x - 1) 1 : (/ x - 1 + 1) ^ S n0 = MySumF2 (Count (S (S n0))) (exist (Finite (Count (S (S n0)))) (Full_set (Count (S (S n0)))) (CountFinite (S (S n0)))) RPCM (fun (u : Count (S (S n0))) => (INF Rfield (conv (S n0) (proj1_sig u))) * (((/ x - 1) ^ (proj1_sig u)) * (1 ^ (S n0 - proj1_sig u))))).
 rewrite H6.
 rewrite (MySumF2Included (Count (S (S n0))) (FiniteSingleton (Count (S (S n0))) (exist (fun (n : nat) => (n < S (S n0))%nat) (S O) (le_n_S (S O) (S n0) (le_n_S O n0 (le_0_n n0)))))).
 rewrite MySumF2Singleton.
@@ -6864,8 +6856,7 @@ elim.
 apply (Intersection_intro (Count (S (S n0)))).
 move=> H8.
 elim (lt_irrefl O).
-suff: (O = proj1_sig (exist (fun (n : nat) => (n < S (S n0))%nat) O
-          (le_n_S 0 (S n0) (le_0_n (S n0))))).
+suff: (O = proj1_sig (exist (fun (n : nat) => (n < S (S n0))%nat) O (le_n_S 0 (S n0) (le_0_n (S n0))))).
 move=> H10.
 rewrite {2} H10.
 elim H8.

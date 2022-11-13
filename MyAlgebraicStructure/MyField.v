@@ -658,7 +658,7 @@ move=> n H1 m.
 simpl.
 rewrite (H1 m).
 rewrite (Fadd_assoc f (INF f n) (INF f m) (FI f)).
-rewrite (Fadd_assoc f (INF f n) (FI f) (INF f m)). 
+rewrite (Fadd_assoc f (INF f n) (FI f) (INF f m)).
 rewrite (Fadd_comm f (INF f m) (FI f)).
 reflexivity.
 Qed.
